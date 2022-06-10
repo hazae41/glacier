@@ -19,8 +19,8 @@ npm i @hazae41/xswr
 - Scroll restoration
 - Composition-based hooks
 - Very easy learning curve
-- Not overly engineered (hello react-query)
-- No unexpected or weird behaviour (hello swr)
+- Not over-engineered (hello react-query)
+- No unexpected behaviour (hello swr)
 
 ### Your first sandw.. xswr hook
 
