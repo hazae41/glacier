@@ -33,7 +33,7 @@ async function jsonfetch(url: string) {
 }
 
 function useMyData() {
-  // Just include an url, a fetcher, and a deduplication cooldown
+	// Just include an url, a fetcher, and a deduplication cooldown
 	const handle = XSWR.useSingle(`/api/hello`, jsonfetch, 5000)
 	XSWR.useFetch(handle) // Fetch on mount and on url change
 	XSWR.useVisible(handle) // Fetch when the page becomes visible
