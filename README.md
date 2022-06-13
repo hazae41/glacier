@@ -30,7 +30,9 @@ npm i @hazae41/xswr
 
 ### Preparing your app
 
-You just have to wrap your app in `XSWRProvider`
+You just have to wrap your app in `XSWRProvider`.
+
+You can partition your app using multiple providers and storages to improve performances.
 
 ### Your first sandwich
 
@@ -38,17 +40,21 @@ When using xswr and its composition-based hooks, you create a sandwich and only 
 
 This shows a simple and complete way of doing a request on `/api/data` using JSON, display it with a loading, and automatically refetch it.
 
+Create a fetcher for your request
+
 ```typescript
 // Your fetcher
 async function jsonfetch(url: string) {
 	const res = await fetch(url)
 	return await res.json()
 }
+```
 
-// Your type
+Then create your hook using `useSingle` (or `useScroll`) and some other hooks you like
+
+```typescript
 interface MyData {}
 
-// Your hook
 function useMyData() {
 	// Just pass a unique url/key and a fetcher
 	const handle = XSWR.useSingle<MyData>(
@@ -66,8 +72,11 @@ function useMyData() {
 
 	return handle
 }
+````
 
-// Your component
+Now you can use it in your component
+
+```typescript
 function MyApp() {
 	const mydata = useMyData()
 
@@ -79,7 +88,7 @@ function MyApp() {
 }
 ```
 
-### Using SSR/ISR
+### Using SSR and ISR
 
 You can use `useFallback` to display static or server-side data before the request is finished
 
@@ -87,7 +96,7 @@ You can use `useFallback` to display static or server-side data before the reque
 XSWR.useFallback(handle, state) 
 ```
 
-Example with Next.js like component
+Example with a Next.js like component
 
 ```typescript
 function useMyData(init?: MyData) {
