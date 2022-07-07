@@ -37,48 +37,6 @@ export interface Handle<D = any, E = any> {
 }
 
 /**
- * Fill the global cache with data/error if there is no data/error yet
- * @example You got some data/error and want to save it in the cache
- * @warning Not needed for Next.js SSR/ISR since the props are already saved
- * @warning Will fill the cache AFTER the first render
- * @see useFallback for showing data on first render
- * @param handle 
- * @param state 
- */
-export function useInit<D = any, E = any>(
-	handle: Handle<D, E>,
-	state?: State<D, E>
-) {
-	const { key, mutate } = handle
-	const core = useContext(CoreContext)!
-
-	useEffect(() => {
-		if (!key || !state) return
-		if (core.has(key)) return
-		state.time ??= 1
-		mutate(state)
-	}, [key])
-}
-
-/**
- * Fallback to given data/error if there is no data/error
- * @example You got some data/error using SSR/ISR and want to display it on first render
- * @example You still want to display something even if the fetcher returned nothing
- * @see useInit For filling the global cache with the data/error
- * @param handle 
- * @param state 
- */
-export function useFallback<D = any, E = any>(
-	handle: Handle<D, E>,
-	state?: State<D, E>
-) {
-	const { data, error } = handle
-
-	if (data || error) return
-	Object.assign(handle, state)
-}
-
-/**
  * Do a request on mount and url change
  * @see useMount for doing a request on mount only
  * @see useOnce for doing a request only if there is no data yet
@@ -233,4 +191,46 @@ export function useRetry(handle: Handle, options: RetryOptions = {}) {
 		const t = setTimeout(f, init * ratio)
 		return () => clearTimeout(t)
 	}, [error, time])
+}
+
+/**
+ * Fallback to given data/error if there is no data/error
+ * @example You got some data/error using SSR/ISR and want to display it on first render
+ * @example You still want to display something even if the fetcher returned nothing
+ * @see useInit For filling the global cache with the data/error
+ * @param handle 
+ * @param state 
+ */
+ export function useFallback<D = any, E = any>(
+	handle: Handle<D, E>,
+	state?: State<D, E>
+) {
+	const { data, error } = handle
+
+	if (data || error) return
+	Object.assign(handle, state)
+}
+
+/**
+ * Fill the global cache with data/error if there is no data/error yet
+ * @example You got some data/error and want to save it in the cache
+ * @warning Not needed for Next.js SSR/ISR since the props are already saved
+ * @warning Will fill the cache AFTER the first render
+ * @see useFallback for showing data on first render
+ * @param handle 
+ * @param state 
+ */
+ export function useInit<D = any, E = any>(
+	handle: Handle<D, E>,
+	state?: State<D, E>
+) {
+	const { key, mutate } = handle
+	const core = useContext(CoreContext)!
+
+	useEffect(() => {
+		if (!key || !state) return
+		if (core.has(key)) return
+		state.time ??= 1
+		mutate(state)
+	}, [key])
 }

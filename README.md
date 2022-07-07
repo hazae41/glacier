@@ -2,7 +2,6 @@
 
 The simplest React data (re)fetching library ever made
 
-
 ```
 npm i @hazae41/xswr
 ```
@@ -26,13 +25,22 @@ npm i @hazae41/xswr
 - Cancellable requests
 - Bidirectional scrolling
 - Garbage collection
-- Context partitioning
 
 ### Preparing your app
 
-You just have to wrap your app in `XSWRProvider`.
+You just have to wrap your app in a `XSWRProvider` component.
 
-You can partition your app using multiple providers and storages to improve performances.
+```typescript
+function MyWrapper() {
+	const xswr = XSWR.useCoreMemo()
+
+	return <XSWR.CoreContext.Provider value={xswr}>
+		<MyAwesomeApp />
+	</XSWR.CoreContext.Provider>
+}
+```
+
+You can partition your app using multiple providers and storages.
 
 ### Your first sandwich
 
@@ -44,7 +52,7 @@ Create a fetcher for your request
 
 ```typescript
 // Your fetcher
-async function jsonfetch(url: string) {
+async function fetchAsJson(url: string) {
 	const res = await fetch(url)
 	return await res.json()
 }
@@ -59,7 +67,7 @@ function useMyData() {
 	// Just pass a unique url/key and a fetcher
 	const handle = XSWR.useSingle<MyData>(
 		`/api/data`,
-		jsonfetch)
+		fetchAsJson)
 
 	// Fetch on mount and on url change
 	XSWR.useFetch(handle)
@@ -72,7 +80,7 @@ function useMyData() {
 
 	return handle
 }
-````
+```
 
 Now you can use it in your component
 
@@ -90,19 +98,19 @@ function MyApp() {
 
 ### Using SSR and ISR
 
-You can use `useFallback` to display static or server-side data before the request is finished
+You can use `useFallback` to display static or server-side data before the request is finished.
 
 ```typescript
 XSWR.useFallback(handle, state) 
 ```
 
-Example with a Next.js like component
+Example with a Next.js like component:
 
 ```typescript
 function useMyData(init?: MyData) {
 	const handle = XSWR.useSingle<MyData>(
 		`/api/hello`, 
-		jsonfetch)
+		fetchAsJson)
 	XSWR.useFetch(handle)
 	XSWR.useFallback(handle, { data: init })
 	return handle
