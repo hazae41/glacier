@@ -1,0 +1,30 @@
+# Using SSR and ISR
+
+You can use `useFallback` to display static or server-side data before the request is finished.
+
+```typescript
+XSWR.useFallback(handle, state) 
+```
+
+Example with a Next.js like component:
+
+```typescript
+function useMyData(init?: MyData) {
+  const handle = XSWR.useSingle<MyData>(
+    `/api/hello`, 
+    fetchAsJson)
+  XSWR.useFetch(handle)
+  XSWR.useFallback(handle, { data: init })
+  return handle
+}
+
+interface MyAppProps {
+  init?: MyData
+}
+
+function MyApp(props: MyAppProps) {
+  const mydata = useMyData(props.init)
+
+  return ...
+}
+```
