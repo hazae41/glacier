@@ -32,11 +32,11 @@ You just have to wrap your app in a `XSWRProvider` component.
 
 ```typescript
 function MyWrapper() {
-	const xswr = XSWR.useCoreMemo()
+  const xswr = XSWR.useCoreMemo()
 
-	return <XSWR.CoreContext.Provider value={xswr}>
-		<MyAwesomeApp />
-	</XSWR.CoreContext.Provider>
+  return <XSWR.CoreContext.Provider value={xswr}>
+    <MyAwesomeApp />
+  </XSWR.CoreContext.Provider>
 }
 ```
 
@@ -53,8 +53,8 @@ Create a fetcher for your request
 ```typescript
 // Your fetcher
 async function fetchAsJson(url: string) {
-	const res = await fetch(url)
-	return await res.json()
+  const res = await fetch(url)
+  return await res.json()
 }
 ```
 
@@ -64,21 +64,21 @@ Then create your hook using `useSingle` (or `useScroll`) and some other hooks yo
 interface MyData {}
 
 function useMyData() {
-	// Just pass a unique url/key and a fetcher
-	const handle = XSWR.useSingle<MyData>(
-		`/api/data`,
-		fetchAsJson)
+  // Just pass a unique url/key and a fetcher
+  const handle = XSWR.useSingle<MyData>(
+    `/api/data`,
+    fetchAsJson)
 
-	// Fetch on mount and on url change
-	XSWR.useFetch(handle)
+  // Fetch on mount and on url change
+  XSWR.useFetch(handle)
 
-	// Fetch when the page becomes visible
-	XSWR.useVisible(handle)
+  // Fetch when the page becomes visible
+  XSWR.useVisible(handle)
 
-	// Fetch when the browser becomes online
-	XSWR.useOnline(handle)
+  // Fetch when the browser becomes online
+  XSWR.useOnline(handle)
 
-	return handle
+  return handle
 }
 ```
 
@@ -86,13 +86,13 @@ Now you can use it in your component
 
 ```typescript
 function MyApp() {
-	const mydata = useMyData()
+  const mydata = useMyData()
 
-	if (mydata.error)
-		return <MyError error={mydata.error} />
-	if (!mydata.data)
-		return <MyLoading />
-	return <MyPage data={mydata.data} />
+  if (mydata.error)
+    return <MyError error={mydata.error} />
+  if (!mydata.data)
+    return <MyLoading />
+  return <MyPage data={mydata.data} />
 }
 ```
 
@@ -108,21 +108,21 @@ Example with a Next.js like component:
 
 ```typescript
 function useMyData(init?: MyData) {
-	const handle = XSWR.useSingle<MyData>(
-		`/api/hello`, 
-		fetchAsJson)
-	XSWR.useFetch(handle)
-	XSWR.useFallback(handle, { data: init })
-	return handle
+  const handle = XSWR.useSingle<MyData>(
+    `/api/hello`, 
+    fetchAsJson)
+  XSWR.useFetch(handle)
+  XSWR.useFallback(handle, { data: init })
+  return handle
 }
 
 interface MyAppProps {
-	init?: MyData
+  init?: MyData
 }
 
 function MyApp(props: MyAppProps) {
-	const mydata = useMyData(props.init)
+  const mydata = useMyData(props.init)
 
-	return ...
+  return ...
 }
 ```

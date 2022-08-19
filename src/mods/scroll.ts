@@ -5,13 +5,13 @@ import { useOrtho } from "./ortho"
 import { State } from "./storage"
 
 export type Scroller<D = unknown> =
-	(previous?: D) => string | undefined
+  (previous?: D) => string | undefined
 
 /**
  * Handle for a scrolling resource
  */
 export interface ScrollHandle<D = any, E = any> extends Handle<D[], E> {
-	scroll(): Promise<State<D[], E> | undefined>
+  scroll(): Promise<State<D[], E> | undefined>
 }
 
 /**
@@ -22,45 +22,45 @@ export interface ScrollHandle<D = any, E = any> extends Handle<D[], E> {
  * @returns A scrolling resource handle
  */
 export function useScroll<D = any, E = any>(
-	scroller: Scroller<D>,
-	fetcher: Fetcher<D>,
-	cooldown = 1000
+  scroller: Scroller<D>,
+  fetcher: Fetcher<D>,
+  cooldown = 1000
 ): ScrollHandle<D, E> {
-	const core = useContext(CoreContext)!
+  const core = useContext(CoreContext)!
 
-	const key = useMemo(() => {
-		return "scroll:" + scroller()
-	}, [scroller])
+  const key = useMemo(() => {
+    return "scroll:" + scroller()
+  }, [scroller])
 
-	const [state, setState] = useState(
-		() => core.get<D[], E>(key))
-	useEffect(() => {
-		setState(core.get<D[], E>(key))
-	}, [key])
+  const [state, setState] = useState(
+    () => core.get<D[], E>(key))
+  useEffect(() => {
+    setState(core.get<D[], E>(key))
+  }, [key])
 
-	useOrtho(core, key, setState)
+  useOrtho(core, key, setState)
 
-	const mutate = useCallback((res: State<D[], E>) => {
-		return core.mutate<D[], E>(key, res)
-	}, [core, key])
+  const mutate = useCallback((res: State<D[], E>) => {
+    return core.mutate<D[], E>(key, res)
+  }, [core, key])
 
-	const fetch = useCallback(async () => {
-		return await core.first<D, E>(key, scroller, fetcher, cooldown)
-	}, [core, key, scroller, fetcher, cooldown])
+  const fetch = useCallback(async () => {
+    return await core.first<D, E>(key, scroller, fetcher, cooldown)
+  }, [core, key, scroller, fetcher, cooldown])
 
-	const refetch = useCallback(async () => {
-		return await core.first<D, E>(key, scroller, fetcher)
-	}, [core, key, scroller, fetcher])
+  const refetch = useCallback(async () => {
+    return await core.first<D, E>(key, scroller, fetcher)
+  }, [core, key, scroller, fetcher])
 
-	const scroll = useCallback(async () => {
-		return await core.scroll<D, E>(key, scroller, fetcher)
-	}, [core, key, scroller, fetcher])
+  const scroll = useCallback(async () => {
+    return await core.scroll<D, E>(key, scroller, fetcher)
+  }, [core, key, scroller, fetcher])
 
-	const clear = useCallback(() => {
-		core.delete(key)
-	}, [core, key])
+  const clear = useCallback(() => {
+    core.delete(key)
+  }, [core, key])
 
-	const { data, error, time, loading = false } = state ?? {}
+  const { data, error, time, loading = false } = state ?? {}
 
-	return { key, data, error, time, loading, mutate, fetch, refetch, scroll, clear }
+  return { key, data, error, time, loading, mutate, fetch, refetch, scroll, clear }
 }

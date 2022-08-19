@@ -7,7 +7,7 @@ import { State } from "./storage"
 /**
  * Handle for a single resource
  */
-export interface SingleHandle<D = any, E = any> extends Handle<D, E> {}
+export interface SingleHandle<D = any, E = any> extends Handle<D, E> { }
 
 /**
  * Single resource hook
@@ -17,37 +17,37 @@ export interface SingleHandle<D = any, E = any> extends Handle<D, E> {}
  * @returns A single resource handle
  */
 export function useSingle<D = any, E = any>(
-	key: string | undefined,
-	fetcher: Fetcher<D>,
-	cooldown = 1000
+  key: string | undefined,
+  fetcher: Fetcher<D>,
+  cooldown = 1000
 ): SingleHandle<D, E> {
-	const core = useContext(CoreContext)!
+  const core = useContext(CoreContext)!
 
-	const [state, setState] = useState(
-		() => core.get(key))
-	useEffect(() => {
-		setState(core.get(key))
-	}, [key])
+  const [state, setState] = useState(
+    () => core.get(key))
+  useEffect(() => {
+    setState(core.get(key))
+  }, [key])
 
-	useOrtho(core, key, setState)
+  useOrtho(core, key, setState)
 
-	const mutate = useCallback((res: State<D, E>) => {
-		return core.mutate<D, E>(key, res)
-	}, [core, key])
+  const mutate = useCallback((res: State<D, E>) => {
+    return core.mutate<D, E>(key, res)
+  }, [core, key])
 
-	const fetch = useCallback(async () => {
-		return await core.fetch<D, E>(key, fetcher, cooldown)
-	}, [core, key, fetcher, cooldown])
+  const fetch = useCallback(async () => {
+    return await core.fetch<D, E>(key, fetcher, cooldown)
+  }, [core, key, fetcher, cooldown])
 
-	const refetch = useCallback(async () => {
-		return await core.fetch<D, E>(key, fetcher)
-	}, [core, key, fetcher])
+  const refetch = useCallback(async () => {
+    return await core.fetch<D, E>(key, fetcher)
+  }, [core, key, fetcher])
 
-	const clear = useCallback(() => {
-		core.delete(key)
-	}, [core, key])
+  const clear = useCallback(() => {
+    core.delete(key)
+  }, [core, key])
 
-	const { data, error, time, loading = false } = state ?? {}
+  const { data, error, time, loading = false } = state ?? {}
 
-	return { key, data, error, time, loading, mutate, fetch, refetch, clear }
+  return { key, data, error, time, loading, mutate, fetch, refetch, clear }
 }

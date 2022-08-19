@@ -3,37 +3,37 @@ import { CoreContext } from "./core"
 import { State } from "./storage"
 
 export interface Handle<D = any, E = any> {
-	key?: string
+  key?: string
 
-	data?: D
-	error?: E
+  data?: D
+  error?: E
 
-	time?: number
-	loading: boolean
+  time?: number
+  loading: boolean
 
-	/**
-	 * Fetch with cooldown
-	 * @example You want to fetch and don't care if it's cooldowned
-	 */
-	fetch(): Promise<State<D, E> | undefined>
+  /**
+   * Fetch with cooldown
+   * @example You want to fetch and don't care if it's cooldowned
+   */
+  fetch(): Promise<State<D, E> | undefined>
 
-	/**
-	 * Fetch without cooldown
-	 * @example User clicked on the refresh button
-	 * @example You just made a POST request and want to get some fresh data
-	 */
-	refetch(): Promise<State<D, E> | undefined>
+  /**
+   * Fetch without cooldown
+   * @example User clicked on the refresh button
+   * @example You just made a POST request and want to get some fresh data
+   */
+  refetch(): Promise<State<D, E> | undefined>
 
-	/**
-	 * Mutate the cache
-	 * @param res 
-	 */
-	mutate(res: State<D, E>): State<D, E> | undefined
+  /**
+   * Mutate the cache
+   * @param res 
+   */
+  mutate(res: State<D, E>): State<D, E> | undefined
 
-	/**
-	 * Clear the cache
-	 */
-	clear(): void
+  /**
+   * Clear the cache
+   */
+  clear(): void
 }
 
 /**
@@ -43,11 +43,11 @@ export interface Handle<D = any, E = any> {
  * @param handle 
  */
 export function useFetch(handle: Handle) {
-	const { fetch } = handle
+  const { fetch } = handle
 
-	useEffect(() => {
-		fetch()
-	}, [fetch])
+  useEffect(() => {
+    fetch()
+  }, [fetch])
 }
 
 /**
@@ -57,11 +57,11 @@ export function useFetch(handle: Handle) {
  * @example You want to get some data once and share it in multiple components
  */
 export function useOnce(handle: Handle) {
-	const { data, fetch } = handle
+  const { data, fetch } = handle
 
-	useEffect(() => {
-		if (!data) fetch()
-	}, [data, fetch])
+  useEffect(() => {
+    if (!data) fetch()
+  }, [data, fetch])
 }
 
 /**
@@ -71,11 +71,11 @@ export function useOnce(handle: Handle) {
  * @param handle 
  */
 export function useMount(handle: Handle) {
-	const { fetch } = handle
+  const { fetch } = handle
 
-	useEffect(() => {
-		fetch()
-	}, [])
+  useEffect(() => {
+    fetch()
+  }, [])
 }
 
 /**
@@ -85,13 +85,13 @@ export function useMount(handle: Handle) {
  * @param options 
  */
 export function useInterval(handle: Handle, interval: number) {
-	const { fetch } = handle
+  const { fetch } = handle
 
-	useEffect(() => {
-		if (!interval) return
-		const i = setInterval(fetch, interval)
-		return () => clearInterval(i)
-	}, [fetch, interval])
+  useEffect(() => {
+    if (!interval) return
+    const i = setInterval(fetch, interval)
+    return () => clearInterval(i)
+  }, [fetch, interval])
 }
 
 /**
@@ -99,12 +99,12 @@ export function useInterval(handle: Handle, interval: number) {
  * @param handle 
  */
 export function useOnline(handle: Handle) {
-	const { fetch } = handle
+  const { fetch } = handle
 
-	useEffect(() => {
-		addEventListener("online", fetch)
-		return () => removeEventListener("online", fetch)
-	}, [fetch])
+  useEffect(() => {
+    addEventListener("online", fetch)
+    return () => removeEventListener("online", fetch)
+  }, [fetch])
 }
 
 /**
@@ -112,13 +112,13 @@ export function useOnline(handle: Handle) {
  * @param handle 
  */
 export function useVisible(handle: Handle) {
-	const { fetch } = handle
+  const { fetch } = handle
 
-	useEffect(() => {
-		const f = () => !document.hidden && fetch()
-		document.addEventListener("visibilitychange", f)
-		return () => document.removeEventListener("visibilitychange", f)
-	}, [fetch])
+  useEffect(() => {
+    const f = () => !document.hidden && fetch()
+    document.addEventListener("visibilitychange", f)
+    return () => document.removeEventListener("visibilitychange", f)
+  }, [fetch])
 }
 
 /**
@@ -127,14 +127,14 @@ export function useVisible(handle: Handle) {
  * @param callback 
  */
 export function useError<D = any, E = any>(
-	handle: Handle<D, E>,
-	callback: (e: E) => void
+  handle: Handle<D, E>,
+  callback: (e: E) => void
 ) {
-	const { error } = handle
+  const { error } = handle
 
-	useEffect(() => {
-		if (error) callback(error)
-	}, [error, callback])
+  useEffect(() => {
+    if (error) callback(error)
+  }, [error, callback])
 }
 
 /**
@@ -142,20 +142,20 @@ export function useError<D = any, E = any>(
  * @param handle 
  */
 export function useDebug<D = any, E = any>(
-	handle: Handle<D, E>,
-	label: string
+  handle: Handle<D, E>,
+  label: string
 ) {
-	const { time } = handle
+  const { time } = handle
 
-	useEffect(() => {
-		console.debug(label, handle)
-	}, [time])
+  useEffect(() => {
+    console.debug(label, handle)
+  }, [time])
 }
 
 export interface RetryOptions {
-	init?: number
-	base?: number
-	max?: number
+  init?: number
+  base?: number
+  max?: number
 }
 
 /**
@@ -170,27 +170,27 @@ export interface RetryOptions {
  * @see https://en.wikipedia.org/wiki/Geometric_progression
  */
 export function useRetry(handle: Handle, options: RetryOptions = {}) {
-	const { refetch, error, time } = handle
-	const { init = 1000, base = 2, max = 3 } = options
+  const { refetch, error, time } = handle
+  const { init = 1000, base = 2, max = 3 } = options
 
-	const count = useRef(0)
+  const count = useRef(0)
 
-	useEffect(() => {
-		count.current = 0
-	}, [refetch, init, base, max])
+  useEffect(() => {
+    count.current = 0
+  }, [refetch, init, base, max])
 
-	useEffect(() => {
-		if (!error) {
-			count.current = 0
-			return
-		}
+  useEffect(() => {
+    if (!error) {
+      count.current = 0
+      return
+    }
 
-		if (count.current > max) return
-		const ratio = base ** count.current
-		const f = () => { count.current++; refetch() }
-		const t = setTimeout(f, init * ratio)
-		return () => clearTimeout(t)
-	}, [error, time])
+    if (count.current > max) return
+    const ratio = base ** count.current
+    const f = () => { count.current++; refetch() }
+    const t = setTimeout(f, init * ratio)
+    return () => clearTimeout(t)
+  }, [error, time])
 }
 
 /**
@@ -201,14 +201,14 @@ export function useRetry(handle: Handle, options: RetryOptions = {}) {
  * @param handle 
  * @param state 
  */
- export function useFallback<D = any, E = any>(
-	handle: Handle<D, E>,
-	state?: State<D, E>
+export function useFallback<D = any, E = any>(
+  handle: Handle<D, E>,
+  state?: State<D, E>
 ) {
-	const { data, error } = handle
+  const { data, error } = handle
 
-	if (data || error) return
-	Object.assign(handle, state)
+  if (data || error) return
+  Object.assign(handle, state)
 }
 
 /**
@@ -220,17 +220,17 @@ export function useRetry(handle: Handle, options: RetryOptions = {}) {
  * @param handle 
  * @param state 
  */
- export function useInit<D = any, E = any>(
-	handle: Handle<D, E>,
-	state?: State<D, E>
+export function useInit<D = any, E = any>(
+  handle: Handle<D, E>,
+  state?: State<D, E>
 ) {
-	const { key, mutate } = handle
-	const core = useContext(CoreContext)!
+  const { key, mutate } = handle
+  const core = useContext(CoreContext)!
 
-	useEffect(() => {
-		if (!key || !state) return
-		if (core.has(key)) return
-		state.time ??= 1
-		mutate(state)
-	}, [key])
+  useEffect(() => {
+    if (!key || !state) return
+    if (core.has(key)) return
+    state.time ??= 1
+    mutate(state)
+  }, [key])
 }
