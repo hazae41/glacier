@@ -17,7 +17,7 @@ Won't fetch on key change, see [useFetch](/features/use-fetch) for doing so.
 ### Example
 
 ```typescript
-function useMyData(init?: MyData) {
+function useMyData() {
   const handle = XSWR.useSingle<MyData>(
     `/api/hello`, 
     fetchAsJson)
