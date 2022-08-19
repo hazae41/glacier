@@ -4,5 +4,7 @@
   "use-mount": "Fetch on mount",
   "use-online": "Fetch when the browser becomes online",
   "use-visible": "Fetch when the tab is focused",
-  "ssr-and-isr": "SSR & ISR"
+  "use-interval": "Fetch on a regular interval",
+  "use-retry": "Retry on error",
+  "use-fallback": "Using SSR & ISR"
 }

@@ -1,14 +1,10 @@
 # Fetch only once
 
-You can use `useOnce` to fetch a resource only if there is no data.
+You can use `useOnce` to fetch a resource on mount and on key change, but only if there is no data.
 
 ```typescript
 XSWR.useOnce(handle) 
 ```
-
-### About
-
-Fetch on mount and on key change, but only if there is no data.
 
 ### Warning
 
@@ -32,5 +28,5 @@ function useMyData(init?: MyData) {
 
 ### See also
 
-- [useFetch](/features/use-fetch) - fetch on mount and on key change.
-- [useMount](/features/use-mount) - fetch on mount only.
+- [useFetch](/features/use-fetch) - fetch on mount and on key change
+- [useMount](/features/use-mount) - fetch on mount only

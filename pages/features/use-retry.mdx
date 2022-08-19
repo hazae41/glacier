@@ -1,0 +1,46 @@
+# Retry on error
+
+You can use `useRetry` to retry on error using the exponential backoff algorithm.
+
+```typescript
+XSWR.useRetry(handle, { init: 1000, base: 2, max: 3 }) 
+```
+
+### About
+
+[Exponential backoff algorithm](https://en.wikipedia.org/wiki/Exponential_backoff) allows you to retry fetching a resource if an error is thrown, but on a increasing interval using a geometric progression.
+
+So basically, it will wait `init * (base ** count)` milliseconds between each retry, where count is the number of retries, until count is equal to max.
+
+### Example
+
+With `{ init: 1000, base: 2, max: 3 }`:
+
+1. First retry will wait `1000 * (2 ** 0) = 1000 ms`
+2. Second retry will wait `1000 * (2 ** 1) = 2000 ms``
+3. Third retry will wait `1000 * (2 ** 2) = 4000 ms`
+
+You can see that the interval is multiplied by 2 (our base) for each retry.
+
+With `max = 4`, the fourth retry would wait 8000 milliseconds.
+
+### Warning
+
+The count will be reset when a retry succeeds.
+
+### Usage example
+
+```typescript
+function useMyData(init?: MyData) {
+  const handle = XSWR.useSingle<MyData>(
+    `/api/hello`, 
+    fetchAsJson)
+  XSWR.useFetch(handle)
+  XSWR.useRetry(handle, { init: 1000, base: 2, max: 3 }) 
+  return handle
+}
+```
+
+### See also
+
+- [useInterval](/features/use-interval) - fetch on a regular interval

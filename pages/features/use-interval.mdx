@@ -1,0 +1,32 @@
+# Fetch on a regular interval
+
+You can use `useInterval` to fetch a resource on mount and on a regular interval.
+
+```typescript
+XSWR.useInterval(handle, 1000) 
+```
+
+### Warning
+
+Will refetch on key change.
+
+### Motivation
+
+You know that some data is regularly updated.
+
+### Example
+
+```typescript
+function useMyData(init?: MyData) {
+  const handle = XSWR.useSingle<MyData>(
+    `/api/hello`, 
+    fetchAsJson)
+  XSWR.useInterval(handle, 1000)
+  return handle
+}
+```
+
+### See also
+
+- [useFetch](/features/use-fetch) - fetch on mount and on key change
+- [useRetry](/features/use-retry) - retry on error
