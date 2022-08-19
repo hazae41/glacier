@@ -17,7 +17,7 @@ So basically, it will wait `init * (base ** count)` milliseconds between each re
 With `{ init: 1000, base: 2, max: 3 }`:
 
 1. First retry will wait `1000 * (2 ** 0) = 1000 ms`
-2. Second retry will wait `1000 * (2 ** 1) = 2000 ms``
+2. Second retry will wait `1000 * (2 ** 1) = 2000 ms`
 3. Third retry will wait `1000 * (2 ** 2) = 4000 ms`
 
 You can see that the interval is multiplied by 2 (our base) for each retry.
