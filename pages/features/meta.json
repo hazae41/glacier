@@ -6,5 +6,6 @@
   "use-visible": "Fetch when the tab is focused",
   "use-interval": "Fetch on a regular interval",
   "use-retry": "Retry on error",
-  "use-fallback": "Using SSR & ISR"
+  "use-fallback": "Using SSR & ISR",
+  "use-debug": "Debugging a resource"
 }

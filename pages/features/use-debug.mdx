@@ -1,0 +1,20 @@
+# Debugging a resource
+
+You can use `useDebug` to log a handle in the console when it's updated.
+
+```typescript
+XSWR.useDebug(handle, label)
+```
+
+### Example
+
+```typescript
+function useMyData() {
+  const handle = XSWR.useSingle<MyData>(
+    `/api/hello`, 
+    fetchAsJson)
+  XSWR.useFetch(handle)
+  XSWR.useDebug(handle, "my data")
+  return handle
+}
+```
