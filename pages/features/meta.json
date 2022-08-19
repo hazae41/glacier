@@ -2,9 +2,9 @@
   "use-fetch": "Basic fetch",
   "use-once": "Fetch only once",
   "use-mount": "Fetch on mount",
+  "use-interval": "Fetch on a regular interval",
   "use-online": "Fetch when the browser becomes online",
   "use-visible": "Fetch when the tab is focused",
-  "use-interval": "Fetch on a regular interval",
   "use-retry": "Retry on error",
   "use-fallback": "Using SSR & ISR",
   "use-debug": "Debugging a resource"
