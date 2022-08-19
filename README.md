@@ -105,5 +105,6 @@ function MyApp() {
     return <MyLoading />
   return <MyPage data={mydata.data} />
 }
+```
 
 ## [Go to the docs](https://xswr.hazae41.me)

@@ -185,7 +185,7 @@ export function useRetry(handle: Handle, options: RetryOptions = {}) {
       return
     }
 
-    if (count.current > max) return
+    if (count.current >= max) return
     const ratio = base ** count.current
     const f = () => { count.current++; refetch() }
     const t = setTimeout(f, init * ratio)
