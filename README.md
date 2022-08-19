@@ -2,11 +2,16 @@
 
 The simplest React data (re)fetching library ever made
 
-```
+```bash
 npm i @hazae41/xswr
 ```
 
-### Features
+## [Go to the docs](https://xswr.hazae41.me)
+
+## Features
+
+### Current features
+
 - 100% TypeScript
 - Composition-based hooks
 - Very easy learning curve
@@ -26,7 +31,13 @@ npm i @hazae41/xswr
 - Bidirectional scrolling
 - Garbage collection
 
-### Preparing your app
+## Preparing your app
+
+Install xswr
+
+```bash
+npm i @hazae41/xswr
+```
 
 You just have to wrap your app in a `XSWRProvider` component.
 
@@ -42,7 +53,7 @@ function MyWrapper() {
 
 You can partition your app using multiple providers and storages.
 
-### Your first sandwich
+## Your first sandwich
 
 When using xswr and its composition-based hooks, you create a sandwich and only include the ingredients you want.
 
@@ -94,35 +105,5 @@ function MyApp() {
     return <MyLoading />
   return <MyPage data={mydata.data} />
 }
-```
 
-### Using SSR and ISR
-
-You can use `useFallback` to display static or server-side data before the request is finished.
-
-```typescript
-XSWR.useFallback(handle, state) 
-```
-
-Example with a Next.js like component:
-
-```typescript
-function useMyData(init?: MyData) {
-  const handle = XSWR.useSingle<MyData>(
-    `/api/hello`, 
-    fetchAsJson)
-  XSWR.useFetch(handle)
-  XSWR.useFallback(handle, { data: init })
-  return handle
-}
-
-interface MyAppProps {
-  init?: MyData
-}
-
-function MyApp(props: MyAppProps) {
-  const mydata = useMyData(props.init)
-
-  return ...
-}
-```
+## [Go to the docs](https://xswr.hazae41.me)
