@@ -1,0 +1,36 @@
+# Fetch only once
+
+You can use `useOnce` to fetch a resource only if there is no data.
+
+```typescript
+XSWR.useOnce(handle) 
+```
+
+### About
+
+Fetch on mount and on key change, but only if there is no data.
+
+### Warning
+
+Will still try to fetch is there is an error.
+
+### Motivation
+
+You want to get some data once and share it in multiple components.
+
+### Example
+
+```typescript
+function useMyData(init?: MyData) {
+  const handle = XSWR.useSingle<MyData>(
+    `/api/hello`, 
+    fetchAsJson)
+  XSWR.useOnce(handle)
+  return handle
+}
+```
+
+### See also
+
+- [useFetch](/features/use-fetch) - fetch on mount and on key change.
+- [useMount](/features/use-mount) - fetch on mount only.

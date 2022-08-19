@@ -1,0 +1,24 @@
+# Fetch on mount and on key change
+
+You can use `useFetch` to fetch a resource on mount and on key change.
+
+```typescript
+XSWR.useMount(handle) 
+```
+
+### Example
+
+```typescript
+function useMyData(init?: MyData) {
+  const handle = XSWR.useSingle<MyData>(
+    `/api/hello`, 
+    fetchAsJson)
+  XSWR.useFetch(handle)
+  return handle
+}
+```
+
+### See also
+
+- [useMount](/features/use-mount) - fetch on mount only.
+- [useOnce](/features/use-once) - fetch on mount and on key change, but only if there is no data.

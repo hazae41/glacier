@@ -1,0 +1,24 @@
+# Fetch when the tab is focused
+
+You can use `useVisible` to fetch a resource when the tab is focused.
+
+```typescript
+XSWR.useVisible(handle) 
+```
+
+### Example
+
+```typescript
+function useMyData(init?: MyData) {
+  const handle = XSWR.useSingle<MyData>(
+    `/api/hello`, 
+    fetchAsJson)
+  XSWR.useFetch(handle)
+  XSWR.useVisible(handle)
+  return handle
+}
+```
+
+### See also
+
+- [useOnline](/features/use-online) - fetch when the browser becomes online.

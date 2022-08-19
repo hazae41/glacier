@@ -1,3 +1,8 @@
 {
+  "use-fetch": "Basic fetch",
+  "use-once": "Fetch only once",
+  "use-mount": "Fetch on mount",
+  "use-online": "Fetch when the browser becomes online",
+  "use-visible": "Fetch when the tab is focused",
   "ssr-and-isr": "SSR & ISR"
 }
