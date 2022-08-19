@@ -1,18 +1,18 @@
 # Fetch on a regular interval
 
-You can use `useInterval` to fetch a resource on mount and on a regular interval.
+You can use `useInterval` to fetch a resource on mount, on key change, and on a regular interval.
 
 ```typescript
 XSWR.useInterval(handle, 1000) 
 ```
 
-### Warning
-
-Will refetch on key change.
-
 ### Motivation
 
 You know that some data is regularly updated.
+
+### Warning
+
+Will also refetch on mount and on key change.
 
 ### Example
 
