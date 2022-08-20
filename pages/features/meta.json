@@ -6,6 +6,7 @@
   "use-online": "Fetch when the browser becomes online",
   "use-visible": "Fetch when the tab is focused",
   "use-retry": "Retry on error",
+  "use-error": "Call a function on error",
   "use-fallback": "Using SSR & ISR",
   "use-debug": "Debugging a resource"
 }

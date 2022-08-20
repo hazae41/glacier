@@ -1,0 +1,28 @@
+# Call a function on error
+
+You can use `useError` to call a function on error.
+
+```typescript
+XSWR.useError(handle, onerror) 
+```
+
+### Motivation
+
+You want to disconnect a user when you receive a HTTP 401 (Unauthorized) error.
+
+### Example
+
+```typescript
+function useMyData() {
+  const handle = XSWR.useSingle<MyData>(
+    `/api/hello`, 
+    fetchAsJson)
+  XSWR.useFetch(handle)
+  XSWR.useError(handle, console.error)
+  return handle
+}
+```
+
+### See also
+
+- [useRetry](/features/use-retry) - retry on error
