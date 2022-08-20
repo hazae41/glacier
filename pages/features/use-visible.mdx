@@ -19,6 +19,20 @@ function useMyData() {
 }
 ```
 
+### Implementation
+
+```typescript
+export function useVisible(handle: Handle) {
+  const { fetch } = handle
+
+  useEffect(() => {
+    const f = () => !document.hidden && fetch()
+    document.addEventListener("visibilitychange", f)
+    return () => document.removeEventListener("visibilitychange", f)
+  }, [fetch])
+}
+```
+
 ### See also
 
 - [useOnline](/features/use-online) - fetch when the browser becomes online

@@ -23,6 +23,20 @@ function useMyData() {
 }
 ```
 
+### Implementation
+
+```typescript
+export function useInterval(handle: Handle, interval: number) {
+  const { fetch } = handle
+
+  useEffect(() => {
+    if (!interval) return
+    const i = setInterval(fetch, interval)
+    return () => clearInterval(i)
+  }, [fetch, interval])
+}
+```
+
 ### See also
 
 - [useFetch](/features/use-fetch) - fetch on mount and on key change

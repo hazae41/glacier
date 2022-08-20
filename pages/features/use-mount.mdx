@@ -26,6 +26,18 @@ function useMyData() {
 }
 ```
 
+### Implementation
+
+```typescript
+export function useMount(handle: Handle) {
+  const { fetch } = handle
+
+  useEffect(() => {
+    fetch()
+  }, [])
+}
+```
+
 ### See also
 
 - [useFetch](/features/use-fetch) - fetch on mount and on key change

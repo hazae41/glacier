@@ -18,6 +18,18 @@ function useMyData() {
 }
 ```
 
+### Implementation
+
+```typescript
+export function useFetch(handle: Handle) {
+  const { fetch } = handle
+
+  useEffect(() => {
+    fetch()
+  }, [fetch])
+}
+```
+
 ### See also
 
 - [useMount](/features/use-mount) - fetch on mount only

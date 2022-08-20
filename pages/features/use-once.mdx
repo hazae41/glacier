@@ -26,6 +26,18 @@ function useMyData() {
 }
 ```
 
+### Implementation
+
+```typescript
+export function useOnce(handle: Handle) {
+  const { data, fetch } = handle
+
+  useEffect(() => {
+    if (data === undefined) fetch()
+  }, [data, fetch])
+}
+```
+
 ### See also
 
 - [useFetch](/features/use-fetch) - fetch on mount and on key change

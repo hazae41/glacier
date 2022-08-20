@@ -30,3 +30,18 @@ function MyApp(props: MyAppProps) {
   return ...
 }
 ```
+
+### Implementation
+
+```typescript
+export function useFallback<D = any, E = any>(
+  handle: Handle<D, E>,
+  state?: State<D, E>
+) {
+  const { data, error } = handle
+
+  if (data !== undefined) return
+  if (error !== undefined) return
+  Object.assign(handle, state)
+}
+```
