@@ -1,12 +1,13 @@
 {
-  "use-fetch": "Basic fetch",
+  "use-fetch": "Fetch on mount and on key change",
   "use-once": "Fetch only once",
-  "use-mount": "Fetch on mount",
+  "use-mount": "Fetch on mount only",
   "use-interval": "Fetch on a regular interval",
   "use-online": "Fetch when the browser becomes online",
   "use-visible": "Fetch when the tab is focused",
   "use-retry": "Retry on error",
   "use-error": "Call a function on error",
   "use-fallback": "Using SSR & ISR",
-  "use-debug": "Debugging a resource"
+  "use-debug": "Debugging a resource",
+  "cooldown": "Deduplication cooldown"
 }

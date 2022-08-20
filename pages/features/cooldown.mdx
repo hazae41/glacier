@@ -1,0 +1,30 @@
+# Deduplication cooldown
+
+By default, XSWR uses a 1000ms deduplication cooldown. 
+
+That means components won't refetch a resource if it was already fetched less than 1000ms ago.
+
+You can pass a custom cooldown to both `useSingle` and `useScroll` to override or disable this behaviour (pass 0 to disable).
+
+Basically, the fetch is prevented if `Date.now() - state.time < cooldown`, where state.time is the last time a resource was mutated.
+
+### Example
+
+```typescript
+function useMyData() {
+  const handle = XSWR.useSingle<MyData>(
+    `/api/hello`, 
+    fetchAsJson,
+    5000) // <--- your custom cooldown
+  XSWR.useFetch(handle)
+  return handle
+}
+```
+
+### Tips
+
+You can trick the deduplication process by passing a custom `state.time` in `mutate()`.
+
+Passing a time of `0` will ignore the deduplication process as `Date.now() - 0 > cooldown`.
+
+Passing a time in the future will increase the deduplication process.
