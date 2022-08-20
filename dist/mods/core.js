@@ -175,14 +175,10 @@ var Core = /** @class */ (function (_super) {
     /**
      * True if we should cooldown this resource
      */
-    Core.prototype.cooldown = function (state, cooldown) {
-        if (!cooldown || !state)
+    Core.prototype.cooldown = function (current, cooldown) {
+        if (!cooldown || !(current === null || current === void 0 ? void 0 : current.time))
             return false;
-        if (state.loading)
-            return true;
-        if (!state.time)
-            return false;
-        if (Date.now() - state.time < cooldown)
+        if (Date.now() - current.time < cooldown)
             return true;
         return false;
     };
@@ -202,6 +198,8 @@ var Core = /** @class */ (function (_super) {
                         if (!key)
                             return [2 /*return*/];
                         current = this.get(key);
+                        if (current === null || current === void 0 ? void 0 : current.loading)
+                            return [2 /*return*/, current];
                         if (this.cooldown(current, cooldown))
                             return [2 /*return*/, current];
                         _a.label = 1;
@@ -238,6 +236,8 @@ var Core = /** @class */ (function (_super) {
                         if (!key)
                             return [2 /*return*/];
                         current = this.get(key);
+                        if (current === null || current === void 0 ? void 0 : current.loading)
+                            return [2 /*return*/, current];
                         if (this.cooldown(current, cooldown))
                             return [2 /*return*/, current];
                         pages = (_a = current === null || current === void 0 ? void 0 : current.data) !== null && _a !== void 0 ? _a : [];
@@ -282,6 +282,8 @@ var Core = /** @class */ (function (_super) {
                         if (!key)
                             return [2 /*return*/];
                         current = this.get(key);
+                        if (current === null || current === void 0 ? void 0 : current.loading)
+                            return [2 /*return*/, current];
                         if (this.cooldown(current, cooldown))
                             return [2 /*return*/, current];
                         pages = (_a = current === null || current === void 0 ? void 0 : current.data) !== null && _a !== void 0 ? _a : [];

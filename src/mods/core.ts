@@ -129,16 +129,12 @@ export class Core extends Ortho<string, State | undefined> {
    * True if we should cooldown this resource
    */
   private cooldown<D = any, E = any>(
-    state: State<D, E> | undefined,
+    current?: State<D, E>,
     cooldown?: number
   ) {
-    if (!cooldown || !state)
+    if (!cooldown || !current?.time)
       return false
-    if (state.loading)
-      return true
-    if (!state.time)
-      return false
-    if (Date.now() - state.time < cooldown)
+    if (Date.now() - current.time < cooldown)
       return true
     return false
   }
@@ -158,6 +154,8 @@ export class Core extends Ortho<string, State | undefined> {
     if (!key) return
 
     const current = this.get<D, E>(key)
+    if (current?.loading)
+      return current
     if (this.cooldown(current, cooldown))
       return current
 
@@ -187,6 +185,8 @@ export class Core extends Ortho<string, State | undefined> {
     if (!key) return
 
     const current = this.get<D[], E>(key)
+    if (current?.loading)
+      return current
     if (this.cooldown(current, cooldown))
       return current
     const pages = current?.data ?? []
@@ -223,6 +223,8 @@ export class Core extends Ortho<string, State | undefined> {
     if (!key) return
 
     const current = this.get<D[], E>(key)
+    if (current?.loading)
+      return current
     if (this.cooldown(current, cooldown))
       return current
     const pages = current?.data ?? []
