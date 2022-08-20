@@ -1,5 +1,5 @@
 import { Fetcher } from "mods/core";
-import { Handle } from "mods/handles";
+import { Handle } from "./generic";
 /**
  * Handle for a single resource
  */
