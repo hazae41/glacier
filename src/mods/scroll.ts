@@ -5,7 +5,7 @@ import { Handle } from "./hooks"
 import { useOrtho } from "./ortho"
 import { State } from "./storage"
 
-export type Scroller<D = unknown> =
+export type Scroller<D = any> =
   (previous?: D) => string | undefined
 
 /**

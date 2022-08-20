@@ -1,7 +1,7 @@
 import { Fetcher } from "./core";
 import { Handle } from "./hooks";
 import { State } from "./storage";
-export declare type Scroller<D = unknown> = (previous?: D) => string | undefined;
+export declare type Scroller<D = any> = (previous?: D) => string | undefined;
 /**
  * Handle for a scrolling resource
  */
