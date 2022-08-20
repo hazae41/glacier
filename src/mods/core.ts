@@ -95,7 +95,7 @@ export class Core extends Ortho<string, State | undefined> {
     const current = this.get<D, E>(key)
     if (state.time === undefined)
       state.time = Date.now()
-    if (current?.time && state.time < current.time)
+    if (current?.time !== undefined && state.time < current.time)
       return current
     const next = { ...current, ...state }
 
@@ -103,7 +103,7 @@ export class Core extends Ortho<string, State | undefined> {
       next.data = current?.data
     if (this.equals(state.error, current?.error))
       next.error = current?.error
-    if (state.data)
+    if (state.data !== undefined)
       delete next.error
     if (!state.loading)
       delete next.loading
@@ -121,7 +121,7 @@ export class Core extends Ortho<string, State | undefined> {
     current?: State<D, E>,
     cooldown?: number
   ) {
-    if (!cooldown)
+    if (cooldown === undefined)
       return false
     if (current?.time === undefined)
       return false

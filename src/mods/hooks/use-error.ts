@@ -13,6 +13,6 @@ export function useError<D = any, E = any>(
   const { error } = handle
 
   useEffect(() => {
-    if (error) callback(error)
+    if (error !== undefined) callback(error)
   }, [error, callback])
 }

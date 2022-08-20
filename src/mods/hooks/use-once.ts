@@ -11,6 +11,6 @@ export function useOnce(handle: Handle) {
   const { data, fetch } = handle
 
   useEffect(() => {
-    if (!data) fetch()
+    if (data === undefined) fetch()
   }, [data, fetch])
 }

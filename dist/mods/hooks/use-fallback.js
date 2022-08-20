@@ -10,7 +10,9 @@ exports.useFallback = void 0;
  */
 function useFallback(handle, state) {
     var data = handle.data, error = handle.error;
-    if (data || error)
+    if (data !== undefined)
+        return;
+    if (error !== undefined)
         return;
     Object.assign(handle, state);
 }

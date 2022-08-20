@@ -143,14 +143,14 @@ var Core = /** @class */ (function (_super) {
         var current = this.get(key);
         if (state.time === undefined)
             state.time = Date.now();
-        if ((current === null || current === void 0 ? void 0 : current.time) && state.time < current.time)
+        if ((current === null || current === void 0 ? void 0 : current.time) !== undefined && state.time < current.time)
             return current;
         var next = __assign(__assign({}, current), state);
         if (this.equals(state.data, current === null || current === void 0 ? void 0 : current.data))
             next.data = current === null || current === void 0 ? void 0 : current.data;
         if (this.equals(state.error, current === null || current === void 0 ? void 0 : current.error))
             next.error = current === null || current === void 0 ? void 0 : current.error;
-        if (state.data)
+        if (state.data !== undefined)
             delete next.error;
         if (!state.loading)
             delete next.loading;
@@ -163,7 +163,7 @@ var Core = /** @class */ (function (_super) {
      * True if we should cooldown this resource
      */
     Core.prototype.cooldown = function (current, cooldown) {
-        if (!cooldown)
+        if (cooldown === undefined)
             return false;
         if ((current === null || current === void 0 ? void 0 : current.time) === undefined)
             return false;

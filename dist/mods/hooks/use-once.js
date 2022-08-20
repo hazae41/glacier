@@ -11,7 +11,7 @@ var react_1 = require("react");
 function useOnce(handle) {
     var data = handle.data, fetch = handle.fetch;
     (0, react_1.useEffect)(function () {
-        if (!data)
+        if (data === undefined)
             fetch();
     }, [data, fetch]);
 }

@@ -14,6 +14,7 @@ export function useFallback<D = any, E = any>(
 ) {
   const { data, error } = handle
 
-  if (data || error) return
+  if (data !== undefined) return
+  if (error !== undefined) return
   Object.assign(handle, state)
 }

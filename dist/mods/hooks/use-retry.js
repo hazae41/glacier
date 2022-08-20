@@ -15,14 +15,14 @@ var react_1 = require("react");
  */
 function useRetry(handle, options) {
     if (options === void 0) { options = {}; }
-    var refetch = handle.refetch, error = handle.error, time = handle.time;
+    var key = handle.key, refetch = handle.refetch, error = handle.error, time = handle.time;
     var _a = options.init, init = _a === void 0 ? 1000 : _a, _b = options.base, base = _b === void 0 ? 2 : _b, _c = options.max, max = _c === void 0 ? 3 : _c;
     var count = (0, react_1.useRef)(0);
     (0, react_1.useEffect)(function () {
         count.current = 0;
-    }, [refetch, init, base, max]);
+    }, [key]);
     (0, react_1.useEffect)(function () {
-        if (!error) {
+        if (error === undefined) {
             count.current = 0;
             return;
         }
@@ -32,6 +32,6 @@ function useRetry(handle, options) {
         var f = function () { count.current++; refetch(); };
         var t = setTimeout(f, init * ratio);
         return function () { return clearTimeout(t); };
-    }, [error, time]);
+    }, [error, time, refetch]);
 }
 exports.useRetry = useRetry;

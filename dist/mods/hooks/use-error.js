@@ -10,7 +10,7 @@ var react_1 = require("react");
 function useError(handle, callback) {
     var error = handle.error;
     (0, react_1.useEffect)(function () {
-        if (error)
+        if (error !== undefined)
             callback(error);
     }, [error, callback]);
 }
