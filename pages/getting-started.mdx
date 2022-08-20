@@ -1,24 +1,24 @@
 ## Preparing your app
 
-Install xswr
+### Installation
 
 ```bash
 npm i @hazae41/xswr
 ```
 
-You just have to wrap your app in a `XSWRProvider` component.
+### Provider 
+
+You just have to wrap your app in a `XSWR.CoreProvider` component.
 
 ```typescript
 function MyWrapper() {
-  const xswr = XSWR.useCoreMemo()
-
-  return <XSWR.CoreContext.Provider value={xswr}>
+  return <XSWR.CoreProvider>
     <MyAwesomeApp />
-  </XSWR.CoreContext.Provider>
+  </XSWR.CoreProvider>
 }
 ```
 
-You can partition your app using multiple providers and storages.
+You can also partition your app using multiple providers and storages.
 
 ## Your first sandwich
 
