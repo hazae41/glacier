@@ -19,14 +19,14 @@ export interface RetryOptions {
  * @see https://en.wikipedia.org/wiki/Geometric_progression
  */
 export function useRetry(handle: Handle, options: RetryOptions = {}) {
-  const { key, refetch, error, time } = handle
+  const { refetch, error, time } = handle
   const { init = 1000, base = 2, max = 3 } = options
 
   const count = useRef(0)
 
   useEffect(() => {
     count.current = 0
-  }, [key])
+  }, [refetch])
 
   useEffect(() => {
     if (error === undefined) {
