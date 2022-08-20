@@ -1,6 +1,6 @@
 {
   "name": "@hazae41/xswr",
-  "version": "1.0.5",
+  "version": "1.0.6",
   "description": "The simplest React data (re)fetching library ever made",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
@@ -18,6 +18,7 @@
   },
   "homepage": "https://github.com/hazae41/xswr#readme",
   "dependencies": {
+    "@types/react": "^18.0.17",
     "react": "^18.1.0",
     "typescript": "^4.7.3"
   }

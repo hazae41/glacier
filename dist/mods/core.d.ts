@@ -1,17 +1,18 @@
+/// <reference types="react" />
 import { jsoneq } from "../libs/jsoneq";
 import { Ortho } from "./ortho";
 import { Scroller } from "./scroll";
 import { State, Storage } from "./storage";
 export declare type Fetcher<D = any> = (url: string) => Promise<D>;
 export declare type Listener<D = any, E = any> = (state?: State<D, E>) => void;
-export declare const CoreContext: any;
+export declare const CoreContext: import("react").Context<Core>;
 /**
  * Create a core object
  * @param storage Memoized state storage
  * @param equals Memoized equals function
  * @returns
  */
-export declare function useCoreMemo(storage?: Storage<State>, equals?: typeof jsoneq): any;
+export declare function useCoreMemo(storage?: Storage<State>, equals?: typeof jsoneq): Core;
 export declare class Core extends Ortho<string, State | undefined> {
     readonly storage: Storage<State>;
     readonly equals: typeof jsoneq;

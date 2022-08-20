@@ -1,2 +1,2 @@
 export * as XSWR from "./mod";
-export declare function useXSWR(): any;
+export declare function useXSWR(): import("./mod").Core;
