@@ -96,18 +96,7 @@ export declare function useRetry(handle: Handle, options?: RetryOptions): void;
  * Fallback to given data/error if there is no data/error
  * @example You got some data/error using SSR/ISR and want to display it on first render
  * @example You still want to display something even if the fetcher returned nothing
- * @see useInit For filling the global cache with the data/error
  * @param handle
  * @param state
  */
 export declare function useFallback<D = any, E = any>(handle: Handle<D, E>, state?: State<D, E>): void;
-/**
- * Fill the global cache with data/error if there is no data/error yet
- * @example You got some data/error and want to save it in the cache
- * @warning Not needed for Next.js SSR/ISR since the props are already saved
- * @warning Will fill the cache AFTER the first render
- * @see useFallback for showing data on first render
- * @param handle
- * @param state
- */
-export declare function useInit<D = any, E = any>(handle: Handle<D, E>, state?: State<D, E>): void;

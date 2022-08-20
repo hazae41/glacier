@@ -93,7 +93,7 @@ export class Core extends Ortho<string, State | undefined> {
     if (!key) return
 
     const current = this.get<D, E>(key)
-    if (!state.time)
+    if (state.time === undefined)
       state.time = Date.now()
     if (current?.time && state.time < current.time)
       return current
@@ -121,7 +121,9 @@ export class Core extends Ortho<string, State | undefined> {
     current?: State<D, E>,
     cooldown?: number
   ) {
-    if (!cooldown || !current?.time)
+    if (!cooldown)
+      return false
+    if (current?.time === undefined)
       return false
     if (Date.now() - current.time < cooldown)
       return true

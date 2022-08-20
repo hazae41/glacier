@@ -1,5 +1,4 @@
-import { useContext, useEffect, useRef } from "react"
-import { CoreContext } from "../comps/core"
+import { useEffect, useRef } from "react"
 import { State } from "./storage"
 
 export interface Handle<D = any, E = any> {
@@ -197,7 +196,6 @@ export function useRetry(handle: Handle, options: RetryOptions = {}) {
  * Fallback to given data/error if there is no data/error
  * @example You got some data/error using SSR/ISR and want to display it on first render
  * @example You still want to display something even if the fetcher returned nothing
- * @see useInit For filling the global cache with the data/error
  * @param handle 
  * @param state 
  */
@@ -209,28 +207,4 @@ export function useFallback<D = any, E = any>(
 
   if (data || error) return
   Object.assign(handle, state)
-}
-
-/**
- * Fill the global cache with data/error if there is no data/error yet
- * @example You got some data/error and want to save it in the cache
- * @warning Not needed for Next.js SSR/ISR since the props are already saved
- * @warning Will fill the cache AFTER the first render
- * @see useFallback for showing data on first render
- * @param handle 
- * @param state 
- */
-export function useInit<D = any, E = any>(
-  handle: Handle<D, E>,
-  state?: State<D, E>
-) {
-  const { key, mutate } = handle
-  const core = useContext(CoreContext)!
-
-  useEffect(() => {
-    if (!key || !state) return
-    if (core.has(key)) return
-    state.time ??= 1
-    mutate(state)
-  }, [key])
 }

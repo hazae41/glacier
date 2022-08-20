@@ -1,8 +1,7 @@
 "use strict";
 exports.__esModule = true;
-exports.useInit = exports.useFallback = exports.useRetry = exports.useDebug = exports.useError = exports.useVisible = exports.useOnline = exports.useInterval = exports.useMount = exports.useOnce = exports.useFetch = void 0;
+exports.useFallback = exports.useRetry = exports.useDebug = exports.useError = exports.useVisible = exports.useOnline = exports.useInterval = exports.useMount = exports.useOnce = exports.useFetch = void 0;
 var react_1 = require("react");
-var core_1 = require("../comps/core");
 /**
  * Do a request on mount and url change
  * @see useMount for doing a request on mount only
@@ -145,7 +144,6 @@ exports.useRetry = useRetry;
  * Fallback to given data/error if there is no data/error
  * @example You got some data/error using SSR/ISR and want to display it on first render
  * @example You still want to display something even if the fetcher returned nothing
- * @see useInit For filling the global cache with the data/error
  * @param handle
  * @param state
  */
@@ -156,26 +154,3 @@ function useFallback(handle, state) {
     Object.assign(handle, state);
 }
 exports.useFallback = useFallback;
-/**
- * Fill the global cache with data/error if there is no data/error yet
- * @example You got some data/error and want to save it in the cache
- * @warning Not needed for Next.js SSR/ISR since the props are already saved
- * @warning Will fill the cache AFTER the first render
- * @see useFallback for showing data on first render
- * @param handle
- * @param state
- */
-function useInit(handle, state) {
-    var key = handle.key, mutate = handle.mutate;
-    var core = (0, react_1.useContext)(core_1.CoreContext);
-    (0, react_1.useEffect)(function () {
-        var _a;
-        if (!key || !state)
-            return;
-        if (core.has(key))
-            return;
-        (_a = state.time) !== null && _a !== void 0 ? _a : (state.time = 1);
-        mutate(state);
-    }, [key]);
-}
-exports.useInit = useInit;

@@ -141,7 +141,7 @@ var Core = /** @class */ (function (_super) {
         if (!key)
             return;
         var current = this.get(key);
-        if (!state.time)
+        if (state.time === undefined)
             state.time = Date.now();
         if ((current === null || current === void 0 ? void 0 : current.time) && state.time < current.time)
             return current;
@@ -163,7 +163,9 @@ var Core = /** @class */ (function (_super) {
      * True if we should cooldown this resource
      */
     Core.prototype.cooldown = function (current, cooldown) {
-        if (!cooldown || !(current === null || current === void 0 ? void 0 : current.time))
+        if (!cooldown)
+            return false;
+        if ((current === null || current === void 0 ? void 0 : current.time) === undefined)
             return false;
         if (Date.now() - current.time < cooldown)
             return true;
