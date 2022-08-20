@@ -1,12 +1,18 @@
 {
-	"compilerOptions": {
-		"outDir": "dist",
-		"module": "commonjs",
-		"declaration": true,
-		"lib": ["dom", "es2015"]
-	},
-	"exclude": [
-		"node_modules"
-	],
-	"include": ["src/**/*"],
+  "compilerOptions": {
+    "outDir": "dist",
+    "module": "commonjs",
+    "declaration": true,
+    "lib": [
+      "dom",
+      "es2015"
+    ],
+    "jsx": "preserve"
+  },
+  "exclude": [
+    "node_modules"
+  ],
+  "include": [
+    "src/**/*"
+  ],
 }

@@ -1,5 +1,5 @@
 import { useContext, useEffect, useRef } from "react"
-import { CoreContext } from "./core"
+import { CoreContext } from "../comps/core"
 import { State } from "./storage"
 
 export interface Handle<D = any, E = any> {

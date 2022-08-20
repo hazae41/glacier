@@ -2,7 +2,7 @@
 exports.__esModule = true;
 exports.useInit = exports.useFallback = exports.useRetry = exports.useDebug = exports.useError = exports.useVisible = exports.useOnline = exports.useInterval = exports.useMount = exports.useOnce = exports.useFetch = void 0;
 var react_1 = require("react");
-var core_1 = require("./core");
+var core_1 = require("../comps/core");
 /**
  * Do a request on mount and url change
  * @see useMount for doing a request on mount only

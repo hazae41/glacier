@@ -38,7 +38,7 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
 exports.__esModule = true;
 exports.useScroll = void 0;
 var react_1 = require("react");
-var core_1 = require("./core");
+var core_1 = require("../comps/core");
 var ortho_1 = require("./ortho");
 /**
  * Scrolling resource hook
@@ -50,7 +50,7 @@ var ortho_1 = require("./ortho");
 function useScroll(scroller, fetcher, cooldown) {
     var _this = this;
     if (cooldown === void 0) { cooldown = 1000; }
-    var core = (0, react_1.useContext)(core_1.CoreContext);
+    var core = (0, core_1.useCore)();
     var key = (0, react_1.useMemo)(function () {
         return "scroll:" + scroller();
     }, [scroller]);

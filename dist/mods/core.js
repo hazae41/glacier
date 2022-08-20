@@ -71,23 +71,10 @@ var __spreadArray = (this && this.__spreadArray) || function (to, from, pack) {
     return to.concat(ar || Array.prototype.slice.call(from));
 };
 exports.__esModule = true;
-exports.Core = exports.useCoreMemo = exports.CoreContext = void 0;
-var react_1 = require("react");
+exports.Core = void 0;
 var arrays_1 = require("../libs/arrays");
 var jsoneq_1 = require("../libs/jsoneq");
 var ortho_1 = require("./ortho");
-exports.CoreContext = (0, react_1.createContext)(undefined);
-/**
- * Create a core object
- * @param storage Memoized state storage
- * @param equals Memoized equals function
- * @returns
- */
-function useCoreMemo(storage, equals) {
-    if (equals === void 0) { equals = jsoneq_1.jsoneq; }
-    return (0, react_1.useMemo)(function () { return new Core(storage, equals); }, [storage, equals]);
-}
-exports.useCoreMemo = useCoreMemo;
 var Core = /** @class */ (function (_super) {
     __extends(Core, _super);
     function Core(storage, equals) {

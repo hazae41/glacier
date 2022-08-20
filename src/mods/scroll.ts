@@ -1,5 +1,6 @@
-import { useCallback, useContext, useEffect, useMemo, useState } from "react"
-import { CoreContext, Fetcher } from "./core"
+import { useCallback, useEffect, useMemo, useState } from "react"
+import { useCore } from "../comps/core"
+import { Fetcher } from "./core"
 import { Handle } from "./hooks"
 import { useOrtho } from "./ortho"
 import { State } from "./storage"
@@ -26,7 +27,7 @@ export function useScroll<D = any, E = any>(
   fetcher: Fetcher<D>,
   cooldown = 1000
 ): ScrollHandle<D, E> {
-  const core = useContext(CoreContext)!
+  const core = useCore()
 
   const key = useMemo(() => {
     return "scroll:" + scroller()

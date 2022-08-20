@@ -1,6 +1,6 @@
 {
   "name": "@hazae41/xswr",
-  "version": "1.0.7",
+  "version": "1.0.8",
   "description": "The simplest React data (re)fetching library ever made",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",

@@ -1,4 +1,3 @@
-import { createContext, useMemo } from "react"
 import { lastOf } from "../libs/arrays"
 import { jsoneq } from "../libs/jsoneq"
 import { Ortho } from "./ortho"
@@ -11,23 +10,13 @@ export type Fetcher<D = any> =
 export type Listener<D = any, E = any> =
   (state?: State<D, E>) => void
 
-export const CoreContext =
-  createContext<Core | undefined>(undefined)
-
-/**
- * Create a core object
- * @param storage Memoized state storage
- * @param equals Memoized equals function
- * @returns 
- */
-export function useCoreMemo(storage?: Storage<State>, equals = jsoneq) {
-  return useMemo(() => new Core(storage, equals), [storage, equals])
-}
+export type Equals =
+  (a: unknown, b: unknown) => boolean
 
 export class Core extends Ortho<string, State | undefined> {
   constructor(
     readonly storage: Storage<State> = new Map<string, State>(),
-    readonly equals = jsoneq
+    readonly equals: Equals = jsoneq
   ) {
     super()
   }
