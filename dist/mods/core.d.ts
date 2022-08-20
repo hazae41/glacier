@@ -1,6 +1,6 @@
-import { Ortho } from "./ortho";
-import { Scroller } from "./scroll";
-import { State, Storage } from "./storage";
+import { Ortho } from "libs/ortho";
+import { Scroller } from "mods/handles/scroll";
+import { State, Storage } from "mods/storage";
 export declare type Fetcher<D = any> = (url: string) => Promise<D>;
 export declare type Listener<D = any, E = any> = (state?: State<D, E>) => void;
 export declare type Equals = (a: unknown, b: unknown) => boolean;

@@ -37,9 +37,9 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
 };
 exports.__esModule = true;
 exports.useSingle = void 0;
+var core_1 = require("comps/core");
+var ortho_1 = require("libs/ortho");
 var react_1 = require("react");
-var core_1 = require("../comps/core");
-var ortho_1 = require("./ortho");
 /**
  * Single resource hook
  * @param key Key (will be passed to your fetcher)

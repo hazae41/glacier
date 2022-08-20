@@ -1,8 +1,8 @@
-import { lastOf } from "../libs/arrays"
-import { jsoneq } from "../libs/jsoneq"
-import { Ortho } from "./ortho"
-import { Scroller } from "./scroll"
-import { State, Storage } from "./storage"
+import { lastOf } from "libs/arrays"
+import { Ortho } from "libs/ortho"
+import { jsoneq } from "mods/equal"
+import { Scroller } from "mods/handles/scroll"
+import { State, Storage } from "mods/storage"
 
 export type Fetcher<D = any> =
   (url: string) => Promise<D>

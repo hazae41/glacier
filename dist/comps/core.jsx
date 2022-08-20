@@ -1,8 +1,8 @@
 "use strict";
 exports.__esModule = true;
 exports.CoreProvider = exports.useCoreProvider = exports.useCore = exports.CoreContext = void 0;
+var mod_1 = require("mod");
 var react_1 = require("react");
-var mod_1 = require("../mod");
 exports.CoreContext = (0, react_1.createContext)(undefined);
 function useCore() {
     return (0, react_1.useContext)(exports.CoreContext);

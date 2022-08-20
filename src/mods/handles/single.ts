@@ -1,9 +1,9 @@
+import { useCore } from "comps/core"
+import { useOrtho } from "libs/ortho"
+import { Fetcher } from "mods/core"
+import { Handle } from "mods/handles"
+import { State } from "mods/storage"
 import { useCallback, useEffect, useState } from "react"
-import { useCore } from "../comps/core"
-import { Fetcher } from "./core"
-import { Handle } from "./hooks"
-import { useOrtho } from "./ortho"
-import { State } from "./storage"
 
 /**
  * Handle for a single resource

@@ -1,5 +1,5 @@
-import { Fetcher } from "./core";
-import { Handle } from "./hooks";
+import { Fetcher } from "mods/core";
+import { Handle } from "mods/handles";
 /**
  * Handle for a single resource
  */

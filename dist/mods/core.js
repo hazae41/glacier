@@ -72,14 +72,14 @@ var __spreadArray = (this && this.__spreadArray) || function (to, from, pack) {
 };
 exports.__esModule = true;
 exports.Core = void 0;
-var arrays_1 = require("../libs/arrays");
-var jsoneq_1 = require("../libs/jsoneq");
-var ortho_1 = require("./ortho");
+var arrays_1 = require("libs/arrays");
+var ortho_1 = require("libs/ortho");
+var equal_1 = require("mods/equal");
 var Core = /** @class */ (function (_super) {
     __extends(Core, _super);
     function Core(storage, equals) {
         if (storage === void 0) { storage = new Map(); }
-        if (equals === void 0) { equals = jsoneq_1.jsoneq; }
+        if (equals === void 0) { equals = equal_1.jsoneq; }
         var _this = _super.call(this) || this;
         _this.storage = storage;
         _this.equals = equals;
