@@ -1,3 +1,4 @@
+export * from "./comps/core";
 export * from "./mods/core";
 export * from "./mods/hooks";
 export * from "./mods/scroll";
