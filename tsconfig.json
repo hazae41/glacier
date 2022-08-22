@@ -1,15 +1,15 @@
 {
 	"compilerOptions": {
-		"baseUrl": "src",
 		"outDir": "dist",
-		"module": "commonjs",
+		"module": "NodeNext",
+		"moduleResolution": "NodeNext",
 		"declaration": true,
 		"lib": [
 			"dom",
 			"es2015"
 		],
 		"jsx": "react",
-		"esModuleInterop": true
+		"esModuleInterop": true,
 	},
 	"exclude": [
 		"node_modules"

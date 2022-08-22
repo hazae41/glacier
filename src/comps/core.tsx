@@ -1,6 +1,6 @@
-import { ChildrenProps } from "libs/react"
-import { Core, Equals, State, Storage } from "mod"
+import { ChildrenProps } from "../libs/react"
 import { createContext, useContext, useRef } from "react"
+import { Core, Storage, State, Equals } from "../mod"
 import React from "react"
 
 export const CoreContext =

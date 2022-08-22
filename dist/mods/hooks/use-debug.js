@@ -1,14 +1,14 @@
 "use strict";
-exports.__esModule = true;
+Object.defineProperty(exports, "__esModule", { value: true });
 exports.useDebug = void 0;
-var react_1 = require("react");
+const react_1 = require("react");
 /**
  * Show handle in console when it changes
  * @param handle
  */
 function useDebug(handle, label) {
-    var time = handle.time;
-    (0, react_1.useEffect)(function () {
+    const { time } = handle;
+    (0, react_1.useEffect)(() => {
         console.debug(label, handle);
     }, [time]);
 }

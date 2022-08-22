@@ -1,5 +1,5 @@
 "use strict";
-exports.__esModule = true;
+Object.defineProperty(exports, "__esModule", { value: true });
 exports.jsoneq = exports.jseq = void 0;
 function jseq(a, b) {
     return a === b;

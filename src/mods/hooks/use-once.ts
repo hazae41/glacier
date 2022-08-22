@@ -1,4 +1,4 @@
-import { Handle } from "mods/handles"
+import { Handle } from "../handles"
 import { useEffect } from "react"
 
 /**
@@ -8,9 +8,9 @@ import { useEffect } from "react"
  * @example You want to get some data once and share it in multiple components
  */
 export function useOnce(handle: Handle) {
-  const { data, fetch } = handle
+	const { data, fetch } = handle
 
-  useEffect(() => {
-    if (data === undefined) fetch()
-  }, [data, fetch])
+	useEffect(() => {
+		if (data === undefined) fetch()
+	}, [data, fetch])
 }

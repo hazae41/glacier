@@ -1,7 +1,7 @@
 "use strict";
-exports.__esModule = true;
+Object.defineProperty(exports, "__esModule", { value: true });
 exports.useFetch = void 0;
-var react_1 = require("react");
+const react_1 = require("react");
 /**
  * Do a request on mount and url change
  * @see useMount for doing a request on mount only
@@ -9,8 +9,8 @@ var react_1 = require("react");
  * @param handle
  */
 function useFetch(handle) {
-    var fetch = handle.fetch;
-    (0, react_1.useEffect)(function () {
+    const { fetch } = handle;
+    (0, react_1.useEffect)(() => {
         fetch();
     }, [fetch]);
 }

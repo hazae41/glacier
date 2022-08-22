@@ -1,5 +1,5 @@
 "use strict";
-exports.__esModule = true;
+Object.defineProperty(exports, "__esModule", { value: true });
 exports.useFallback = void 0;
 /**
  * Fallback to given data/error if there is no data/error
@@ -9,7 +9,7 @@ exports.useFallback = void 0;
  * @param state
  */
 function useFallback(handle, state) {
-    var data = handle.data, error = handle.error;
+    const { data, error } = handle;
     if (data !== undefined)
         return;
     if (error !== undefined)

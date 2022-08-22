@@ -1,4 +1,4 @@
-import { Handle } from "mods/handles";
+import { Handle } from "../handles";
 export interface RetryOptions {
     init?: number;
     base?: number;

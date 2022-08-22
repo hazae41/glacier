@@ -1,4 +1,4 @@
-import { Fetcher } from "mods/core";
+import { Fetcher } from "../core";
 import { Handle } from "./generic";
 /**
  * Handle for a single resource

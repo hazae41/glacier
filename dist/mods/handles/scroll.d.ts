@@ -1,5 +1,5 @@
-import { Fetcher } from "mods/core";
-import { State } from "mods/storage";
+import { Fetcher } from "../core";
+import { State } from "../storage";
 import { Handle } from "./generic";
 export declare type Scroller<D = any> = (previous?: D) => string | undefined;
 /**

@@ -1,4 +1,4 @@
-import { Handle } from "mods/handles"
+import { Handle } from "../handles"
 import { useEffect } from "react"
 
 /**
@@ -6,11 +6,11 @@ import { useEffect } from "react"
  * @param handle 
  */
 export function useVisible(handle: Handle) {
-  const { fetch } = handle
+	const { fetch } = handle
 
-  useEffect(() => {
-    const f = () => !document.hidden && fetch()
-    document.addEventListener("visibilitychange", f)
-    return () => document.removeEventListener("visibilitychange", f)
-  }, [fetch])
+	useEffect(() => {
+		const f = () => !document.hidden && fetch()
+		document.addEventListener("visibilitychange", f)
+		return () => document.removeEventListener("visibilitychange", f)
+	}, [fetch])
 }

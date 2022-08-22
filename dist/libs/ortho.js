@@ -1,72 +1,64 @@
 "use strict";
-exports.__esModule = true;
+Object.defineProperty(exports, "__esModule", { value: true });
 exports.useOrtho = exports.Ortho = exports.MapOfArrays = void 0;
-var react_1 = require("react");
+const react_1 = require("react");
 /**
  * Map of arrays data structure
  */
-var MapOfArrays = /** @class */ (function () {
-    function MapOfArrays() {
-        this.map = new Map();
-    }
-    MapOfArrays.prototype.get = function (key) {
+class MapOfArrays {
+    map = new Map();
+    get(key) {
         return this.map.get(key);
-    };
-    MapOfArrays.prototype.push = function (key, value) {
-        var values = this.map.get(key);
+    }
+    push(key, value) {
+        const values = this.map.get(key);
         if (!values)
             this.map.set(key, [value]);
         else
             values.push(value);
-    };
-    MapOfArrays.prototype.erase = function (key, value) {
-        var values = this.map.get(key);
+    }
+    erase(key, value) {
+        const values = this.map.get(key);
         if (!values)
             return;
-        var values2 = values
-            .filter(function (it) { return it !== value; });
+        const values2 = values
+            .filter(it => it !== value);
         if (values2.length)
             this.map.set(key, values2);
         else
-            this.map["delete"](key);
-    };
-    return MapOfArrays;
-}());
+            this.map.delete(key);
+    }
+}
 exports.MapOfArrays = MapOfArrays;
 /**
  * Orthogonal state publisher
  */
-var Ortho = /** @class */ (function () {
-    function Ortho() {
-        this.listeners = new MapOfArrays();
-    }
-    Ortho.prototype.publish = function (key, value) {
-        var listeners = this.listeners.get(key);
+class Ortho {
+    listeners = new MapOfArrays();
+    publish(key, value) {
+        const listeners = this.listeners.get(key);
         if (!listeners)
             return;
-        for (var _i = 0, listeners_1 = listeners; _i < listeners_1.length; _i++) {
-            var listener = listeners_1[_i];
+        for (const listener of listeners)
             listener(value);
-        }
-    };
-    Ortho.prototype.subscribe = function (key, listener) {
+    }
+    subscribe(key, listener) {
         this.listeners.push(key, listener);
-    };
-    Ortho.prototype.unsubscribe = function (key, listener) {
+    }
+    unsubscribe(key, listener) {
         this.listeners.erase(key, listener);
-    };
-    return Ortho;
-}());
+    }
+}
 exports.Ortho = Ortho;
 /**
  * Orthogonal state listener
  */
 function useOrtho(ortho, key, callback) {
-    (0, react_1.useEffect)(function () {
+    (0, react_1.useEffect)(() => {
         if (!key)
             return;
         ortho.subscribe(key, callback);
-        return function () { return ortho.unsubscribe(key, callback); };
+        return () => ortho.unsubscribe(key, callback);
     }, [ortho, key, callback]);
 }
 exports.useOrtho = useOrtho;

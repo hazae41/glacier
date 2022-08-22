@@ -1,4 +1,4 @@
-import { Handle } from "mods/handles";
+import { Handle } from "../handles";
 /**
  * Call a function on error
  * @param handle

@@ -1,4 +1,4 @@
-import { Handle } from "mods/handles"
+import { Handle } from "../handles"
 import { useEffect } from "react"
 
 /**
@@ -6,12 +6,12 @@ import { useEffect } from "react"
  * @param handle 
  */
 export function useDebug<D = any, E = any>(
-  handle: Handle<D, E>,
-  label: string
+	handle: Handle<D, E>,
+	label: string
 ) {
-  const { time } = handle
+	const { time } = handle
 
-  useEffect(() => {
-    console.debug(label, handle)
-  }, [time])
+	useEffect(() => {
+		console.debug(label, handle)
+	}, [time])
 }

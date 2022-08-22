@@ -1,4 +1,4 @@
-import { Handle } from "mods/handles"
+import { Handle } from "../handles"
 import { useEffect } from "react"
 
 /**
@@ -7,12 +7,12 @@ import { useEffect } from "react"
  * @param callback 
  */
 export function useError<D = any, E = any>(
-  handle: Handle<D, E>,
-  callback: (e: E) => void
+	handle: Handle<D, E>,
+	callback: (e: E) => void
 ) {
-  const { error } = handle
+	const { error } = handle
 
-  useEffect(() => {
-    if (error !== undefined) callback(error)
-  }, [error, callback])
+	useEffect(() => {
+		if (error !== undefined) callback(error)
+	}, [error, callback])
 }

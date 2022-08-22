@@ -1,4 +1,4 @@
-import { Handle } from "mods/handles"
+import { Handle } from "../handles"
 import { useEffect } from "react"
 
 /**
@@ -8,9 +8,9 @@ import { useEffect } from "react"
  * @param handle 
  */
 export function useMount(handle: Handle) {
-  const { fetch } = handle
+	const { fetch } = handle
 
-  useEffect(() => {
-    fetch()
-  }, [])
+	useEffect(() => {
+		fetch()
+	}, [])
 }

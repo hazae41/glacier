@@ -1,5 +1,5 @@
 "use strict";
-exports.__esModule = true;
+Object.defineProperty(exports, "__esModule", { value: true });
 exports.lastOf = void 0;
 function lastOf(array) {
     if (array.length)

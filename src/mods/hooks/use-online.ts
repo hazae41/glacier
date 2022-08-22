@@ -1,4 +1,4 @@
-import { Handle } from "mods/handles"
+import { Handle } from "../handles"
 import { useEffect } from "react"
 
 /**
@@ -6,10 +6,10 @@ import { useEffect } from "react"
  * @param handle 
  */
 export function useOnline(handle: Handle) {
-  const { fetch } = handle
+	const { fetch } = handle
 
-  useEffect(() => {
-    addEventListener("online", fetch)
-    return () => removeEventListener("online", fetch)
-  }, [fetch])
+	useEffect(() => {
+		addEventListener("online", fetch)
+		return () => removeEventListener("online", fetch)
+	}, [fetch])
 }

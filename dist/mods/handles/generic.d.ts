@@ -1,4 +1,4 @@
-import { State } from "mod";
+import { State } from "../storage";
 export interface Handle<D = any, E = any> {
     key?: string;
     data?: D;

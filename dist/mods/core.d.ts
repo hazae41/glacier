@@ -1,9 +1,9 @@
-import { Ortho } from "libs/ortho";
-import { Scroller } from "mods/handles/scroll";
-import { State, Storage } from "mods/storage";
+import { Ortho } from "../libs/ortho";
+import { Equals } from "./equals";
+import { Scroller } from "./handles";
+import { State, Storage } from "./storage";
 export declare type Fetcher<D = any> = (url: string) => Promise<D>;
 export declare type Listener<D = any, E = any> = (state?: State<D, E>) => void;
-export declare type Equals = (a: unknown, b: unknown) => boolean;
 export declare class Core extends Ortho<string, State | undefined> {
     readonly storage: Storage<State>;
     readonly equals: Equals;

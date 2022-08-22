@@ -2,26 +2,26 @@
 var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
-exports.__esModule = true;
+Object.defineProperty(exports, "__esModule", { value: true });
 exports.CoreProvider = exports.useCoreProvider = exports.useCore = exports.CoreContext = void 0;
-var mod_1 = require("mod");
-var react_1 = require("react");
-var react_2 = __importDefault(require("react"));
+const react_1 = require("react");
+const mod_1 = require("../mod");
+const react_2 = __importDefault(require("react"));
 exports.CoreContext = (0, react_1.createContext)(undefined);
 function useCore() {
     return (0, react_1.useContext)(exports.CoreContext);
 }
 exports.useCore = useCore;
 function useCoreProvider(storage, equals) {
-    var core = (0, react_1.useRef)();
+    const core = (0, react_1.useRef)();
     if (!core.current)
         core.current = new mod_1.Core(storage, equals);
     return core.current;
 }
 exports.useCoreProvider = useCoreProvider;
 function CoreProvider(props) {
-    var storage = props.storage, equals = props.equals, children = props.children;
-    var core = useCoreProvider(storage, equals);
-    return react_2["default"].createElement(exports.CoreContext.Provider, { value: core }, children);
+    const { storage, equals, children } = props;
+    const core = useCoreProvider(storage, equals);
+    return react_2.default.createElement(exports.CoreContext.Provider, { value: core }, children);
 }
 exports.CoreProvider = CoreProvider;

@@ -1,7 +1,7 @@
 "use strict";
-exports.__esModule = true;
+Object.defineProperty(exports, "__esModule", { value: true });
 exports.useOnce = void 0;
-var react_1 = require("react");
+const react_1 = require("react");
 /**
  * Do a request on mount and url change only if there is no data yet
  * @warning Will still try to fetch is there is an error
@@ -9,8 +9,8 @@ var react_1 = require("react");
  * @example You want to get some data once and share it in multiple components
  */
 function useOnce(handle) {
-    var data = handle.data, fetch = handle.fetch;
-    (0, react_1.useEffect)(function () {
+    const { data, fetch } = handle;
+    (0, react_1.useEffect)(() => {
         if (data === undefined)
             fetch();
     }, [data, fetch]);

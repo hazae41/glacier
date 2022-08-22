@@ -1,7 +1,7 @@
 "use strict";
-exports.__esModule = true;
+Object.defineProperty(exports, "__esModule", { value: true });
 exports.useRetry = void 0;
-var react_1 = require("react");
+const react_1 = require("react");
 /**
  * Retry request on error using exponential backoff
  * @see useInterval for interval based requests
@@ -13,25 +13,24 @@ var react_1 = require("react");
  * @see https://en.wikipedia.org/wiki/Exponential_backoff
  * @see https://en.wikipedia.org/wiki/Geometric_progression
  */
-function useRetry(handle, options) {
-    if (options === void 0) { options = {}; }
-    var refetch = handle.refetch, error = handle.error, time = handle.time;
-    var _a = options.init, init = _a === void 0 ? 1000 : _a, _b = options.base, base = _b === void 0 ? 2 : _b, _c = options.max, max = _c === void 0 ? 3 : _c;
-    var count = (0, react_1.useRef)(0);
-    (0, react_1.useEffect)(function () {
+function useRetry(handle, options = {}) {
+    const { refetch, error, time } = handle;
+    const { init = 1000, base = 2, max = 3 } = options;
+    const count = (0, react_1.useRef)(0);
+    (0, react_1.useEffect)(() => {
         count.current = 0;
     }, [refetch]);
-    (0, react_1.useEffect)(function () {
+    (0, react_1.useEffect)(() => {
         if (error === undefined) {
             count.current = 0;
             return;
         }
         if (count.current >= max)
             return;
-        var ratio = Math.pow(base, count.current);
-        var f = function () { count.current++; refetch(); };
-        var t = setTimeout(f, init * ratio);
-        return function () { return clearTimeout(t); };
+        const ratio = base ** count.current;
+        const f = () => { count.current++; refetch(); };
+        const t = setTimeout(f, init * ratio);
+        return () => clearTimeout(t);
     }, [error, time, refetch]);
 }
 exports.useRetry = useRetry;
