@@ -44,7 +44,7 @@ export class Single {
 	async update<D = any, E = any>(
 		key: string | undefined,
 		poster: Poster<D>,
-		data?: D,
+		data: D,
 	) {
 		if (!key) return
 

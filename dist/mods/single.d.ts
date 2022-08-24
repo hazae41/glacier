@@ -19,5 +19,5 @@ export declare class Single {
      * @throws error
      * @returns updated state
      */
-    update<D = any, E = any>(key: string | undefined, poster: Poster<D>, data?: D): Promise<State<D, E>>;
+    update<D = any, E = any>(key: string | undefined, poster: Poster<D>, data: D): Promise<State<D, E>>;
 }

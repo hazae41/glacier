@@ -6,16 +6,20 @@ export interface HelloData {
 	time: number
 }
 
-function useHelloData() {
-	const poster = useCallback(async (url: string, data?: HelloData) => {
-		const method = data ? "POST" : "GET"
-		const body = data ? JSON.stringify(data) : undefined
-		const res = await fetch(url, { method, body })
-		if (!res.ok) throw new Error(await res.text())
-		return await res.json()
-	}, [])
+async function postAsJson<T>(url: string, data?: T) {
+	const method = data ? "POST" : "GET"
+	const body = data ? JSON.stringify(data) : undefined
 
-	const handle = XSWR.useSingle("/api/hello", poster)
+	const res = await fetch(url, { method, body })
+	if (!res.ok) throw new Error(await res.text())
+
+	return await res.json()
+}
+
+function useHelloData() {
+	const handle = XSWR.useSingle(
+		"/api/hello",
+		postAsJson)
 	XSWR.useFetch(handle)
 	return handle
 }
