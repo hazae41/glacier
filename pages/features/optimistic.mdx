@@ -8,40 +8,40 @@ If the fetcher throws an error, xswr will rollback the resource to the previous 
 
 ```typescript
 function useMyData() {
-	const poster = useCallback(async (url: string, data?: MyData) => {
-		const method = data ? "POST" : "GET"
-		const body = data ? JSON.stringify(data) : undefined
+  const poster = useCallback(async (url: string, data?: MyData) => {
+    const method = data ? "POST" : "GET"
+    const body = data ? JSON.stringify(data) : undefined
 
-		const res = await fetch(url, { method, body })
-		if (!res.ok) throw new Error(await res.text())
+    const res = await fetch(url, { method, body })
+    if (!res.ok) throw new Error(await res.text())
 
-		return await res.json()
-	}, [])
+    return await res.json()
+  }, [])
 
-	const handle = XSWR.useSingle(
-		"/api/hello", 
-		poster)
-	XSWR.useFetch(handle)
-	return handle
+  const handle = XSWR.useSingle(
+    "/api/hello", 
+    poster)
+  XSWR.useFetch(handle)
+  return handle
 }
 
 export function MyApp() {
-	const mydata = useMyData()
+  const mydata = useMyData()
 
-	const onUpdateClick = useCallback(() => {
-		mydata
-			.update({ name: "John Smith" })
-			.catch(alert)
-	}, [])
+  const onUpdateClick = useCallback(() => {
+    mydata
+      .update({ name: "John Smith" })
+      .catch(alert)
+  }, [])
 
-	return <>
-		<div>
-			{JSON.stringify(mydata.data)}
-		</div>
-		<button onClick={onUpdateClick}>
-			Update
-		</button>
-	</>
+  return <>
+    <div>
+      {JSON.stringify(mydata.data)}
+    </div>
+    <button onClick={onUpdateClick}>
+      Update
+    </button>
+  </>
 }
 ```
 
@@ -53,21 +53,21 @@ export function MyApp() {
 
 ```typescript
 async update<D = any, E = any>(
-	key: string | undefined,
-	poster: Poster<D>,
-	data?: D,
+  key: string | undefined,
+  poster: Poster<D>,
+  data?: D,
 ) {
-	if (!key) return
+  if (!key) return
 
-	const current = this.core.get<D, E>(key)
+  const current = this.core.get<D, E>(key)
 
-	try {
-		this.core.mutate(key, { data, time: current.time })
-		const updated = await poster(key, data)
-		return this.core.mutate<D, E>(key, { data: updated })
-	} catch (error: any) {
-		this.core.mutate<D, E>(key, current)
-		throw error
-	}
+  try {
+    this.core.mutate(key, { data, time: current.time })
+    const updated = await poster(key, data)
+    return this.core.mutate<D, E>(key, { data: updated })
+  } catch (error: any) {
+    this.core.mutate<D, E>(key, current)
+    throw error
+  }
 }
 ```
