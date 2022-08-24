@@ -1,26 +1,34 @@
 # Optimistic mutations
 
-When updating a resource (e.g. via POST or PUT), xswr can pre-display the result before the fetcher response.
+When updating a resource (e.g. via POST, PUT or DELETE), xswr can pre-display the result before the fetcher response.
 
 If the fetcher throws an error, xswr will rollback the resource to the previous state.
+
+### Usage
+
+This feature is only available for single resources, using `handle.update(data)`.
+
+You have to implement the actual update by using the extra `data` parameter in your fetcher.
+
+You can, for example, do a `POST` request when the extra `data` parameter is passed, and `GET` otherwise. 
 
 ### Example 
 
 ```typescript
+async function postAsJson<T>(url: string, data?: T) {
+	const method = data ? "POST" : "GET"
+	const body = data ? JSON.stringify(data) : undefined
+
+	const res = await fetch(url, { method, body })
+	if (!res.ok) throw new Error(await res.text())
+
+	return await res.json()
+}
+
 function useMyData() {
-  const poster = useCallback(async (url: string, data?: MyData) => {
-    const method = data ? "POST" : "GET"
-    const body = data ? JSON.stringify(data) : undefined
-
-    const res = await fetch(url, { method, body })
-    if (!res.ok) throw new Error(await res.text())
-
-    return await res.json()
-  }, [])
-
   const handle = XSWR.useSingle(
     "/api/hello", 
-    poster)
+    postAsJson)
   XSWR.useFetch(handle)
   return handle
 }
