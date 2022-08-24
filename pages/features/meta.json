@@ -1,14 +1,15 @@
 {
-  "use-fetch": "Fetch on mount and on key change",
-  "use-mount": "Fetch on mount only",
-  "use-once": "Fetch only once",
-  "use-interval": "Fetch on a regular interval",
-  "use-online": "Fetch when the browser becomes online",
-  "use-visible": "Fetch when the tab is focused",
-  "use-retry": "Retry on error",
-  "use-error": "Call a function on error",
-  "use-debug": "Debugging a resource",
-  "use-fallback": "Using SSR & ISR",
-  "cooldown": "Deduplication cooldown",
-  "use-scroll": "Cursor-based pagination"
+	"use-fetch": "Fetch on mount and on key change",
+	"use-mount": "Fetch on mount only",
+	"use-once": "Fetch only once",
+	"use-interval": "Fetch on a regular interval",
+	"use-online": "Fetch when the browser becomes online",
+	"use-visible": "Fetch when the tab is focused",
+	"use-retry": "Retry on error",
+	"use-error": "Call a function on error",
+	"use-debug": "Debugging a resource",
+	"use-fallback": "Using SSR & ISR",
+	"use-scroll": "Cursor-based pagination",
+	"cooldown": "Deduplication cooldown",
+	"optimistic": "Optimistic mutations"
 }
