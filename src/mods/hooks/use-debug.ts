@@ -1,17 +1,17 @@
-import { Handle } from "../handles"
 import { useEffect } from "react"
+import { Handle } from "../handles"
 
 /**
  * Show handle in console when it changes
  * @param handle 
  */
 export function useDebug<D = any, E = any>(
-	handle: Handle<D, E>,
-	label: string
+  handle: Handle<D, E>,
+  label: string
 ) {
-	const { time } = handle
+  const { time } = handle
 
-	useEffect(() => {
-		console.debug(label, handle)
-	}, [time])
+  useEffect(() => {
+    console.debug(label, handle)
+  }, [time])
 }

@@ -1,10 +1,10 @@
-import { Handle } from "../handles"
 import { useEffect, useRef } from "react"
+import { Handle } from "../handles"
 
 export interface RetryOptions {
-	init?: number
-	base?: number
-	max?: number
+  init?: number
+  base?: number
+  max?: number
 }
 
 /**
@@ -19,25 +19,25 @@ export interface RetryOptions {
  * @see https://en.wikipedia.org/wiki/Geometric_progression
  */
 export function useRetry(handle: Handle, options: RetryOptions = {}) {
-	const { refetch, error, time } = handle
-	const { init = 1000, base = 2, max = 3 } = options
+  const { refetch, error, time } = handle
+  const { init = 1000, base = 2, max = 3 } = options
 
-	const count = useRef(0)
+  const count = useRef(0)
 
-	useEffect(() => {
-		count.current = 0
-	}, [refetch])
+  useEffect(() => {
+    count.current = 0
+  }, [refetch])
 
-	useEffect(() => {
-		if (error === undefined) {
-			count.current = 0
-			return
-		}
+  useEffect(() => {
+    if (error === undefined) {
+      count.current = 0
+      return
+    }
 
-		if (count.current >= max) return
-		const ratio = base ** count.current
-		const f = () => { count.current++; refetch() }
-		const t = setTimeout(f, init * ratio)
-		return () => clearTimeout(t)
-	}, [error, time, refetch])
+    if (count.current >= max) return
+    const ratio = base ** count.current
+    const f = () => { count.current++; refetch() }
+    const t = setTimeout(f, init * ratio)
+    return () => clearTimeout(t)
+  }, [error, time, refetch])
 }

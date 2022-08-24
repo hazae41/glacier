@@ -1,5 +1,5 @@
-import { State } from "../storage"
 import { Handle } from "../handles"
+import { State } from "../storage"
 
 /**
  * Fallback to given data/error if there is no data/error
@@ -9,12 +9,12 @@ import { Handle } from "../handles"
  * @param state 
  */
 export function useFallback<D = any, E = any>(
-	handle: Handle<D, E>,
-	state?: State<D, E>
+  handle: Handle<D, E>,
+  state?: State<D, E>
 ) {
-	const { data, error } = handle
+  const { data, error } = handle
 
-	if (data !== undefined) return
-	if (error !== undefined) return
-	Object.assign(handle, state)
+  if (data !== undefined) return
+  if (error !== undefined) return
+  Object.assign(handle, state)
 }

@@ -1,5 +1,5 @@
-import { Handle } from "../handles"
 import { useEffect } from "react"
+import { Handle } from "../handles"
 
 /**
  * Do a request on mount and url change
@@ -8,9 +8,9 @@ import { useEffect } from "react"
  * @param handle 
  */
 export function useFetch(handle: Handle) {
-	const { fetch } = handle
+  const { fetch } = handle
 
-	useEffect(() => {
-		fetch()
-	}, [fetch])
+  useEffect(() => {
+    fetch()
+  }, [fetch])
 }
