@@ -18,4 +18,6 @@ __exportStar(require("./core"), exports);
 __exportStar(require("./equals"), exports);
 __exportStar(require("./handles"), exports);
 __exportStar(require("./hooks"), exports);
+__exportStar(require("./scroll"), exports);
+__exportStar(require("./single"), exports);
 __exportStar(require("./storage"), exports);

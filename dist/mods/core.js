@@ -1,12 +1,15 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.Core = void 0;
-const arrays_1 = require("../libs/arrays");
 const ortho_1 = require("../libs/ortho");
 const equals_1 = require("./equals");
+const scroll_1 = require("./scroll");
+const single_1 = require("./single");
 class Core extends ortho_1.Ortho {
     storage;
     equals;
+    single = new single_1.Single(this);
+    scroll = new scroll_1.Scroll(this);
     constructor(storage = new Map(), equals = equals_1.jsoneq) {
         super();
         this.storage = storage;
@@ -97,113 +100,6 @@ class Core extends ortho_1.Ortho {
         if (Date.now() - current.time < cooldown)
             return true;
         return false;
-    }
-    /**
-     * Simple fetch
-     * @param key
-     * @param fetcher We don't care if it's not memoized
-     * @param cooldown
-     * @returns
-     */
-    async fetch(key, fetcher, cooldown) {
-        if (!key)
-            return;
-        const current = this.get(key);
-        if (current?.loading)
-            return current;
-        if (this.cooldown(current, cooldown))
-            return current;
-        try {
-            this.mutate(key, { loading: true });
-            const data = await fetcher(key);
-            return this.mutate(key, { data });
-        }
-        catch (error) {
-            return this.mutate(key, { error });
-        }
-    }
-    /**
-     *
-     * @param key Key
-     * @param scroller We don't care if it's not memoized
-     * @param fetcher We don't care if it's not memoized
-     * @param cooldown
-     * @returns
-     */
-    async first(key, scroller, fetcher, cooldown) {
-        if (!key)
-            return;
-        const current = this.get(key);
-        if (current?.loading)
-            return current;
-        if (this.cooldown(current, cooldown))
-            return current;
-        const pages = current?.data ?? [];
-        const first = scroller(undefined);
-        if (!first)
-            return current;
-        try {
-            this.mutate(key, { loading: true });
-            const page = await fetcher(first);
-            if (this.equals(page, pages[0]))
-                return this.mutate(key, { data: pages });
-            else
-                return this.mutate(key, { data: [page] });
-        }
-        catch (error) {
-            return this.mutate(key, { error });
-        }
-    }
-    /**
-     *
-     * @param key
-     * @param scroller We don't care if it's not memoized
-     * @param fetcher We don't care if it's not memoized
-     * @param cooldown
-     * @returns
-     */
-    async scroll(key, scroller, fetcher, cooldown) {
-        if (!key)
-            return;
-        const current = this.get(key);
-        if (current?.loading)
-            return current;
-        if (this.cooldown(current, cooldown))
-            return current;
-        const pages = current?.data ?? [];
-        const last = scroller((0, arrays_1.lastOf)(pages));
-        if (!last)
-            return current;
-        try {
-            this.mutate(key, { loading: true });
-            const data = [...pages, await fetcher(last)];
-            return this.mutate(key, { data });
-        }
-        catch (error) {
-            return this.mutate(key, { error });
-        }
-    }
-    /**
-     * Optimistic update
-     * @param key
-     * @param fetcher
-     * @param data optimistic data, also passed to poster
-     * @throws error
-     * @returns updated state
-     */
-    async update(key, poster, data) {
-        if (!key)
-            return;
-        const current = this.get(key);
-        try {
-            this.mutate(key, { data, time: current.time });
-            const updated = await poster(key, data);
-            return this.mutate(key, { data: updated });
-        }
-        catch (error) {
-            this.mutate(key, current);
-            throw error;
-        }
     }
 }
 exports.Core = Core;

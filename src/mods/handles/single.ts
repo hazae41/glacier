@@ -1,8 +1,8 @@
+import { useCallback, useEffect, useState } from "react"
 import { useCore } from "../../comps"
 import { useOrtho } from "../../libs/ortho"
 import { Poster } from "../core"
 import { State } from "../storage"
-import { useCallback, useEffect, useState } from "react"
 import { Handle } from "./generic"
 
 /**
@@ -39,15 +39,15 @@ export function useSingle<D = any, E = any>(
 	}, [core, key])
 
 	const fetch = useCallback(async () => {
-		return await core.fetch<D, E>(key, poster, cooldown)
+		return await core.single.fetch<D, E>(key, poster, cooldown)
 	}, [core, key, poster, cooldown])
 
 	const refetch = useCallback(async () => {
-		return await core.fetch<D, E>(key, poster)
+		return await core.single.fetch<D, E>(key, poster)
 	}, [core, key, poster])
 
 	const update = useCallback((data?: D) => {
-		return core.update<D, E>(key, poster, data)
+		return core.single.update<D, E>(key, poster, data)
 	}, [core, key, poster])
 
 	const clear = useCallback(() => {

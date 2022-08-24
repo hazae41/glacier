@@ -1,12 +1,9 @@
+import { useCallback, useEffect, useMemo, useState } from "react"
 import { useCore } from "../../comps"
 import { useOrtho } from "../../libs/ortho"
-import { Fetcher } from "../core"
+import { Fetcher, Scroller } from "../core"
 import { State } from "../storage"
-import { useCallback, useEffect, useMemo, useState } from "react"
 import { Handle } from "./generic"
-
-export type Scroller<D = any> =
-	(previous?: D) => string | undefined
 
 /**
  * Handle for a scrolling resource
@@ -46,15 +43,15 @@ export function useScroll<D = any, E = any>(
 	}, [core, key])
 
 	const fetch = useCallback(async () => {
-		return await core.first<D, E>(key, scroller, fetcher, cooldown)
+		return await core.scroll.first<D, E>(key, scroller, fetcher, cooldown)
 	}, [core, key, scroller, fetcher, cooldown])
 
 	const refetch = useCallback(async () => {
-		return await core.first<D, E>(key, scroller, fetcher)
+		return await core.scroll.first<D, E>(key, scroller, fetcher)
 	}, [core, key, scroller, fetcher])
 
 	const scroll = useCallback(async () => {
-		return await core.scroll<D, E>(key, scroller, fetcher)
+		return await core.scroll.scroll<D, E>(key, scroller, fetcher)
 	}, [core, key, scroller, fetcher])
 
 	const clear = useCallback(() => {

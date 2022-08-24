@@ -1,9 +1,9 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.useSingle = void 0;
+const react_1 = require("react");
 const comps_1 = require("../../comps");
 const ortho_1 = require("../../libs/ortho");
-const react_1 = require("react");
 /**
  * Single resource hook
  * @param key Key (will be passed to your fetcher)
@@ -22,13 +22,13 @@ function useSingle(key, poster, cooldown = 1000) {
         return core.mutate(key, res);
     }, [core, key]);
     const fetch = (0, react_1.useCallback)(async () => {
-        return await core.fetch(key, poster, cooldown);
+        return await core.single.fetch(key, poster, cooldown);
     }, [core, key, poster, cooldown]);
     const refetch = (0, react_1.useCallback)(async () => {
-        return await core.fetch(key, poster);
+        return await core.single.fetch(key, poster);
     }, [core, key, poster]);
     const update = (0, react_1.useCallback)((data) => {
-        return core.update(key, poster, data);
+        return core.single.update(key, poster, data);
     }, [core, key, poster]);
     const clear = (0, react_1.useCallback)(() => {
         core.delete(key);

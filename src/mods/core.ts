@@ -1,7 +1,7 @@
-import { lastOf } from "../libs/arrays"
 import { Ortho } from "../libs/ortho"
 import { Equals, jsoneq } from "./equals"
-import { Scroller } from "./handles"
+import { Scroll } from "./scroll"
+import { Single } from "./single"
 import { State, Storage } from "./storage"
 
 export type Fetcher<D = any> =
@@ -10,10 +10,16 @@ export type Fetcher<D = any> =
 export type Poster<D = any> =
 	(url: string, data?: D) => Promise<D>
 
+export type Scroller<D = any> =
+	(previous?: D) => string | undefined
+
 export type Listener<D = any, E = any> =
 	(state?: State<D, E>) => void
 
 export class Core extends Ortho<string, State | undefined> {
+	readonly single = new Single(this)
+	readonly scroll = new Scroll(this)
+
 	constructor(
 		readonly storage: Storage<State> = new Map<string, State>(),
 		readonly equals: Equals = jsoneq
@@ -93,16 +99,19 @@ export class Core extends Ortho<string, State | undefined> {
 		if (!key) return
 
 		const current = this.get<D, E>(key)
+
 		if (state.time === undefined)
 			state.time = Date.now()
 		if (current?.time !== undefined && state.time < current.time)
 			return current
+
 		const next = { ...current, ...state }
 
 		if (this.equals(state.data, current?.data))
 			next.data = current?.data
 		if (this.equals(state.error, current?.error))
 			next.error = current?.error
+
 		if (state.data !== undefined)
 			delete next.error
 		if (state.loading === undefined)
@@ -128,133 +137,5 @@ export class Core extends Ortho<string, State | undefined> {
 		if (Date.now() - current.time < cooldown)
 			return true
 		return false
-	}
-
-	/**
-	 * Simple fetch
-	 * @param key
-	 * @param fetcher We don't care if it's not memoized 
-	 * @param cooldown 
-	 * @returns 
-	 */
-	async fetch<D = any, E = any>(
-		key: string | undefined,
-		fetcher: Fetcher<D>,
-		cooldown?: number
-	): Promise<State<D, E> | undefined> {
-		if (!key) return
-
-		const current = this.get<D, E>(key)
-		if (current?.loading)
-			return current
-		if (this.cooldown(current, cooldown))
-			return current
-
-		try {
-			this.mutate(key, { loading: true })
-			const data = await fetcher(key)
-			return this.mutate<D, E>(key, { data })
-		} catch (error: any) {
-			return this.mutate<D, E>(key, { error })
-		}
-	}
-
-	/**
-	 * 
-	 * @param key Key
-	 * @param scroller We don't care if it's not memoized
-	 * @param fetcher We don't care if it's not memoized
-	 * @param cooldown 
-	 * @returns 
-	 */
-	async first<D = any, E = any>(
-		key: string | undefined,
-		scroller: Scroller<D>,
-		fetcher: Fetcher<D>,
-		cooldown?: number
-	) {
-		if (!key) return
-
-		const current = this.get<D[], E>(key)
-		if (current?.loading)
-			return current
-		if (this.cooldown(current, cooldown))
-			return current
-		const pages = current?.data ?? []
-		const first = scroller(undefined)
-		if (!first) return current
-
-		try {
-			this.mutate(key, { loading: true })
-			const page = await fetcher(first)
-
-			if (this.equals(page, pages[0]))
-				return this.mutate<D[], E>(key, { data: pages })
-			else
-				return this.mutate<D[], E>(key, { data: [page] })
-		} catch (error: any) {
-			return this.mutate<D[], E>(key, { error })
-		}
-	}
-
-	/**
-	 * 
-	 * @param key 
-	 * @param scroller We don't care if it's not memoized
-	 * @param fetcher We don't care if it's not memoized
-	 * @param cooldown 
-	 * @returns 
-	 */
-	async scroll<D = any, E = any>(
-		key: string | undefined,
-		scroller: Scroller<D>,
-		fetcher: Fetcher<D>,
-		cooldown?: number
-	) {
-		if (!key) return
-
-		const current = this.get<D[], E>(key)
-		if (current?.loading)
-			return current
-		if (this.cooldown(current, cooldown))
-			return current
-		const pages = current?.data ?? []
-		const last = scroller(lastOf(pages))
-		if (!last) return current
-
-		try {
-			this.mutate(key, { loading: true })
-			const data = [...pages, await fetcher(last)]
-			return this.mutate<D[], E>(key, { data })
-		} catch (error: any) {
-			return this.mutate<D[], E>(key, { error })
-		}
-	}
-
-	/**
-	 * Optimistic update
-	 * @param key 
-	 * @param fetcher 
-	 * @param data optimistic data, also passed to poster
-	 * @throws error
-	 * @returns updated state
-	 */
-	async update<D = any, E = any>(
-		key: string | undefined,
-		poster: Poster<D>,
-		data?: D,
-	) {
-		if (!key) return
-
-		const current = this.get<D, E>(key)
-
-		try {
-			this.mutate(key, { data, time: current.time })
-			const updated = await poster(key, data)
-			return this.mutate<D, E>(key, { data: updated })
-		} catch (error: any) {
-			this.mutate<D, E>(key, current)
-			throw error
-		}
 	}
 }

@@ -1,9 +1,9 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.useScroll = void 0;
+const react_1 = require("react");
 const comps_1 = require("../../comps");
 const ortho_1 = require("../../libs/ortho");
-const react_1 = require("react");
 /**
  * Scrolling resource hook
  * @param scroller Memoized scroller
@@ -25,13 +25,13 @@ function useScroll(scroller, fetcher, cooldown = 1000) {
         return core.mutate(key, res);
     }, [core, key]);
     const fetch = (0, react_1.useCallback)(async () => {
-        return await core.first(key, scroller, fetcher, cooldown);
+        return await core.scroll.first(key, scroller, fetcher, cooldown);
     }, [core, key, scroller, fetcher, cooldown]);
     const refetch = (0, react_1.useCallback)(async () => {
-        return await core.first(key, scroller, fetcher);
+        return await core.scroll.first(key, scroller, fetcher);
     }, [core, key, scroller, fetcher]);
     const scroll = (0, react_1.useCallback)(async () => {
-        return await core.scroll(key, scroller, fetcher);
+        return await core.scroll.scroll(key, scroller, fetcher);
     }, [core, key, scroller, fetcher]);
     const clear = (0, react_1.useCallback)(() => {
         core.delete(key);
