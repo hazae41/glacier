@@ -7,6 +7,9 @@ import { State, Storage } from "./storage"
 export type Fetcher<D = any> =
 	(url: string) => Promise<D>
 
+export type Poster<D = any> =
+	(url: string, data?: D) => Promise<D>
+
 export type Listener<D = any, E = any> =
 	(state?: State<D, E>) => void
 
@@ -102,7 +105,7 @@ export class Core extends Ortho<string, State | undefined> {
 			next.error = current?.error
 		if (state.data !== undefined)
 			delete next.error
-		if (!state.loading)
+		if (state.loading === undefined)
 			delete next.loading
 
 		if (this.equals(current, next))
@@ -114,7 +117,7 @@ export class Core extends Ortho<string, State | undefined> {
 	/**
 	 * True if we should cooldown this resource
 	 */
-	private cooldown<D = any, E = any>(
+	cooldown<D = any, E = any>(
 		current?: State<D, E>,
 		cooldown?: number
 	) {
@@ -225,6 +228,33 @@ export class Core extends Ortho<string, State | undefined> {
 			return this.mutate<D[], E>(key, { data })
 		} catch (error: any) {
 			return this.mutate<D[], E>(key, { error })
+		}
+	}
+
+	/**
+	 * Optimistic update
+	 * @param key 
+	 * @param fetcher 
+	 * @param data optimistic data, also passed to poster
+	 * @throws error
+	 * @returns updated state
+	 */
+	async update<D = any, E = any>(
+		key: string | undefined,
+		poster: Poster<D>,
+		data?: D,
+	) {
+		if (!key) return
+
+		const current = this.get<D, E>(key)
+
+		try {
+			this.mutate(key, { data, time: current.time })
+			const updated = await poster(key, data)
+			return this.mutate<D, E>(key, { data: updated })
+		} catch (error: any) {
+			this.mutate<D, E>(key, current)
+			throw error
 		}
 	}
 }

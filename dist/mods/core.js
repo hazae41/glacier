@@ -79,7 +79,7 @@ class Core extends ortho_1.Ortho {
             next.error = current?.error;
         if (state.data !== undefined)
             delete next.error;
-        if (!state.loading)
+        if (state.loading === undefined)
             delete next.loading;
         if (this.equals(current, next))
             return current;
@@ -181,6 +181,28 @@ class Core extends ortho_1.Ortho {
         }
         catch (error) {
             return this.mutate(key, { error });
+        }
+    }
+    /**
+     * Optimistic update
+     * @param key
+     * @param fetcher
+     * @param data optimistic data, also passed to poster
+     * @throws error
+     * @returns updated state
+     */
+    async update(key, poster, data) {
+        if (!key)
+            return;
+        const current = this.get(key);
+        try {
+            this.mutate(key, { data, time: current.time });
+            const updated = await poster(key, data);
+            return this.mutate(key, { data: updated });
+        }
+        catch (error) {
+            this.mutate(key, current);
+            throw error;
         }
     }
 }

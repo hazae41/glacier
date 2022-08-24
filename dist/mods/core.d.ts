@@ -3,6 +3,7 @@ import { Equals } from "./equals";
 import { Scroller } from "./handles";
 import { State, Storage } from "./storage";
 export declare type Fetcher<D = any> = (url: string) => Promise<D>;
+export declare type Poster<D = any> = (url: string, data?: D) => Promise<D>;
 export declare type Listener<D = any, E = any> = (state?: State<D, E>) => void;
 export declare class Core extends Ortho<string, State | undefined> {
     readonly storage: Storage<State>;
@@ -46,7 +47,7 @@ export declare class Core extends Ortho<string, State | undefined> {
     /**
      * True if we should cooldown this resource
      */
-    private cooldown;
+    cooldown<D = any, E = any>(current?: State<D, E>, cooldown?: number): boolean;
     /**
      * Simple fetch
      * @param key
@@ -73,4 +74,13 @@ export declare class Core extends Ortho<string, State | undefined> {
      * @returns
      */
     scroll<D = any, E = any>(key: string | undefined, scroller: Scroller<D>, fetcher: Fetcher<D>, cooldown?: number): Promise<State<D[], E>>;
+    /**
+     * Optimistic update
+     * @param key
+     * @param fetcher
+     * @param data optimistic data, also passed to poster
+     * @throws error
+     * @returns updated state
+     */
+    update<D = any, E = any>(key: string | undefined, poster: Poster<D>, data?: D): Promise<State<D, E>>;
 }

@@ -1,6 +1,6 @@
 import { useCore } from "../../comps"
 import { useOrtho } from "../../libs/ortho"
-import { Fetcher } from "../core"
+import { Poster } from "../core"
 import { State } from "../storage"
 import { useCallback, useEffect, useState } from "react"
 import { Handle } from "./generic"
@@ -8,7 +8,9 @@ import { Handle } from "./generic"
 /**
  * Handle for a single resource
  */
-export interface SingleHandle<D = any, E = any> extends Handle<D, E> { }
+export interface SingleHandle<D = any, E = any> extends Handle<D, E> {
+	update(data?: D): Promise<State<D, E> | undefined>
+}
 
 /**
  * Single resource hook
@@ -19,7 +21,7 @@ export interface SingleHandle<D = any, E = any> extends Handle<D, E> { }
  */
 export function useSingle<D = any, E = any>(
 	key: string | undefined,
-	fetcher: Fetcher<D>,
+	poster: Poster<D>,
 	cooldown = 1000
 ): SingleHandle<D, E> {
 	const core = useCore()
@@ -28,7 +30,7 @@ export function useSingle<D = any, E = any>(
 		() => core.get(key))
 	useEffect(() => {
 		setState(core.get(key))
-	}, [key])
+	}, [core, key])
 
 	useOrtho(core, key, setState)
 
@@ -37,12 +39,16 @@ export function useSingle<D = any, E = any>(
 	}, [core, key])
 
 	const fetch = useCallback(async () => {
-		return await core.fetch<D, E>(key, fetcher, cooldown)
-	}, [core, key, fetcher, cooldown])
+		return await core.fetch<D, E>(key, poster, cooldown)
+	}, [core, key, poster, cooldown])
 
 	const refetch = useCallback(async () => {
-		return await core.fetch<D, E>(key, fetcher)
-	}, [core, key, fetcher])
+		return await core.fetch<D, E>(key, poster)
+	}, [core, key, poster])
+
+	const update = useCallback((data?: D) => {
+		return core.update<D, E>(key, poster, data)
+	}, [core, key, poster])
 
 	const clear = useCallback(() => {
 		core.delete(key)
@@ -50,5 +56,5 @@ export function useSingle<D = any, E = any>(
 
 	const { data, error, time, loading = false } = state ?? {}
 
-	return { key, data, error, time, loading, mutate, fetch, refetch, clear }
+	return { key, data, error, time, loading, mutate, fetch, refetch, update, clear }
 }

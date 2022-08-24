@@ -37,7 +37,7 @@ export function useScroll<D = any, E = any>(
 		() => core.get<D[], E>(key))
 	useEffect(() => {
 		setState(core.get<D[], E>(key))
-	}, [key])
+	}, [core, key])
 
 	useOrtho(core, key, setState)
 

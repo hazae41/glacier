@@ -19,7 +19,7 @@ function useScroll(scroller, fetcher, cooldown = 1000) {
     const [state, setState] = (0, react_1.useState)(() => core.get(key));
     (0, react_1.useEffect)(() => {
         setState(core.get(key));
-    }, [key]);
+    }, [core, key]);
     (0, ortho_1.useOrtho)(core, key, setState);
     const mutate = (0, react_1.useCallback)((res) => {
         return core.mutate(key, res);
