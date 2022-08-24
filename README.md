@@ -39,15 +39,13 @@ Install xswr
 npm i @hazae41/xswr
 ```
 
-You just have to wrap your app in a `XSWRProvider` component.
+You just have to wrap your app in a `XSWR.CoreProvider` component.
 
 ```typescript
 function MyWrapper() {
-  const xswr = XSWR.useCoreMemo()
-
-  return <XSWR.CoreContext.Provider value={xswr}>
+  return <XSWR.CoreProvider>
     <MyAwesomeApp />
-  </XSWR.CoreContext.Provider>
+  </XSWR.CoreProvider>
 }
 ```
 
