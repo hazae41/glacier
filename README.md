@@ -33,12 +33,6 @@ npm i @hazae41/xswr
 
 ## Preparing your app
 
-Install xswr
-
-```bash
-npm i @hazae41/xswr
-```
-
 You just have to wrap your app in a `XSWR.CoreProvider` component.
 
 ```typescript
@@ -49,7 +43,7 @@ function MyWrapper() {
 }
 ```
 
-You can partition your app using multiple providers and storages.
+You can also partition your app using multiple providers and storages.
 
 ## Your first sandwich
 
