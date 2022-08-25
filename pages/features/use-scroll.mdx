@@ -11,7 +11,7 @@ XSWR.useScroll(scroller, fetcher, cooldown?)
 A scroller function uses the previous page data and returns the next page key.
 
 ```typescript
-type Scroller<D = any> = (previous?: D) => string | undefined
+type Scroller<D = any, K = any> = (previous?: D) => K | undefined
 ```
 
 The scroller must be memoized as it acts like a key, you can create one with a `useCallback` or use a top-level function.
