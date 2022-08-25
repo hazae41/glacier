@@ -18,8 +18,8 @@ npm i @hazae41/xswr
 - No dependency except React
 - Not over-engineered (hello react-query)
 - No unexpected behaviour (hello swr)
-- Backend agnostic (REST, GraphQL, WebSocket)
-- Storage agnostic (new Map(), LocalStorage, IndexedDB)
+- Backend agnostic fetching (REST, GraphQL, WebSocket)
+- Storage agnostic caching (new Map(), LocalStorage, IndexedDB)
 - Request deduplication
 - Exponential backoff retry
 - Cursor-based pagination
