@@ -2,19 +2,30 @@
 
 ## Prefetching
 
-xswr: `user.fetch()`
+### xswr
 
-swr: `mutate('/api/user', fetch('/api/user').then(res => res.json()))`
+`user.fetch()`
 
-react-query: `await queryClient.prefetchQuery(['user'], fetchUser)`
+### swr
+
+`mutate('/api/user', fetch('/api/user').then(res => res.json()))`
+
+### react-query
+
+`await queryClient.prefetchQuery(['user'], fetchUser)`
 
 ## Optimistic updates
 
-xswr: `user.update(data)`
+### xswr
 
-swr: `mutate('/api/user', updateFn(user), { optimisticData: user, rollbackOnError: true })`
+`user.update(data)`
 
-react-query:
+### swr
+
+`mutate('/api/user', updateFn(user), { optimisticData: user, rollbackOnError: true })`
+
+### react-query
+
 ```typescript
 useMutation(updateTodo, {
   onMutate: async newTodo => {
