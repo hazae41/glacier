@@ -4,25 +4,35 @@
 
 ### xswr
 
-`user.fetch()`
+```typescript
+user.fetch()
+```
 
 ### swr
 
-`mutate('/api/user', fetch('/api/user').then(res => res.json()))`
+```typescript
+mutate('/api/user', fetch('/api/user').then(res => res.json()))
+```
 
 ### react-query
 
-`await queryClient.prefetchQuery(['user'], fetchUser)`
+```typescript
+await queryClient.prefetchQuery(['user'], fetchUser)
+```
 
 ## Optimistic updates
 
 ### xswr
 
-`user.update(data)`
+```typescript
+user.update(data)
+```
 
 ### swr
 
-`mutate('/api/user', updateFn(user), { optimisticData: user, rollbackOnError: true })`
+```typescript
+mutate('/api/user', updateFn(user), { optimisticData: user, rollbackOnError: true })
+```
 
 ### react-query
 
