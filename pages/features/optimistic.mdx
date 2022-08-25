@@ -15,11 +15,13 @@ You can, for example, do a `POST` request when the extra `data` parameter is pas
 ### Example 
 
 ```typescript
-async function postAsJson<T>(url: string, data?: T) {
+async function postAsJson<T>(url: string, more: XSWR.PosterMore<T>) {
+  const { data, signal } = more
+
   const method = data ? "POST" : "GET"
   const body = data ? JSON.stringify(data) : undefined
 
-  const res = await fetch(url, { method, body })
+  const res = await fetch(url, { method, body, signal })
   if (!res.ok) throw new Error(await res.text())
 
   return await res.json()
@@ -64,6 +66,7 @@ async update<D = any, E = any>(
   key: string | undefined,
   poster: Poster<D>,
   updater: Updater<D>,
+  aborter = new AbortController()
 ) {
   if (!key) return
 
@@ -71,8 +74,10 @@ async update<D = any, E = any>(
   const data = updater(current.data)
 
   try {
+    const { signal } = aborter
+
     this.core.mutate(key, { data, time: current.time })
-    const updated = await poster(key, data)
+    const updated = await poster(key, { data, signal })
     return this.core.mutate<D, E>(key, { data: updated })
   } catch (error: any) {
     this.core.mutate<D, E>(key, current)
