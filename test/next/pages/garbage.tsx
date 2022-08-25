@@ -2,13 +2,10 @@ import { XSWR } from "@hazae41/xswr"
 import { useCallback, useEffect, useState } from "react"
 import { HelloData } from "../common/hello"
 
-async function postAsJson<T>(url: string, more: XSWR.PosterMore<T>) {
-  const { data, signal } = more
+async function fetchAsJson<T>(url: string, more: XSWR.PosterMore<T>) {
+  const { signal } = more
 
-  const method = data ? "POST" : "GET"
-  const body = data ? JSON.stringify(data) : undefined
-
-  const res = await fetch(url, { method, body, signal })
+  const res = await fetch(url, { signal })
   if (!res.ok) throw new Error(await res.text())
 
   return { data: await res.json(), expiration: Date.now() + (10 * 1000) }
@@ -17,7 +14,7 @@ async function postAsJson<T>(url: string, more: XSWR.PosterMore<T>) {
 function useHelloData() {
   const handle = XSWR.useSingle<HelloData>(
     "/api/hello",
-    postAsJson)
+    fetchAsJson)
   XSWR.useFetch(handle)
   return handle
 }

@@ -56,10 +56,9 @@ This shows a simple and complete way of doing a request on `/api/data` using JSO
 Create a fetcher for your request
 
 ```typescript
-// Your fetcher
-async function fetchAsJson(url: string) {
+async function fetchAsJson<T>(url: string) {
   const res = await fetch(url)
-  return await res.json()
+  return { data: await res.json() as T }
 }
 ```
 
