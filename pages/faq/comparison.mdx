@@ -52,3 +52,21 @@ useMutation(updateTodo, {
   },
 })
 ```
+
+## Cancellation
+
+### xswr
+
+```typescript
+user.aborter.abort()
+```
+
+### swr
+
+unsupported
+
+### react-query
+
+```typescript
+queryClient.cancelQueries(['todos'])
+```

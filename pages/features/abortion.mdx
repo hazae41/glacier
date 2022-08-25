@@ -2,6 +2,24 @@
 
 You can cancel requests by using AbortControllers.
 
+### Automatic cancellation
+
+Requests are automatically cancelled if their timeout is exceeded (by default 5 seconds).
+
+You can customize the timeout in the handle builders, just after the cooldown.
+
+```typescript
+const handle = XSWR.useSingle(
+  "/api/hello",
+  fetchAsJson,
+  1000,
+  5000) // <-- here
+XSWR.useFetch(handle)
+return handle
+```
+
+Automatic cancellation is opt-in, you have to prepare your fetcher for abortion.
+
 ## Preparing your fetcher for abortion
 
 You can pass the AbortSignal to your fetcher (e.g. fetch) in order to cancel the request and throw an error when the signal is triggered.
