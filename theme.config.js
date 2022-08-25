@@ -27,36 +27,7 @@ export default {
       <meta name="og:title" content="The simplest React data (re)fetching library ever made" />
       <meta name="og:image" content="https://xswr.hazae41.me/og.png" />
       <meta name="apple-mobile-web-app-title" content="XSWR" />
-      <link
-        rel="apple-touch-icon"
-        sizes="180x180"
-        href="/apple-icon-180x180.png"
-      />
-      <link
-        rel="icon"
-        type="image/png"
-        sizes="192x192"
-        href="/android-icon-192x192.png"
-      />
-      <link
-        rel="icon"
-        type="image/png"
-        sizes="32x32"
-        href="/favicon-32x32.png"
-      />
-      <link
-        rel="icon"
-        type="image/png"
-        sizes="96x96"
-        href="/favicon-96x96.png"
-      />
-      <link
-        rel="icon"
-        type="image/png"
-        sizes="16x16"
-        href="/favicon-16x16.png"
-      />
-      <meta name="msapplication-TileImage" content="/ms-icon-144x144.png" />
+      <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     </>
   ),
   search: true,
