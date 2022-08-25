@@ -4,7 +4,7 @@ import { Handle } from "./generic";
 /**
  * Handle for a single resource
  */
-export interface SingleHandle<D = any, E = any> extends Handle<D, E> {
+export interface SingleHandle<D = any, E = any, K = any> extends Handle<D, E, K> {
     update(updater: Updater<D>, aborter?: AbortController): Promise<State<D, E> | undefined>;
 }
 /**
@@ -14,4 +14,4 @@ export interface SingleHandle<D = any, E = any> extends Handle<D, E> {
  * @param cooldown Usually your resource TTL
  * @returns A single resource handle
  */
-export declare function useSingle<D = any, E = any>(key: string | undefined, poster: Poster<D>, cooldown?: number, timeout?: number): SingleHandle<D, E>;
+export declare function useSingle<D = any, E = any, K = any>(key: K | undefined, poster: Poster<D, K>, cooldown?: number, timeout?: number): SingleHandle<D, E, K>;

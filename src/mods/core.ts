@@ -12,20 +12,20 @@ export interface Result<D = any> {
   expiration?: number
 }
 
-export type Fetcher<D = any> =
-  (url: string, more: FetcherMore) => Promise<Result<D>>
+export type Fetcher<D = any, K = any,> =
+  (key: K, more: FetcherMore) => Promise<Result<D>>
 
 export type FetcherMore<D = any> =
   { signal: AbortSignal }
 
-export type Poster<D = any> =
-  (url: string, more: PosterMore) => Promise<Result<D>>
+export type Poster<D = any, K = any> =
+  (key: K, more: PosterMore) => Promise<Result<D>>
 
 export type PosterMore<D = any> =
   { signal: AbortSignal, data: D }
 
-export type Scroller<D = any> =
-  (previous?: D) => string | undefined
+export type Scroller<D = any, K = any> =
+  (previous?: D) => K | undefined
 
 export type Updater<D = any> =
   (previous?: D) => D

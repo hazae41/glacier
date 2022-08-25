@@ -24,6 +24,7 @@ npm i @hazae41/xswr
 - Exponential backoff retry
 - Cursor-based pagination
 - Automatic refetching
+- Dependent queries
 - SSR & ISR support
 - Optimistic mutations
 - Cancellable requests

@@ -4,7 +4,7 @@ import { Handle } from "./generic";
 /**
  * Handle for a scrolling resource
  */
-export interface ScrollHandle<D = any, E = any> extends Handle<D[], E> {
+export interface ScrollHandle<D = any, E = any, K = any> extends Handle<D[], E, K> {
     scroll(): Promise<State<D[], E> | undefined>;
 }
 /**
@@ -14,4 +14,4 @@ export interface ScrollHandle<D = any, E = any> extends Handle<D[], E> {
  * @param cooldown Usually your resource TTL
  * @returns A scrolling resource handle
  */
-export declare function useScroll<D = any, E = any>(scroller: Scroller<D>, fetcher: Fetcher<D>, cooldown?: number, timeout?: number): ScrollHandle<D, E>;
+export declare function useScroll<D = any, E = any, K = any>(scroller: Scroller<D, K>, fetcher: Fetcher<D, K>, cooldown?: number, timeout?: number): ScrollHandle<D, E, K>;

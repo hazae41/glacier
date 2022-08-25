@@ -1,7 +1,8 @@
 import { State } from "../storage"
 
-export interface Handle<D = any, E = any> {
-  key?: string
+export interface Handle<D = any, E = any, K = any> {
+  key?: K
+  skey?: string,
 
   data?: D
   error?: E

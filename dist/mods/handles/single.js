@@ -13,28 +13,33 @@ const ortho_1 = require("../../libs/ortho");
  */
 function useSingle(key, poster, cooldown, timeout) {
     const core = (0, comps_1.useCore)();
-    const [state, setState] = (0, react_1.useState)(() => core.get(key));
+    const skey = (0, react_1.useMemo)(() => {
+        if (key === undefined)
+            return;
+        return JSON.stringify(key);
+    }, [key]);
+    const [state, setState] = (0, react_1.useState)(() => core.get(skey));
     (0, react_1.useEffect)(() => {
-        setState(core.get(key));
-    }, [core, key]);
-    (0, ortho_1.useOrtho)(core, key, setState);
+        setState(core.get(skey));
+    }, [core, skey]);
+    (0, ortho_1.useOrtho)(core, skey, setState);
     const mutate = (0, react_1.useCallback)((res) => {
-        return core.mutate(key, res);
-    }, [core, key]);
+        return core.mutate(skey, res);
+    }, [core, skey]);
     const fetch = (0, react_1.useCallback)(async (aborter) => {
-        return await core.single.fetch(key, poster, cooldown, timeout, aborter);
-    }, [core, key, poster, cooldown]);
+        return await core.single.fetch(key, skey, poster, cooldown, timeout, aborter);
+    }, [core, skey, poster, cooldown]);
     const refetch = (0, react_1.useCallback)(async (aborter) => {
-        return await core.single.fetch(key, poster, 0, timeout, aborter);
-    }, [core, key, poster]);
+        return await core.single.fetch(key, skey, poster, 0, timeout, aborter);
+    }, [core, skey, poster]);
     const update = (0, react_1.useCallback)((updater, aborter) => {
-        return core.single.update(key, poster, updater, timeout, aborter);
-    }, [core, key, poster]);
+        return core.single.update(key, skey, poster, updater, timeout, aborter);
+    }, [core, skey, poster]);
     const clear = (0, react_1.useCallback)(() => {
-        core.delete(key);
-    }, [core, key]);
+        core.delete(skey);
+    }, [core, skey]);
     const { data, error, time, aborter, expiration } = state ?? {};
     const loading = Boolean(aborter);
-    return { key, data, error, time, aborter, loading, expiration, mutate, fetch, refetch, update, clear };
+    return { key, skey, data, error, time, aborter, loading, expiration, mutate, fetch, refetch, update, clear };
 }
 exports.useSingle = useSingle;

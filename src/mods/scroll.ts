@@ -12,17 +12,17 @@ export class Scroll {
    * @param cooldown 
    * @returns 
    */
-  async first<D = any, E = any>(
-    key: string | undefined,
-    scroller: Scroller<D>,
-    fetcher: Fetcher<D>,
+  async first<D = any, E = any, K = any>(
+    skey: string | undefined,
+    scroller: Scroller<D, K>,
+    fetcher: Fetcher<D, K>,
     cooldown = DEFAULT_COOLDOWN,
     timeout = DEFAULT_TIMEOUT,
     aborter = new AbortController()
   ) {
-    if (!key) return
+    if (skey === undefined) return
 
-    const current = this.core.get<D[], E>(key)
+    const current = this.core.get<D[], E>(skey)
     if (current?.aborter)
       return current
     if (this.core.cooldown(current, cooldown))
@@ -39,14 +39,14 @@ export class Scroll {
     try {
       const { signal } = aborter
 
-      this.core.mutate(key, { aborter })
+      this.core.mutate(skey, { aborter })
       const { data, expiration } = await fetcher(first, { signal })
 
       return this.core.equals(data, pages[0])
-        ? this.core.mutate<D[], E>(key, { expiration })
-        : this.core.mutate<D[], E>(key, { data: [data], expiration })
+        ? this.core.mutate<D[], E>(skey, { expiration })
+        : this.core.mutate<D[], E>(skey, { data: [data], expiration })
     } catch (error: any) {
-      return this.core.mutate<D[], E>(key, { error })
+      return this.core.mutate<D[], E>(skey, { error })
     } finally {
       clearTimeout(t)
     }
@@ -60,17 +60,17 @@ export class Scroll {
    * @param cooldown 
    * @returns 
    */
-  async scroll<D = any, E = any>(
-    key: string | undefined,
-    scroller: Scroller<D>,
-    fetcher: Fetcher<D>,
+  async scroll<D = any, E = any, K = any>(
+    skey: string | undefined,
+    scroller: Scroller<D, K>,
+    fetcher: Fetcher<D, K>,
     cooldown = DEFAULT_COOLDOWN,
     timeout = DEFAULT_TIMEOUT,
     aborter = new AbortController()
   ) {
-    if (!key) return
+    if (skey === undefined) return
 
-    const current = this.core.get<D[], E>(key)
+    const current = this.core.get<D[], E>(skey)
     if (current?.aborter)
       return current
     if (this.core.cooldown(current, cooldown))
@@ -86,11 +86,11 @@ export class Scroll {
     try {
       const { signal } = aborter
 
-      this.core.mutate(key, { aborter })
+      this.core.mutate(skey, { aborter })
       const { data } = await fetcher(last, { signal })
-      return this.core.mutate<D[], E>(key, { data: [...pages, data] })
+      return this.core.mutate<D[], E>(skey, { data: [...pages, data] })
     } catch (error: any) {
-      return this.core.mutate<D[], E>(key, { error })
+      return this.core.mutate<D[], E>(skey, { error })
     } finally {
       clearTimeout(t)
     }

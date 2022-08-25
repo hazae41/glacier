@@ -22,7 +22,9 @@ function useHelloData() {
 function Consumer() {
   const hello = useHelloData()
 
-  return <>{JSON.stringify(hello.data)}</>
+  return <div>
+    {JSON.stringify(hello.data) ?? "undefined"}
+  </div>
 }
 
 export default function Page() {
@@ -45,11 +47,13 @@ export default function Page() {
   return <>
     {[...Array(count)].map(i =>
       <Consumer key={i} />)}
-    <button onClick={increase}>
-      +
-    </button>
-    <button onClick={decrease}>
-      -
-    </button>
+    <div>
+      <button onClick={increase}>
+        +
+      </button>
+      <button onClick={decrease}>
+        -
+      </button>
+    </div>
   </>
 }

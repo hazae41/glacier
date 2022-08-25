@@ -10,7 +10,7 @@ export declare class Single {
      * @param cooldown
      * @returns state
      */
-    fetch<D = any, E = any>(key: string | undefined, fetcher: Fetcher<D>, cooldown?: number, timeout?: number, aborter?: AbortController): Promise<State<D, E> | undefined>;
+    fetch<D = any, E = any, K = any>(key: K | undefined, skey: string | undefined, fetcher: Fetcher<D, K>, cooldown?: number, timeout?: number, aborter?: AbortController): Promise<State<D, E> | undefined>;
     /**
      * Optimistic update
      * @param key
@@ -19,5 +19,5 @@ export declare class Single {
      * @throws error
      * @returns updated state
      */
-    update<D = any, E = any>(key: string | undefined, poster: Poster<D>, updater: Updater<D>, timeout?: number, aborter?: AbortController): Promise<State<D, E>>;
+    update<D = any, E = any, K = any>(key: K | undefined, skey: string | undefined, poster: Poster<D, K>, updater: Updater<D>, timeout?: number, aborter?: AbortController): Promise<State<D, E>>;
 }

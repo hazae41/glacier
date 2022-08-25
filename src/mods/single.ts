@@ -11,16 +11,18 @@ export class Single {
    * @param cooldown 
    * @returns state
    */
-  async fetch<D = any, E = any>(
-    key: string | undefined,
-    fetcher: Fetcher<D>,
+  async fetch<D = any, E = any, K = any>(
+    key: K | undefined,
+    skey: string | undefined,
+    fetcher: Fetcher<D, K>,
     cooldown = DEFAULT_COOLDOWN,
     timeout = DEFAULT_TIMEOUT,
     aborter = new AbortController()
   ): Promise<State<D, E> | undefined> {
-    if (!key) return
+    if (key === undefined) return
+    if (skey === undefined) return
 
-    const current = this.core.get<D, E>(key)
+    const current = this.core.get<D, E>(skey)
     if (current?.aborter)
       return current
     if (this.core.cooldown(current, cooldown))
@@ -33,11 +35,11 @@ export class Single {
     try {
       const { signal } = aborter
 
-      this.core.mutate(key, { aborter })
+      this.core.mutate(skey, { aborter })
       const { data, expiration } = await fetcher(key, { signal })
-      return this.core.mutate<D, E>(key, { data, expiration })
+      return this.core.mutate<D, E>(skey, { data, expiration })
     } catch (error: any) {
-      return this.core.mutate<D, E>(key, { error })
+      return this.core.mutate<D, E>(skey, { error })
     } finally {
       clearTimeout(t)
     }
@@ -51,16 +53,18 @@ export class Single {
    * @throws error
    * @returns updated state
    */
-  async update<D = any, E = any>(
-    key: string | undefined,
-    poster: Poster<D>,
+  async update<D = any, E = any, K = any>(
+    key: K | undefined,
+    skey: string | undefined,
+    poster: Poster<D, K>,
     updater: Updater<D>,
     timeout = DEFAULT_TIMEOUT,
     aborter = new AbortController()
   ) {
-    if (!key) return
+    if (key === undefined) return
+    if (skey === undefined) return
 
-    const current = this.core.get<D, E>(key)
+    const current = this.core.get<D, E>(skey)
     const updated = updater(current.data)
 
     const t = setTimeout(() => {
@@ -70,11 +74,11 @@ export class Single {
     try {
       const { signal } = aborter
 
-      this.core.mutate(key, { data: updated, time: current.time })
+      this.core.mutate(skey, { data: updated, time: current.time })
       const { data, expiration } = await poster(key, { data: updated, signal })
-      return this.core.mutate<D, E>(key, { data, expiration })
+      return this.core.mutate<D, E>(skey, { data, expiration })
     } catch (error: any) {
-      this.core.mutate<D, E>(key, current)
+      this.core.mutate<D, E>(skey, current)
       throw error
     } finally {
       clearTimeout(t)

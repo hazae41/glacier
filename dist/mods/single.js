@@ -14,10 +14,12 @@ class Single {
      * @param cooldown
      * @returns state
      */
-    async fetch(key, fetcher, cooldown = core_1.DEFAULT_COOLDOWN, timeout = core_1.DEFAULT_TIMEOUT, aborter = new AbortController()) {
-        if (!key)
+    async fetch(key, skey, fetcher, cooldown = core_1.DEFAULT_COOLDOWN, timeout = core_1.DEFAULT_TIMEOUT, aborter = new AbortController()) {
+        if (key === undefined)
             return;
-        const current = this.core.get(key);
+        if (skey === undefined)
+            return;
+        const current = this.core.get(skey);
         if (current?.aborter)
             return current;
         if (this.core.cooldown(current, cooldown))
@@ -27,12 +29,12 @@ class Single {
         }, timeout);
         try {
             const { signal } = aborter;
-            this.core.mutate(key, { aborter });
+            this.core.mutate(skey, { aborter });
             const { data, expiration } = await fetcher(key, { signal });
-            return this.core.mutate(key, { data, expiration });
+            return this.core.mutate(skey, { data, expiration });
         }
         catch (error) {
-            return this.core.mutate(key, { error });
+            return this.core.mutate(skey, { error });
         }
         finally {
             clearTimeout(t);
@@ -46,22 +48,24 @@ class Single {
      * @throws error
      * @returns updated state
      */
-    async update(key, poster, updater, timeout = core_1.DEFAULT_TIMEOUT, aborter = new AbortController()) {
-        if (!key)
+    async update(key, skey, poster, updater, timeout = core_1.DEFAULT_TIMEOUT, aborter = new AbortController()) {
+        if (key === undefined)
             return;
-        const current = this.core.get(key);
+        if (skey === undefined)
+            return;
+        const current = this.core.get(skey);
         const updated = updater(current.data);
         const t = setTimeout(() => {
             aborter.abort("Timed out");
         }, timeout);
         try {
             const { signal } = aborter;
-            this.core.mutate(key, { data: updated, time: current.time });
+            this.core.mutate(skey, { data: updated, time: current.time });
             const { data, expiration } = await poster(key, { data: updated, signal });
-            return this.core.mutate(key, { data, expiration });
+            return this.core.mutate(skey, { data, expiration });
         }
         catch (error) {
-            this.core.mutate(key, current);
+            this.core.mutate(skey, current);
             throw error;
         }
         finally {

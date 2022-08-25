@@ -16,10 +16,10 @@ class Scroll {
      * @param cooldown
      * @returns
      */
-    async first(key, scroller, fetcher, cooldown = core_1.DEFAULT_COOLDOWN, timeout = core_1.DEFAULT_TIMEOUT, aborter = new AbortController()) {
-        if (!key)
+    async first(skey, scroller, fetcher, cooldown = core_1.DEFAULT_COOLDOWN, timeout = core_1.DEFAULT_TIMEOUT, aborter = new AbortController()) {
+        if (skey === undefined)
             return;
-        const current = this.core.get(key);
+        const current = this.core.get(skey);
         if (current?.aborter)
             return current;
         if (this.core.cooldown(current, cooldown))
@@ -33,14 +33,14 @@ class Scroll {
         }, timeout);
         try {
             const { signal } = aborter;
-            this.core.mutate(key, { aborter });
+            this.core.mutate(skey, { aborter });
             const { data, expiration } = await fetcher(first, { signal });
             return this.core.equals(data, pages[0])
-                ? this.core.mutate(key, { expiration })
-                : this.core.mutate(key, { data: [data], expiration });
+                ? this.core.mutate(skey, { expiration })
+                : this.core.mutate(skey, { data: [data], expiration });
         }
         catch (error) {
-            return this.core.mutate(key, { error });
+            return this.core.mutate(skey, { error });
         }
         finally {
             clearTimeout(t);
@@ -54,10 +54,10 @@ class Scroll {
      * @param cooldown
      * @returns
      */
-    async scroll(key, scroller, fetcher, cooldown = core_1.DEFAULT_COOLDOWN, timeout = core_1.DEFAULT_TIMEOUT, aborter = new AbortController()) {
-        if (!key)
+    async scroll(skey, scroller, fetcher, cooldown = core_1.DEFAULT_COOLDOWN, timeout = core_1.DEFAULT_TIMEOUT, aborter = new AbortController()) {
+        if (skey === undefined)
             return;
-        const current = this.core.get(key);
+        const current = this.core.get(skey);
         if (current?.aborter)
             return current;
         if (this.core.cooldown(current, cooldown))
@@ -71,12 +71,12 @@ class Scroll {
         }, timeout);
         try {
             const { signal } = aborter;
-            this.core.mutate(key, { aborter });
+            this.core.mutate(skey, { aborter });
             const { data } = await fetcher(last, { signal });
-            return this.core.mutate(key, { data: [...pages, data] });
+            return this.core.mutate(skey, { data: [...pages, data] });
         }
         catch (error) {
-            return this.core.mutate(key, { error });
+            return this.core.mutate(skey, { error });
         }
         finally {
             clearTimeout(t);

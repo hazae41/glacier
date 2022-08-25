@@ -9,16 +9,16 @@ export interface Result<D = any> {
     data: D;
     expiration?: number;
 }
-export declare type Fetcher<D = any> = (url: string, more: FetcherMore) => Promise<Result<D>>;
+export declare type Fetcher<D = any, K = any> = (key: K, more: FetcherMore) => Promise<Result<D>>;
 export declare type FetcherMore<D = any> = {
     signal: AbortSignal;
 };
-export declare type Poster<D = any> = (url: string, more: PosterMore) => Promise<Result<D>>;
+export declare type Poster<D = any, K = any> = (key: K, more: PosterMore) => Promise<Result<D>>;
 export declare type PosterMore<D = any> = {
     signal: AbortSignal;
     data: D;
 };
-export declare type Scroller<D = any> = (previous?: D) => string | undefined;
+export declare type Scroller<D = any, K = any> = (previous?: D) => K | undefined;
 export declare type Updater<D = any> = (previous?: D) => D;
 export declare type Listener<D = any, E = any> = (state?: State<D, E>) => void;
 export declare function isAbortError(e: unknown): e is DOMException;
