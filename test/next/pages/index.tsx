@@ -17,7 +17,7 @@ async function postAsJson<T>(url: string, data?: T) {
 }
 
 function useHelloData() {
-  const handle = XSWR.useSingle(
+  const handle = XSWR.useSingle<HelloData>(
     "/api/hello",
     postAsJson)
   XSWR.useFetch(handle)
@@ -27,14 +27,19 @@ function useHelloData() {
 export default function Home() {
   const hello = useHelloData()
 
+  // this is for you, gaearon
+  const { update, refetch } = hello
+
   const onRefreshClick = useCallback(() => {
-    hello.refetch()
-  }, [])
+    refetch()
+  }, [refetch])
 
   const onUpdateClick = useCallback(() => {
-    hello.update({ name: "John Smith", time: new Date().getSeconds() })
-      .catch(alert)
-  }, [])
+    update(previous => ({
+      name: previous!.name.replace("Doe", "Smith"),
+      time: new Date().getSeconds()
+    })).catch(alert)
+  }, [update])
 
   return <>
     <div>

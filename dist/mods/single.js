@@ -38,10 +38,11 @@ class Single {
      * @throws error
      * @returns updated state
      */
-    async update(key, poster, data) {
+    async update(key, poster, updater) {
         if (!key)
             return;
         const current = this.core.get(key);
+        const data = updater(current.data);
         try {
             this.core.mutate(key, { data, time: current.time });
             const updated = await poster(key, data);

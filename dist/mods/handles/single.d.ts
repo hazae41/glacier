@@ -1,11 +1,11 @@
-import { Poster } from "../core";
+import { Poster, Updater } from "../core";
 import { State } from "../storage";
 import { Handle } from "./generic";
 /**
  * Handle for a single resource
  */
 export interface SingleHandle<D = any, E = any> extends Handle<D, E> {
-    update(data: D): Promise<State<D, E> | undefined>;
+    update(updater: Updater<D>): Promise<State<D, E> | undefined>;
 }
 /**
  * Single resource hook

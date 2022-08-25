@@ -1,4 +1,4 @@
-import { Core, Fetcher, Poster } from "./core";
+import { Core, Fetcher, Poster, Updater } from "./core";
 import { State } from "./storage";
 
 export class Single {
@@ -44,11 +44,12 @@ export class Single {
   async update<D = any, E = any>(
     key: string | undefined,
     poster: Poster<D>,
-    data: D,
+    updater: Updater<D>,
   ) {
     if (!key) return
 
     const current = this.core.get<D, E>(key)
+    const data = updater(current.data)
 
     try {
       this.core.mutate(key, { data, time: current.time })

@@ -13,6 +13,9 @@ export type Poster<D = any> =
 export type Scroller<D = any> =
   (previous?: D) => string | undefined
 
+export type Updater<D = any> =
+  (previous?: D) => D
+
 export type Listener<D = any, E = any> =
   (state?: State<D, E>) => void
 

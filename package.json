@@ -1,27 +1,27 @@
 {
-	"name": "@hazae41/xswr",
-	"version": "1.0.24",
-	"description": "The simplest React data (re)fetching library ever made",
-	"main": "dist/index.js",
-	"types": "dist/index.d.ts",
-	"scripts": {
-		"build": "rm -rf dist && tsc"
-	},
-	"repository": {
-		"type": "git",
-		"url": "git+https://github.com/hazae41/xswr"
-	},
-	"author": "hazae41",
-	"license": "ISC",
-	"bugs": {
-		"url": "https://github.com/hazae41/xswr/issues"
-	},
-	"homepage": "https://github.com/hazae41/xswr#readme",
-	"dependencies": {
-		"react": "^18.1.0",
-		"typescript": "^4.7.3"
-	},
-	"devDependencies": {
-		"@types/react": "^18.0.17"
-	}
+  "name": "@hazae41/xswr",
+  "version": "1.0.25",
+  "description": "The simplest React data (re)fetching library ever made",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "scripts": {
+    "build": "rm -rf dist && tsc"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/hazae41/xswr"
+  },
+  "author": "hazae41",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/hazae41/xswr/issues"
+  },
+  "homepage": "https://github.com/hazae41/xswr#readme",
+  "dependencies": {
+    "react": "^18.1.0",
+    "typescript": "^4.7.3"
+  },
+  "devDependencies": {
+    "@types/react": "^18.0.17"
+  }
 }

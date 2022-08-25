@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useState } from "react"
 import { useCore } from "../../comps"
 import { useOrtho } from "../../libs/ortho"
-import { Poster } from "../core"
+import { Poster, Updater } from "../core"
 import { State } from "../storage"
 import { Handle } from "./generic"
 
@@ -9,7 +9,7 @@ import { Handle } from "./generic"
  * Handle for a single resource
  */
 export interface SingleHandle<D = any, E = any> extends Handle<D, E> {
-  update(data: D): Promise<State<D, E> | undefined>
+  update(updater: Updater<D>): Promise<State<D, E> | undefined>
 }
 
 /**
@@ -46,8 +46,8 @@ export function useSingle<D = any, E = any>(
     return await core.single.fetch<D, E>(key, poster)
   }, [core, key, poster])
 
-  const update = useCallback((data?: D) => {
-    return core.single.update<D, E>(key, poster, data)
+  const update = useCallback((updater: Updater<D>) => {
+    return core.single.update<D, E>(key, poster, updater)
   }, [core, key, poster])
 
   const clear = useCallback(() => {

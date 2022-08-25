@@ -27,8 +27,8 @@ function useSingle(key, poster, cooldown = 1000) {
     const refetch = (0, react_1.useCallback)(async () => {
         return await core.single.fetch(key, poster);
     }, [core, key, poster]);
-    const update = (0, react_1.useCallback)((data) => {
-        return core.single.update(key, poster, data);
+    const update = (0, react_1.useCallback)((updater) => {
+        return core.single.update(key, poster, updater);
     }, [core, key, poster]);
     const clear = (0, react_1.useCallback)(() => {
         core.delete(key);
