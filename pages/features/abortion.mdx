@@ -29,7 +29,7 @@ async function fetchAsJson<T>(url: string, more: XSWR.FetcherMore<T>) {
   const { signal } = more
 
   const res = await fetch(url, { signal })
-  return await res.json() as T
+  return { data: await res.json() as T }
 }
 ```
 

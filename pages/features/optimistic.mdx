@@ -24,7 +24,7 @@ async function postAsJson<T>(url: string, more: XSWR.PosterMore<T>) {
   const res = await fetch(url, { method, body, signal })
   if (!res.ok) throw new Error(await res.text())
 
-  return await res.json()
+  return { data: await res.json() as T }
 }
 
 function useMyData() {

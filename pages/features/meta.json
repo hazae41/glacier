@@ -12,5 +12,6 @@
   "use-scroll": "Cursor-based pagination",
   "cooldown": "Deduplication cooldown",
   "optimistic": "Optimistic updates",
-  "abortion": "Cancellable requests"
+  "abortion": "Cancellable requests",
+  "garbage": "Automatic garbage collection"
 }

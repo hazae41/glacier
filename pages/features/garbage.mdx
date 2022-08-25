@@ -1,0 +1,22 @@
+# Garbage collection
+
+XSWR automatically delete unused data by doing reference counting and using per-resource expiration time.
+
+For a resource to be garbage collected, you just have to return an expiration time in your fetcher.
+
+Basically, a resource is garbage collected if there are no more references to it AND the expiration time has exceeded.
+
+### Example
+
+This will set an expiration delay of 60 seconds.
+
+```typescript
+async function fetchAsJson<T>(url: string) {
+  const res = await fetch(url)
+  if (!res.ok) throw new Error(await res.text())
+
+  return { data: await res.json(), expiration: Date.now() + (60 * 1000) }
+}
+```
+
+You can also use response headers like `Cache-Control` to set the expiration time accordingly.
