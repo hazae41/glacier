@@ -4,17 +4,22 @@ import { Scroll } from "./scroll"
 import { Single } from "./single"
 import { State, Storage } from "./storage"
 
-export const DEFAULT_COOLDOWN = 1000
-export const DEFAULT_TIMEOUT = 5000
+export const DEFAULT_COOLDOWN = 1 * 1000
+export const DEFAULT_TIMEOUT = 5 * 1000
+
+export interface Result<D = any> {
+  data: D,
+  expiration?: number
+}
 
 export type Fetcher<D = any> =
-  (url: string, more: FetcherMore) => Promise<D>
+  (url: string, more: FetcherMore) => Promise<Result<D>>
 
 export type FetcherMore<D = any> =
   { signal: AbortSignal }
 
 export type Poster<D = any> =
-  (url: string, more: PosterMore) => Promise<D>
+  (url: string, more: PosterMore) => Promise<Result<D>>
 
 export type PosterMore<D = any> =
   { signal: AbortSignal, data: D }
@@ -153,5 +158,61 @@ export class Core extends Ortho<string, State | undefined> {
     if (Date.now() - current.time < cooldown)
       return true
     return false
+  }
+
+  counts = new Map<string, number>()
+  timeouts = new Map<string, number>()
+
+  subscribe(
+    key: string | undefined,
+    listener: (x: State) => void
+  ) {
+    if (!key) return
+
+    super.subscribe(key, listener)
+
+    const count = this.counts.get(key) ?? 0
+    this.counts.set(key, count + 1)
+
+    const timeout = this.timeouts.get(key)
+    if (timeout === undefined) return
+
+    clearTimeout(timeout)
+    this.timeouts.delete(key)
+  }
+
+  unsubscribe(
+    key: string | undefined,
+    listener: (x: State) => void
+  ) {
+    if (!key) return
+
+    super.unsubscribe(key, listener)
+
+    const count = this.counts.get(key)!
+
+    if (count > 1) {
+      this.counts.set(key, count - 1)
+      return
+    }
+
+    this.counts.delete(key)
+
+    const { expiration } = this.get(key) ?? {}
+    if (expiration === undefined) return
+
+    const erase = () => {
+      this.timeouts.delete(key)
+      this.delete(key)
+    }
+
+    if (Date.now() > expiration) {
+      erase()
+      return
+    }
+
+    const delay = expiration - Date.now()
+    const timeout = setTimeout(erase, delay)
+    this.timeouts.set(key, timeout)
   }
 }

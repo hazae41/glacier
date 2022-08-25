@@ -33,8 +33,8 @@ function useSingle(key, poster, cooldown, timeout) {
     const clear = (0, react_1.useCallback)(() => {
         core.delete(key);
     }, [core, key]);
-    const { data, error, time, aborter } = state ?? {};
+    const { data, error, time, aborter, expiration } = state ?? {};
     const loading = Boolean(aborter);
-    return { key, data, error, time, aborter, loading, mutate, fetch, refetch, update, clear };
+    return { key, data, error, time, aborter, loading, expiration, mutate, fetch, refetch, update, clear };
 }
 exports.useSingle = useSingle;

@@ -34,10 +34,10 @@ class Scroll {
         try {
             const { signal } = aborter;
             this.core.mutate(key, { aborter });
-            const page = await fetcher(first, { signal });
-            return this.core.equals(page, pages[0])
-                ? this.core.mutate(key, { data: pages })
-                : this.core.mutate(key, { data: [page] });
+            const { data, expiration } = await fetcher(first, { signal });
+            return this.core.equals(data, pages[0])
+                ? this.core.mutate(key, { expiration })
+                : this.core.mutate(key, { data: [data], expiration });
         }
         catch (error) {
             return this.core.mutate(key, { error });
@@ -72,8 +72,8 @@ class Scroll {
         try {
             const { signal } = aborter;
             this.core.mutate(key, { aborter });
-            const data = [...pages, await fetcher(last, { signal })];
-            return this.core.mutate(key, { data });
+            const { data } = await fetcher(last, { signal });
+            return this.core.mutate(key, { data: [...pages, data] });
         }
         catch (error) {
             return this.core.mutate(key, { error });

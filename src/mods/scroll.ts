@@ -40,11 +40,11 @@ export class Scroll {
       const { signal } = aborter
 
       this.core.mutate(key, { aborter })
-      const page = await fetcher(first, { signal })
+      const { data, expiration } = await fetcher(first, { signal })
 
-      return this.core.equals(page, pages[0])
-        ? this.core.mutate<D[], E>(key, { data: pages })
-        : this.core.mutate<D[], E>(key, { data: [page] })
+      return this.core.equals(data, pages[0])
+        ? this.core.mutate<D[], E>(key, { expiration })
+        : this.core.mutate<D[], E>(key, { data: [data], expiration })
     } catch (error: any) {
       return this.core.mutate<D[], E>(key, { error })
     } finally {
@@ -87,8 +87,8 @@ export class Scroll {
       const { signal } = aborter
 
       this.core.mutate(key, { aborter })
-      const data = [...pages, await fetcher(last, { signal })]
-      return this.core.mutate<D[], E>(key, { data })
+      const { data } = await fetcher(last, { signal })
+      return this.core.mutate<D[], E>(key, { data: [...pages, data] })
     } catch (error: any) {
       return this.core.mutate<D[], E>(key, { error })
     } finally {

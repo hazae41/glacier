@@ -6,6 +6,7 @@ export interface Handle<D = any, E = any> {
     time?: number;
     loading: boolean;
     aborter?: AbortController;
+    expiration?: number;
     /**
      * Fetch with cooldown
      * @example You want to fetch and don't care if it's cooldowned

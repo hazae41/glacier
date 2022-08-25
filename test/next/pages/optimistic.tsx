@@ -1,10 +1,6 @@
 import { XSWR } from "@hazae41/xswr"
 import { useCallback } from "react"
-
-export interface HelloData {
-  name: string,
-  time: number
-}
+import { HelloData } from "../common/hello"
 
 async function postAsJson<T>(url: string, more: XSWR.PosterMore<T>) {
   const { data, signal } = more
@@ -15,7 +11,7 @@ async function postAsJson<T>(url: string, more: XSWR.PosterMore<T>) {
   const res = await fetch(url, { method, body, signal })
   if (!res.ok) throw new Error(await res.text())
 
-  return await res.json()
+  return { data: await res.json() }
 }
 
 function useHelloData() {
@@ -26,7 +22,7 @@ function useHelloData() {
   return handle
 }
 
-export default function Home() {
+export default function Page() {
   const hello = useHelloData()
 
   // this is for you, gaearon

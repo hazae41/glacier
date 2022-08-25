@@ -27,10 +27,11 @@ npm i @hazae41/xswr
 - SSR & ISR support
 - Optimistic mutations
 - Cancellable requests
+- Automatic cancellation 
+- Automatic garbage collection
 
 ### Upcoming features
 - Bidirectional scrolling
-- Garbage collection
 
 ## Preparing your app
 

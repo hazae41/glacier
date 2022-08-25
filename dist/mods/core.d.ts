@@ -3,13 +3,17 @@ import { Equals } from "./equals";
 import { Scroll } from "./scroll";
 import { Single } from "./single";
 import { State, Storage } from "./storage";
-export declare const DEFAULT_COOLDOWN = 1000;
-export declare const DEFAULT_TIMEOUT = 5000;
-export declare type Fetcher<D = any> = (url: string, more: FetcherMore) => Promise<D>;
+export declare const DEFAULT_COOLDOWN: number;
+export declare const DEFAULT_TIMEOUT: number;
+export interface Result<D = any> {
+    data: D;
+    expiration?: number;
+}
+export declare type Fetcher<D = any> = (url: string, more: FetcherMore) => Promise<Result<D>>;
 export declare type FetcherMore<D = any> = {
     signal: AbortSignal;
 };
-export declare type Poster<D = any> = (url: string, more: PosterMore) => Promise<D>;
+export declare type Poster<D = any> = (url: string, more: PosterMore) => Promise<Result<D>>;
 export declare type PosterMore<D = any> = {
     signal: AbortSignal;
     data: D;
@@ -63,4 +67,8 @@ export declare class Core extends Ortho<string, State | undefined> {
      * True if we should cooldown this resource
      */
     cooldown<D = any, E = any>(current?: State<D, E>, cooldown?: number): boolean;
+    counts: Map<string, number>;
+    timeouts: Map<string, number>;
+    subscribe(key: string | undefined, listener: (x: State) => void): void;
+    unsubscribe(key: string | undefined, listener: (x: State) => void): void;
 }

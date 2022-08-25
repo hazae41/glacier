@@ -8,8 +8,8 @@ export interface Handle<D = any, E = any> {
 
   time?: number
   loading: boolean
-
-  aborter?: AbortController
+  aborter?: AbortController,
+  expiration?: number
 
   /**
    * Fetch with cooldown

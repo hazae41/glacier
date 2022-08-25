@@ -59,9 +59,9 @@ export function useScroll<D = any, E = any>(
     core.delete(key)
   }, [core, key])
 
-  const { data, error, time, aborter } = state ?? {}
+  const { data, error, time, aborter, expiration } = state ?? {}
 
   const loading = Boolean(aborter)
 
-  return { key, data, error, time, aborter, loading, mutate, fetch, refetch, scroll, clear }
+  return { key, data, error, time, aborter, loading, expiration, mutate, fetch, refetch, scroll, clear }
 }

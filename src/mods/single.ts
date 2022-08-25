@@ -34,8 +34,8 @@ export class Single {
       const { signal } = aborter
 
       this.core.mutate(key, { aborter })
-      const data = await fetcher(key, { signal })
-      return this.core.mutate<D, E>(key, { data })
+      const { data, expiration } = await fetcher(key, { signal })
+      return this.core.mutate<D, E>(key, { data, expiration })
     } catch (error: any) {
       return this.core.mutate<D, E>(key, { error })
     } finally {
@@ -61,7 +61,7 @@ export class Single {
     if (!key) return
 
     const current = this.core.get<D, E>(key)
-    const data = updater(current.data)
+    const updated = updater(current.data)
 
     const t = setTimeout(() => {
       aborter.abort("Timed out")
@@ -70,9 +70,9 @@ export class Single {
     try {
       const { signal } = aborter
 
-      this.core.mutate(key, { data, time: current.time })
-      const updated = await poster(key, { data, signal })
-      return this.core.mutate<D, E>(key, { data: updated })
+      this.core.mutate(key, { data: updated, time: current.time })
+      const { data, expiration } = await poster(key, { data: updated, signal })
+      return this.core.mutate<D, E>(key, { data, expiration })
     } catch (error: any) {
       this.core.mutate<D, E>(key, current)
       throw error

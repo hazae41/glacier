@@ -1,12 +1,8 @@
 import type { NextApiRequest, NextApiResponse } from 'next'
+import { HelloData } from '../../common/hello'
 
 const config = {
   rollback: false
-}
-
-export interface HelloData {
-  name: string,
-  time: number
 }
 
 export default async function handler(

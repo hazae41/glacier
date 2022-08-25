@@ -5,8 +5,8 @@ const ortho_1 = require("../libs/ortho");
 const equals_1 = require("./equals");
 const scroll_1 = require("./scroll");
 const single_1 = require("./single");
-exports.DEFAULT_COOLDOWN = 1000;
-exports.DEFAULT_TIMEOUT = 5000;
+exports.DEFAULT_COOLDOWN = 1 * 1000;
+exports.DEFAULT_TIMEOUT = 5 * 1000;
 function isAbortError(e) {
     return e instanceof DOMException && e.name === "AbortError";
 }
@@ -106,6 +106,45 @@ class Core extends ortho_1.Ortho {
         if (Date.now() - current.time < cooldown)
             return true;
         return false;
+    }
+    counts = new Map();
+    timeouts = new Map();
+    subscribe(key, listener) {
+        if (!key)
+            return;
+        super.subscribe(key, listener);
+        const count = this.counts.get(key) ?? 0;
+        this.counts.set(key, count + 1);
+        const timeout = this.timeouts.get(key);
+        if (timeout === undefined)
+            return;
+        clearTimeout(timeout);
+        this.timeouts.delete(key);
+    }
+    unsubscribe(key, listener) {
+        if (!key)
+            return;
+        super.unsubscribe(key, listener);
+        const count = this.counts.get(key);
+        if (count > 1) {
+            this.counts.set(key, count - 1);
+            return;
+        }
+        this.counts.delete(key);
+        const { expiration } = this.get(key) ?? {};
+        if (expiration === undefined)
+            return;
+        const erase = () => {
+            this.timeouts.delete(key);
+            this.delete(key);
+        };
+        if (Date.now() > expiration) {
+            erase();
+            return;
+        }
+        const delay = expiration - Date.now();
+        const timeout = setTimeout(erase, delay);
+        this.timeouts.set(key, timeout);
     }
 }
 exports.Core = Core;

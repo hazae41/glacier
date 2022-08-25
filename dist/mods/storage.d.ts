@@ -3,6 +3,7 @@ export interface State<D = any, E = any> {
     error?: E;
     time?: number;
     aborter?: AbortController;
+    expiration?: number;
 }
 export interface Storage<T> {
     has(key: string): boolean;

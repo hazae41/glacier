@@ -1,8 +1,9 @@
 export interface State<D = any, E = any> {
   data?: D
   error?: E
-  time?: number
+  time?: number,
   aborter?: AbortController
+  expiration?: number
 }
 
 export interface Storage<T> {
