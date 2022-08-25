@@ -31,7 +31,10 @@ npm i @hazae41/xswr
 - Automatic garbage collection
 
 ### Upcoming features
+
+- Transport agnostic streaming (ethers.js, WebSockets, Socket.io)
 - Bidirectional scrolling
+- React suspense
 
 ## Preparing your app
 
