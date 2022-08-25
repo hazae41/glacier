@@ -8,6 +8,8 @@ npm i @hazae41/xswr
 
 ## [Go to the docs](https://xswr.hazae41.me)
 
+## [Comparison with swr and react-query](https://xswr.hazae41.me/faq/comparison)
+
 ## Features
 
 ### Current features
