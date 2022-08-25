@@ -27,6 +27,10 @@ export type Updater<D = any> =
 export type Listener<D = any, E = any> =
   (state?: State<D, E>) => void
 
+export function isAbortError(e: unknown) {
+  return e instanceof DOMException && e.name === "AbortError"
+}
+
 export class Core extends Ortho<string, State | undefined> {
   readonly single = new Single(this)
   readonly scroll = new Scroll(this)

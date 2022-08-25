@@ -57,7 +57,7 @@ export default function Home() {
       {JSON.stringify(data)}
     </div>
     <div style={{ color: "red" }}>
-      {error instanceof DOMException && error.name === "AbortError"
+      {XSWR.isAbortError(error)
         ? "Aborted"
         : JSON.stringify(error)}
     </div>

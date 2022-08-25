@@ -1,11 +1,15 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.Core = exports.DEFAULT_COOLDOWN = void 0;
+exports.Core = exports.isAbortError = exports.DEFAULT_COOLDOWN = void 0;
 const ortho_1 = require("../libs/ortho");
 const equals_1 = require("./equals");
 const scroll_1 = require("./scroll");
 const single_1 = require("./single");
 exports.DEFAULT_COOLDOWN = 1000;
+function isAbortError(e) {
+    return e instanceof DOMException && e.name === "AbortError";
+}
+exports.isAbortError = isAbortError;
 class Core extends ortho_1.Ortho {
     storage;
     equals;
