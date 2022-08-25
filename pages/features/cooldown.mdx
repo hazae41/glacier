@@ -25,6 +25,6 @@ function useMyData() {
 
 You can trick the deduplication process by passing a custom `state.time` in `mutate()`.
 
-Passing a time of `0` will ignore the deduplication process as `Date.now() - 0 > cooldown`.
+Passing a time of `0` will ignore the deduplication time as `Date.now() - 0 > cooldown`.
 
-Passing a time in the future will increase the deduplication process.
+Passing a time in the future will increase the deduplication time.

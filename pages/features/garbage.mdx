@@ -15,7 +15,9 @@ async function fetchAsJson<T>(url: string) {
   const res = await fetch(url)
   if (!res.ok) throw new Error(await res.text())
 
-  return { data: await res.json(), expiration: Date.now() + (60 * 1000) }
+  const data = await res.json() as T
+  const expiration = Date.now() + (60 * 1000)
+  return { data, expiration }
 }
 ```
 
