@@ -1,0 +1,33 @@
+# Comparison with swr and react-query
+
+## Prefetching
+
+xswr: `user.fetch()`
+
+swr: `mutate('/api/user', fetch('/api/user').then(res => res.json()))`
+
+react-query: `await queryClient.prefetchQuery(['user'], fetchUser)`
+
+## Optimistic updates
+
+xswr: `user.update(data)`
+
+swr: `mutate('/api/user', updateFn(user), { optimisticData: user, rollbackOnError: true })`
+
+react-query:
+```typescript
+useMutation(updateTodo, {
+  onMutate: async newTodo => {
+    await queryClient.cancelQueries(['todos'])
+    const previousTodos = queryClient.getQueryData(['todos'])
+    queryClient.setQueryData(['todos'], old => [...old, newTodo])
+    return { previousTodos }
+  },
+  onError: (err, newTodo, context) => {
+    queryClient.setQueryData(['todos'], context.previousTodos)
+  },
+  onSettled: () => {
+    queryClient.invalidateQueries(['todos'])
+  },
+})
+```
