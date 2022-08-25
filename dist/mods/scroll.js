@@ -2,6 +2,7 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.Scroll = void 0;
 const arrays_1 = require("../libs/arrays");
+const core_1 = require("./core");
 class Scroll {
     core;
     constructor(core) {
@@ -15,11 +16,11 @@ class Scroll {
      * @param cooldown
      * @returns
      */
-    async first(key, scroller, fetcher, cooldown) {
+    async first(key, scroller, fetcher, cooldown = core_1.DEFAULT_COOLDOWN, aborter = new AbortController()) {
         if (!key)
             return;
         const current = this.core.get(key);
-        if (current?.loading)
+        if (current?.aborter)
             return current;
         if (this.core.cooldown(current, cooldown))
             return current;
@@ -28,12 +29,12 @@ class Scroll {
         if (!first)
             return current;
         try {
-            this.core.mutate(key, { loading: true });
-            const page = await fetcher(first);
-            if (this.core.equals(page, pages[0]))
-                return this.core.mutate(key, { data: pages });
-            else
-                return this.core.mutate(key, { data: [page] });
+            const { signal } = aborter;
+            this.core.mutate(key, { aborter });
+            const page = await fetcher(first, { signal });
+            return this.core.equals(page, pages[0])
+                ? this.core.mutate(key, { data: pages })
+                : this.core.mutate(key, { data: [page] });
         }
         catch (error) {
             return this.core.mutate(key, { error });
@@ -47,11 +48,11 @@ class Scroll {
      * @param cooldown
      * @returns
      */
-    async scroll(key, scroller, fetcher, cooldown) {
+    async scroll(key, scroller, fetcher, cooldown = core_1.DEFAULT_COOLDOWN, aborter = new AbortController()) {
         if (!key)
             return;
         const current = this.core.get(key);
-        if (current?.loading)
+        if (current?.aborter)
             return current;
         if (this.core.cooldown(current, cooldown))
             return current;
@@ -60,8 +61,9 @@ class Scroll {
         if (!last)
             return current;
         try {
-            this.core.mutate(key, { loading: true });
-            const data = [...pages, await fetcher(last)];
+            const { signal } = aborter;
+            this.core.mutate(key, { aborter });
+            const data = [...pages, await fetcher(last, { signal })];
             return this.core.mutate(key, { data });
         }
         catch (error) {

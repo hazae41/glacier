@@ -6,11 +6,13 @@ export interface HelloData {
   time: number
 }
 
-async function postAsJson<T>(url: string, data?: T) {
+async function postAsJson<T>(url: string, more: XSWR.PosterMore<T>) {
+  const { data, signal } = more
+
   const method = data ? "POST" : "GET"
   const body = data ? JSON.stringify(data) : undefined
 
-  const res = await fetch(url, { method, body })
+  const res = await fetch(url, { method, body, signal })
   if (!res.ok) throw new Error(await res.text())
 
   return await res.json()
@@ -28,28 +30,39 @@ export default function Home() {
   const hello = useHelloData()
 
   // this is for you, gaearon
-  const { update, refetch } = hello
+  const { data, error, loading, update, refetch, aborter } = hello
 
   const onRefreshClick = useCallback(() => {
     refetch()
   }, [refetch])
 
-  const onUpdateClick = useCallback(() => {
+  const onUpdateClick = useCallback(async () => {
+    const aborter = new AbortController()
+
     update(previous => ({
       name: previous!.name.replace("Doe", "Smith"),
       time: new Date().getSeconds()
-    })).catch(alert)
+    }), aborter).catch(alert)
+
+    // await new Promise(ok => setTimeout(ok, 500))
+    // aborter.abort()
   }, [update])
+
+  const onAbortClick = useCallback(() => {
+    aborter!.abort("dd")
+  }, [aborter])
 
   return <>
     <div>
-      {JSON.stringify(hello.data)}
+      {JSON.stringify(data)}
     </div>
     <div style={{ color: "red" }}>
-      {JSON.stringify(hello.error)}
+      {error instanceof DOMException && error.name === "AbortError"
+        ? "Aborted"
+        : JSON.stringify(error)}
     </div>
     <div>
-      {hello.loading && "Loading..."}
+      {loading && "Loading..."}
     </div>
     <button onClick={onRefreshClick}>
       Refresh
@@ -57,6 +70,10 @@ export default function Home() {
     <button onClick={onUpdateClick}>
       Update
     </button>
+    {aborter &&
+      <button onClick={onAbortClick}>
+        Abort
+      </button>}
   </>
 }
 

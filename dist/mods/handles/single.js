@@ -11,7 +11,7 @@ const ortho_1 = require("../../libs/ortho");
  * @param cooldown Usually your resource TTL
  * @returns A single resource handle
  */
-function useSingle(key, poster, cooldown = 1000) {
+function useSingle(key, poster, cooldown) {
     const core = (0, comps_1.useCore)();
     const [state, setState] = (0, react_1.useState)(() => core.get(key));
     (0, react_1.useEffect)(() => {
@@ -21,19 +21,20 @@ function useSingle(key, poster, cooldown = 1000) {
     const mutate = (0, react_1.useCallback)((res) => {
         return core.mutate(key, res);
     }, [core, key]);
-    const fetch = (0, react_1.useCallback)(async () => {
-        return await core.single.fetch(key, poster, cooldown);
+    const fetch = (0, react_1.useCallback)(async (aborter) => {
+        return await core.single.fetch(key, poster, cooldown, aborter);
     }, [core, key, poster, cooldown]);
-    const refetch = (0, react_1.useCallback)(async () => {
-        return await core.single.fetch(key, poster);
+    const refetch = (0, react_1.useCallback)(async (aborter) => {
+        return await core.single.fetch(key, poster, 0, aborter);
     }, [core, key, poster]);
-    const update = (0, react_1.useCallback)((updater) => {
-        return core.single.update(key, poster, updater);
+    const update = (0, react_1.useCallback)((updater, aborter) => {
+        return core.single.update(key, poster, updater, aborter);
     }, [core, key, poster]);
     const clear = (0, react_1.useCallback)(() => {
         core.delete(key);
     }, [core, key]);
-    const { data, error, time, loading = false } = state ?? {};
-    return { key, data, error, time, loading, mutate, fetch, refetch, update, clear };
+    const { data, error, time, aborter } = state ?? {};
+    const loading = Boolean(aborter);
+    return { key, data, error, time, aborter, loading, mutate, fetch, refetch, update, clear };
 }
 exports.useSingle = useSingle;

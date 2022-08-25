@@ -3,8 +3,16 @@ import { Equals } from "./equals";
 import { Scroll } from "./scroll";
 import { Single } from "./single";
 import { State, Storage } from "./storage";
-export declare type Fetcher<D = any> = (url: string) => Promise<D>;
-export declare type Poster<D = any> = (url: string, data?: D) => Promise<D>;
+export declare const DEFAULT_COOLDOWN = 1000;
+export declare type Fetcher<D = any> = (url: string, more: FetcherMore) => Promise<D>;
+export declare type FetcherMore<D = any> = {
+    signal: AbortSignal;
+};
+export declare type Poster<D = any> = (url: string, more: PosterMore) => Promise<D>;
+export declare type PosterMore<D = any> = {
+    signal: AbortSignal;
+    data: D;
+};
 export declare type Scroller<D = any> = (previous?: D) => string | undefined;
 export declare type Updater<D = any> = (previous?: D) => D;
 export declare type Listener<D = any, E = any> = (state?: State<D, E>) => void;

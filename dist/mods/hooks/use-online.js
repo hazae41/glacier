@@ -9,8 +9,9 @@ const react_1 = require("react");
 function useOnline(handle) {
     const { fetch } = handle;
     (0, react_1.useEffect)(() => {
-        addEventListener("online", fetch);
-        return () => removeEventListener("online", fetch);
+        const f = () => fetch();
+        addEventListener("online", f);
+        return () => removeEventListener("online", f);
     }, [fetch]);
 }
 exports.useOnline = useOnline;

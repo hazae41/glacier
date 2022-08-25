@@ -9,18 +9,20 @@ export interface Handle<D = any, E = any> {
   time?: number
   loading: boolean
 
+  aborter?: AbortController
+
   /**
    * Fetch with cooldown
    * @example You want to fetch and don't care if it's cooldowned
    */
-  fetch(): Promise<State<D, E> | undefined>
+  fetch(aborter?: AbortController): Promise<State<D, E> | undefined>
 
   /**
    * Fetch without cooldown
    * @example User clicked on the refresh button
    * @example You just made a POST request and want to get some fresh data
    */
-  refetch(): Promise<State<D, E> | undefined>
+  refetch(aborter?: AbortController): Promise<State<D, E> | undefined>
 
   /**
    * Mutate the cache

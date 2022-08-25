@@ -1,6 +1,7 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.Single = void 0;
+const core_1 = require("./core");
 class Single {
     core;
     constructor(core) {
@@ -13,17 +14,18 @@ class Single {
      * @param cooldown
      * @returns state
      */
-    async fetch(key, fetcher, cooldown) {
+    async fetch(key, fetcher, cooldown = core_1.DEFAULT_COOLDOWN, aborter = new AbortController()) {
         if (!key)
             return;
         const current = this.core.get(key);
-        if (current?.loading)
+        if (current?.aborter)
             return current;
         if (this.core.cooldown(current, cooldown))
             return current;
         try {
-            this.core.mutate(key, { loading: true });
-            const data = await fetcher(key);
+            const { signal } = aborter;
+            this.core.mutate(key, { aborter });
+            const data = await fetcher(key, { signal });
             return this.core.mutate(key, { data });
         }
         catch (error) {
@@ -38,14 +40,15 @@ class Single {
      * @throws error
      * @returns updated state
      */
-    async update(key, poster, updater) {
+    async update(key, poster, updater, aborter = new AbortController()) {
         if (!key)
             return;
         const current = this.core.get(key);
         const data = updater(current.data);
         try {
+            const { signal } = aborter;
             this.core.mutate(key, { data, time: current.time });
-            const updated = await poster(key, data);
+            const updated = await poster(key, { data, signal });
             return this.core.mutate(key, { data: updated });
         }
         catch (error) {

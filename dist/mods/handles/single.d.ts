@@ -5,7 +5,7 @@ import { Handle } from "./generic";
  * Handle for a single resource
  */
 export interface SingleHandle<D = any, E = any> extends Handle<D, E> {
-    update(updater: Updater<D>): Promise<State<D, E> | undefined>;
+    update(updater: Updater<D>, aborter?: AbortController): Promise<State<D, E> | undefined>;
 }
 /**
  * Single resource hook

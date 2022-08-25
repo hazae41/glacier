@@ -1,5 +1,5 @@
 import { lastOf } from "../libs/arrays";
-import { Core, Fetcher, Scroller } from "./core";
+import { Core, DEFAULT_COOLDOWN, Fetcher, Scroller } from "./core";
 
 export class Scroll {
   constructor(readonly core: Core) { }
@@ -16,12 +16,13 @@ export class Scroll {
     key: string | undefined,
     scroller: Scroller<D>,
     fetcher: Fetcher<D>,
-    cooldown?: number
+    cooldown = DEFAULT_COOLDOWN,
+    aborter = new AbortController()
   ) {
     if (!key) return
 
     const current = this.core.get<D[], E>(key)
-    if (current?.loading)
+    if (current?.aborter)
       return current
     if (this.core.cooldown(current, cooldown))
       return current
@@ -30,13 +31,14 @@ export class Scroll {
     if (!first) return current
 
     try {
-      this.core.mutate(key, { loading: true })
-      const page = await fetcher(first)
+      const { signal } = aborter
 
-      if (this.core.equals(page, pages[0]))
-        return this.core.mutate<D[], E>(key, { data: pages })
-      else
-        return this.core.mutate<D[], E>(key, { data: [page] })
+      this.core.mutate(key, { aborter })
+      const page = await fetcher(first, { signal })
+
+      return this.core.equals(page, pages[0])
+        ? this.core.mutate<D[], E>(key, { data: pages })
+        : this.core.mutate<D[], E>(key, { data: [page] })
     } catch (error: any) {
       return this.core.mutate<D[], E>(key, { error })
     }
@@ -54,12 +56,13 @@ export class Scroll {
     key: string | undefined,
     scroller: Scroller<D>,
     fetcher: Fetcher<D>,
-    cooldown?: number
+    cooldown = DEFAULT_COOLDOWN,
+    aborter = new AbortController()
   ) {
     if (!key) return
 
     const current = this.core.get<D[], E>(key)
-    if (current?.loading)
+    if (current?.aborter)
       return current
     if (this.core.cooldown(current, cooldown))
       return current
@@ -68,8 +71,10 @@ export class Scroll {
     if (!last) return current
 
     try {
-      this.core.mutate(key, { loading: true })
-      const data = [...pages, await fetcher(last)]
+      const { signal } = aborter
+
+      this.core.mutate(key, { aborter })
+      const data = [...pages, await fetcher(last, { signal })]
       return this.core.mutate<D[], E>(key, { data })
     } catch (error: any) {
       return this.core.mutate<D[], E>(key, { error })

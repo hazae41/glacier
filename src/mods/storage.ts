@@ -2,7 +2,7 @@ export interface State<D = any, E = any> {
   data?: D
   error?: E
   time?: number
-  loading?: boolean
+  aborter?: AbortController
 }
 
 export interface Storage<T> {

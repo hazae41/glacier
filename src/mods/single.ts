@@ -1,4 +1,4 @@
-import { Core, Fetcher, Poster, Updater } from "./core";
+import { Core, DEFAULT_COOLDOWN, Fetcher, Poster, Updater } from "./core";
 import { State } from "./storage";
 
 export class Single {
@@ -14,19 +14,22 @@ export class Single {
   async fetch<D = any, E = any>(
     key: string | undefined,
     fetcher: Fetcher<D>,
-    cooldown?: number
+    cooldown = DEFAULT_COOLDOWN,
+    aborter = new AbortController()
   ): Promise<State<D, E> | undefined> {
     if (!key) return
 
     const current = this.core.get<D, E>(key)
-    if (current?.loading)
+    if (current?.aborter)
       return current
     if (this.core.cooldown(current, cooldown))
       return current
 
     try {
-      this.core.mutate(key, { loading: true })
-      const data = await fetcher(key)
+      const { signal } = aborter
+
+      this.core.mutate(key, { aborter })
+      const data = await fetcher(key, { signal })
       return this.core.mutate<D, E>(key, { data })
     } catch (error: any) {
       return this.core.mutate<D, E>(key, { error })
@@ -45,6 +48,7 @@ export class Single {
     key: string | undefined,
     poster: Poster<D>,
     updater: Updater<D>,
+    aborter = new AbortController()
   ) {
     if (!key) return
 
@@ -52,8 +56,10 @@ export class Single {
     const data = updater(current.data)
 
     try {
+      const { signal } = aborter
+
       this.core.mutate(key, { data, time: current.time })
-      const updated = await poster(key, data)
+      const updated = await poster(key, { data, signal })
       return this.core.mutate<D, E>(key, { data: updated })
     } catch (error: any) {
       this.core.mutate<D, E>(key, current)

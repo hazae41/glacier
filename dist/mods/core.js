@@ -1,10 +1,11 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.Core = void 0;
+exports.Core = exports.DEFAULT_COOLDOWN = void 0;
 const ortho_1 = require("../libs/ortho");
 const equals_1 = require("./equals");
 const scroll_1 = require("./scroll");
 const single_1 = require("./single");
+exports.DEFAULT_COOLDOWN = 1000;
 class Core extends ortho_1.Ortho {
     storage;
     equals;
@@ -82,8 +83,8 @@ class Core extends ortho_1.Ortho {
             next.error = current?.error;
         if (state.data !== undefined)
             delete next.error;
-        if (state.loading === undefined)
-            delete next.loading;
+        if (state.aborter === undefined)
+            delete next.aborter;
         if (this.equals(current, next))
             return current;
         this.set(key, next);

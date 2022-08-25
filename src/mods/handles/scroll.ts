@@ -22,7 +22,7 @@ export interface ScrollHandle<D = any, E = any> extends Handle<D[], E> {
 export function useScroll<D = any, E = any>(
   scroller: Scroller<D>,
   fetcher: Fetcher<D>,
-  cooldown = 1000
+  cooldown?: number
 ): ScrollHandle<D, E> {
   const core = useCore()
 
@@ -42,23 +42,25 @@ export function useScroll<D = any, E = any>(
     return core.mutate<D[], E>(key, res)
   }, [core, key])
 
-  const fetch = useCallback(async () => {
-    return await core.scroll.first<D, E>(key, scroller, fetcher, cooldown)
+  const fetch = useCallback(async (aborter?: AbortController) => {
+    return await core.scroll.first<D, E>(key, scroller, fetcher, cooldown, aborter)
   }, [core, key, scroller, fetcher, cooldown])
 
-  const refetch = useCallback(async () => {
-    return await core.scroll.first<D, E>(key, scroller, fetcher)
+  const refetch = useCallback(async (aborter?: AbortController) => {
+    return await core.scroll.first<D, E>(key, scroller, fetcher, 0, aborter)
   }, [core, key, scroller, fetcher])
 
-  const scroll = useCallback(async () => {
-    return await core.scroll.scroll<D, E>(key, scroller, fetcher)
+  const scroll = useCallback(async (aborter?: AbortController) => {
+    return await core.scroll.scroll<D, E>(key, scroller, fetcher, 0, aborter)
   }, [core, key, scroller, fetcher])
 
   const clear = useCallback(() => {
     core.delete(key)
   }, [core, key])
 
-  const { data, error, time, loading = false } = state ?? {}
+  const { data, error, time, aborter } = state ?? {}
 
-  return { key, data, error, time, loading, mutate, fetch, refetch, scroll, clear }
+  const loading = Boolean(aborter)
+
+  return { key, data, error, time, aborter, loading, mutate, fetch, refetch, scroll, clear }
 }

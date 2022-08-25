@@ -10,7 +10,7 @@ export declare class Scroll {
      * @param cooldown
      * @returns
      */
-    first<D = any, E = any>(key: string | undefined, scroller: Scroller<D>, fetcher: Fetcher<D>, cooldown?: number): Promise<import("./storage").State<D[], E>>;
+    first<D = any, E = any>(key: string | undefined, scroller: Scroller<D>, fetcher: Fetcher<D>, cooldown?: number, aborter?: AbortController): Promise<import("./storage").State<D[], E>>;
     /**
      *
      * @param key
@@ -19,5 +19,5 @@ export declare class Scroll {
      * @param cooldown
      * @returns
      */
-    scroll<D = any, E = any>(key: string | undefined, scroller: Scroller<D>, fetcher: Fetcher<D>, cooldown?: number): Promise<import("./storage").State<D[], E>>;
+    scroll<D = any, E = any>(key: string | undefined, scroller: Scroller<D>, fetcher: Fetcher<D>, cooldown?: number, aborter?: AbortController): Promise<import("./storage").State<D[], E>>;
 }

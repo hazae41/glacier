@@ -4,11 +4,19 @@ import { Scroll } from "./scroll"
 import { Single } from "./single"
 import { State, Storage } from "./storage"
 
+export const DEFAULT_COOLDOWN = 1000
+
 export type Fetcher<D = any> =
-  (url: string) => Promise<D>
+  (url: string, more: FetcherMore) => Promise<D>
+
+export type FetcherMore<D = any> =
+  { signal: AbortSignal }
 
 export type Poster<D = any> =
-  (url: string, data?: D) => Promise<D>
+  (url: string, more: PosterMore) => Promise<D>
+
+export type PosterMore<D = any> =
+  { signal: AbortSignal, data: D }
 
 export type Scroller<D = any> =
   (previous?: D) => string | undefined
@@ -117,8 +125,8 @@ export class Core extends Ortho<string, State | undefined> {
 
     if (state.data !== undefined)
       delete next.error
-    if (state.loading === undefined)
-      delete next.loading
+    if (state.aborter === undefined)
+      delete next.aborter
 
     if (this.equals(current, next))
       return current
