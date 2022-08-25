@@ -7,7 +7,7 @@
     "dev": "next",
     "start": "next start",
     "build": "next build && next export",
-    "deploy": "HASH=$(ipfs add -r out -Q) && ipfs name publish --key=xswr-docs /ipfs/$HASH"
+    "deploy": "./deploy.sh"
   },
   "author": "Shu Ding",
   "license": "MIT",
