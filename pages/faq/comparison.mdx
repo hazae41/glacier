@@ -63,10 +63,24 @@ user.aborter.abort()
 
 ### swr
 
-unsupported
+Unsupported.
 
 ### react-query
 
 ```typescript
 queryClient.cancelQueries(['todos'])
 ```
+
+## Garbage collection
+
+### xswr
+
+Per-fetch expiration time. You can use response headers like `Cache-Control` to set an expiration time.
+
+### swr
+
+Unsupported.
+
+### react-query
+
+Global or per-query expiration time. You must define an expiration time at global scope or query scope.
