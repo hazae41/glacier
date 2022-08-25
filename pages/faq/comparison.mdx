@@ -25,13 +25,13 @@ await queryClient.prefetchQuery(['user'], fetchUser)
 ### xswr
 
 ```typescript
-user.update(data)
+todos.update(old => [...old, todo])
 ```
 
 ### swr
 
 ```typescript
-mutate('/api/user', updateFn(user), { optimisticData: user, rollbackOnError: true })
+mutate('/api/todos', updateFn(user), { optimisticData: user, rollbackOnError: true })
 ```
 
 ### react-query

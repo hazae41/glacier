@@ -6,7 +6,7 @@ If the fetcher throws an error, xswr will rollback the resource to the previous 
 
 ### Usage
 
-This feature is only available for single resources, using `handle.update(data)`.
+This feature is only available for single resources, using `handle.update(previous => data)`.
 
 You have to implement the actual update by using the extra `data` parameter in your fetcher.
 
@@ -26,7 +26,7 @@ async function postAsJson<T>(url: string, data?: T) {
 }
 
 function useMyData() {
-  const handle = XSWR.useSingle(
+  const handle = XSWR.useSingle<MyData>(
     "/api/hello", 
     postAsJson)
   XSWR.useFetch(handle)
@@ -38,9 +38,9 @@ export function MyApp() {
 
   const onUpdateClick = useCallback(() => {
     mydata
-      .update({ name: "John Smith" })
+      .update(() => ({ name: "John Doe" }))
       .catch(alert)
-  }, [])
+  }, [mydata.update])
 
   return <>
     <div>
@@ -63,11 +63,12 @@ export function MyApp() {
 async update<D = any, E = any>(
   key: string | undefined,
   poster: Poster<D>,
-  data?: D,
+  updater: Updater<D>,
 ) {
   if (!key) return
 
   const current = this.core.get<D, E>(key)
+  const data = updater(current.data)
 
   try {
     this.core.mutate(key, { data, time: current.time })
