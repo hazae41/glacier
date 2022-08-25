@@ -1,0 +1,67 @@
+# Cancellable requests
+
+You can cancel requests by using AbortControllers.
+
+## Preparing your fetcher for abortion
+
+You can pass the AbortSignal to your fetcher (e.g. fetch) in order to cancel the request and throw an error when the signal is triggered.
+
+```typescript
+async function fetchAsJson<T>(url: string, more: XSWR.FetcherMore<T>) {
+  const { signal } = more
+
+  const res = await fetch(url, { signal })
+  return await res.json() as T
+}
+```
+
+You can then ignore AbortErrors in your components.
+
+```typescript
+if (XSWR.isAbortError(handle.error))
+  // do not display the error
+else
+  // display the error
+```
+
+## Aborting using handle.aborter
+
+By default, an aborter is created and passed to your handle for each request.
+
+You can use `handle.aborter.abort` to abort the ongoing request, or `handle.aborter.signal` to check the signal.
+
+```typescript
+const mydata = useMyData()
+const { aborter } = mydata
+
+return <button onClick={aborter.abort}>
+  Abort
+<button />
+```
+
+Note: `handle.aborter` is `undefined` is there is no ongoing request.
+
+Note: `handle.aborter` will only be available after a render, use a custom aborter with a ref if you want instant access.
+
+## Aborting using custom aborter
+
+For more control, you can create your own aborter and store it wherever you like (e.g. is a useRef) and trigger it whenever you like.
+
+```typescript
+const mydata = useMyData()
+const { fetch } = mydata
+
+const syncAborter = useRef<AbortController>()
+
+const fetchWithAborter = useCallback(() => {
+  const aborter = new AbortController()
+  fetch(aborter)
+
+  // your aborter will be available instantly
+  syncAborter.current = aborter
+}, [])
+```
+
+Note: `handle.aborter` will be set to your custom aborter, even for other components in the tree.
+
+Note: custom aborter also works for `handle.update()`, but the passed aborter won't be available in `handle.aborter`.
