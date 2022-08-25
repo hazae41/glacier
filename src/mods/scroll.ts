@@ -1,5 +1,5 @@
 import { lastOf } from "../libs/arrays";
-import { Core, DEFAULT_COOLDOWN, Fetcher, Scroller } from "./core";
+import { Core, DEFAULT_COOLDOWN, DEFAULT_TIMEOUT, Fetcher, Scroller } from "./core";
 
 export class Scroll {
   constructor(readonly core: Core) { }
@@ -17,6 +17,7 @@ export class Scroll {
     scroller: Scroller<D>,
     fetcher: Fetcher<D>,
     cooldown = DEFAULT_COOLDOWN,
+    timeout = DEFAULT_TIMEOUT,
     aborter = new AbortController()
   ) {
     if (!key) return
@@ -26,9 +27,14 @@ export class Scroll {
       return current
     if (this.core.cooldown(current, cooldown))
       return current
+
     const pages = current?.data ?? []
     const first = scroller(undefined)
     if (!first) return current
+
+    const t = setTimeout(() => {
+      aborter.abort("Timed out")
+    }, timeout)
 
     try {
       const { signal } = aborter
@@ -41,6 +47,8 @@ export class Scroll {
         : this.core.mutate<D[], E>(key, { data: [page] })
     } catch (error: any) {
       return this.core.mutate<D[], E>(key, { error })
+    } finally {
+      clearTimeout(t)
     }
   }
 
@@ -57,6 +65,7 @@ export class Scroll {
     scroller: Scroller<D>,
     fetcher: Fetcher<D>,
     cooldown = DEFAULT_COOLDOWN,
+    timeout = DEFAULT_TIMEOUT,
     aborter = new AbortController()
   ) {
     if (!key) return
@@ -70,6 +79,10 @@ export class Scroll {
     const last = scroller(lastOf(pages))
     if (!last) return current
 
+    const t = setTimeout(() => {
+      aborter.abort("Timed out")
+    }, timeout)
+
     try {
       const { signal } = aborter
 
@@ -78,6 +91,8 @@ export class Scroll {
       return this.core.mutate<D[], E>(key, { data })
     } catch (error: any) {
       return this.core.mutate<D[], E>(key, { error })
+    } finally {
+      clearTimeout(t)
     }
   }
 }

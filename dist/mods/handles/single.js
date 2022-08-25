@@ -11,7 +11,7 @@ const ortho_1 = require("../../libs/ortho");
  * @param cooldown Usually your resource TTL
  * @returns A single resource handle
  */
-function useSingle(key, poster, cooldown) {
+function useSingle(key, poster, cooldown, timeout) {
     const core = (0, comps_1.useCore)();
     const [state, setState] = (0, react_1.useState)(() => core.get(key));
     (0, react_1.useEffect)(() => {
@@ -22,13 +22,13 @@ function useSingle(key, poster, cooldown) {
         return core.mutate(key, res);
     }, [core, key]);
     const fetch = (0, react_1.useCallback)(async (aborter) => {
-        return await core.single.fetch(key, poster, cooldown, aborter);
+        return await core.single.fetch(key, poster, cooldown, timeout, aborter);
     }, [core, key, poster, cooldown]);
     const refetch = (0, react_1.useCallback)(async (aborter) => {
-        return await core.single.fetch(key, poster, 0, aborter);
+        return await core.single.fetch(key, poster, 0, timeout, aborter);
     }, [core, key, poster]);
     const update = (0, react_1.useCallback)((updater, aborter) => {
-        return core.single.update(key, poster, updater, aborter);
+        return core.single.update(key, poster, updater, timeout, aborter);
     }, [core, key, poster]);
     const clear = (0, react_1.useCallback)(() => {
         core.delete(key);

@@ -22,7 +22,8 @@ export interface SingleHandle<D = any, E = any> extends Handle<D, E> {
 export function useSingle<D = any, E = any>(
   key: string | undefined,
   poster: Poster<D>,
-  cooldown?: number
+  cooldown?: number,
+  timeout?: number
 ): SingleHandle<D, E> {
   const core = useCore()
 
@@ -39,15 +40,15 @@ export function useSingle<D = any, E = any>(
   }, [core, key])
 
   const fetch = useCallback(async (aborter?: AbortController) => {
-    return await core.single.fetch<D, E>(key, poster, cooldown, aborter)
+    return await core.single.fetch<D, E>(key, poster, cooldown, timeout, aborter)
   }, [core, key, poster, cooldown])
 
   const refetch = useCallback(async (aborter?: AbortController) => {
-    return await core.single.fetch<D, E>(key, poster, 0, aborter)
+    return await core.single.fetch<D, E>(key, poster, 0, timeout, aborter)
   }, [core, key, poster])
 
   const update = useCallback((updater: Updater<D>, aborter?: AbortController) => {
-    return core.single.update<D, E>(key, poster, updater, aborter)
+    return core.single.update<D, E>(key, poster, updater, timeout, aborter)
   }, [core, key, poster])
 
   const clear = useCallback(() => {

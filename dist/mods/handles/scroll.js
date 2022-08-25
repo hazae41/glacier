@@ -11,7 +11,7 @@ const ortho_1 = require("../../libs/ortho");
  * @param cooldown Usually your resource TTL
  * @returns A scrolling resource handle
  */
-function useScroll(scroller, fetcher, cooldown) {
+function useScroll(scroller, fetcher, cooldown, timeout) {
     const core = (0, comps_1.useCore)();
     const key = (0, react_1.useMemo)(() => {
         return "scroll:" + scroller();
@@ -25,13 +25,13 @@ function useScroll(scroller, fetcher, cooldown) {
         return core.mutate(key, res);
     }, [core, key]);
     const fetch = (0, react_1.useCallback)(async (aborter) => {
-        return await core.scroll.first(key, scroller, fetcher, cooldown, aborter);
+        return await core.scroll.first(key, scroller, fetcher, cooldown, timeout, aborter);
     }, [core, key, scroller, fetcher, cooldown]);
     const refetch = (0, react_1.useCallback)(async (aborter) => {
-        return await core.scroll.first(key, scroller, fetcher, 0, aborter);
+        return await core.scroll.first(key, scroller, fetcher, 0, timeout, aborter);
     }, [core, key, scroller, fetcher]);
     const scroll = (0, react_1.useCallback)(async (aborter) => {
-        return await core.scroll.scroll(key, scroller, fetcher, 0, aborter);
+        return await core.scroll.scroll(key, scroller, fetcher, 0, timeout, aborter);
     }, [core, key, scroller, fetcher]);
     const clear = (0, react_1.useCallback)(() => {
         core.delete(key);

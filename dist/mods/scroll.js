@@ -16,7 +16,7 @@ class Scroll {
      * @param cooldown
      * @returns
      */
-    async first(key, scroller, fetcher, cooldown = core_1.DEFAULT_COOLDOWN, aborter = new AbortController()) {
+    async first(key, scroller, fetcher, cooldown = core_1.DEFAULT_COOLDOWN, timeout = core_1.DEFAULT_TIMEOUT, aborter = new AbortController()) {
         if (!key)
             return;
         const current = this.core.get(key);
@@ -28,6 +28,9 @@ class Scroll {
         const first = scroller(undefined);
         if (!first)
             return current;
+        const t = setTimeout(() => {
+            aborter.abort("Timed out");
+        }, timeout);
         try {
             const { signal } = aborter;
             this.core.mutate(key, { aborter });
@@ -39,6 +42,9 @@ class Scroll {
         catch (error) {
             return this.core.mutate(key, { error });
         }
+        finally {
+            clearTimeout(t);
+        }
     }
     /**
      *
@@ -48,7 +54,7 @@ class Scroll {
      * @param cooldown
      * @returns
      */
-    async scroll(key, scroller, fetcher, cooldown = core_1.DEFAULT_COOLDOWN, aborter = new AbortController()) {
+    async scroll(key, scroller, fetcher, cooldown = core_1.DEFAULT_COOLDOWN, timeout = core_1.DEFAULT_TIMEOUT, aborter = new AbortController()) {
         if (!key)
             return;
         const current = this.core.get(key);
@@ -60,6 +66,9 @@ class Scroll {
         const last = scroller((0, arrays_1.lastOf)(pages));
         if (!last)
             return current;
+        const t = setTimeout(() => {
+            aborter.abort("Timed out");
+        }, timeout);
         try {
             const { signal } = aborter;
             this.core.mutate(key, { aborter });
@@ -68,6 +77,9 @@ class Scroll {
         }
         catch (error) {
             return this.core.mutate(key, { error });
+        }
+        finally {
+            clearTimeout(t);
         }
     }
 }

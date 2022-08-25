@@ -14,4 +14,4 @@ export interface ScrollHandle<D = any, E = any> extends Handle<D[], E> {
  * @param cooldown Usually your resource TTL
  * @returns A scrolling resource handle
  */
-export declare function useScroll<D = any, E = any>(scroller: Scroller<D>, fetcher: Fetcher<D>, cooldown?: number): ScrollHandle<D, E>;
+export declare function useScroll<D = any, E = any>(scroller: Scroller<D>, fetcher: Fetcher<D>, cooldown?: number, timeout?: number): ScrollHandle<D, E>;

@@ -4,6 +4,7 @@ import { Scroll } from "./scroll";
 import { Single } from "./single";
 import { State, Storage } from "./storage";
 export declare const DEFAULT_COOLDOWN = 1000;
+export declare const DEFAULT_TIMEOUT = 5000;
 export declare type Fetcher<D = any> = (url: string, more: FetcherMore) => Promise<D>;
 export declare type FetcherMore<D = any> = {
     signal: AbortSignal;
@@ -16,7 +17,7 @@ export declare type PosterMore<D = any> = {
 export declare type Scroller<D = any> = (previous?: D) => string | undefined;
 export declare type Updater<D = any> = (previous?: D) => D;
 export declare type Listener<D = any, E = any> = (state?: State<D, E>) => void;
-export declare function isAbortError(e: unknown): boolean;
+export declare function isAbortError(e: unknown): e is DOMException;
 export declare class Core extends Ortho<string, State | undefined> {
     readonly storage: Storage<State>;
     readonly equals: Equals;

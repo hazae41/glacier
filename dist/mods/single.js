@@ -14,7 +14,7 @@ class Single {
      * @param cooldown
      * @returns state
      */
-    async fetch(key, fetcher, cooldown = core_1.DEFAULT_COOLDOWN, aborter = new AbortController()) {
+    async fetch(key, fetcher, cooldown = core_1.DEFAULT_COOLDOWN, timeout = core_1.DEFAULT_TIMEOUT, aborter = new AbortController()) {
         if (!key)
             return;
         const current = this.core.get(key);
@@ -22,6 +22,9 @@ class Single {
             return current;
         if (this.core.cooldown(current, cooldown))
             return current;
+        const t = setTimeout(() => {
+            aborter.abort("Timed out");
+        }, timeout);
         try {
             const { signal } = aborter;
             this.core.mutate(key, { aborter });
@@ -30,6 +33,9 @@ class Single {
         }
         catch (error) {
             return this.core.mutate(key, { error });
+        }
+        finally {
+            clearTimeout(t);
         }
     }
     /**
@@ -40,11 +46,14 @@ class Single {
      * @throws error
      * @returns updated state
      */
-    async update(key, poster, updater, aborter = new AbortController()) {
+    async update(key, poster, updater, timeout = core_1.DEFAULT_TIMEOUT, aborter = new AbortController()) {
         if (!key)
             return;
         const current = this.core.get(key);
         const data = updater(current.data);
+        const t = setTimeout(() => {
+            aborter.abort("Timed out");
+        }, timeout);
         try {
             const { signal } = aborter;
             this.core.mutate(key, { data, time: current.time });
@@ -54,6 +63,9 @@ class Single {
         catch (error) {
             this.core.mutate(key, current);
             throw error;
+        }
+        finally {
+            clearTimeout(t);
         }
     }
 }

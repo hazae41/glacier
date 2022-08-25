@@ -1,4 +1,4 @@
-import { Core, DEFAULT_COOLDOWN, Fetcher, Poster, Updater } from "./core";
+import { Core, DEFAULT_COOLDOWN, DEFAULT_TIMEOUT, Fetcher, Poster, Updater } from "./core";
 import { State } from "./storage";
 
 export class Single {
@@ -15,6 +15,7 @@ export class Single {
     key: string | undefined,
     fetcher: Fetcher<D>,
     cooldown = DEFAULT_COOLDOWN,
+    timeout = DEFAULT_TIMEOUT,
     aborter = new AbortController()
   ): Promise<State<D, E> | undefined> {
     if (!key) return
@@ -25,6 +26,10 @@ export class Single {
     if (this.core.cooldown(current, cooldown))
       return current
 
+    const t = setTimeout(() => {
+      aborter.abort("Timed out")
+    }, timeout)
+
     try {
       const { signal } = aborter
 
@@ -33,6 +38,8 @@ export class Single {
       return this.core.mutate<D, E>(key, { data })
     } catch (error: any) {
       return this.core.mutate<D, E>(key, { error })
+    } finally {
+      clearTimeout(t)
     }
   }
 
@@ -48,12 +55,17 @@ export class Single {
     key: string | undefined,
     poster: Poster<D>,
     updater: Updater<D>,
+    timeout = DEFAULT_TIMEOUT,
     aborter = new AbortController()
   ) {
     if (!key) return
 
     const current = this.core.get<D, E>(key)
     const data = updater(current.data)
+
+    const t = setTimeout(() => {
+      aborter.abort("Timed out")
+    }, timeout)
 
     try {
       const { signal } = aborter
@@ -64,6 +76,8 @@ export class Single {
     } catch (error: any) {
       this.core.mutate<D, E>(key, current)
       throw error
+    } finally {
+      clearTimeout(t)
     }
   }
 }

@@ -40,7 +40,7 @@ export default function Home() {
     const aborter = new AbortController()
 
     update(previous => ({
-      name: previous!.name.replace("Doe", "Smith"),
+      name: previous?.name.replace("Doe", "Smith") ?? "None",
       time: new Date().getSeconds()
     }), aborter).catch(alert)
 
@@ -54,10 +54,10 @@ export default function Home() {
 
   return <>
     <div>
-      {JSON.stringify(data)}
+      {JSON.stringify(data) ?? "undefined"}
     </div>
     <div style={{ color: "red" }}>
-      {XSWR.isAbortError(error)
+      {error && XSWR.isAbortError(error)
         ? "Aborted"
         : JSON.stringify(error)}
     </div>

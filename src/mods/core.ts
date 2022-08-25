@@ -5,6 +5,7 @@ import { Single } from "./single"
 import { State, Storage } from "./storage"
 
 export const DEFAULT_COOLDOWN = 1000
+export const DEFAULT_TIMEOUT = 5000
 
 export type Fetcher<D = any> =
   (url: string, more: FetcherMore) => Promise<D>
@@ -27,7 +28,7 @@ export type Updater<D = any> =
 export type Listener<D = any, E = any> =
   (state?: State<D, E>) => void
 
-export function isAbortError(e: unknown) {
+export function isAbortError(e: unknown): e is DOMException {
   return e instanceof DOMException && e.name === "AbortError"
 }
 

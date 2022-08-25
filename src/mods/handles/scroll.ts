@@ -22,7 +22,8 @@ export interface ScrollHandle<D = any, E = any> extends Handle<D[], E> {
 export function useScroll<D = any, E = any>(
   scroller: Scroller<D>,
   fetcher: Fetcher<D>,
-  cooldown?: number
+  cooldown?: number,
+  timeout?: number
 ): ScrollHandle<D, E> {
   const core = useCore()
 
@@ -43,15 +44,15 @@ export function useScroll<D = any, E = any>(
   }, [core, key])
 
   const fetch = useCallback(async (aborter?: AbortController) => {
-    return await core.scroll.first<D, E>(key, scroller, fetcher, cooldown, aborter)
+    return await core.scroll.first<D, E>(key, scroller, fetcher, cooldown, timeout, aborter)
   }, [core, key, scroller, fetcher, cooldown])
 
   const refetch = useCallback(async (aborter?: AbortController) => {
-    return await core.scroll.first<D, E>(key, scroller, fetcher, 0, aborter)
+    return await core.scroll.first<D, E>(key, scroller, fetcher, 0, timeout, aborter)
   }, [core, key, scroller, fetcher])
 
   const scroll = useCallback(async (aborter?: AbortController) => {
-    return await core.scroll.scroll<D, E>(key, scroller, fetcher, 0, aborter)
+    return await core.scroll.scroll<D, E>(key, scroller, fetcher, 0, timeout, aborter)
   }, [core, key, scroller, fetcher])
 
   const clear = useCallback(() => {
