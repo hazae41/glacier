@@ -1,6 +1,6 @@
-import { Fetcher, Scroller } from "../core";
-import { State } from "../storage";
-import { Handle } from "./generic";
+import { Fetcher, Scroller } from "../core.js";
+import { State } from "../storage.js";
+import { Handle } from "./generic.js";
 /**
  * Handle for a scrolling resource
  */

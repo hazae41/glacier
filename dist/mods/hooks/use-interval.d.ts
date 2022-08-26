@@ -1,4 +1,4 @@
-import { Handle } from "../handles";
+import { Handle } from "../handles/index.js";
 /**
  * Do a request on interval
  * @see useRetry for error retry

@@ -1,4 +1,4 @@
-import { State } from "../storage";
+import { State } from "../storage.js";
 export interface Handle<D = any, E = any, K = any> {
     key?: K;
     skey?: string;

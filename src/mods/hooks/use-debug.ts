@@ -1,5 +1,5 @@
 import { useEffect } from "react"
-import { Handle } from "../handles"
+import { Handle } from "../handles/index.js"
 
 /**
  * Show handle in console when it changes

@@ -1,5 +1,5 @@
 import { useEffect } from "react"
-import { Handle } from "../handles"
+import { Handle } from "../handles/index.js"
 
 /**
  * Do a request on mount and url change only if there is no data yet

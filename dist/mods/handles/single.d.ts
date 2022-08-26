@@ -1,6 +1,6 @@
-import { Poster, Updater } from "../core";
-import { State } from "../storage";
-import { Handle } from "./generic";
+import { Poster, Updater } from "../core.js";
+import { State } from "../storage.js";
+import { Handle } from "./generic.js";
 /**
  * Handle for a single resource
  */

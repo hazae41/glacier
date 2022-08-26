@@ -1,5 +1,5 @@
 import { useEffect, useRef } from "react"
-import { Handle } from "../handles"
+import { Handle } from "../handles/index.js"
 
 export interface RetryOptions {
   init?: number

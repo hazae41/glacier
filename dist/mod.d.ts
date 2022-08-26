@@ -1,2 +1,2 @@
-export * from "./comps";
-export * from "./mods";
+export * from "./comps/index.js";
+export * from "./mods/index.js";

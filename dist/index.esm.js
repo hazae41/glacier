@@ -1,10 +1,4 @@
-Object.defineProperty(exports, '__esModule', { value: true });
-
-var React = require('react');
-
-function _interopDefaultLegacy (e) { return e && typeof e === 'object' && 'default' in e ? e : { 'default': e }; }
-
-var React__default = /*#__PURE__*/_interopDefaultLegacy(React);
+import React, { useEffect, createContext, useContext, useRef, useMemo, useState, useCallback } from 'react';
 
 /*! *****************************************************************************
 Copyright (c) Microsoft Corporation.
@@ -154,7 +148,7 @@ var Ortho = /** @class */ (function () {
  * Orthogonal state listener
  */
 function useOrtho(ortho, key, callback) {
-    React.useEffect(function () {
+    useEffect(function () {
         if (!key)
             return;
         ortho.subscribe(key, callback);
@@ -539,12 +533,12 @@ var Core = /** @class */ (function (_super) {
     return Core;
 }(Ortho));
 
-var CoreContext = React.createContext(undefined);
+var CoreContext = createContext(undefined);
 function useCore() {
-    return React.useContext(CoreContext);
+    return useContext(CoreContext);
 }
 function useCoreProvider(storage, equals) {
-    var core = React.useRef();
+    var core = useRef();
     if (!core.current)
         core.current = new Core(storage, equals);
     return core.current;
@@ -552,7 +546,7 @@ function useCoreProvider(storage, equals) {
 function CoreProvider(props) {
     var storage = props.storage, equals = props.equals, children = props.children;
     var core = useCoreProvider(storage, equals);
-    return React__default["default"].createElement(CoreContext.Provider, { value: core }, children);
+    return React.createElement(CoreContext.Provider, { value: core }, children);
 }
 
 /**
@@ -565,23 +559,23 @@ function CoreProvider(props) {
 function useScroll(scroller, fetcher, cooldown, timeout) {
     var _this = this;
     var core = useCore();
-    var key = React.useMemo(function () {
+    var key = useMemo(function () {
         return scroller();
     }, [scroller]);
-    var skey = React.useMemo(function () {
+    var skey = useMemo(function () {
         if (key === undefined)
             return;
         return "scroll:" + JSON.stringify(key);
     }, [key]);
-    var _a = React.useState(function () { return core.get(skey); }), state = _a[0], setState = _a[1];
-    React.useEffect(function () {
+    var _a = useState(function () { return core.get(skey); }), state = _a[0], setState = _a[1];
+    useEffect(function () {
         setState(core.get(skey));
     }, [core, skey]);
     useOrtho(core, skey, setState);
-    var mutate = React.useCallback(function (res) {
+    var mutate = useCallback(function (res) {
         return core.mutate(skey, res);
     }, [core, skey]);
-    var fetch = React.useCallback(function (aborter) { return __awaiter(_this, void 0, void 0, function () {
+    var fetch = useCallback(function (aborter) { return __awaiter(_this, void 0, void 0, function () {
         return __generator(this, function (_a) {
             switch (_a.label) {
                 case 0: return [4 /*yield*/, core.scroll.first(skey, scroller, fetcher, cooldown, timeout, aborter)];
@@ -589,7 +583,7 @@ function useScroll(scroller, fetcher, cooldown, timeout) {
             }
         });
     }); }, [core, skey, scroller, fetcher, cooldown]);
-    var refetch = React.useCallback(function (aborter) { return __awaiter(_this, void 0, void 0, function () {
+    var refetch = useCallback(function (aborter) { return __awaiter(_this, void 0, void 0, function () {
         return __generator(this, function (_a) {
             switch (_a.label) {
                 case 0: return [4 /*yield*/, core.scroll.first(skey, scroller, fetcher, 0, timeout, aborter)];
@@ -597,7 +591,7 @@ function useScroll(scroller, fetcher, cooldown, timeout) {
             }
         });
     }); }, [core, skey, scroller, fetcher]);
-    var scroll = React.useCallback(function (aborter) { return __awaiter(_this, void 0, void 0, function () {
+    var scroll = useCallback(function (aborter) { return __awaiter(_this, void 0, void 0, function () {
         return __generator(this, function (_a) {
             switch (_a.label) {
                 case 0: return [4 /*yield*/, core.scroll.scroll(skey, scroller, fetcher, 0, timeout, aborter)];
@@ -605,7 +599,7 @@ function useScroll(scroller, fetcher, cooldown, timeout) {
             }
         });
     }); }, [core, skey, scroller, fetcher]);
-    var clear = React.useCallback(function () {
+    var clear = useCallback(function () {
         core.delete(skey);
     }, [core, skey]);
     var _b = state !== null && state !== void 0 ? state : {}, data = _b.data, error = _b.error, time = _b.time, aborter = _b.aborter, expiration = _b.expiration;
@@ -623,20 +617,20 @@ function useScroll(scroller, fetcher, cooldown, timeout) {
 function useSingle(key, poster, cooldown, timeout) {
     var _this = this;
     var core = useCore();
-    var skey = React.useMemo(function () {
+    var skey = useMemo(function () {
         if (key === undefined)
             return;
         return JSON.stringify(key);
     }, [key]);
-    var _a = React.useState(function () { return core.get(skey); }), state = _a[0], setState = _a[1];
-    React.useEffect(function () {
+    var _a = useState(function () { return core.get(skey); }), state = _a[0], setState = _a[1];
+    useEffect(function () {
         setState(core.get(skey));
     }, [core, skey]);
     useOrtho(core, skey, setState);
-    var mutate = React.useCallback(function (res) {
+    var mutate = useCallback(function (res) {
         return core.mutate(skey, res);
     }, [core, skey]);
-    var fetch = React.useCallback(function (aborter) { return __awaiter(_this, void 0, void 0, function () {
+    var fetch = useCallback(function (aborter) { return __awaiter(_this, void 0, void 0, function () {
         return __generator(this, function (_a) {
             switch (_a.label) {
                 case 0: return [4 /*yield*/, core.single.fetch(key, skey, poster, cooldown, timeout, aborter)];
@@ -644,7 +638,7 @@ function useSingle(key, poster, cooldown, timeout) {
             }
         });
     }); }, [core, skey, poster, cooldown]);
-    var refetch = React.useCallback(function (aborter) { return __awaiter(_this, void 0, void 0, function () {
+    var refetch = useCallback(function (aborter) { return __awaiter(_this, void 0, void 0, function () {
         return __generator(this, function (_a) {
             switch (_a.label) {
                 case 0: return [4 /*yield*/, core.single.fetch(key, skey, poster, 0, timeout, aborter)];
@@ -652,10 +646,10 @@ function useSingle(key, poster, cooldown, timeout) {
             }
         });
     }); }, [core, skey, poster]);
-    var update = React.useCallback(function (updater, aborter) {
+    var update = useCallback(function (updater, aborter) {
         return core.single.update(key, skey, poster, updater, timeout, aborter);
     }, [core, skey, poster]);
-    var clear = React.useCallback(function () {
+    var clear = useCallback(function () {
         core.delete(skey);
     }, [core, skey]);
     var _b = state !== null && state !== void 0 ? state : {}, data = _b.data, error = _b.error, time = _b.time, aborter = _b.aborter, expiration = _b.expiration;
@@ -669,7 +663,7 @@ function useSingle(key, poster, cooldown, timeout) {
  */
 function useDebug(handle, label) {
     var time = handle.time;
-    React.useEffect(function () {
+    useEffect(function () {
         console.debug(label, handle);
     }, [time]);
 }
@@ -681,7 +675,7 @@ function useDebug(handle, label) {
  */
 function useError(handle, callback) {
     var error = handle.error;
-    React.useEffect(function () {
+    useEffect(function () {
         if (error !== undefined)
             callback(error);
     }, [error, callback]);
@@ -711,7 +705,7 @@ function useFallback(handle, state) {
  */
 function useFetch(handle) {
     var fetch = handle.fetch;
-    React.useEffect(function () {
+    useEffect(function () {
         fetch();
     }, [fetch]);
 }
@@ -724,7 +718,7 @@ function useFetch(handle) {
  */
 function useInterval(handle, interval) {
     var fetch = handle.fetch;
-    React.useEffect(function () {
+    useEffect(function () {
         if (!interval)
             return;
         var i = setInterval(fetch, interval);
@@ -740,7 +734,7 @@ function useInterval(handle, interval) {
  */
 function useMount(handle) {
     var fetch = handle.fetch;
-    React.useEffect(function () {
+    useEffect(function () {
         fetch();
     }, []);
 }
@@ -753,7 +747,7 @@ function useMount(handle) {
  */
 function useOnce(handle) {
     var data = handle.data, fetch = handle.fetch;
-    React.useEffect(function () {
+    useEffect(function () {
         if (data === undefined)
             fetch();
     }, [data, fetch]);
@@ -765,7 +759,7 @@ function useOnce(handle) {
  */
 function useOnline(handle) {
     var fetch = handle.fetch;
-    React.useEffect(function () {
+    useEffect(function () {
         var f = function () { return fetch(); };
         addEventListener("online", f);
         return function () { return removeEventListener("online", f); };
@@ -787,11 +781,11 @@ function useRetry(handle, options) {
     if (options === void 0) { options = {}; }
     var refetch = handle.refetch, error = handle.error, time = handle.time;
     var _a = options.init, init = _a === void 0 ? 1000 : _a, _b = options.base, base = _b === void 0 ? 2 : _b, _c = options.max, max = _c === void 0 ? 3 : _c;
-    var count = React.useRef(0);
-    React.useEffect(function () {
+    var count = useRef(0);
+    useEffect(function () {
         count.current = 0;
     }, [refetch]);
-    React.useEffect(function () {
+    useEffect(function () {
         if (error === undefined) {
             count.current = 0;
             return;
@@ -811,7 +805,7 @@ function useRetry(handle, options) {
  */
 function useVisible(handle) {
     var fetch = handle.fetch;
-    React.useEffect(function () {
+    useEffect(function () {
         var f = function () { return !document.hidden && fetch(); };
         document.addEventListener("visibilitychange", f);
         return function () { return document.removeEventListener("visibilitychange", f); };
@@ -844,4 +838,4 @@ var mod = {
     Single: Single
 };
 
-exports.XSWR = mod;
+export { mod as XSWR };

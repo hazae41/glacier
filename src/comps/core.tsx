@@ -1,6 +1,8 @@
 import React, { createContext, useContext, useRef } from "react"
-import { ChildrenProps } from "../libs/react"
-import { Core, Equals, State, Storage } from "../mod"
+import { ChildrenProps } from "../libs/react.js"
+import { Core } from "../mods/core.js"
+import { Equals } from "../mods/equals.js"
+import { State, Storage } from "../mods/storage.js"
 
 export const CoreContext =
   createContext<Core | undefined>(undefined)

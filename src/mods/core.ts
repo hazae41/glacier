@@ -1,11 +1,8 @@
-import { Ortho } from "../libs/ortho"
-import { Equals, jsoneq } from "./equals"
-import { Scroll } from "./scroll"
-import { Single } from "./single"
-import { State, Storage } from "./storage"
-
-export const DEFAULT_COOLDOWN = 1 * 1000
-export const DEFAULT_TIMEOUT = 5 * 1000
+import { Ortho } from "../libs/ortho.js"
+import { Equals, jsoneq } from "./equals.js"
+import { Scroll } from "./scroll.js"
+import { Single } from "./single.js"
+import { State, Storage } from "./storage.js"
 
 export interface Result<D = any> {
   data: D,
@@ -161,7 +158,7 @@ export class Core extends Ortho<string, State | undefined> {
   }
 
   counts = new Map<string, number>()
-  timeouts = new Map<string, number>()
+  timeouts = new Map<string, NodeJS.Timeout>()
 
   subscribe(
     key: string | undefined,

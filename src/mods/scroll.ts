@@ -1,5 +1,6 @@
-import { lastOf } from "../libs/arrays";
-import { Core, DEFAULT_COOLDOWN, DEFAULT_TIMEOUT, Fetcher, Scroller } from "./core";
+import { lastOf } from "../libs/arrays.js";
+import { Core, Fetcher, Scroller } from "./core.js";
+import { DEFAULT_COOLDOWN, DEFAULT_TIMEOUT } from "./defaults.js";
 
 export class Scroll {
   constructor(readonly core: Core) { }

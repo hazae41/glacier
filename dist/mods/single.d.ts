@@ -1,5 +1,5 @@
-import { Core, Fetcher, Poster, Updater } from "./core";
-import { State } from "./storage";
+import { Core, Fetcher, Poster, Updater } from "./core.js";
+import { State } from "./storage.js";
 export declare class Single {
     readonly core: Core;
     constructor(core: Core);

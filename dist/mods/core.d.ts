@@ -1,10 +1,9 @@
-import { Ortho } from "../libs/ortho";
-import { Equals } from "./equals";
-import { Scroll } from "./scroll";
-import { Single } from "./single";
-import { State, Storage } from "./storage";
-export declare const DEFAULT_COOLDOWN: number;
-export declare const DEFAULT_TIMEOUT: number;
+/// <reference types="node" />
+import { Ortho } from "../libs/ortho.js";
+import { Equals } from "./equals.js";
+import { Scroll } from "./scroll.js";
+import { Single } from "./single.js";
+import { State, Storage } from "./storage.js";
 export interface Result<D = any> {
     data: D;
     expiration?: number;
@@ -68,7 +67,7 @@ export declare class Core extends Ortho<string, State | undefined> {
      */
     cooldown<D = any, E = any>(current?: State<D, E>, cooldown?: number): boolean;
     counts: Map<string, number>;
-    timeouts: Map<string, number>;
+    timeouts: Map<string, NodeJS.Timeout>;
     subscribe(key: string | undefined, listener: (x: State) => void): void;
     unsubscribe(key: string | undefined, listener: (x: State) => void): void;
 }

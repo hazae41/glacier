@@ -1,4 +1,4 @@
-import { Handle } from "../handles";
+import { Handle } from "../handles/index.js";
 /**
  * Call a function on error
  * @param handle

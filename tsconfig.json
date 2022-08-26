@@ -1,20 +1,20 @@
 {
-	"compilerOptions": {
-		"outDir": "dist",
-		"module": "NodeNext",
-		"moduleResolution": "NodeNext",
-		"declaration": true,
-		"lib": [
-			"dom",
-			"es2015"
-		],
-		"jsx": "react",
-		"esModuleInterop": true,
-	},
-	"exclude": [
-		"node_modules"
-	],
-	"include": [
-		"src/**/*"
-	],
+  "compilerOptions": {
+    "outDir": "dist",
+    "module": "NodeNext",
+    "moduleResolution": "NodeNext",
+    "declaration": true,
+    "lib": [
+      "dom",
+      "es2015"
+    ],
+    "jsx": "react",
+    "allowSyntheticDefaultImports": true,
+  },
+  "exclude": [
+    "node_modules"
+  ],
+  "include": [
+    "src/**/*"
+  ],
 }

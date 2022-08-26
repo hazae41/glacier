@@ -1,4 +1,4 @@
-import { Handle } from "../handles";
+import { Handle } from "../handles/index.js";
 /**
  * Do a request on mount and url change
  * @see useMount for doing a request on mount only

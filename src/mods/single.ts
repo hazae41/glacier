@@ -1,5 +1,6 @@
-import { Core, DEFAULT_COOLDOWN, DEFAULT_TIMEOUT, Fetcher, Poster, Updater } from "./core";
-import { State } from "./storage";
+import { Core, Fetcher, Poster, Updater } from "./core.js";
+import { DEFAULT_COOLDOWN, DEFAULT_TIMEOUT } from "./defaults.js";
+import { State } from "./storage.js";
 
 export class Single {
   constructor(readonly core: Core) { }

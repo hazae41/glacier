@@ -1,3 +1,3 @@
-export * from "./generic";
-export * from "./scroll";
-export * from "./single";
+export * from "./generic.js";
+export * from "./scroll.js";
+export * from "./single.js";

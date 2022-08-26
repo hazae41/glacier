@@ -1,9 +1,9 @@
 import { useCallback, useEffect, useMemo, useState } from "react"
-import { useCore } from "../../comps"
-import { useOrtho } from "../../libs/ortho"
-import { Poster, Updater } from "../core"
-import { State } from "../storage"
-import { Handle } from "./generic"
+import { useCore } from "../../comps/core.js"
+import { useOrtho } from "../../libs/ortho.js"
+import { Poster, Updater } from "../core.js"
+import { State } from "../storage.js"
+import { Handle } from "./generic.js"
 
 /**
  * Handle for a single resource
