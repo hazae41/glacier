@@ -18,7 +18,7 @@ XSWR uses two new approaches compared to other data fetching libraries like swr 
 1) Encapsulating keys, fetchers and resource type in a single abstraction called "handle".
 2) Composing features with simple-to-understand hooks instead of having bloated configuration patterns and unexpected behaviours.
 
-By using these two approaches, XSWR aims to help you highly [normalize things](https://xswr.hazae41.me/patterns/normalization).
+By using these two approaches, XSWR aims to help you highly [centralize and reuse things](https://xswr.hazae41.me/patterns/centralization).
 
 ### [Comparison with swr and react-query](https://xswr.hazae41.me/faq/comparison)
 
@@ -48,6 +48,7 @@ By using these two approaches, XSWR aims to help you highly [normalize things](h
 ### Upcoming features
 
 - Transport agnostic streaming (ethers.js, WebSockets, Socket.io)
+- Store normalization
 - Bidirectional scrolling
 - React suspense
 
