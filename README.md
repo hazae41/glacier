@@ -77,30 +77,21 @@ Create a fetcher for your request
 ```typescript
 async function fetchAsJson<T>(url: string) {
   const res = await fetch(url)
-  return { data: await res.json() as T }
+  const data = await res.json() as T
+  return { data }
 }
 ```
 
 Then create your hook using `useSingle` (or `useScroll`) and some other hooks you like
 
 ```typescript
-interface MyData {}
-
 function useMyData() {
-  // Just pass a unique url/key and a fetcher
-  const handle = XSWR.useSingle<MyData>(
+  const handle = XSWR.useSingle<MyData>( // Just pass a unique url/key and a fetcher
     `/api/data`,
     fetchAsJson)
-
-  // Fetch on mount and on url change
-  XSWR.useFetch(handle)
-
-  // Fetch when the page becomes visible
-  XSWR.useVisible(handle)
-
-  // Fetch when the browser becomes online
-  XSWR.useOnline(handle)
-
+  XSWR.useFetch(handle) // Fetch on mount and on url change
+  XSWR.useVisible(handle) // Fetch when the page becomes visible
+  XSWR.useOnline(handle) // Fetch when the browser becomes online
   return handle
 }
 ```
@@ -109,13 +100,13 @@ Now you can use it in your component
 
 ```typescript
 function MyApp() {
-  const mydata = useMyData()
+  const { error, data } = useMyData()
 
-  if (mydata.error)
-    return <MyError error={mydata.error} />
-  if (!mydata.data)
+  if (error)
+    return <MyError error={error} />
+  if (!data)
     return <MyLoading />
-  return <MyPage data={mydata.data} />
+  return <MyPage data={data} />
 }
 ```
 
