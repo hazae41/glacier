@@ -153,6 +153,8 @@ export class Core extends Ortho<string, State | undefined> {
       delete next.aborter
     if (state.expiration === -1)
       delete next.expiration
+    if (state.cooldown === -1)
+      delete next.cooldown
 
     if (this.equals(current, next))
       return current
