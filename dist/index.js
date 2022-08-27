@@ -48,6 +48,18 @@ var __assign = function() {
     return __assign.apply(this, arguments);
 };
 
+function __rest(s, e) {
+    var t = {};
+    for (var p in s) if (Object.prototype.hasOwnProperty.call(s, p) && e.indexOf(p) < 0)
+        t[p] = s[p];
+    if (s != null && typeof Object.getOwnPropertySymbols === "function")
+        for (var i = 0, p = Object.getOwnPropertySymbols(s); i < p.length; i++) {
+            if (e.indexOf(p[i]) < 0 && Object.prototype.propertyIsEnumerable.call(s, p[i]))
+                t[p[i]] = s[p[i]];
+        }
+    return t;
+}
+
 function __awaiter(thisArg, _arguments, P, generator) {
     function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
     return new (P || (P = Promise))(function (resolve, reject) {
@@ -171,14 +183,15 @@ function jsoneq(a, b) {
     return JSON.stringify(a) === JSON.stringify(b);
 }
 
+var DEFAULT_EQUALS = jsoneq;
+var DEFAULT_COOLDOWN = 1 * 1000;
+var DEFAULT_EXPIRATION = -1;
+var DEFAULT_TIMEOUT = 5 * 1000;
+
 function lastOf(array) {
     if (array.length)
         return array[array.length - 1];
 }
-
-var DEFAULT_COOLDOWN = 1 * 1000;
-var DEFAULT_EXPIRATION = -1;
-var DEFAULT_TIMEOUT = 5 * 1000;
 
 function getTimeFromDelay(delay) {
     if (delay === -1)
@@ -212,11 +225,11 @@ var Scroll = /** @class */ (function () {
                     case 0:
                         if (skey === undefined)
                             return [2 /*return*/];
-                        _b = tparams.cooldown, dcooldown = _b === void 0 ? DEFAULT_COOLDOWN : _b, _c = tparams.expiration, dexpiration = _c === void 0 ? DEFAULT_EXPIRATION : _c, _d = tparams.timeout, dtimeout = _d === void 0 ? DEFAULT_TIMEOUT : _d;
+                        _b = tparams.cooldown, dcooldown = _b === void 0 ? this.core.cooldown : _b, _c = tparams.expiration, dexpiration = _c === void 0 ? this.core.expiration : _c, _d = tparams.timeout, dtimeout = _d === void 0 ? this.core.timeout : _d;
                         current = this.core.get(skey);
                         if (current === null || current === void 0 ? void 0 : current.aborter)
                             return [2 /*return*/, current];
-                        if (this.core.cooldown(current, force))
+                        if (this.core.shouldCooldown(current, force))
                             return [2 /*return*/, current];
                         pages = (_a = current === null || current === void 0 ? void 0 : current.data) !== null && _a !== void 0 ? _a : [];
                         first = scroller(undefined);
@@ -271,11 +284,11 @@ var Scroll = /** @class */ (function () {
                     case 0:
                         if (skey === undefined)
                             return [2 /*return*/];
-                        _b = tparams.cooldown, dcooldown = _b === void 0 ? DEFAULT_COOLDOWN : _b, _c = tparams.expiration, dexpiration = _c === void 0 ? DEFAULT_EXPIRATION : _c, _d = tparams.timeout, dtimeout = _d === void 0 ? DEFAULT_TIMEOUT : _d;
+                        _b = tparams.cooldown, dcooldown = _b === void 0 ? this.core.cooldown : _b, _c = tparams.expiration, dexpiration = _c === void 0 ? this.core.expiration : _c, _d = tparams.timeout, dtimeout = _d === void 0 ? this.core.timeout : _d;
                         current = this.core.get(skey);
                         if (current === null || current === void 0 ? void 0 : current.aborter)
                             return [2 /*return*/, current];
-                        if (this.core.cooldown(current, force))
+                        if (this.core.shouldCooldown(current, force))
                             return [2 /*return*/, current];
                         pages = (_a = current === null || current === void 0 ? void 0 : current.data) !== null && _a !== void 0 ? _a : [];
                         last = scroller(lastOf(pages));
@@ -337,11 +350,11 @@ var Single = /** @class */ (function () {
                             return [2 /*return*/];
                         if (skey === undefined)
                             return [2 /*return*/];
-                        _a = tparams.cooldown, dcooldown = _a === void 0 ? DEFAULT_COOLDOWN : _a, _b = tparams.expiration, dexpiration = _b === void 0 ? DEFAULT_EXPIRATION : _b, _c = tparams.timeout, dtimeout = _c === void 0 ? DEFAULT_TIMEOUT : _c;
+                        _a = tparams.cooldown, dcooldown = _a === void 0 ? this.core.cooldown : _a, _b = tparams.expiration, dexpiration = _b === void 0 ? this.core.expiration : _b, _c = tparams.timeout, dtimeout = _c === void 0 ? this.core.timeout : _c;
                         current = this.core.get(skey);
                         if (current === null || current === void 0 ? void 0 : current.aborter)
                             return [2 /*return*/, current];
-                        if (this.core.cooldown(current, force))
+                        if (this.core.shouldCooldown(current, force))
                             return [2 /*return*/, current];
                         timeout = setTimeout(function () {
                             aborter.abort("Timed out");
@@ -391,7 +404,7 @@ var Single = /** @class */ (function () {
                             return [2 /*return*/];
                         if (skey === undefined)
                             return [2 /*return*/];
-                        _a = tparams.cooldown, dcooldown = _a === void 0 ? DEFAULT_COOLDOWN : _a, _b = tparams.expiration, dexpiration = _b === void 0 ? DEFAULT_EXPIRATION : _b, _c = tparams.timeout, dtimeout = _c === void 0 ? DEFAULT_TIMEOUT : _c;
+                        _a = tparams.cooldown, dcooldown = _a === void 0 ? this.core.cooldown : _a, _b = tparams.expiration, dexpiration = _b === void 0 ? this.core.expiration : _b, _c = tparams.timeout, dtimeout = _c === void 0 ? this.core.timeout : _c;
                         current = this.core.get(skey);
                         updated = updater(current.data);
                         timeout = setTimeout(function () {
@@ -423,16 +436,20 @@ var Single = /** @class */ (function () {
 
 var Core = /** @class */ (function (_super) {
     __extends(Core, _super);
-    function Core(storage, equals) {
-        if (storage === void 0) { storage = new Map(); }
-        if (equals === void 0) { equals = jsoneq; }
-        var _this = _super.call(this) || this;
-        _this.storage = storage;
-        _this.equals = equals;
+    function Core(params) {
+        var _this = this;
+        var _a, _b, _c, _d, _e;
+        _this = _super.call(this) || this;
         _this.single = new Single(_this);
         _this.scroll = new Scroll(_this);
         _this.counts = new Map();
         _this.timeouts = new Map();
+        Object.assign(_this, params);
+        (_a = _this.storage) !== null && _a !== void 0 ? _a : (_this.storage = new Map());
+        (_b = _this.equals) !== null && _b !== void 0 ? _b : (_this.equals = DEFAULT_EQUALS);
+        (_c = _this.cooldown) !== null && _c !== void 0 ? _c : (_this.cooldown = DEFAULT_COOLDOWN);
+        (_d = _this.expiration) !== null && _d !== void 0 ? _d : (_this.expiration = DEFAULT_EXPIRATION);
+        (_e = _this.timeout) !== null && _e !== void 0 ? _e : (_this.timeout = DEFAULT_TIMEOUT);
         return _this;
     }
     /**
@@ -514,7 +531,7 @@ var Core = /** @class */ (function (_super) {
     /**
      * True if we should cooldown this resource
      */
-    Core.prototype.cooldown = function (current, force) {
+    Core.prototype.shouldCooldown = function (current, force) {
         if (force)
             return false;
         if ((current === null || current === void 0 ? void 0 : current.cooldown) === undefined)
@@ -570,15 +587,15 @@ var CoreContext = React.createContext(undefined);
 function useCore() {
     return React.useContext(CoreContext);
 }
-function useCoreProvider(storage, equals) {
+function useCoreProvider(params) {
     var core = React.useRef();
     if (!core.current)
-        core.current = new Core(storage, equals);
+        core.current = new Core(params);
     return core.current;
 }
 function CoreProvider(props) {
-    var storage = props.storage, equals = props.equals, children = props.children;
-    var core = useCoreProvider(storage, equals);
+    var children = props.children, params = __rest(props, ["children"]);
+    var core = useCoreProvider(params);
     return React__default["default"].createElement(CoreContext.Provider, { value: core }, children);
 }
 

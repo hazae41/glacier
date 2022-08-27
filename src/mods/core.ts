@@ -1,8 +1,10 @@
 import { Ortho } from "../libs/ortho.js"
-import { Equals, jsoneq } from "./equals.js"
+import { DEFAULT_COOLDOWN, DEFAULT_EQUALS, DEFAULT_EXPIRATION, DEFAULT_TIMEOUT } from "./defaults.js"
+import { Equals } from "./equals.js"
 import { Scroll } from "./scroll.js"
 import { Single } from "./single.js"
 import { State, Storage } from "./storage.js"
+import { TimeParams } from "./time.js"
 
 export interface Result<D = any> {
   data: D,
@@ -31,15 +33,33 @@ export type Updater<D = any> =
 export type Listener<D = any, E = any> =
   (state?: State<D, E>) => void
 
+
+export interface CoreParams extends TimeParams {
+  storage?: Storage<State>
+  equals?: Equals
+}
+
 export class Core extends Ortho<string, State | undefined> {
   readonly single = new Single(this)
   readonly scroll = new Scroll(this)
 
-  constructor(
-    readonly storage: Storage<State> = new Map<string, State>(),
-    readonly equals: Equals = jsoneq
-  ) {
+  readonly storage: Storage<State>
+  readonly equals: Equals
+
+  readonly cooldown: number
+  readonly expiration: number
+  readonly timeout: number
+
+  constructor(params?: CoreParams) {
     super()
+
+    Object.assign(this, params)
+
+    this.storage ??= new Map<string, State>()
+    this.equals ??= DEFAULT_EQUALS
+    this.cooldown ??= DEFAULT_COOLDOWN
+    this.expiration ??= DEFAULT_EXPIRATION
+    this.timeout ??= DEFAULT_TIMEOUT
   }
 
   /**
@@ -143,7 +163,7 @@ export class Core extends Ortho<string, State | undefined> {
   /**
    * True if we should cooldown this resource
    */
-  cooldown<D = any, E = any>(current?: State<D, E>, force?: boolean) {
+  shouldCooldown<D = any, E = any>(current?: State<D, E>, force?: boolean) {
     if (force)
       return false
     if (current?.cooldown === undefined)

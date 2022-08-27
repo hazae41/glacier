@@ -4,6 +4,7 @@ import { Equals } from "./equals.js";
 import { Scroll } from "./scroll.js";
 import { Single } from "./single.js";
 import { State, Storage } from "./storage.js";
+import { TimeParams } from "./time.js";
 export interface Result<D = any> {
     data: D;
     cooldown?: number;
@@ -21,12 +22,19 @@ export declare type PosterMore<D = any> = {
 export declare type Scroller<D = any, K = any> = (previous?: D) => K | undefined;
 export declare type Updater<D = any> = (previous?: D) => D;
 export declare type Listener<D = any, E = any> = (state?: State<D, E>) => void;
+export interface CoreParams extends TimeParams {
+    storage?: Storage<State>;
+    equals?: Equals;
+}
 export declare class Core extends Ortho<string, State | undefined> {
-    readonly storage: Storage<State>;
-    readonly equals: Equals;
     readonly single: Single;
     readonly scroll: Scroll;
-    constructor(storage?: Storage<State>, equals?: Equals);
+    readonly storage: Storage<State>;
+    readonly equals: Equals;
+    readonly cooldown: number;
+    readonly expiration: number;
+    readonly timeout: number;
+    constructor(params?: CoreParams);
     /**
      * Check if key exists from storage
      * @param key Key
@@ -65,7 +73,7 @@ export declare class Core extends Ortho<string, State | undefined> {
     /**
      * True if we should cooldown this resource
      */
-    cooldown<D = any, E = any>(current?: State<D, E>, force?: boolean): boolean;
+    shouldCooldown<D = any, E = any>(current?: State<D, E>, force?: boolean): boolean;
     counts: Map<string, number>;
     timeouts: Map<string, NodeJS.Timeout>;
     subscribe(key: string | undefined, listener: (x: State) => void): void;

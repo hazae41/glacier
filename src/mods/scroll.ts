@@ -1,6 +1,5 @@
 import { lastOf } from "../libs/arrays.js";
 import { Core, Fetcher, Scroller } from "./core.js";
-import { DEFAULT_COOLDOWN, DEFAULT_EXPIRATION, DEFAULT_TIMEOUT } from "./defaults.js";
 import { getTimeFromDelay, TimeParams } from "./time.js";
 
 export class Scroll {
@@ -27,15 +26,15 @@ export class Scroll {
     if (skey === undefined) return
 
     const {
-      cooldown: dcooldown = DEFAULT_COOLDOWN,
-      expiration: dexpiration = DEFAULT_EXPIRATION,
-      timeout: dtimeout = DEFAULT_TIMEOUT
+      cooldown: dcooldown = this.core.cooldown,
+      expiration: dexpiration = this.core.expiration,
+      timeout: dtimeout = this.core.timeout,
     } = tparams
 
     const current = this.core.get<D[], E>(skey)
     if (current?.aborter)
       return current
-    if (this.core.cooldown(current, force))
+    if (this.core.shouldCooldown(current, force))
       return current
 
     const pages = current?.data ?? []
@@ -91,15 +90,15 @@ export class Scroll {
     if (skey === undefined) return
 
     const {
-      cooldown: dcooldown = DEFAULT_COOLDOWN,
-      expiration: dexpiration = DEFAULT_EXPIRATION,
-      timeout: dtimeout = DEFAULT_TIMEOUT,
+      cooldown: dcooldown = this.core.cooldown,
+      expiration: dexpiration = this.core.expiration,
+      timeout: dtimeout = this.core.timeout,
     } = tparams
 
     const current = this.core.get<D[], E>(skey)
     if (current?.aborter)
       return current
-    if (this.core.cooldown(current, force))
+    if (this.core.shouldCooldown(current, force))
       return current
     const pages = current?.data ?? []
     const last = scroller(lastOf(pages))

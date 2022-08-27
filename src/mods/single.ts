@@ -1,5 +1,4 @@
 import { Core, Fetcher, Poster, Updater } from "./core.js";
-import { DEFAULT_COOLDOWN, DEFAULT_EXPIRATION, DEFAULT_TIMEOUT } from "./defaults.js";
 import { State } from "./storage.js";
 import { getTimeFromDelay, TimeParams } from "./time.js";
 
@@ -28,15 +27,15 @@ export class Single {
     if (skey === undefined) return
 
     const {
-      cooldown: dcooldown = DEFAULT_COOLDOWN,
-      expiration: dexpiration = DEFAULT_EXPIRATION,
-      timeout: dtimeout = DEFAULT_TIMEOUT
+      cooldown: dcooldown = this.core.cooldown,
+      expiration: dexpiration = this.core.expiration,
+      timeout: dtimeout = this.core.timeout,
     } = tparams
 
     const current = this.core.get<D, E>(skey)
     if (current?.aborter)
       return current
-    if (this.core.cooldown(current, force))
+    if (this.core.shouldCooldown(current, force))
       return current
 
     const timeout = setTimeout(() => {
@@ -88,9 +87,9 @@ export class Single {
     if (skey === undefined) return
 
     const {
-      cooldown: dcooldown = DEFAULT_COOLDOWN,
-      expiration: dexpiration = DEFAULT_EXPIRATION,
-      timeout: dtimeout = DEFAULT_TIMEOUT,
+      cooldown: dcooldown = this.core.cooldown,
+      expiration: dexpiration = this.core.expiration,
+      timeout: dtimeout = this.core.timeout,
     } = tparams
 
     const current = this.core.get<D, E>(skey)
