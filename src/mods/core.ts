@@ -123,17 +123,19 @@ export class Core extends Ortho<string, State | undefined> {
     if (current?.time !== undefined && state.time < current.time)
       return current
 
-    const next = { ...current, ...state }
-
     if (this.equals(state.data, current?.data))
-      next.data = current?.data
+      state.data = current?.data
     if (this.equals(state.error, current?.error))
-      next.error = current?.error
+      state.error = current?.error
+
+    const next = { ...current, ...state }
 
     if (state.data !== undefined)
       delete next.error
     if (state.aborter === undefined)
       delete next.aborter
+    if (state.expiration === -1)
+      delete next.expiration
 
     if (this.equals(current, next))
       return current

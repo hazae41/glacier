@@ -37,7 +37,9 @@ export class Single {
       const { signal } = aborter
 
       this.core.mutate(skey, { aborter })
-      const { data, expiration } = await fetcher(key, { signal })
+
+      const { data, expiration = -1 } = await fetcher(key, { signal })
+
       return this.core.mutate<D, E>(skey, { data, expiration })
     } catch (error: any) {
       return this.core.mutate<D, E>(skey, { error })
@@ -76,7 +78,9 @@ export class Single {
       const { signal } = aborter
 
       this.core.mutate(skey, { data: updated, time: current.time })
-      const { data, expiration } = await poster(key, { data: updated, signal })
+
+      const { data, expiration = -1 } = await poster(key, { data: updated, signal })
+
       return this.core.mutate<D, E>(skey, { data, expiration })
     } catch (error: any) {
       this.core.mutate<D, E>(skey, current)

@@ -41,7 +41,8 @@ export class Scroll {
       const { signal } = aborter
 
       this.core.mutate(skey, { aborter })
-      const { data, expiration } = await fetcher(first, { signal })
+
+      const { data, expiration = -1 } = await fetcher(first, { signal })
 
       return this.core.equals(data, pages[0])
         ? this.core.mutate<D[], E>(skey, { expiration })
@@ -88,8 +89,13 @@ export class Scroll {
       const { signal } = aborter
 
       this.core.mutate(skey, { aborter })
-      const { data } = await fetcher(last, { signal })
-      return this.core.mutate<D[], E>(skey, { data: [...pages, data] })
+
+      let { data, expiration = -1 } = await fetcher(last, { signal })
+
+      if (expiration > current.expiration)
+        expiration = current.expiration
+
+      return this.core.mutate<D[], E>(skey, { data: [...pages, data], expiration })
     } catch (error: any) {
       return this.core.mutate<D[], E>(skey, { error })
     } finally {
