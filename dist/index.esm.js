@@ -517,6 +517,8 @@ var Core = /** @class */ (function (_super) {
             delete next.aborter;
         if (state.expiration === -1)
             delete next.expiration;
+        if (state.cooldown === -1)
+            delete next.cooldown;
         if (this.equals(current, next))
             return current;
         this.set(key, next);
