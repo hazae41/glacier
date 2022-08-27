@@ -1,6 +1,6 @@
 import { lastOf } from "../libs/arrays.js";
 import { Core, Fetcher, Scroller } from "./core.js";
-import { DEFAULT_COOLDOWN, DEFAULT_TIMEOUT } from "./defaults.js";
+import { DEFAULT_COOLDOWN, DEFAULT_STALE, DEFAULT_TIMEOUT } from "./defaults.js";
 
 export class Scroll {
   constructor(readonly core: Core) { }
@@ -19,6 +19,7 @@ export class Scroll {
     fetcher: Fetcher<D, K>,
     cooldown = DEFAULT_COOLDOWN,
     timeout = DEFAULT_TIMEOUT,
+    stale = DEFAULT_STALE,
     aborter = new AbortController()
   ) {
     if (skey === undefined) return
@@ -42,7 +43,10 @@ export class Scroll {
 
       this.core.mutate(skey, { aborter })
 
-      const { data, expiration = -1 } = await fetcher(first, { signal })
+      const {
+        data,
+        expiration = Date.now() + stale
+      } = await fetcher(first, { signal })
 
       return this.core.equals(data, pages[0])
         ? this.core.mutate<D[], E>(skey, { expiration })
@@ -68,6 +72,7 @@ export class Scroll {
     fetcher: Fetcher<D, K>,
     cooldown = DEFAULT_COOLDOWN,
     timeout = DEFAULT_TIMEOUT,
+    stale = DEFAULT_STALE,
     aborter = new AbortController()
   ) {
     if (skey === undefined) return
@@ -90,10 +95,12 @@ export class Scroll {
 
       this.core.mutate(skey, { aborter })
 
-      let { data, expiration = -1 } = await fetcher(last, { signal })
+      let {
+        data,
+        expiration = Date.now() + stale
+      } = await fetcher(last, { signal })
 
-      if (expiration > current.expiration)
-        expiration = current.expiration
+      expiration = Math.min(expiration, current.expiration)
 
       return this.core.mutate<D[], E>(skey, { data: [...pages, data], expiration })
     } catch (error: any) {

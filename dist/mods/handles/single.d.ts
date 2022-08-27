@@ -14,4 +14,4 @@ export interface SingleHandle<D = any, E = any, K = any> extends Handle<D, E, K>
  * @param cooldown Usually your resource TTL
  * @returns A single resource handle
  */
-export declare function useSingle<D = any, E = any, K = any>(key: K | undefined, poster: Poster<D, K>, cooldown?: number, timeout?: number): SingleHandle<D, E, K>;
+export declare function useSingle<D = any, E = any, K = any>(key: K | undefined, poster: Poster<D, K>, cooldown?: number, timeout?: number, stale?: number): SingleHandle<D, E, K>;

@@ -134,8 +134,6 @@ export class Core extends Ortho<string, State | undefined> {
       delete next.error
     if (state.aborter === undefined)
       delete next.aborter
-    if (state.expiration === -1)
-      delete next.expiration
 
     if (this.equals(current, next))
       return current

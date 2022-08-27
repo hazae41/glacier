@@ -178,6 +178,7 @@ function lastOf(array) {
 
 var DEFAULT_COOLDOWN = 1 * 1000;
 var DEFAULT_TIMEOUT = 5 * 1000;
+var DEFAULT_STALE = 5 * 60 * 1000;
 
 var Scroll = /** @class */ (function () {
     function Scroll(core) {
@@ -191,15 +192,16 @@ var Scroll = /** @class */ (function () {
      * @param cooldown
      * @returns
      */
-    Scroll.prototype.first = function (skey, scroller, fetcher, cooldown, timeout, aborter) {
+    Scroll.prototype.first = function (skey, scroller, fetcher, cooldown, timeout, stale, aborter) {
         var _a;
         if (cooldown === void 0) { cooldown = DEFAULT_COOLDOWN; }
         if (timeout === void 0) { timeout = DEFAULT_TIMEOUT; }
+        if (stale === void 0) { stale = DEFAULT_STALE; }
         if (aborter === void 0) { aborter = new AbortController(); }
         return __awaiter(this, void 0, void 0, function () {
-            var current, pages, first, t, signal, _b, data, expiration, error_1;
-            return __generator(this, function (_c) {
-                switch (_c.label) {
+            var current, pages, first, t, signal, _b, data, _c, expiration, error_1;
+            return __generator(this, function (_d) {
+                switch (_d.label) {
                     case 0:
                         if (skey === undefined)
                             return [2 /*return*/];
@@ -215,19 +217,19 @@ var Scroll = /** @class */ (function () {
                         t = setTimeout(function () {
                             aborter.abort("Timed out");
                         }, timeout);
-                        _c.label = 1;
+                        _d.label = 1;
                     case 1:
-                        _c.trys.push([1, 3, 4, 5]);
+                        _d.trys.push([1, 3, 4, 5]);
                         signal = aborter.signal;
                         this.core.mutate(skey, { aborter: aborter });
                         return [4 /*yield*/, fetcher(first, { signal: signal })];
                     case 2:
-                        _b = _c.sent(), data = _b.data, expiration = _b.expiration;
+                        _b = _d.sent(), data = _b.data, _c = _b.expiration, expiration = _c === void 0 ? Date.now() + stale : _c;
                         return [2 /*return*/, this.core.equals(data, pages[0])
                                 ? this.core.mutate(skey, { expiration: expiration })
                                 : this.core.mutate(skey, { data: [data], expiration: expiration })];
                     case 3:
-                        error_1 = _c.sent();
+                        error_1 = _d.sent();
                         return [2 /*return*/, this.core.mutate(skey, { error: error_1 })];
                     case 4:
                         clearTimeout(t);
@@ -245,15 +247,16 @@ var Scroll = /** @class */ (function () {
      * @param cooldown
      * @returns
      */
-    Scroll.prototype.scroll = function (skey, scroller, fetcher, cooldown, timeout, aborter) {
+    Scroll.prototype.scroll = function (skey, scroller, fetcher, cooldown, timeout, stale, aborter) {
         var _a;
         if (cooldown === void 0) { cooldown = DEFAULT_COOLDOWN; }
         if (timeout === void 0) { timeout = DEFAULT_TIMEOUT; }
+        if (stale === void 0) { stale = DEFAULT_STALE; }
         if (aborter === void 0) { aborter = new AbortController(); }
         return __awaiter(this, void 0, void 0, function () {
-            var current, pages, last, t, signal, data, error_2;
-            return __generator(this, function (_b) {
-                switch (_b.label) {
+            var current, pages, last, t, signal, _b, data, _c, expiration, error_2;
+            return __generator(this, function (_d) {
+                switch (_d.label) {
                     case 0:
                         if (skey === undefined)
                             return [2 /*return*/];
@@ -269,17 +272,18 @@ var Scroll = /** @class */ (function () {
                         t = setTimeout(function () {
                             aborter.abort("Timed out");
                         }, timeout);
-                        _b.label = 1;
+                        _d.label = 1;
                     case 1:
-                        _b.trys.push([1, 3, 4, 5]);
+                        _d.trys.push([1, 3, 4, 5]);
                         signal = aborter.signal;
                         this.core.mutate(skey, { aborter: aborter });
                         return [4 /*yield*/, fetcher(last, { signal: signal })];
                     case 2:
-                        data = (_b.sent()).data;
-                        return [2 /*return*/, this.core.mutate(skey, { data: __spreadArray(__spreadArray([], pages, true), [data], false) })];
+                        _b = _d.sent(), data = _b.data, _c = _b.expiration, expiration = _c === void 0 ? Date.now() + stale : _c;
+                        expiration = Math.min(expiration, current.expiration);
+                        return [2 /*return*/, this.core.mutate(skey, { data: __spreadArray(__spreadArray([], pages, true), [data], false), expiration: expiration })];
                     case 3:
-                        error_2 = _b.sent();
+                        error_2 = _d.sent();
                         return [2 /*return*/, this.core.mutate(skey, { error: error_2 })];
                     case 4:
                         clearTimeout(t);
@@ -303,14 +307,15 @@ var Single = /** @class */ (function () {
      * @param cooldown
      * @returns state
      */
-    Single.prototype.fetch = function (key, skey, fetcher, cooldown, timeout, aborter) {
+    Single.prototype.fetch = function (key, skey, fetcher, cooldown, timeout, stale, aborter) {
         if (cooldown === void 0) { cooldown = DEFAULT_COOLDOWN; }
         if (timeout === void 0) { timeout = DEFAULT_TIMEOUT; }
+        if (stale === void 0) { stale = DEFAULT_STALE; }
         if (aborter === void 0) { aborter = new AbortController(); }
         return __awaiter(this, void 0, void 0, function () {
-            var current, t, signal, _a, data, expiration, error_1;
-            return __generator(this, function (_b) {
-                switch (_b.label) {
+            var current, t, signal, _a, data, _b, expiration, error_1;
+            return __generator(this, function (_c) {
+                switch (_c.label) {
                     case 0:
                         if (key === undefined)
                             return [2 /*return*/];
@@ -324,17 +329,17 @@ var Single = /** @class */ (function () {
                         t = setTimeout(function () {
                             aborter.abort("Timed out");
                         }, timeout);
-                        _b.label = 1;
+                        _c.label = 1;
                     case 1:
-                        _b.trys.push([1, 3, 4, 5]);
+                        _c.trys.push([1, 3, 4, 5]);
                         signal = aborter.signal;
                         this.core.mutate(skey, { aborter: aborter });
                         return [4 /*yield*/, fetcher(key, { signal: signal })];
                     case 2:
-                        _a = _b.sent(), data = _a.data, expiration = _a.expiration;
+                        _a = _c.sent(), data = _a.data, _b = _a.expiration, expiration = _b === void 0 ? Date.now() + stale : _b;
                         return [2 /*return*/, this.core.mutate(skey, { data: data, expiration: expiration })];
                     case 3:
-                        error_1 = _b.sent();
+                        error_1 = _c.sent();
                         return [2 /*return*/, this.core.mutate(skey, { error: error_1 })];
                     case 4:
                         clearTimeout(t);
@@ -352,13 +357,14 @@ var Single = /** @class */ (function () {
      * @throws error
      * @returns updated state
      */
-    Single.prototype.update = function (key, skey, poster, updater, timeout, aborter) {
+    Single.prototype.update = function (key, skey, poster, updater, timeout, stale, aborter) {
         if (timeout === void 0) { timeout = DEFAULT_TIMEOUT; }
+        if (stale === void 0) { stale = DEFAULT_STALE; }
         if (aborter === void 0) { aborter = new AbortController(); }
         return __awaiter(this, void 0, void 0, function () {
-            var current, updated, t, signal, _a, data, expiration, error_2;
-            return __generator(this, function (_b) {
-                switch (_b.label) {
+            var current, updated, t, signal, _a, data, _b, expiration, error_2;
+            return __generator(this, function (_c) {
+                switch (_c.label) {
                     case 0:
                         if (key === undefined)
                             return [2 /*return*/];
@@ -369,17 +375,17 @@ var Single = /** @class */ (function () {
                         t = setTimeout(function () {
                             aborter.abort("Timed out");
                         }, timeout);
-                        _b.label = 1;
+                        _c.label = 1;
                     case 1:
-                        _b.trys.push([1, 3, 4, 5]);
+                        _c.trys.push([1, 3, 4, 5]);
                         signal = aborter.signal;
                         this.core.mutate(skey, { data: updated, time: current.time });
                         return [4 /*yield*/, poster(key, { data: updated, signal: signal })];
                     case 2:
-                        _a = _b.sent(), data = _a.data, expiration = _a.expiration;
+                        _a = _c.sent(), data = _a.data, _b = _a.expiration, expiration = _b === void 0 ? Date.now() + stale : _b;
                         return [2 /*return*/, this.core.mutate(skey, { data: data, expiration: expiration })];
                     case 3:
-                        error_2 = _b.sent();
+                        error_2 = _c.sent();
                         this.core.mutate(skey, current);
                         throw error_2;
                     case 4:
@@ -470,11 +476,11 @@ var Core = /** @class */ (function (_super) {
             state.time = Date.now();
         if ((current === null || current === void 0 ? void 0 : current.time) !== undefined && state.time < current.time)
             return current;
-        var next = __assign(__assign({}, current), state);
         if (this.equals(state.data, current === null || current === void 0 ? void 0 : current.data))
-            next.data = current === null || current === void 0 ? void 0 : current.data;
+            state.data = current === null || current === void 0 ? void 0 : current.data;
         if (this.equals(state.error, current === null || current === void 0 ? void 0 : current.error))
-            next.error = current === null || current === void 0 ? void 0 : current.error;
+            state.error = current === null || current === void 0 ? void 0 : current.error;
+        var next = __assign(__assign({}, current), state);
         if (state.data !== undefined)
             delete next.error;
         if (state.aborter === undefined)
@@ -562,7 +568,7 @@ function CoreProvider(props) {
  * @param cooldown Usually your resource TTL
  * @returns A scrolling resource handle
  */
-function useScroll(scroller, fetcher, cooldown, timeout) {
+function useScroll(scroller, fetcher, cooldown, timeout, stale) {
     var _this = this;
     var core = useCore();
     var key = React.useMemo(function () {
@@ -584,7 +590,7 @@ function useScroll(scroller, fetcher, cooldown, timeout) {
     var fetch = React.useCallback(function (aborter) { return __awaiter(_this, void 0, void 0, function () {
         return __generator(this, function (_a) {
             switch (_a.label) {
-                case 0: return [4 /*yield*/, core.scroll.first(skey, scroller, fetcher, cooldown, timeout, aborter)];
+                case 0: return [4 /*yield*/, core.scroll.first(skey, scroller, fetcher, cooldown, timeout, stale, aborter)];
                 case 1: return [2 /*return*/, _a.sent()];
             }
         });
@@ -592,7 +598,7 @@ function useScroll(scroller, fetcher, cooldown, timeout) {
     var refetch = React.useCallback(function (aborter) { return __awaiter(_this, void 0, void 0, function () {
         return __generator(this, function (_a) {
             switch (_a.label) {
-                case 0: return [4 /*yield*/, core.scroll.first(skey, scroller, fetcher, 0, timeout, aborter)];
+                case 0: return [4 /*yield*/, core.scroll.first(skey, scroller, fetcher, 0, timeout, stale, aborter)];
                 case 1: return [2 /*return*/, _a.sent()];
             }
         });
@@ -600,7 +606,7 @@ function useScroll(scroller, fetcher, cooldown, timeout) {
     var scroll = React.useCallback(function (aborter) { return __awaiter(_this, void 0, void 0, function () {
         return __generator(this, function (_a) {
             switch (_a.label) {
-                case 0: return [4 /*yield*/, core.scroll.scroll(skey, scroller, fetcher, 0, timeout, aborter)];
+                case 0: return [4 /*yield*/, core.scroll.scroll(skey, scroller, fetcher, 0, timeout, stale, aborter)];
                 case 1: return [2 /*return*/, _a.sent()];
             }
         });
@@ -620,7 +626,7 @@ function useScroll(scroller, fetcher, cooldown, timeout) {
  * @param cooldown Usually your resource TTL
  * @returns A single resource handle
  */
-function useSingle(key, poster, cooldown, timeout) {
+function useSingle(key, poster, cooldown, timeout, stale) {
     var _this = this;
     var core = useCore();
     var skey = React.useMemo(function () {
@@ -639,7 +645,7 @@ function useSingle(key, poster, cooldown, timeout) {
     var fetch = React.useCallback(function (aborter) { return __awaiter(_this, void 0, void 0, function () {
         return __generator(this, function (_a) {
             switch (_a.label) {
-                case 0: return [4 /*yield*/, core.single.fetch(key, skey, poster, cooldown, timeout, aborter)];
+                case 0: return [4 /*yield*/, core.single.fetch(key, skey, poster, cooldown, timeout, stale, aborter)];
                 case 1: return [2 /*return*/, _a.sent()];
             }
         });
@@ -647,13 +653,13 @@ function useSingle(key, poster, cooldown, timeout) {
     var refetch = React.useCallback(function (aborter) { return __awaiter(_this, void 0, void 0, function () {
         return __generator(this, function (_a) {
             switch (_a.label) {
-                case 0: return [4 /*yield*/, core.single.fetch(key, skey, poster, 0, timeout, aborter)];
+                case 0: return [4 /*yield*/, core.single.fetch(key, skey, poster, 0, timeout, stale, aborter)];
                 case 1: return [2 /*return*/, _a.sent()];
             }
         });
     }); }, [core, skey, poster]);
     var update = React.useCallback(function (updater, aborter) {
-        return core.single.update(key, skey, poster, updater, timeout, aborter);
+        return core.single.update(key, skey, poster, updater, timeout, stale, aborter);
     }, [core, skey, poster]);
     var clear = React.useCallback(function () {
         core.delete(skey);

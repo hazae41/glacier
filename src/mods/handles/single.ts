@@ -23,7 +23,8 @@ export function useSingle<D = any, E = any, K = any>(
   key: K | undefined,
   poster: Poster<D, K>,
   cooldown?: number,
-  timeout?: number
+  timeout?: number,
+  stale?: number
 ): SingleHandle<D, E, K> {
   const core = useCore()
 
@@ -45,15 +46,15 @@ export function useSingle<D = any, E = any, K = any>(
   }, [core, skey])
 
   const fetch = useCallback(async (aborter?: AbortController) => {
-    return await core.single.fetch<D, E, K>(key, skey, poster, cooldown, timeout, aborter)
+    return await core.single.fetch<D, E, K>(key, skey, poster, cooldown, timeout, stale, aborter)
   }, [core, skey, poster, cooldown])
 
   const refetch = useCallback(async (aborter?: AbortController) => {
-    return await core.single.fetch<D, E, K>(key, skey, poster, 0, timeout, aborter)
+    return await core.single.fetch<D, E, K>(key, skey, poster, 0, timeout, stale, aborter)
   }, [core, skey, poster])
 
   const update = useCallback((updater: Updater<D>, aborter?: AbortController) => {
-    return core.single.update<D, E, K>(key, skey, poster, updater, timeout, aborter)
+    return core.single.update<D, E, K>(key, skey, poster, updater, timeout, stale, aborter)
   }, [core, skey, poster])
 
   const clear = useCallback(() => {

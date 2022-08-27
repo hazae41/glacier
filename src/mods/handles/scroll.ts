@@ -23,7 +23,8 @@ export function useScroll<D = any, E = any, K = any>(
   scroller: Scroller<D, K>,
   fetcher: Fetcher<D, K>,
   cooldown?: number,
-  timeout?: number
+  timeout?: number,
+  stale?: number
 ): ScrollHandle<D, E, K> {
   const core = useCore()
 
@@ -49,15 +50,15 @@ export function useScroll<D = any, E = any, K = any>(
   }, [core, skey])
 
   const fetch = useCallback(async (aborter?: AbortController) => {
-    return await core.scroll.first<D, E, K>(skey, scroller, fetcher, cooldown, timeout, aborter)
+    return await core.scroll.first<D, E, K>(skey, scroller, fetcher, cooldown, timeout, stale, aborter)
   }, [core, skey, scroller, fetcher, cooldown])
 
   const refetch = useCallback(async (aborter?: AbortController) => {
-    return await core.scroll.first<D, E, K>(skey, scroller, fetcher, 0, timeout, aborter)
+    return await core.scroll.first<D, E, K>(skey, scroller, fetcher, 0, timeout, stale, aborter)
   }, [core, skey, scroller, fetcher])
 
   const scroll = useCallback(async (aborter?: AbortController) => {
-    return await core.scroll.scroll<D, E, K>(skey, scroller, fetcher, 0, timeout, aborter)
+    return await core.scroll.scroll<D, E, K>(skey, scroller, fetcher, 0, timeout, stale, aborter)
   }, [core, skey, scroller, fetcher])
 
   const clear = useCallback(() => {

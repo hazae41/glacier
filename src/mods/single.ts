@@ -1,5 +1,5 @@
 import { Core, Fetcher, Poster, Updater } from "./core.js";
-import { DEFAULT_COOLDOWN, DEFAULT_TIMEOUT } from "./defaults.js";
+import { DEFAULT_COOLDOWN, DEFAULT_STALE, DEFAULT_TIMEOUT } from "./defaults.js";
 import { State } from "./storage.js";
 
 export class Single {
@@ -18,6 +18,7 @@ export class Single {
     fetcher: Fetcher<D, K>,
     cooldown = DEFAULT_COOLDOWN,
     timeout = DEFAULT_TIMEOUT,
+    stale = DEFAULT_STALE,
     aborter = new AbortController()
   ): Promise<State<D, E> | undefined> {
     if (key === undefined) return
@@ -38,7 +39,10 @@ export class Single {
 
       this.core.mutate(skey, { aborter })
 
-      const { data, expiration = -1 } = await fetcher(key, { signal })
+      const {
+        data,
+        expiration = Date.now() + stale
+      } = await fetcher(key, { signal })
 
       return this.core.mutate<D, E>(skey, { data, expiration })
     } catch (error: any) {
@@ -62,6 +66,7 @@ export class Single {
     poster: Poster<D, K>,
     updater: Updater<D>,
     timeout = DEFAULT_TIMEOUT,
+    stale = DEFAULT_STALE,
     aborter = new AbortController()
   ) {
     if (key === undefined) return
@@ -79,7 +84,10 @@ export class Single {
 
       this.core.mutate(skey, { data: updated, time: current.time })
 
-      const { data, expiration = -1 } = await poster(key, { data: updated, signal })
+      const {
+        data,
+        expiration = Date.now() + stale
+      } = await poster(key, { data: updated, signal })
 
       return this.core.mutate<D, E>(skey, { data, expiration })
     } catch (error: any) {
