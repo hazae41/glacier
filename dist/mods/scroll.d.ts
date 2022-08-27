@@ -1,23 +1,28 @@
 import { Core, Fetcher, Scroller } from "./core.js";
+import { TimeParams } from "./time.js";
 export declare class Scroll {
     readonly core: Core;
     constructor(core: Core);
     /**
-     *
-     * @param key Key
-     * @param scroller We don't care if it's not memoized
-     * @param fetcher We don't care if it's not memoized
-     * @param cooldown
-     * @returns
+     * Fetch first page
+     * @param skey Storage key
+     * @param scroller Key scroller
+     * @param fetcher Resource fetcher
+     * @param aborter AbortController
+     * @param tparams Time parameters
+     * @param force Should ignore cooldown
+     * @returns The new state
      */
-    first<D = any, E = any, K = any>(skey: string | undefined, scroller: Scroller<D, K>, fetcher: Fetcher<D, K>, cooldown?: number, timeout?: number, stale?: number, aborter?: AbortController): Promise<import("./storage.js").State<D[], E>>;
+    first<D = any, E = any, K = any>(skey: string | undefined, scroller: Scroller<D, K>, fetcher: Fetcher<D, K>, aborter?: AbortController, tparams?: TimeParams, force?: boolean): Promise<import("./storage.js").State<D[], E>>;
     /**
-     *
-     * @param key
-     * @param scroller We don't care if it's not memoized
-     * @param fetcher We don't care if it's not memoized
-     * @param cooldown
-     * @returns
+     * Scroll to the next page
+     * @param skey Storage key
+     * @param scroller Key scroller
+     * @param fetcher Resource fetcher
+     * @param aborter AbortController
+     * @param tparams Time parameters
+     * @param force Should ignore cooldown
+     * @returns The new state
      */
-    scroll<D = any, E = any, K = any>(skey: string | undefined, scroller: Scroller<D, K>, fetcher: Fetcher<D, K>, cooldown?: number, timeout?: number, stale?: number, aborter?: AbortController): Promise<import("./storage.js").State<D[], E>>;
+    scroll<D = any, E = any, K = any>(skey: string | undefined, scroller: Scroller<D, K>, fetcher: Fetcher<D, K>, aborter?: AbortController, tparams?: TimeParams, force?: boolean): Promise<import("./storage.js").State<D[], E>>;
 }

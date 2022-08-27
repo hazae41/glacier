@@ -6,6 +6,7 @@ import { State, Storage } from "./storage.js"
 
 export interface Result<D = any> {
   data: D,
+  cooldown?: number
   expiration?: number
 }
 
@@ -29,10 +30,6 @@ export type Updater<D = any> =
 
 export type Listener<D = any, E = any> =
   (state?: State<D, E>) => void
-
-export function isAbortError(e: unknown): e is DOMException {
-  return e instanceof DOMException && e.name === "AbortError"
-}
 
 export class Core extends Ortho<string, State | undefined> {
   readonly single = new Single(this)
@@ -134,6 +131,8 @@ export class Core extends Ortho<string, State | undefined> {
       delete next.error
     if (state.aborter === undefined)
       delete next.aborter
+    if (state.expiration === -1)
+      delete next.expiration
 
     if (this.equals(current, next))
       return current
@@ -144,15 +143,12 @@ export class Core extends Ortho<string, State | undefined> {
   /**
    * True if we should cooldown this resource
    */
-  cooldown<D = any, E = any>(
-    current?: State<D, E>,
-    cooldown?: number
-  ) {
-    if (cooldown === undefined)
+  cooldown<D = any, E = any>(current?: State<D, E>, force?: boolean) {
+    if (force)
       return false
-    if (current?.time === undefined)
+    if (current?.cooldown === undefined)
       return false
-    if (Date.now() - current.time < cooldown)
+    if (Date.now() < current.cooldown)
       return true
     return false
   }

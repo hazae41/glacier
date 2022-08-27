@@ -1,42 +1,50 @@
 import { lastOf } from "../libs/arrays.js";
 import { Core, Fetcher, Scroller } from "./core.js";
-import { DEFAULT_COOLDOWN, DEFAULT_STALE, DEFAULT_TIMEOUT } from "./defaults.js";
+import { DEFAULT_COOLDOWN, DEFAULT_EXPIRATION, DEFAULT_TIMEOUT } from "./defaults.js";
+import { getTimeFromDelay, TimeParams } from "./time.js";
 
 export class Scroll {
   constructor(readonly core: Core) { }
 
   /**
-   * 
-   * @param key Key
-   * @param scroller We don't care if it's not memoized
-   * @param fetcher We don't care if it's not memoized
-   * @param cooldown 
-   * @returns 
+   * Fetch first page
+   * @param skey Storage key
+   * @param scroller Key scroller
+   * @param fetcher Resource fetcher
+   * @param aborter AbortController
+   * @param tparams Time parameters
+   * @param force Should ignore cooldown
+   * @returns The new state
    */
   async first<D = any, E = any, K = any>(
     skey: string | undefined,
     scroller: Scroller<D, K>,
     fetcher: Fetcher<D, K>,
-    cooldown = DEFAULT_COOLDOWN,
-    timeout = DEFAULT_TIMEOUT,
-    stale = DEFAULT_STALE,
-    aborter = new AbortController()
+    aborter = new AbortController(),
+    tparams: TimeParams = {},
+    force = false
   ) {
     if (skey === undefined) return
+
+    const {
+      cooldown: dcooldown = DEFAULT_COOLDOWN,
+      expiration: dexpiration = DEFAULT_EXPIRATION,
+      timeout: dtimeout = DEFAULT_TIMEOUT
+    } = tparams
 
     const current = this.core.get<D[], E>(skey)
     if (current?.aborter)
       return current
-    if (this.core.cooldown(current, cooldown))
+    if (this.core.cooldown(current, force))
       return current
 
     const pages = current?.data ?? []
     const first = scroller(undefined)
     if (!first) return current
 
-    const t = setTimeout(() => {
+    const timeout = setTimeout(() => {
       aborter.abort("Timed out")
-    }, timeout)
+    }, dtimeout)
 
     try {
       const { signal } = aborter
@@ -45,50 +53,61 @@ export class Scroll {
 
       const {
         data,
-        expiration = Date.now() + stale
+        cooldown = getTimeFromDelay(dcooldown),
+        expiration = getTimeFromDelay(dexpiration)
       } = await fetcher(first, { signal })
 
       return this.core.equals(data, pages[0])
-        ? this.core.mutate<D[], E>(skey, { expiration })
-        : this.core.mutate<D[], E>(skey, { data: [data], expiration })
+        ? this.core.mutate<D[], E>(skey, { cooldown, expiration })
+        : this.core.mutate<D[], E>(skey, { data: [data], cooldown, expiration })
     } catch (error: any) {
-      return this.core.mutate<D[], E>(skey, { error })
+      const cooldown = getTimeFromDelay(dcooldown)
+      const expiration = getTimeFromDelay(dexpiration)
+
+      return this.core.mutate<D[], E>(skey, { error, cooldown, expiration })
     } finally {
-      clearTimeout(t)
+      clearTimeout(timeout)
     }
   }
 
   /**
-   * 
-   * @param key 
-   * @param scroller We don't care if it's not memoized
-   * @param fetcher We don't care if it's not memoized
-   * @param cooldown 
-   * @returns 
+   * Scroll to the next page
+   * @param skey Storage key
+   * @param scroller Key scroller
+   * @param fetcher Resource fetcher
+   * @param aborter AbortController
+   * @param tparams Time parameters
+   * @param force Should ignore cooldown
+   * @returns The new state
    */
   async scroll<D = any, E = any, K = any>(
     skey: string | undefined,
     scroller: Scroller<D, K>,
     fetcher: Fetcher<D, K>,
-    cooldown = DEFAULT_COOLDOWN,
-    timeout = DEFAULT_TIMEOUT,
-    stale = DEFAULT_STALE,
-    aborter = new AbortController()
+    aborter = new AbortController(),
+    tparams: TimeParams = {},
+    force = false
   ) {
     if (skey === undefined) return
+
+    const {
+      cooldown: dcooldown = DEFAULT_COOLDOWN,
+      expiration: dexpiration = DEFAULT_EXPIRATION,
+      timeout: dtimeout = DEFAULT_TIMEOUT,
+    } = tparams
 
     const current = this.core.get<D[], E>(skey)
     if (current?.aborter)
       return current
-    if (this.core.cooldown(current, cooldown))
+    if (this.core.cooldown(current, force))
       return current
     const pages = current?.data ?? []
     const last = scroller(lastOf(pages))
     if (!last) return current
 
-    const t = setTimeout(() => {
+    const timeout = setTimeout(() => {
       aborter.abort("Timed out")
-    }, timeout)
+    }, dtimeout)
 
     try {
       const { signal } = aborter
@@ -97,16 +116,20 @@ export class Scroll {
 
       let {
         data,
-        expiration = Date.now() + stale
+        cooldown = getTimeFromDelay(dcooldown),
+        expiration = getTimeFromDelay(dexpiration)
       } = await fetcher(last, { signal })
 
       expiration = Math.min(expiration, current.expiration)
 
-      return this.core.mutate<D[], E>(skey, { data: [...pages, data], expiration })
+      return this.core.mutate<D[], E>(skey, { data: [...pages, data], cooldown, expiration })
     } catch (error: any) {
-      return this.core.mutate<D[], E>(skey, { error })
+      const cooldown = getTimeFromDelay(dcooldown)
+      const expiration = getTimeFromDelay(dexpiration)
+
+      return this.core.mutate<D[], E>(skey, { error, cooldown, expiration })
     } finally {
-      clearTimeout(t)
+      clearTimeout(timeout)
     }
   }
 }

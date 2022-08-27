@@ -3,6 +3,7 @@ import { useCore } from "../../comps/index.js"
 import { useOrtho } from "../../libs/ortho.js"
 import { Fetcher, Scroller } from "../core.js"
 import { State } from "../storage.js"
+import { TimeParams } from "../time.js"
 import { Handle } from "./generic.js"
 
 /**
@@ -13,18 +14,16 @@ export interface ScrollHandle<D = any, E = any, K = any> extends Handle<D[], E, 
 }
 
 /**
- * Scrolling resource hook
- * @param scroller Memoized scroller
- * @param fetcher Memoized fetcher
- * @param cooldown Usually your resource TTL
- * @returns A scrolling resource handle
+ * Scrolling resource handle factory
+ * @param scroller Key scroller (memoized)
+ * @param fetcher Resource fetcher (memoized)
+ * @param tparams Time parameters (constant)
+ * @returns Scrolling handle
  */
 export function useScroll<D = any, E = any, K = any>(
   scroller: Scroller<D, K>,
   fetcher: Fetcher<D, K>,
-  cooldown?: number,
-  timeout?: number,
-  stale?: number
+  tparams: TimeParams = {},
 ): ScrollHandle<D, E, K> {
   const core = useCore()
 
@@ -50,24 +49,22 @@ export function useScroll<D = any, E = any, K = any>(
   }, [core, skey])
 
   const fetch = useCallback(async (aborter?: AbortController) => {
-    return await core.scroll.first<D, E, K>(skey, scroller, fetcher, cooldown, timeout, stale, aborter)
-  }, [core, skey, scroller, fetcher, cooldown])
+    return await core.scroll.first<D, E, K>(skey, scroller, fetcher, aborter, tparams)
+  }, [core, skey, scroller, fetcher])
 
   const refetch = useCallback(async (aborter?: AbortController) => {
-    return await core.scroll.first<D, E, K>(skey, scroller, fetcher, 0, timeout, stale, aborter)
+    return await core.scroll.first<D, E, K>(skey, scroller, fetcher, aborter, tparams, true)
   }, [core, skey, scroller, fetcher])
 
   const scroll = useCallback(async (aborter?: AbortController) => {
-    return await core.scroll.scroll<D, E, K>(skey, scroller, fetcher, 0, timeout, stale, aborter)
+    return await core.scroll.scroll<D, E, K>(skey, scroller, fetcher, aborter, tparams, true)
   }, [core, skey, scroller, fetcher])
 
   const clear = useCallback(() => {
     core.delete(skey)
   }, [core, skey])
 
-  const { data, error, time, aborter, expiration } = state ?? {}
+  const loading = Boolean(state?.aborter)
 
-  const loading = Boolean(aborter)
-
-  return { key, skey, data, error, time, aborter, loading, expiration, mutate, fetch, refetch, scroll, clear }
+  return { key, skey, ...state, loading, mutate, fetch, refetch, scroll, clear }
 }

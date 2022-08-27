@@ -6,6 +6,7 @@ import { Single } from "./single.js";
 import { State, Storage } from "./storage.js";
 export interface Result<D = any> {
     data: D;
+    cooldown?: number;
     expiration?: number;
 }
 export declare type Fetcher<D = any, K = any> = (key: K, more: FetcherMore) => Promise<Result<D>>;
@@ -20,7 +21,6 @@ export declare type PosterMore<D = any> = {
 export declare type Scroller<D = any, K = any> = (previous?: D) => K | undefined;
 export declare type Updater<D = any> = (previous?: D) => D;
 export declare type Listener<D = any, E = any> = (state?: State<D, E>) => void;
-export declare function isAbortError(e: unknown): e is DOMException;
 export declare class Core extends Ortho<string, State | undefined> {
     readonly storage: Storage<State>;
     readonly equals: Equals;
@@ -65,7 +65,7 @@ export declare class Core extends Ortho<string, State | undefined> {
     /**
      * True if we should cooldown this resource
      */
-    cooldown<D = any, E = any>(current?: State<D, E>, cooldown?: number): boolean;
+    cooldown<D = any, E = any>(current?: State<D, E>, force?: boolean): boolean;
     counts: Map<string, number>;
     timeouts: Map<string, NodeJS.Timeout>;
     subscribe(key: string | undefined, listener: (x: State) => void): void;

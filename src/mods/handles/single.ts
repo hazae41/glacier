@@ -3,6 +3,7 @@ import { useCore } from "../../comps/core.js"
 import { useOrtho } from "../../libs/ortho.js"
 import { Poster, Updater } from "../core.js"
 import { State } from "../storage.js"
+import { TimeParams } from "../time.js"
 import { Handle } from "./generic.js"
 
 /**
@@ -13,18 +14,16 @@ export interface SingleHandle<D = any, E = any, K = any> extends Handle<D, E, K>
 }
 
 /**
- * Single resource hook
- * @param key Key (will be passed to your fetcher)
- * @param fetcher Memoized fetcher, do not pass a lambda
- * @param cooldown Usually your resource TTL
- * @returns A single resource handle
+ * Single resource handle factory
+ * @param key Key (memoized)
+ * @param poster Resource poster or fetcher (memoized)
+ * @param tparams Time parameters (constant)
+ * @returns Single handle
  */
 export function useSingle<D = any, E = any, K = any>(
   key: K | undefined,
   poster: Poster<D, K>,
-  cooldown?: number,
-  timeout?: number,
-  stale?: number
+  tparams: TimeParams = {}
 ): SingleHandle<D, E, K> {
   const core = useCore()
 
@@ -46,24 +45,22 @@ export function useSingle<D = any, E = any, K = any>(
   }, [core, skey])
 
   const fetch = useCallback(async (aborter?: AbortController) => {
-    return await core.single.fetch<D, E, K>(key, skey, poster, cooldown, timeout, stale, aborter)
-  }, [core, skey, poster, cooldown])
-
-  const refetch = useCallback(async (aborter?: AbortController) => {
-    return await core.single.fetch<D, E, K>(key, skey, poster, 0, timeout, stale, aborter)
+    return await core.single.fetch<D, E, K>(key, skey, poster, aborter, tparams)
   }, [core, skey, poster])
 
-  const update = useCallback((updater: Updater<D>, aborter?: AbortController) => {
-    return core.single.update<D, E, K>(key, skey, poster, updater, timeout, stale, aborter)
+  const refetch = useCallback(async (aborter?: AbortController) => {
+    return await core.single.fetch<D, E, K>(key, skey, poster, aborter, tparams, true)
+  }, [core, skey, poster])
+
+  const update = useCallback(async (updater: Updater<D>, aborter?: AbortController) => {
+    return await core.single.update<D, E, K>(key, skey, poster, updater, aborter, tparams)
   }, [core, skey, poster])
 
   const clear = useCallback(() => {
     core.delete(skey)
   }, [core, skey])
 
-  const { data, error, time, aborter, expiration } = state ?? {}
+  const loading = Boolean(state?.aborter)
 
-  const loading = Boolean(aborter)
-
-  return { key, skey, data, error, time, aborter, loading, expiration, mutate, fetch, refetch, update, clear }
+  return { key, skey, ...state, loading, mutate, fetch, refetch, update, clear }
 }

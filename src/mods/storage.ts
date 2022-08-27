@@ -3,6 +3,7 @@ export interface State<D = any, E = any> {
   error?: E
   time?: number,
   aborter?: AbortController
+  cooldown?: number
   expiration?: number
 }
 

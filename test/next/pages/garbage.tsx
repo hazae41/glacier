@@ -8,13 +8,16 @@ async function fetchAsJson<T>(url: string, more: XSWR.PosterMore<T>) {
   const res = await fetch(url, { signal })
   if (!res.ok) throw new Error(await res.text())
 
-  return { data: await res.json(), expiration: Date.now() + (10 * 1000) }
+  const data = await res.json() as T
+  const cooldown = Date.now() + (5 * 1000)
+  const expiration = Date.now() + (10 * 1000)
+
+  return { data, cooldown, expiration }
 }
 
 function useHelloData() {
-  const handle = XSWR.useSingle<HelloData>(
-    "/api/hello",
-    fetchAsJson)
+  const handle = XSWR.useSingle<HelloData>("/api/hello", fetchAsJson)
+
   XSWR.useFetch(handle)
   return handle
 }

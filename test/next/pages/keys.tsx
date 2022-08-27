@@ -16,11 +16,8 @@ function useHelloData(id: number) {
     if (id) return ["/api/keys", id]
   }, [id])
 
-  const handle = XSWR.useSingle<HelloData>(
-    key,
-    fetchAsJson,
-    1000,
-    5000)
+  const handle = XSWR.useSingle<HelloData>(key, fetchAsJson)
+
   XSWR.useFetch(handle)
   return handle
 }
