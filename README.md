@@ -86,9 +86,8 @@ Then create your hook using `useSingle` (or `useScroll`) and some other hooks yo
 
 ```typescript
 function useMyData() {
-  const handle = XSWR.useSingle<MyData>( // Just pass a unique url/key and a fetcher
-    `/api/data`,
-    fetchAsJson)
+  const handle = XSWR.useSingle<MyData>(`/api/data`, fetchAsJson)
+  
   XSWR.useFetch(handle) // Fetch on mount and on url change
   XSWR.useVisible(handle) // Fetch when the page becomes visible
   XSWR.useOnline(handle) // Fetch when the browser becomes online
