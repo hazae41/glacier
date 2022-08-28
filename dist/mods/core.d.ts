@@ -23,6 +23,7 @@ export declare type Scroller<D = any, K = any> = (previous?: D) => K | undefined
 export declare type Updater<D = any> = (previous?: D) => D;
 export interface CoreParams extends TimeParams {
     storage?: Storage<State>;
+    serializer?: Serializer;
     equals?: Equals;
 }
 export declare class Core extends Ortho<string, State | undefined> {
