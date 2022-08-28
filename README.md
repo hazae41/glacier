@@ -44,6 +44,7 @@ By using these two approaches, XSWR aims to help you highly [centralize and reus
 - Cancellable requests
 - Automatic cancellation 
 - Automatic garbage collection
+- Per-query persistence
 
 ### Upcoming features
 
@@ -99,7 +100,7 @@ Now you can use it in your component
 
 ```typescript
 function MyApp() {
-  const { error, data } = useMyData()
+  const { data, error } = useMyData()
 
   if (error)
     return <MyError error={error} />
