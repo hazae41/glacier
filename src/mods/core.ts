@@ -31,7 +31,8 @@ export type Updater<D = any> =
   (previous?: D) => D
 
 export interface CoreParams extends TimeParams {
-  storage?: Storage<State>
+  storage?: Storage<State>,
+  serializer?: Serializer,
   equals?: Equals
 }
 
