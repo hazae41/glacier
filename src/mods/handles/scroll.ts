@@ -34,7 +34,7 @@ export function useScroll<D = any, E = any, K = any>(
 
   const skey = useMemo(() => {
     if (key === undefined) return
-
+    if (typeof key === "string") return key
     const { serializer = core.serializer } = params
     return `scroll:${serializer.stringify(key)}`
   }, [core, key])

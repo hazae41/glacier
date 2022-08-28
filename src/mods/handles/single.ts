@@ -32,7 +32,7 @@ export function useSingle<D = any, E = any, K = any>(
 
   const skey = useMemo(() => {
     if (key === undefined) return
-
+    if (typeof key === "string") return key
     const { serializer = core.serializer } = params
     return serializer.stringify(key)
   }, [core, key])
