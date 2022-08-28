@@ -852,6 +852,8 @@ function useScroll(scroller, fetcher, params) {
     var skey = React.useMemo(function () {
         if (key === undefined)
             return;
+        if (typeof key === "string")
+            return key;
         var _a = params.serializer, serializer = _a === void 0 ? core.serializer : _a;
         return "scroll:".concat(serializer.stringify(key));
     }, [core, key]);
@@ -929,6 +931,8 @@ function useSingle(key, poster, params) {
     var skey = React.useMemo(function () {
         if (key === undefined)
             return;
+        if (typeof key === "string")
+            return key;
         var _a = params.serializer, serializer = _a === void 0 ? core.serializer : _a;
         return serializer.stringify(key);
     }, [core, key]);
