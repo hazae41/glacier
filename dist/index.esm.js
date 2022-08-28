@@ -904,8 +904,9 @@ function useScroll(scroller, fetcher, params) {
             }
         });
     }); }, [core, skey]);
-    var loading = Boolean(state === null || state === void 0 ? void 0 : state.aborter);
-    return __assign(__assign({ key: key, skey: skey }, state), { loading: loading, ready: ready, mutate: mutate, fetch: fetch, refetch: refetch, scroll: scroll, clear: clear });
+    var _c = state !== null && state !== void 0 ? state : {}, data = _c.data, error = _c.error, time = _c.time, cooldown = _c.cooldown, expiration = _c.expiration, aborter = _c.aborter;
+    var loading = Boolean(aborter);
+    return { key: key, skey: skey, data: data, error: error, time: time, cooldown: cooldown, expiration: expiration, aborter: aborter, loading: loading, ready: ready, mutate: mutate, fetch: fetch, refetch: refetch, scroll: scroll, clear: clear };
 }
 
 /**
@@ -980,8 +981,9 @@ function useSingle(key, poster, params) {
             }
         });
     }); }, [core, skey]);
-    var loading = Boolean(state === null || state === void 0 ? void 0 : state.aborter);
-    return __assign(__assign({ key: key, skey: skey }, state), { loading: loading, ready: ready, mutate: mutate, fetch: fetch, refetch: refetch, update: update, clear: clear });
+    var _c = state !== null && state !== void 0 ? state : {}, data = _c.data, error = _c.error, time = _c.time, cooldown = _c.cooldown, expiration = _c.expiration, aborter = _c.aborter;
+    var loading = Boolean(aborter);
+    return { key: key, skey: skey, data: data, error: error, time: time, cooldown: cooldown, expiration: expiration, aborter: aborter, loading: loading, ready: ready, mutate: mutate, fetch: fetch, refetch: refetch, update: update, clear: clear };
 }
 
 /**

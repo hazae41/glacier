@@ -75,7 +75,9 @@ export function useScroll<D = any, E = any, K = any>(
     await core.delete(skey, params)
   }, [core, skey])
 
-  const loading = Boolean(state?.aborter)
+  const { data, error, time, cooldown, expiration, aborter } = state ?? {}
 
-  return { key, skey, ...state, loading, ready, mutate, fetch, refetch, scroll, clear }
+  const loading = Boolean(aborter)
+
+  return { key, skey, data, error, time, cooldown, expiration, aborter, loading, ready, mutate, fetch, refetch, scroll, clear }
 }
