@@ -30,10 +30,6 @@ export type Scroller<D = any, K = any> =
 export type Updater<D = any> =
   (previous?: D) => D
 
-export type Listener<D = any, E = any> =
-  (state?: State<D, E>) => void
-
-
 export interface CoreParams extends TimeParams {
   storage?: Storage<State>
   equals?: Equals
