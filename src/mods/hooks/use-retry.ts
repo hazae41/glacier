@@ -19,7 +19,7 @@ export interface RetryOptions {
  * @see https://en.wikipedia.org/wiki/Geometric_progression
  */
 export function useRetry(handle: Handle, options: RetryOptions = {}) {
-  const { refetch, error, time } = handle
+  const { ready, refetch, error, time } = handle
   const { init = 1000, base = 2, max = 3 } = options
 
   const count = useRef(0)
@@ -29,6 +29,8 @@ export function useRetry(handle: Handle, options: RetryOptions = {}) {
   }, [refetch])
 
   useEffect(() => {
+    if (!ready) return
+
     if (error === undefined) {
       count.current = 0
       return
@@ -39,5 +41,5 @@ export function useRetry(handle: Handle, options: RetryOptions = {}) {
     const f = () => { count.current++; refetch() }
     const t = setTimeout(f, init * ratio)
     return () => clearTimeout(t)
-  }, [error, time, refetch])
+  }, [ready, error, time, refetch])
 }

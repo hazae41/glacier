@@ -1,5 +1,5 @@
 import { Core, Fetcher, Poster, Updater } from "./core.js";
-import { State } from "./storage.js";
+import { State } from "./storages/storage.js";
 import { TimeParams } from "./time.js";
 export declare class Single {
     readonly core: Core;

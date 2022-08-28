@@ -7,7 +7,9 @@ export interface State<D = any, E = any> {
   expiration?: number
 }
 
-export type Storage<T> = SyncStorage<T> | AsyncStorage<T>
+export type Storage<T> =
+  | SyncStorage<T>
+  | AsyncStorage<T>
 
 export function isAsyncStorage<T>(storage: Storage<T>): storage is AsyncStorage<T> {
   return storage.async
@@ -15,6 +17,7 @@ export function isAsyncStorage<T>(storage: Storage<T>): storage is AsyncStorage<
 
 export interface SyncStorage<T> {
   async?: false
+
   has(key: string): boolean
   get(key: string): T | undefined
   set(key: string, value: T): void
@@ -23,6 +26,7 @@ export interface SyncStorage<T> {
 
 export interface AsyncStorage<T> {
   async: true
+
   has(key: string): Promise<boolean>
   get(key: string): Promise<T | undefined>
   set(key: string, value: T): Promise<void>

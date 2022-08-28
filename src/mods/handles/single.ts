@@ -2,9 +2,9 @@ import { useCallback, useEffect, useMemo, useState } from "react"
 import { useCore } from "../../comps/core.js"
 import { useOrtho } from "../../libs/ortho.js"
 import { Poster, Updater } from "../core.js"
-import { State } from "../storage.js"
+import { State } from "../storages/storage.js"
 import { TimeParams } from "../time.js"
-import { Handle } from "./generic.js"
+import { Handle } from "./handle.js"
 
 /**
  * Handle for a single resource
@@ -37,7 +37,7 @@ export function useSingle<D = any, E = any, K = any>(
     return JSON.stringify(key)
   }, [key])
 
-  const [ready, setReady] = useState(!core.async)
+  const [ready, setReady] = useState(() => core.hasSync(skey))
   const [state, setState] = useState(() => core.getSync<D, E>(skey))
 
   useEffect(() => {

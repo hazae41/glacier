@@ -31,7 +31,7 @@ export class Scroll {
       timeout: dtimeout = this.core.timeout,
     } = tparams
 
-    const current = await this.core.get<D[], E>(skey)
+    let current = await this.core.get<D[], E>(skey)
     if (current?.aborter)
       return current
     if (this.core.shouldCooldown(current, force))
@@ -48,7 +48,7 @@ export class Scroll {
     try {
       const { signal } = aborter
 
-      await this.core.mutate(skey, { aborter })
+      current = await this.core.apply(skey, current, { aborter })
 
       const {
         data,
@@ -57,13 +57,13 @@ export class Scroll {
       } = await fetcher(first, { signal })
 
       return this.core.equals(data, pages[0])
-        ? await this.core.mutate<D[], E>(skey, { cooldown, expiration })
-        : await this.core.mutate<D[], E>(skey, { data: [data], cooldown, expiration })
+        ? await this.core.apply<D[], E>(skey, current, { cooldown, expiration })
+        : await this.core.apply<D[], E>(skey, current, { data: [data], cooldown, expiration })
     } catch (error: any) {
       const cooldown = getTimeFromDelay(dcooldown)
       const expiration = getTimeFromDelay(dexpiration)
 
-      return await this.core.mutate<D[], E>(skey, { error, cooldown, expiration })
+      return await this.core.apply<D[], E>(skey, current, { error, cooldown, expiration })
     } finally {
       clearTimeout(timeout)
     }
@@ -95,11 +95,12 @@ export class Scroll {
       timeout: dtimeout = this.core.timeout,
     } = tparams
 
-    const current = await this.core.get<D[], E>(skey)
+    let current = await this.core.get<D[], E>(skey)
     if (current?.aborter)
       return current
     if (this.core.shouldCooldown(current, force))
       return current
+
     const pages = current?.data ?? []
     const last = scroller(lastOf(pages))
     if (!last) return current
@@ -111,7 +112,7 @@ export class Scroll {
     try {
       const { signal } = aborter
 
-      await this.core.mutate(skey, { aborter })
+      current = await this.core.apply(skey, current, { aborter })
 
       let {
         data,
@@ -121,12 +122,12 @@ export class Scroll {
 
       expiration = Math.min(expiration, current.expiration)
 
-      return await this.core.mutate<D[], E>(skey, { data: [...pages, data], cooldown, expiration })
+      return await this.core.apply<D[], E>(skey, current, { data: [...pages, data], cooldown, expiration })
     } catch (error: any) {
       const cooldown = getTimeFromDelay(dcooldown)
       const expiration = getTimeFromDelay(dexpiration)
 
-      return await this.core.mutate<D[], E>(skey, { error, cooldown, expiration })
+      return await this.core.apply<D[], E>(skey, current, { error, cooldown, expiration })
     } finally {
       clearTimeout(timeout)
     }

@@ -92,6 +92,35 @@ function __generator(thisArg, body) {
     }
 }
 
+function __values(o) {
+    var s = typeof Symbol === "function" && Symbol.iterator, m = s && o[s], i = 0;
+    if (m) return m.call(o);
+    if (o && typeof o.length === "number") return {
+        next: function () {
+            if (o && i >= o.length) o = void 0;
+            return { value: o && o[i++], done: !o };
+        }
+    };
+    throw new TypeError(s ? "Object is not iterable." : "Symbol.iterator is not defined.");
+}
+
+function __read(o, n) {
+    var m = typeof Symbol === "function" && o[Symbol.iterator];
+    if (!m) return o;
+    var i = m.call(o), r, ar = [], e;
+    try {
+        while ((n === void 0 || n-- > 0) && !(r = i.next()).done) ar.push(r.value);
+    }
+    catch (error) { e = { error: error }; }
+    finally {
+        try {
+            if (r && !r.done && (m = i["return"])) m.call(i);
+        }
+        finally { if (e) throw e.error; }
+    }
+    return ar;
+}
+
 function __spreadArray(to, from, pack) {
     if (pack || arguments.length === 2) for (var i = 0, l = from.length, ar; i < l; i++) {
         if (ar || !(i in from)) {
@@ -140,12 +169,22 @@ var Ortho = /** @class */ (function () {
         this.listeners = new MapOfArrays();
     }
     Ortho.prototype.publish = function (key, value) {
+        var e_1, _a;
         var listeners = this.listeners.get(key);
         if (!listeners)
             return;
-        for (var _i = 0, listeners_1 = listeners; _i < listeners_1.length; _i++) {
-            var listener = listeners_1[_i];
-            listener(value);
+        try {
+            for (var listeners_1 = __values(listeners), listeners_1_1 = listeners_1.next(); !listeners_1_1.done; listeners_1_1 = listeners_1.next()) {
+                var listener = listeners_1_1.value;
+                listener(value);
+            }
+        }
+        catch (e_1_1) { e_1 = { error: e_1_1 }; }
+        finally {
+            try {
+                if (listeners_1_1 && !listeners_1_1.done && (_a = listeners_1.return)) _a.call(listeners_1);
+            }
+            finally { if (e_1) throw e_1.error; }
         }
     };
     Ortho.prototype.subscribe = function (key, listener) {
@@ -238,18 +277,18 @@ var Scroll = /** @class */ (function () {
                     case 2:
                         _j.trys.push([2, 9, 11, 12]);
                         signal = aborter.signal;
-                        return [4 /*yield*/, this.core.mutate(skey, { aborter: aborter })];
+                        return [4 /*yield*/, this.core.apply(skey, current, { aborter: aborter })];
                     case 3:
-                        _j.sent();
+                        current = _j.sent();
                         return [4 /*yield*/, fetcher(first, { signal: signal })];
                     case 4:
                         _e = _j.sent(), data = _e.data, _f = _e.cooldown, cooldown = _f === void 0 ? getTimeFromDelay(dcooldown) : _f, _g = _e.expiration, expiration = _g === void 0 ? getTimeFromDelay(dexpiration) : _g;
                         if (!this.core.equals(data, pages[0])) return [3 /*break*/, 6];
-                        return [4 /*yield*/, this.core.mutate(skey, { cooldown: cooldown, expiration: expiration })];
+                        return [4 /*yield*/, this.core.apply(skey, current, { cooldown: cooldown, expiration: expiration })];
                     case 5:
                         _h = _j.sent();
                         return [3 /*break*/, 8];
-                    case 6: return [4 /*yield*/, this.core.mutate(skey, { data: [data], cooldown: cooldown, expiration: expiration })];
+                    case 6: return [4 /*yield*/, this.core.apply(skey, current, { data: [data], cooldown: cooldown, expiration: expiration })];
                     case 7:
                         _h = _j.sent();
                         _j.label = 8;
@@ -258,7 +297,7 @@ var Scroll = /** @class */ (function () {
                         error_1 = _j.sent();
                         cooldown = getTimeFromDelay(dcooldown);
                         expiration = getTimeFromDelay(dexpiration);
-                        return [4 /*yield*/, this.core.mutate(skey, { error: error_1, cooldown: cooldown, expiration: expiration })];
+                        return [4 /*yield*/, this.core.apply(skey, current, { error: error_1, cooldown: cooldown, expiration: expiration })];
                     case 10: return [2 /*return*/, _j.sent()];
                     case 11:
                         clearTimeout(timeout);
@@ -309,20 +348,20 @@ var Scroll = /** @class */ (function () {
                     case 2:
                         _h.trys.push([2, 6, 8, 9]);
                         signal = aborter.signal;
-                        return [4 /*yield*/, this.core.mutate(skey, { aborter: aborter })];
+                        return [4 /*yield*/, this.core.apply(skey, current, { aborter: aborter })];
                     case 3:
-                        _h.sent();
+                        current = _h.sent();
                         return [4 /*yield*/, fetcher(last, { signal: signal })];
                     case 4:
                         _e = _h.sent(), data = _e.data, _f = _e.cooldown, cooldown = _f === void 0 ? getTimeFromDelay(dcooldown) : _f, _g = _e.expiration, expiration = _g === void 0 ? getTimeFromDelay(dexpiration) : _g;
                         expiration = Math.min(expiration, current.expiration);
-                        return [4 /*yield*/, this.core.mutate(skey, { data: __spreadArray(__spreadArray([], pages, true), [data], false), cooldown: cooldown, expiration: expiration })];
+                        return [4 /*yield*/, this.core.apply(skey, current, { data: __spreadArray(__spreadArray([], __read(pages), false), [data], false), cooldown: cooldown, expiration: expiration })];
                     case 5: return [2 /*return*/, _h.sent()];
                     case 6:
                         error_2 = _h.sent();
                         cooldown = getTimeFromDelay(dcooldown);
                         expiration = getTimeFromDelay(dexpiration);
-                        return [4 /*yield*/, this.core.mutate(skey, { error: error_2, cooldown: cooldown, expiration: expiration })];
+                        return [4 /*yield*/, this.core.apply(skey, current, { error: error_2, cooldown: cooldown, expiration: expiration })];
                     case 7: return [2 /*return*/, _h.sent()];
                     case 8:
                         clearTimeout(timeout);
@@ -377,19 +416,19 @@ var Single = /** @class */ (function () {
                     case 2:
                         _g.trys.push([2, 6, 8, 9]);
                         signal = aborter.signal;
-                        return [4 /*yield*/, this.core.mutate(skey, { aborter: aborter })];
+                        return [4 /*yield*/, this.core.apply(skey, current, { aborter: aborter })];
                     case 3:
-                        _g.sent();
+                        current = _g.sent();
                         return [4 /*yield*/, fetcher(key, { signal: signal })];
                     case 4:
                         _d = _g.sent(), data = _d.data, _e = _d.cooldown, cooldown = _e === void 0 ? getTimeFromDelay(dcooldown) : _e, _f = _d.expiration, expiration = _f === void 0 ? getTimeFromDelay(dexpiration) : _f;
-                        return [4 /*yield*/, this.core.mutate(skey, { data: data, cooldown: cooldown, expiration: expiration })];
+                        return [4 /*yield*/, this.core.apply(skey, current, { data: data, cooldown: cooldown, expiration: expiration })];
                     case 5: return [2 /*return*/, _g.sent()];
                     case 6:
                         error_1 = _g.sent();
                         cooldown = getTimeFromDelay(dcooldown);
                         expiration = getTimeFromDelay(dexpiration);
-                        return [4 /*yield*/, this.core.mutate(skey, { error: error_1, cooldown: cooldown, expiration: expiration })];
+                        return [4 /*yield*/, this.core.apply(skey, current, { error: error_1, cooldown: cooldown, expiration: expiration })];
                     case 7: return [2 /*return*/, _g.sent()];
                     case 8:
                         clearTimeout(timeout);
@@ -465,25 +504,41 @@ var Core = /** @class */ (function (_super) {
     __extends(Core, _super);
     function Core(params) {
         var _this = this;
-        var _a, _b, _c, _d, _e;
+        var _a, _b, _c, _d;
         _this = _super.call(this) || this;
         _this.single = new Single(_this);
         _this.scroll = new Scroll(_this);
+        _this.cache = new Map();
+        _this.mounted = true;
         _this.counts = new Map();
         _this.timeouts = new Map();
         Object.assign(_this, params);
-        (_a = _this.storage) !== null && _a !== void 0 ? _a : (_this.storage = new Map());
-        (_b = _this.equals) !== null && _b !== void 0 ? _b : (_this.equals = DEFAULT_EQUALS);
-        (_c = _this.cooldown) !== null && _c !== void 0 ? _c : (_this.cooldown = DEFAULT_COOLDOWN);
-        (_d = _this.expiration) !== null && _d !== void 0 ? _d : (_this.expiration = DEFAULT_EXPIRATION);
-        (_e = _this.timeout) !== null && _e !== void 0 ? _e : (_this.timeout = DEFAULT_TIMEOUT);
+        (_a = _this.equals) !== null && _a !== void 0 ? _a : (_this.equals = DEFAULT_EQUALS);
+        (_b = _this.cooldown) !== null && _b !== void 0 ? _b : (_this.cooldown = DEFAULT_COOLDOWN);
+        (_c = _this.expiration) !== null && _c !== void 0 ? _c : (_this.expiration = DEFAULT_EXPIRATION);
+        (_d = _this.timeout) !== null && _d !== void 0 ? _d : (_this.timeout = DEFAULT_TIMEOUT);
         return _this;
     }
-    /**
-     * Check if key exists from storage
-     * @param key Key
-     * @returns boolean
-     */
+    Object.defineProperty(Core.prototype, "async", {
+        get: function () {
+            if (!this.storage)
+                return false;
+            return isAsyncStorage(this.storage);
+        },
+        enumerable: false,
+        configurable: true
+    });
+    Core.prototype.hasSync = function (key) {
+        if (!key)
+            return;
+        if (this.cache.has(key))
+            return true;
+        if (!this.storage)
+            return false;
+        if (isAsyncStorage(this.storage))
+            return false;
+        return this.storage.has(key);
+    };
     Core.prototype.has = function (key) {
         return __awaiter(this, void 0, void 0, function () {
             return __generator(this, function (_a) {
@@ -491,40 +546,46 @@ var Core = /** @class */ (function (_super) {
                     case 0:
                         if (!key)
                             return [2 /*return*/, false];
+                        if (this.cache.has(key))
+                            return [2 /*return*/, true];
+                        if (!this.storage)
+                            return [2 /*return*/, false];
                         return [4 /*yield*/, this.storage.has(key)];
                     case 1: return [2 /*return*/, _a.sent()];
                 }
             });
         });
     };
-    Object.defineProperty(Core.prototype, "async", {
-        get: function () {
-            return isAsyncStorage(this.storage);
-        },
-        enumerable: false,
-        configurable: true
-    });
     Core.prototype.getSync = function (key) {
         if (!key)
             return;
+        if (this.cache.has(key))
+            return this.cache.get(key);
+        if (!this.storage)
+            return;
         if (isAsyncStorage(this.storage))
             return;
-        return this.storage.get(key);
+        var state = this.storage.get(key);
+        this.cache.set(key, state);
+        return state;
     };
-    /**
-     * Grab current state from storage
-     * @param key Key
-     * @returns Current state
-     */
     Core.prototype.get = function (key) {
         return __awaiter(this, void 0, void 0, function () {
+            var state;
             return __generator(this, function (_a) {
                 switch (_a.label) {
                     case 0:
                         if (!key)
                             return [2 /*return*/];
+                        if (this.cache.has(key))
+                            return [2 /*return*/, this.cache.get(key)];
+                        if (!this.storage)
+                            return [2 /*return*/];
                         return [4 /*yield*/, this.storage.get(key)];
-                    case 1: return [2 /*return*/, _a.sent()];
+                    case 1:
+                        state = _a.sent();
+                        this.cache.set(key, state);
+                        return [2 /*return*/, state];
                 }
             });
         });
@@ -543,10 +604,13 @@ var Core = /** @class */ (function (_super) {
                     case 0:
                         if (!key)
                             return [2 /*return*/];
+                        this.cache.set(key, state);
+                        this.publish(key, state);
+                        if (!this.storage)
+                            return [2 /*return*/];
                         return [4 /*yield*/, this.storage.set(key, state)];
                     case 1:
                         _a.sent();
-                        this.publish(key, state);
                         return [2 /*return*/];
                 }
             });
@@ -564,38 +628,32 @@ var Core = /** @class */ (function (_super) {
                     case 0:
                         if (!key)
                             return [2 /*return*/];
+                        this.cache.delete(key);
+                        this.publish(key, undefined);
+                        if (!this.storage)
+                            return [2 /*return*/];
                         return [4 /*yield*/, this.storage.delete(key)];
                     case 1:
                         _a.sent();
-                        this.publish(key, undefined);
                         return [2 /*return*/];
                 }
             });
         });
     };
-    /**
-     * Merge a new state with the old state
-     * - Will check if the new time is after the old time
-     * - Will check if it changed using this.equals
-     * @param key
-     * @param state
-     * @returns
-     */
-    Core.prototype.mutate = function (key, state) {
+    Core.prototype.apply = function (key, current, state) {
         return __awaiter(this, void 0, void 0, function () {
-            var current, next;
+            var next;
             return __generator(this, function (_a) {
                 switch (_a.label) {
                     case 0:
                         if (!key)
                             return [2 /*return*/];
-                        if (!state) {
-                            this.delete(key);
-                            return [2 /*return*/];
-                        }
-                        return [4 /*yield*/, this.get(key)];
+                        if (!!state) return [3 /*break*/, 2];
+                        return [4 /*yield*/, this.delete(key)];
                     case 1:
-                        current = _a.sent();
+                        _a.sent();
+                        return [2 /*return*/];
+                    case 2:
                         if (state.time === undefined)
                             state.time = Date.now();
                         if ((current === null || current === void 0 ? void 0 : current.time) !== undefined && state.time < current.time)
@@ -616,9 +674,26 @@ var Core = /** @class */ (function (_super) {
                         if (this.equals(current, next))
                             return [2 /*return*/, current];
                         return [4 /*yield*/, this.set(key, next)];
-                    case 2:
+                    case 3:
                         _a.sent();
                         return [2 /*return*/, next];
+                }
+            });
+        });
+    };
+    Core.prototype.mutate = function (key, state) {
+        return __awaiter(this, void 0, void 0, function () {
+            var current;
+            return __generator(this, function (_a) {
+                switch (_a.label) {
+                    case 0:
+                        if (!key)
+                            return [2 /*return*/];
+                        return [4 /*yield*/, this.get(key)];
+                    case 1:
+                        current = _a.sent();
+                        return [4 /*yield*/, this.apply(key, current, state)];
+                    case 2: return [2 /*return*/, _a.sent()];
                 }
             });
         });
@@ -671,14 +746,30 @@ var Core = /** @class */ (function (_super) {
                             return [2 /*return*/];
                         if ((current === null || current === void 0 ? void 0 : current.expiration) === -1)
                             return [2 /*return*/];
-                        erase = function () {
-                            _this.timeouts.delete(key);
-                            _this.delete(key);
-                        };
-                        if (Date.now() > current.expiration) {
-                            erase();
-                            return [2 /*return*/];
-                        }
+                        erase = function () { return __awaiter(_this, void 0, void 0, function () {
+                            var count;
+                            return __generator(this, function (_a) {
+                                switch (_a.label) {
+                                    case 0:
+                                        if (!this.mounted)
+                                            return [2 /*return*/];
+                                        count = this.counts.get(key);
+                                        if (count !== undefined)
+                                            return [2 /*return*/];
+                                        this.timeouts.delete(key);
+                                        return [4 /*yield*/, this.delete(key)];
+                                    case 1:
+                                        _a.sent();
+                                        return [2 /*return*/];
+                                }
+                            });
+                        }); };
+                        if (!(Date.now() > current.expiration)) return [3 /*break*/, 3];
+                        return [4 /*yield*/, erase()];
+                    case 2:
+                        _a.sent();
+                        return [2 /*return*/];
+                    case 3:
                         delay = current.expiration - Date.now();
                         timeout = setTimeout(erase, delay);
                         this.timeouts.set(key, timeout);
@@ -686,6 +777,23 @@ var Core = /** @class */ (function (_super) {
                 }
             });
         });
+    };
+    Core.prototype.unmount = function () {
+        var e_1, _a;
+        try {
+            for (var _b = __values(this.timeouts.values()), _c = _b.next(); !_c.done; _c = _b.next()) {
+                var timeout = _c.value;
+                clearTimeout(timeout);
+            }
+        }
+        catch (e_1_1) { e_1 = { error: e_1_1 }; }
+        finally {
+            try {
+                if (_c && !_c.done && (_a = _b.return)) _a.call(_b);
+            }
+            finally { if (e_1) throw e_1.error; }
+        }
+        this.mounted = false;
     };
     return Core;
 }(Ortho));
@@ -698,6 +806,9 @@ function useCoreProvider(params) {
     var core = useRef();
     if (!core.current)
         core.current = new Core(params);
+    useEffect(function () { return function () {
+        core.current.unmount();
+    }; }, []);
     return core.current;
 }
 function CoreProvider(props) {
@@ -729,8 +840,8 @@ function useScroll(scroller, fetcher, tparams) {
             return;
         return "scroll:" + JSON.stringify(key);
     }, [key]);
-    var _a = useState(!core.async), ready = _a[0], setReady = _a[1];
-    var _b = useState(function () { return core.getSync(skey); }), state = _b[0], setState = _b[1];
+    var _a = __read(useState(!core.async), 2), ready = _a[0], setReady = _a[1];
+    var _b = __read(useState(function () { return core.getSync(skey); }), 2), state = _b[0], setState = _b[1];
     useEffect(function () {
         core.get(skey)
             .then(setState)
@@ -799,8 +910,8 @@ function useSingle(key, poster, tparams) {
             return;
         return JSON.stringify(key);
     }, [key]);
-    var _a = useState(!core.async), ready = _a[0], setReady = _a[1];
-    var _b = useState(function () { return core.getSync(skey); }), state = _b[0], setState = _b[1];
+    var _a = __read(useState(function () { return core.hasSync(skey); }), 2), ready = _a[0], setReady = _a[1];
+    var _b = __read(useState(function () { return core.getSync(skey); }), 2), state = _b[0], setState = _b[1];
     useEffect(function () {
         core.get(skey)
             .then(setState)
@@ -870,11 +981,13 @@ function useDebug(handle, label) {
  * @param callback
  */
 function useError(handle, callback) {
-    var error = handle.error;
+    var ready = handle.ready, error = handle.error;
     useEffect(function () {
+        if (!ready)
+            return;
         if (error !== undefined)
             callback(error);
-    }, [error, callback]);
+    }, [ready, error, callback]);
 }
 
 /**
@@ -942,11 +1055,13 @@ function useMount(handle) {
  * @example You want to get some data once and share it in multiple components
  */
 function useOnce(handle) {
-    var data = handle.data, fetch = handle.fetch;
+    var ready = handle.ready, data = handle.data, fetch = handle.fetch;
     useEffect(function () {
+        if (!ready)
+            return;
         if (data === undefined)
             fetch();
-    }, [data, fetch]);
+    }, [ready, data, fetch]);
 }
 
 /**
@@ -975,13 +1090,15 @@ function useOnline(handle) {
  */
 function useRetry(handle, options) {
     if (options === void 0) { options = {}; }
-    var refetch = handle.refetch, error = handle.error, time = handle.time;
+    var ready = handle.ready, refetch = handle.refetch, error = handle.error, time = handle.time;
     var _a = options.init, init = _a === void 0 ? 1000 : _a, _b = options.base, base = _b === void 0 ? 2 : _b, _c = options.max, max = _c === void 0 ? 3 : _c;
     var count = useRef(0);
     useEffect(function () {
         count.current = 0;
     }, [refetch]);
     useEffect(function () {
+        if (!ready)
+            return;
         if (error === undefined) {
             count.current = 0;
             return;
@@ -992,7 +1109,7 @@ function useRetry(handle, options) {
         var f = function () { count.current++; refetch(); };
         var t = setTimeout(f, init * ratio);
         return function () { return clearTimeout(t); };
-    }, [error, time, refetch]);
+    }, [ready, error, time, refetch]);
 }
 
 /**
@@ -1007,6 +1124,101 @@ function useVisible(handle) {
         return function () { return document.removeEventListener("visibilitychange", f); };
     }, [fetch]);
 }
+
+function useAsyncLocalStorage() {
+    var storage = useRef();
+    if (!storage.current)
+        storage.current = new AsyncLocalStorage();
+    return storage.current;
+}
+var AsyncLocalStorage = /** @class */ (function () {
+    function AsyncLocalStorage() {
+        this.async = true;
+    }
+    AsyncLocalStorage.prototype.has = function (key) {
+        return __awaiter(this, void 0, void 0, function () {
+            return __generator(this, function (_a) {
+                if (typeof Storage === "undefined")
+                    return [2 /*return*/];
+                return [2 /*return*/, Boolean(localStorage.getItem(key))];
+            });
+        });
+    };
+    AsyncLocalStorage.prototype.get = function (key) {
+        return __awaiter(this, void 0, void 0, function () {
+            var item;
+            return __generator(this, function (_a) {
+                if (typeof Storage === "undefined")
+                    return [2 /*return*/];
+                item = localStorage.getItem(key);
+                if (item)
+                    return [2 /*return*/, JSON.parse(item)];
+                return [2 /*return*/];
+            });
+        });
+    };
+    AsyncLocalStorage.prototype.set = function (key, state) {
+        return __awaiter(this, void 0, void 0, function () {
+            var data, time, expiration, item;
+            return __generator(this, function (_a) {
+                if (typeof Storage === "undefined")
+                    return [2 /*return*/];
+                data = state.data, time = state.time, expiration = state.expiration;
+                item = JSON.stringify({ data: data, time: time, expiration: expiration });
+                localStorage.setItem(key, item);
+                return [2 /*return*/];
+            });
+        });
+    };
+    AsyncLocalStorage.prototype.delete = function (key) {
+        return __awaiter(this, void 0, void 0, function () {
+            return __generator(this, function (_a) {
+                if (typeof Storage === "undefined")
+                    return [2 /*return*/];
+                localStorage.removeItem(key);
+                return [2 /*return*/];
+            });
+        });
+    };
+    return AsyncLocalStorage;
+}());
+
+function useSyncLocalStorage() {
+    var storage = useRef();
+    if (!storage.current)
+        storage.current = new SyncLocalStorage();
+    return storage.current;
+}
+var SyncLocalStorage = /** @class */ (function () {
+    function SyncLocalStorage() {
+        this.async = false;
+    }
+    SyncLocalStorage.prototype.has = function (key) {
+        if (typeof Storage === "undefined")
+            return;
+        return Boolean(localStorage.getItem(key));
+    };
+    SyncLocalStorage.prototype.get = function (key) {
+        if (typeof Storage === "undefined")
+            return;
+        var item = localStorage.getItem(key);
+        if (item)
+            return JSON.parse(item);
+    };
+    SyncLocalStorage.prototype.set = function (key, state) {
+        if (typeof Storage === "undefined")
+            return;
+        var data = state.data, time = state.time, expiration = state.expiration;
+        var item = JSON.stringify({ data: data, time: time, expiration: expiration });
+        localStorage.setItem(key, item);
+    };
+    SyncLocalStorage.prototype.delete = function (key) {
+        if (typeof Storage === "undefined")
+            return;
+        localStorage.removeItem(key);
+    };
+    return SyncLocalStorage;
+}());
 
 var mod = {
     __proto__: null,
@@ -1032,6 +1244,10 @@ var mod = {
     useVisible: useVisible,
     Scroll: Scroll,
     Single: Single,
+    useAsyncLocalStorage: useAsyncLocalStorage,
+    AsyncLocalStorage: AsyncLocalStorage,
+    useSyncLocalStorage: useSyncLocalStorage,
+    SyncLocalStorage: SyncLocalStorage,
     isAsyncStorage: isAsyncStorage,
     getTimeFromDelay: getTimeFromDelay
 };

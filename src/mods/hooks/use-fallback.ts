@@ -1,5 +1,5 @@
 import { Handle } from "../handles/index.js"
-import { State } from "../storage.js"
+import { State } from "../storages/storage.js"
 
 /**
  * Fallback to given data/error if there is no data/error

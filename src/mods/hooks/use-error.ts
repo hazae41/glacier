@@ -10,9 +10,11 @@ export function useError<D = any, E = any>(
   handle: Handle<D, E>,
   callback: (e: E) => void
 ) {
-  const { error } = handle
+  const { ready, error } = handle
 
   useEffect(() => {
+    if (!ready) return
+
     if (error !== undefined) callback(error)
-  }, [error, callback])
+  }, [ready, error, callback])
 }

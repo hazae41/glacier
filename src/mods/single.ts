@@ -1,5 +1,5 @@
 import { Core, Fetcher, Poster, Updater } from "./core.js";
-import { State } from "./storage.js";
+import { State } from "./storages/storage.js";
 import { getTimeFromDelay, TimeParams } from "./time.js";
 
 export class Single {
@@ -32,7 +32,7 @@ export class Single {
       timeout: dtimeout = this.core.timeout,
     } = tparams
 
-    const current = await this.core.get<D, E>(skey)
+    let current = await this.core.get<D, E>(skey)
     if (current?.aborter)
       return current
     if (this.core.shouldCooldown(current, force))
@@ -45,7 +45,7 @@ export class Single {
     try {
       const { signal } = aborter
 
-      await this.core.mutate(skey, { aborter })
+      current = await this.core.apply(skey, current, { aborter })
 
       const {
         data,
@@ -53,12 +53,12 @@ export class Single {
         expiration = getTimeFromDelay(dexpiration)
       } = await fetcher(key, { signal })
 
-      return await this.core.mutate<D, E>(skey, { data, cooldown, expiration })
+      return await this.core.apply<D, E>(skey, current, { data, cooldown, expiration })
     } catch (error: any) {
       const cooldown = getTimeFromDelay(dcooldown)
       const expiration = getTimeFromDelay(dexpiration)
 
-      return await this.core.mutate<D, E>(skey, { error, cooldown, expiration })
+      return await this.core.apply<D, E>(skey, current, { error, cooldown, expiration })
     } finally {
       clearTimeout(timeout)
     }

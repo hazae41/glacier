@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useRef } from "react"
+import React, { createContext, useContext, useEffect, useRef } from "react"
 import { ChildrenProps } from "../libs/react.js"
 import { Core, CoreParams } from "../mods/core.js"
 
@@ -11,8 +11,14 @@ export function useCore() {
 
 export function useCoreProvider(params?: CoreParams) {
   const core = useRef<Core>()
+
   if (!core.current)
     core.current = new Core(params)
+
+  useEffect(() => () => {
+    core.current.unmount()
+  }, [])
+
   return core.current
 }
 

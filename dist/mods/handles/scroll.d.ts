@@ -1,7 +1,7 @@
 import { Fetcher, Scroller } from "../core.js";
-import { State } from "../storage.js";
+import { State } from "../storages/storage.js";
 import { TimeParams } from "../time.js";
-import { Handle } from "./generic.js";
+import { Handle } from "./handle.js";
 /**
  * Handle for a scrolling resource
  */

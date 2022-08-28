@@ -1,1 +1,1 @@
-export * as XSWR from "./mod.js";
+export * as XSWR from "./mod";

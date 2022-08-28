@@ -1,4 +1,4 @@
-import { State } from "../storage.js";
+import { State } from "../storages/storage.js";
 export interface Handle<D = any, E = any, K = any> {
     /**
      * Arbitrary key, must be serializable

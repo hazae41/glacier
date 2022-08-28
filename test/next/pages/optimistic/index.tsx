@@ -1,6 +1,6 @@
 import { XSWR } from "@hazae41/xswr"
 import { useCallback } from "react"
-import { HelloData } from "../common/hello"
+import { HelloData } from "../../common/hello"
 
 async function postAsJson<T>(url: string, more: XSWR.PosterMore<T>) {
   const { data, signal } = more

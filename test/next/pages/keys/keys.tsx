@@ -1,6 +1,6 @@
 import { XSWR } from "@hazae41/xswr"
 import { useMemo, useState } from "react"
-import { HelloData } from "../common/hello"
+import { HelloData } from "../../common/hello"
 
 async function fetchAsJson<T>([url, id]: [string, number], more: XSWR.PosterMore<T>) {
   const { signal } = more

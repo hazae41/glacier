@@ -3,7 +3,7 @@ import { DEFAULT_COOLDOWN, DEFAULT_EQUALS, DEFAULT_EXPIRATION, DEFAULT_TIMEOUT }
 import { Equals } from "./equals.js"
 import { Scroll } from "./scroll.js"
 import { Single } from "./single.js"
-import { isAsyncStorage, State, Storage } from "./storage.js"
+import { isAsyncStorage, State, Storage } from "./storages/storage.js"
 import { TimeParams } from "./time.js"
 
 export interface Result<D = any> {
@@ -39,40 +39,57 @@ export class Core extends Ortho<string, State | undefined> {
   readonly single = new Single(this)
   readonly scroll = new Scroll(this)
 
-  readonly storage: Storage<State>
+  readonly cache = new Map<string, State>()
+  readonly storage?: Storage<State>
+
   readonly equals: Equals
 
   readonly cooldown: number
   readonly expiration: number
   readonly timeout: number
 
+  protected mounted = true
+
   constructor(params?: CoreParams) {
     super()
 
     Object.assign(this, params)
 
-    this.storage ??= new Map<string, State>()
     this.equals ??= DEFAULT_EQUALS
     this.cooldown ??= DEFAULT_COOLDOWN
     this.expiration ??= DEFAULT_EXPIRATION
     this.timeout ??= DEFAULT_TIMEOUT
   }
 
-  /**
-   * Check if key exists from storage
-   * @param key Key
-   * @returns boolean
-   */
+  get async() {
+    if (!this.storage) return false
+    return isAsyncStorage(this.storage)
+  }
+
+  hasSync(
+    key: string | undefined
+  ): boolean {
+    if (!key) return
+
+    if (this.cache.has(key))
+      return true
+    if (!this.storage)
+      return false
+    if (isAsyncStorage(this.storage))
+      return false
+    return this.storage.has(key)
+  }
+
   async has(
     key: string | undefined
   ) {
     if (!key) return false
 
+    if (this.cache.has(key))
+      return true
+    if (!this.storage)
+      return false
     return await this.storage.has(key)
-  }
-
-  get async() {
-    return isAsyncStorage(this.storage)
   }
 
   getSync<D = any, E = any>(
@@ -80,21 +97,29 @@ export class Core extends Ortho<string, State | undefined> {
   ): State<D, E> | undefined {
     if (!key) return
 
-    if (isAsyncStorage(this.storage)) return
-    return this.storage.get(key)
+    if (this.cache.has(key))
+      return this.cache.get(key)
+    if (!this.storage)
+      return
+    if (isAsyncStorage(this.storage))
+      return
+    const state = this.storage.get(key)
+    this.cache.set(key, state)
+    return state
   }
 
-  /**
-   * Grab current state from storage
-   * @param key Key
-   * @returns Current state
-   */
   async get<D = any, E = any>(
     key: string | undefined
   ): Promise<State<D, E> | undefined> {
     if (!key) return
 
-    return await this.storage.get(key)
+    if (this.cache.has(key))
+      return this.cache.get(key)
+    if (!this.storage)
+      return
+    const state = await this.storage.get(key)
+    this.cache.set(key, state)
+    return state
   }
 
   /**
@@ -110,8 +135,12 @@ export class Core extends Ortho<string, State | undefined> {
   ) {
     if (!key) return
 
-    await this.storage.set(key, state)
+    this.cache.set(key, state)
     this.publish(key, state)
+
+    if (!this.storage)
+      return
+    await this.storage.set(key, state)
   }
 
   /**
@@ -124,30 +153,25 @@ export class Core extends Ortho<string, State | undefined> {
   ) {
     if (!key) return
 
-    await this.storage.delete(key)
+    this.cache.delete(key)
     this.publish(key, undefined)
+
+    if (!this.storage)
+      return
+    await this.storage.delete(key)
   }
 
-  /**
-   * Merge a new state with the old state
-   * - Will check if the new time is after the old time
-   * - Will check if it changed using this.equals
-   * @param key 
-   * @param state 
-   * @returns 
-   */
-  async mutate<D = any, E = any>(
+  async apply<D = any, E = any>(
     key: string | undefined,
+    current?: State<D, E>,
     state?: State<D, E>
   ): Promise<State<D, E> | undefined> {
     if (!key) return
 
     if (!state) {
-      this.delete(key)
+      await this.delete(key)
       return
     }
-
-    const current = await this.get<D, E>(key)
 
     if (state.time === undefined)
       state.time = Date.now()
@@ -174,6 +198,16 @@ export class Core extends Ortho<string, State | undefined> {
       return current
     await this.set(key, next)
     return next
+  }
+
+  async mutate<D = any, E = any>(
+    key: string | undefined,
+    state?: State<D, E>
+  ): Promise<State<D, E> | undefined> {
+    if (!key) return
+
+    const current = await this.get<D, E>(key)
+    return await this.apply(key, current, state)
   }
 
   /**
@@ -231,18 +265,29 @@ export class Core extends Ortho<string, State | undefined> {
     if (current?.expiration === undefined) return
     if (current?.expiration === -1) return
 
-    const erase = () => {
+    const erase = async () => {
+      if (!this.mounted) return
+
+      const count = this.counts.get(key)
+      if (count !== undefined) return
+
       this.timeouts.delete(key)
-      this.delete(key)
+      await this.delete(key)
     }
 
     if (Date.now() > current.expiration) {
-      erase()
+      await erase()
       return
     }
 
     const delay = current.expiration - Date.now()
     const timeout = setTimeout(erase, delay)
     this.timeouts.set(key, timeout)
+  }
+
+  unmount() {
+    for (const timeout of this.timeouts.values())
+      clearTimeout(timeout)
+    this.mounted = false
   }
 }
