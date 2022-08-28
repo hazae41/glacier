@@ -10,6 +10,9 @@ import { Handle } from "./generic.js"
  * Handle for a scrolling resource
  */
 export interface ScrollHandle<D = any, E = any, K = any> extends Handle<D[], E, K> {
+  /**
+   * Fetch the next page
+   */
   scroll(): Promise<State<D[], E> | undefined>
 }
 
@@ -36,16 +39,19 @@ export function useScroll<D = any, E = any, K = any>(
     return "scroll:" + JSON.stringify(key)
   }, [key])
 
-  const [state, setState] = useState(
-    () => core.get<D[], E>(skey))
+  const [ready, setReady] = useState(!core.async)
+  const [state, setState] = useState(() => core.getSync<D[], E>(skey))
+
   useEffect(() => {
-    setState(core.get<D[], E>(skey))
+    core.get<D[], E>(skey)
+      .then(setState)
+      .finally(() => setReady(true))
   }, [core, skey])
 
   useOrtho(core, skey, setState)
 
-  const mutate = useCallback((res: State<D[], E>) => {
-    return core.mutate<D[], E>(skey, res)
+  const mutate = useCallback(async (res: State<D[], E>) => {
+    return await core.mutate<D[], E>(skey, res)
   }, [core, skey])
 
   const fetch = useCallback(async (aborter?: AbortController) => {
@@ -60,11 +66,11 @@ export function useScroll<D = any, E = any, K = any>(
     return await core.scroll.scroll<D, E, K>(skey, scroller, fetcher, aborter, tparams, true)
   }, [core, skey, scroller, fetcher])
 
-  const clear = useCallback(() => {
-    core.delete(skey)
+  const clear = useCallback(async () => {
+    await core.delete(skey)
   }, [core, skey])
 
   const loading = Boolean(state?.aborter)
 
-  return { key, skey, ...state, loading, mutate, fetch, refetch, scroll, clear }
+  return { key, skey, ...state, loading, ready, mutate, fetch, refetch, scroll, clear }
 }

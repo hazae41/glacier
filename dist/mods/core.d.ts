@@ -21,7 +21,6 @@ export declare type PosterMore<D = any> = {
 };
 export declare type Scroller<D = any, K = any> = (previous?: D) => K | undefined;
 export declare type Updater<D = any> = (previous?: D) => D;
-export declare type Listener<D = any, E = any> = (state?: State<D, E>) => void;
 export interface CoreParams extends TimeParams {
     storage?: Storage<State>;
     equals?: Equals;
@@ -40,13 +39,15 @@ export declare class Core extends Ortho<string, State | undefined> {
      * @param key Key
      * @returns boolean
      */
-    has(key: string | undefined): boolean;
+    has(key: string | undefined): Promise<boolean>;
+    get async(): boolean;
+    getSync<D = any, E = any>(key: string | undefined): State<D, E> | undefined;
     /**
      * Grab current state from storage
      * @param key Key
      * @returns Current state
      */
-    get<D = any, E = any>(key: string | undefined): State<D, E> | undefined;
+    get<D = any, E = any>(key: string | undefined): Promise<State<D, E> | undefined>;
     /**
      * Force set a key to a state and publish it
      * No check, no merge
@@ -54,13 +55,13 @@ export declare class Core extends Ortho<string, State | undefined> {
      * @param state New state
      * @returns
      */
-    set<D = any, E = any>(key: string | undefined, state: State<D, E>): void;
+    set<D = any, E = any>(key: string | undefined, state: State<D, E>): Promise<void>;
     /**
      * Delete key and publish undefined
      * @param key
      * @returns
      */
-    delete(key: string | undefined): void;
+    delete(key: string | undefined): Promise<void>;
     /**
      * Merge a new state with the old state
      * - Will check if the new time is after the old time
@@ -69,7 +70,7 @@ export declare class Core extends Ortho<string, State | undefined> {
      * @param state
      * @returns
      */
-    mutate<D = any, E = any>(key: string | undefined, state?: State<D, E>): State<D, E> | undefined;
+    mutate<D = any, E = any>(key: string | undefined, state?: State<D, E>): Promise<State<D, E> | undefined>;
     /**
      * True if we should cooldown this resource
      */
@@ -77,5 +78,5 @@ export declare class Core extends Ortho<string, State | undefined> {
     counts: Map<string, number>;
     timeouts: Map<string, NodeJS.Timeout>;
     subscribe(key: string | undefined, listener: (x: State) => void): void;
-    unsubscribe(key: string | undefined, listener: (x: State) => void): void;
+    unsubscribe(key: string | undefined, listener: (x: State) => void): Promise<void>;
 }

@@ -25,7 +25,7 @@ export default function Page() {
   const hello = useHelloData()
 
   // this is for you, gaearon
-  const { data, error, loading, update, refetch, aborter } = hello
+  const { data, error, loading, ready, update, refetch, aborter } = hello
 
   const onRefreshClick = useCallback(() => {
     refetch()

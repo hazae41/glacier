@@ -32,7 +32,7 @@ export class Single {
       timeout: dtimeout = this.core.timeout,
     } = tparams
 
-    const current = this.core.get<D, E>(skey)
+    const current = await this.core.get<D, E>(skey)
     if (current?.aborter)
       return current
     if (this.core.shouldCooldown(current, force))
@@ -45,7 +45,7 @@ export class Single {
     try {
       const { signal } = aborter
 
-      this.core.mutate(skey, { aborter })
+      await this.core.mutate(skey, { aborter })
 
       const {
         data,
@@ -53,12 +53,12 @@ export class Single {
         expiration = getTimeFromDelay(dexpiration)
       } = await fetcher(key, { signal })
 
-      return this.core.mutate<D, E>(skey, { data, cooldown, expiration })
+      return await this.core.mutate<D, E>(skey, { data, cooldown, expiration })
     } catch (error: any) {
       const cooldown = getTimeFromDelay(dcooldown)
       const expiration = getTimeFromDelay(dexpiration)
 
-      return this.core.mutate<D, E>(skey, { error, cooldown, expiration })
+      return await this.core.mutate<D, E>(skey, { error, cooldown, expiration })
     } finally {
       clearTimeout(timeout)
     }
@@ -92,7 +92,7 @@ export class Single {
       timeout: dtimeout = this.core.timeout,
     } = tparams
 
-    const current = this.core.get<D, E>(skey)
+    const current = await this.core.get<D, E>(skey)
     const updated = updater(current?.data)
 
     const timeout = setTimeout(() => {
@@ -102,7 +102,7 @@ export class Single {
     try {
       const { signal } = aborter
 
-      this.core.mutate(skey, { data: updated, time: current?.time })
+      await this.core.mutate(skey, { data: updated, time: current?.time })
 
       const {
         data,
@@ -110,7 +110,7 @@ export class Single {
         expiration = getTimeFromDelay(dexpiration)
       } = await poster(key, { data: updated, signal })
 
-      return this.core.mutate<D, E>(skey, { data, cooldown, expiration })
+      return await this.core.mutate<D, E>(skey, { data, cooldown, expiration })
     } catch (error: any) {
       this.core.mutate<D, E>(skey, current)
       throw error

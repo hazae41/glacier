@@ -6,6 +6,11 @@ import { Handle } from "./generic.js";
  * Handle for a single resource
  */
 export interface SingleHandle<D = any, E = any, K = any> extends Handle<D, E, K> {
+    /**
+     * Optimistic update
+     * @param updater Mutation function
+     * @param aborter Custom AbortController
+     */
     update(updater: Updater<D>, aborter?: AbortController): Promise<State<D, E> | undefined>;
 }
 /**

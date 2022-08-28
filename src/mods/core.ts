@@ -3,7 +3,7 @@ import { DEFAULT_COOLDOWN, DEFAULT_EQUALS, DEFAULT_EXPIRATION, DEFAULT_TIMEOUT }
 import { Equals } from "./equals.js"
 import { Scroll } from "./scroll.js"
 import { Single } from "./single.js"
-import { State, Storage } from "./storage.js"
+import { isAsyncStorage, State, Storage } from "./storage.js"
 import { TimeParams } from "./time.js"
 
 export interface Result<D = any> {
@@ -63,12 +63,25 @@ export class Core extends Ortho<string, State | undefined> {
    * @param key Key
    * @returns boolean
    */
-  has(
+  async has(
     key: string | undefined
-  ): boolean {
+  ) {
     if (!key) return false
 
-    return this.storage.has(key)
+    return await this.storage.has(key)
+  }
+
+  get async() {
+    return isAsyncStorage(this.storage)
+  }
+
+  getSync<D = any, E = any>(
+    key: string | undefined
+  ): State<D, E> | undefined {
+    if (!key) return
+
+    if (isAsyncStorage(this.storage)) return
+    return this.storage.get(key)
   }
 
   /**
@@ -76,12 +89,12 @@ export class Core extends Ortho<string, State | undefined> {
    * @param key Key
    * @returns Current state
    */
-  get<D = any, E = any>(
+  async get<D = any, E = any>(
     key: string | undefined
-  ): State<D, E> | undefined {
+  ): Promise<State<D, E> | undefined> {
     if (!key) return
 
-    return this.storage.get(key)
+    return await this.storage.get(key)
   }
 
   /**
@@ -91,13 +104,13 @@ export class Core extends Ortho<string, State | undefined> {
    * @param state New state
    * @returns 
    */
-  set<D = any, E = any>(
+  async set<D = any, E = any>(
     key: string | undefined,
     state: State<D, E>
   ) {
     if (!key) return
 
-    this.storage.set(key, state)
+    await this.storage.set(key, state)
     this.publish(key, state)
   }
 
@@ -106,12 +119,12 @@ export class Core extends Ortho<string, State | undefined> {
    * @param key 
    * @returns 
    */
-  delete(
+  async delete(
     key: string | undefined
   ) {
     if (!key) return
 
-    this.storage.delete(key)
+    await this.storage.delete(key)
     this.publish(key, undefined)
   }
 
@@ -123,10 +136,10 @@ export class Core extends Ortho<string, State | undefined> {
    * @param state 
    * @returns 
    */
-  mutate<D = any, E = any>(
+  async mutate<D = any, E = any>(
     key: string | undefined,
     state?: State<D, E>
-  ): State<D, E> | undefined {
+  ): Promise<State<D, E> | undefined> {
     if (!key) return
 
     if (!state) {
@@ -134,7 +147,7 @@ export class Core extends Ortho<string, State | undefined> {
       return
     }
 
-    const current = this.get<D, E>(key)
+    const current = await this.get<D, E>(key)
 
     if (state.time === undefined)
       state.time = Date.now()
@@ -159,7 +172,7 @@ export class Core extends Ortho<string, State | undefined> {
 
     if (this.equals(current, next))
       return current
-    this.set(key, next)
+    await this.set(key, next)
     return next
   }
 
@@ -197,7 +210,7 @@ export class Core extends Ortho<string, State | undefined> {
     this.timeouts.delete(key)
   }
 
-  unsubscribe(
+  async unsubscribe(
     key: string | undefined,
     listener: (x: State) => void
   ) {
@@ -214,20 +227,21 @@ export class Core extends Ortho<string, State | undefined> {
 
     this.counts.delete(key)
 
-    const { expiration } = this.get(key) ?? {}
-    if (expiration === undefined) return
+    const current = await this.get(key)
+    if (current?.expiration === undefined) return
+    if (current?.expiration === -1) return
 
     const erase = () => {
       this.timeouts.delete(key)
       this.delete(key)
     }
 
-    if (Date.now() > expiration) {
+    if (Date.now() > current.expiration) {
       erase()
       return
     }
 
-    const delay = expiration - Date.now()
+    const delay = current.expiration - Date.now()
     const timeout = setTimeout(erase, delay)
     this.timeouts.set(key, timeout)
   }

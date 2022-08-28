@@ -31,7 +31,7 @@ export class Scroll {
       timeout: dtimeout = this.core.timeout,
     } = tparams
 
-    const current = this.core.get<D[], E>(skey)
+    const current = await this.core.get<D[], E>(skey)
     if (current?.aborter)
       return current
     if (this.core.shouldCooldown(current, force))
@@ -48,7 +48,7 @@ export class Scroll {
     try {
       const { signal } = aborter
 
-      this.core.mutate(skey, { aborter })
+      await this.core.mutate(skey, { aborter })
 
       const {
         data,
@@ -57,13 +57,13 @@ export class Scroll {
       } = await fetcher(first, { signal })
 
       return this.core.equals(data, pages[0])
-        ? this.core.mutate<D[], E>(skey, { cooldown, expiration })
-        : this.core.mutate<D[], E>(skey, { data: [data], cooldown, expiration })
+        ? await this.core.mutate<D[], E>(skey, { cooldown, expiration })
+        : await this.core.mutate<D[], E>(skey, { data: [data], cooldown, expiration })
     } catch (error: any) {
       const cooldown = getTimeFromDelay(dcooldown)
       const expiration = getTimeFromDelay(dexpiration)
 
-      return this.core.mutate<D[], E>(skey, { error, cooldown, expiration })
+      return await this.core.mutate<D[], E>(skey, { error, cooldown, expiration })
     } finally {
       clearTimeout(timeout)
     }
@@ -95,7 +95,7 @@ export class Scroll {
       timeout: dtimeout = this.core.timeout,
     } = tparams
 
-    const current = this.core.get<D[], E>(skey)
+    const current = await this.core.get<D[], E>(skey)
     if (current?.aborter)
       return current
     if (this.core.shouldCooldown(current, force))
@@ -111,7 +111,7 @@ export class Scroll {
     try {
       const { signal } = aborter
 
-      this.core.mutate(skey, { aborter })
+      await this.core.mutate(skey, { aborter })
 
       let {
         data,
@@ -121,12 +121,12 @@ export class Scroll {
 
       expiration = Math.min(expiration, current.expiration)
 
-      return this.core.mutate<D[], E>(skey, { data: [...pages, data], cooldown, expiration })
+      return await this.core.mutate<D[], E>(skey, { data: [...pages, data], cooldown, expiration })
     } catch (error: any) {
       const cooldown = getTimeFromDelay(dcooldown)
       const expiration = getTimeFromDelay(dexpiration)
 
-      return this.core.mutate<D[], E>(skey, { error, cooldown, expiration })
+      return await this.core.mutate<D[], E>(skey, { error, cooldown, expiration })
     } finally {
       clearTimeout(timeout)
     }

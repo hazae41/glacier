@@ -10,6 +10,11 @@ import { Handle } from "./generic.js"
  * Handle for a single resource
  */
 export interface SingleHandle<D = any, E = any, K = any> extends Handle<D, E, K> {
+  /**
+   * Optimistic update
+   * @param updater Mutation function
+   * @param aborter Custom AbortController
+   */
   update(updater: Updater<D>, aborter?: AbortController): Promise<State<D, E> | undefined>
 }
 
@@ -32,16 +37,19 @@ export function useSingle<D = any, E = any, K = any>(
     return JSON.stringify(key)
   }, [key])
 
-  const [state, setState] = useState(
-    () => core.get(skey))
+  const [ready, setReady] = useState(!core.async)
+  const [state, setState] = useState(() => core.getSync<D, E>(skey))
+
   useEffect(() => {
-    setState(core.get(skey))
+    core.get(skey)
+      .then(setState)
+      .finally(() => setReady(true))
   }, [core, skey])
 
   useOrtho(core, skey, setState)
 
-  const mutate = useCallback((res: State<D, E>) => {
-    return core.mutate<D, E>(skey, res)
+  const mutate = useCallback(async (res: State<D, E>) => {
+    return await core.mutate<D, E>(skey, res)
   }, [core, skey])
 
   const fetch = useCallback(async (aborter?: AbortController) => {
@@ -56,11 +64,11 @@ export function useSingle<D = any, E = any, K = any>(
     return await core.single.update<D, E, K>(key, skey, poster, updater, aborter, tparams)
   }, [core, skey, poster])
 
-  const clear = useCallback(() => {
-    core.delete(skey)
+  const clear = useCallback(async () => {
+    await core.delete(skey)
   }, [core, skey])
 
   const loading = Boolean(state?.aborter)
 
-  return { key, skey, ...state, loading, mutate, fetch, refetch, update, clear }
+  return { key, skey, ...state, loading, ready, mutate, fetch, refetch, update, clear }
 }

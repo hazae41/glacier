@@ -6,6 +6,9 @@ import { Handle } from "./generic.js";
  * Handle for a scrolling resource
  */
 export interface ScrollHandle<D = any, E = any, K = any> extends Handle<D[], E, K> {
+    /**
+     * Fetch the next page
+     */
     scroll(): Promise<State<D[], E> | undefined>;
 }
 /**
