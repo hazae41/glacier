@@ -1,6 +1,7 @@
 import { lastOf } from "../libs/arrays.js";
 import { Core, Fetcher, Scroller } from "./core.js";
-import { getTimeFromDelay, TimeParams } from "./time.js";
+import { Params } from "./index.js";
+import { getTimeFromDelay } from "./time.js";
 
 export class Scroll {
   constructor(readonly core: Core) { }
@@ -20,18 +21,19 @@ export class Scroll {
     scroller: Scroller<D, K>,
     fetcher: Fetcher<D, K>,
     aborter = new AbortController(),
-    tparams: TimeParams = {},
+    params: Params<D[], E> = {},
     force = false
   ) {
     if (skey === undefined) return
 
     const {
+      equals = this.core.equals,
       cooldown: dcooldown = this.core.cooldown,
       expiration: dexpiration = this.core.expiration,
       timeout: dtimeout = this.core.timeout,
-    } = tparams
+    } = params
 
-    let current = await this.core.get<D[], E>(skey)
+    let current = await this.core.get<D[], E>(skey, params)
     if (current?.aborter)
       return current
     if (this.core.shouldCooldown(current, force))
@@ -48,7 +50,7 @@ export class Scroll {
     try {
       const { signal } = aborter
 
-      current = await this.core.apply(skey, current, { aborter })
+      current = await this.core.apply(skey, current, { aborter }, params)
 
       const {
         data,
@@ -56,14 +58,14 @@ export class Scroll {
         expiration = getTimeFromDelay(dexpiration)
       } = await fetcher(first, { signal })
 
-      return this.core.equals(data, pages[0])
-        ? await this.core.apply<D[], E>(skey, current, { cooldown, expiration })
-        : await this.core.apply<D[], E>(skey, current, { data: [data], cooldown, expiration })
+      return equals(data, pages[0])
+        ? await this.core.apply<D[], E>(skey, current, { cooldown, expiration }, params)
+        : await this.core.apply<D[], E>(skey, current, { data: [data], cooldown, expiration }, params)
     } catch (error: any) {
       const cooldown = getTimeFromDelay(dcooldown)
       const expiration = getTimeFromDelay(dexpiration)
 
-      return await this.core.apply<D[], E>(skey, current, { error, cooldown, expiration })
+      return await this.core.apply<D[], E>(skey, current, { error, cooldown, expiration }, params)
     } finally {
       clearTimeout(timeout)
     }
@@ -84,7 +86,7 @@ export class Scroll {
     scroller: Scroller<D, K>,
     fetcher: Fetcher<D, K>,
     aborter = new AbortController(),
-    tparams: TimeParams = {},
+    params: Params<D[], E> = {},
     force = false
   ) {
     if (skey === undefined) return
@@ -93,9 +95,9 @@ export class Scroll {
       cooldown: dcooldown = this.core.cooldown,
       expiration: dexpiration = this.core.expiration,
       timeout: dtimeout = this.core.timeout,
-    } = tparams
+    } = params
 
-    let current = await this.core.get<D[], E>(skey)
+    let current = await this.core.get<D[], E>(skey, params)
     if (current?.aborter)
       return current
     if (this.core.shouldCooldown(current, force))
@@ -112,7 +114,7 @@ export class Scroll {
     try {
       const { signal } = aborter
 
-      current = await this.core.apply(skey, current, { aborter })
+      current = await this.core.apply(skey, current, { aborter }, params)
 
       let {
         data,
@@ -122,12 +124,12 @@ export class Scroll {
 
       expiration = Math.min(expiration, current.expiration)
 
-      return await this.core.apply<D[], E>(skey, current, { data: [...pages, data], cooldown, expiration })
+      return await this.core.apply<D[], E>(skey, current, { data: [...pages, data], cooldown, expiration }, params)
     } catch (error: any) {
       const cooldown = getTimeFromDelay(dcooldown)
       const expiration = getTimeFromDelay(dexpiration)
 
-      return await this.core.apply<D[], E>(skey, current, { error, cooldown, expiration })
+      return await this.core.apply<D[], E>(skey, current, { error, cooldown, expiration }, params)
     } finally {
       clearTimeout(timeout)
     }

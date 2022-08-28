@@ -21,6 +21,11 @@ export declare type PosterMore<D = any> = {
 };
 export declare type Scroller<D = any, K = any> = (previous?: D) => K | undefined;
 export declare type Updater<D = any> = (previous?: D) => D;
+export interface Params<D = any, E = any, K = any> extends TimeParams {
+    storage?: Storage<State<D, E>>;
+    serializer?: Serializer<K>;
+    equals?: Equals;
+}
 export interface CoreParams extends TimeParams {
     storage?: Storage<State>;
     serializer?: Serializer;
@@ -36,13 +41,12 @@ export declare class Core extends Ortho<string, State | undefined> {
     readonly cooldown: number;
     readonly expiration: number;
     readonly timeout: number;
-    protected mounted: boolean;
+    _mounted: boolean;
     constructor(params?: CoreParams);
-    get async(): boolean;
-    hasSync(key: string | undefined): boolean;
-    has(key: string | undefined): Promise<boolean>;
-    getSync<D = any, E = any>(key: string | undefined): State<D, E> | undefined;
-    get<D = any, E = any>(key: string | undefined): Promise<State<D, E> | undefined>;
+    hasSync<D = any, E = any>(key: string | undefined, params?: Params<D, E>): boolean;
+    has<D = any, E = any>(key: string | undefined, params?: Params<D, E>): Promise<boolean>;
+    getSync<D = any, E = any>(key: string | undefined, params?: Params<D, E>): State<D, E> | undefined;
+    get<D = any, E = any>(key: string | undefined, params?: Params<D, E>): Promise<State<D, E> | undefined>;
     /**
      * Force set a key to a state and publish it
      * No check, no merge
@@ -50,22 +54,23 @@ export declare class Core extends Ortho<string, State | undefined> {
      * @param state New state
      * @returns
      */
-    set<D = any, E = any>(key: string | undefined, state: State<D, E>): Promise<void>;
+    set<D = any, E = any>(key: string | undefined, state: State<D, E>, params?: Params<D, E>): Promise<void>;
     /**
      * Delete key and publish undefined
      * @param key
      * @returns
      */
-    delete(key: string | undefined): Promise<void>;
-    apply<D = any, E = any>(key: string | undefined, current?: State<D, E>, state?: State<D, E>): Promise<State<D, E> | undefined>;
-    mutate<D = any, E = any>(key: string | undefined, state?: State<D, E>): Promise<State<D, E> | undefined>;
+    delete<D = any, E = any>(key: string | undefined, params?: Params<D, E>): Promise<void>;
+    apply<D = any, E = any>(key: string | undefined, current?: State<D, E>, state?: State<D, E>, params?: Params<D, E>): Promise<State<D, E> | undefined>;
+    mutate<D = any, E = any>(key: string | undefined, state?: State<D, E>, params?: Params<D, E>): Promise<State<D, E> | undefined>;
     /**
      * True if we should cooldown this resource
      */
     shouldCooldown<D = any, E = any>(current?: State<D, E>, force?: boolean): boolean;
     counts: Map<string, number>;
     timeouts: Map<string, NodeJS.Timeout>;
-    subscribe(key: string | undefined, listener: (x: State) => void): void;
-    unsubscribe(key: string | undefined, listener: (x: State) => void): Promise<void>;
+    subscribe<D = any, E = any>(key: string | undefined, listener: (x: State<D, E>) => void, params?: Params<D, E>): void;
+    unsubscribe<D = any, E = any>(key: string | undefined, listener: (x: State<D, E>) => void, params?: Params<D, E>): Promise<void>;
+    get mounted(): boolean;
     unmount(): void;
 }

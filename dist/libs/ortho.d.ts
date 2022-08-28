@@ -16,7 +16,3 @@ export declare class Ortho<K = any, S = any> {
     subscribe(key: K, listener: (x: S) => void): void;
     unsubscribe(key: K, listener: (x: S) => void): void;
 }
-/**
- * Orthogonal state listener
- */
-export declare function useOrtho<K, S>(ortho: Ortho<K, S>, key: K | undefined, callback: (s: S) => void): void;

@@ -1,6 +1,7 @@
 import { Core, Fetcher, Poster, Updater } from "./core.js";
+import { Params } from "./index.js";
 import { State } from "./storages/storage.js";
-import { getTimeFromDelay, TimeParams } from "./time.js";
+import { getTimeFromDelay } from "./time.js";
 
 export class Single {
   constructor(readonly core: Core) { }
@@ -20,7 +21,7 @@ export class Single {
     skey: string | undefined,
     fetcher: Fetcher<D, K>,
     aborter = new AbortController(),
-    tparams: TimeParams = {},
+    params: Params<D, E> = {},
     force = false
   ): Promise<State<D, E> | undefined> {
     if (key === undefined) return
@@ -30,9 +31,9 @@ export class Single {
       cooldown: dcooldown = this.core.cooldown,
       expiration: dexpiration = this.core.expiration,
       timeout: dtimeout = this.core.timeout,
-    } = tparams
+    } = params
 
-    let current = await this.core.get<D, E>(skey)
+    let current = await this.core.get<D, E>(skey, params)
     if (current?.aborter)
       return current
     if (this.core.shouldCooldown(current, force))
@@ -45,7 +46,7 @@ export class Single {
     try {
       const { signal } = aborter
 
-      current = await this.core.apply(skey, current, { aborter })
+      current = await this.core.apply(skey, current, { aborter }, params)
 
       const {
         data,
@@ -53,12 +54,12 @@ export class Single {
         expiration = getTimeFromDelay(dexpiration)
       } = await fetcher(key, { signal })
 
-      return await this.core.apply<D, E>(skey, current, { data, cooldown, expiration })
+      return await this.core.apply<D, E>(skey, current, { data, cooldown, expiration }, params)
     } catch (error: any) {
       const cooldown = getTimeFromDelay(dcooldown)
       const expiration = getTimeFromDelay(dexpiration)
 
-      return await this.core.apply<D, E>(skey, current, { error, cooldown, expiration })
+      return await this.core.apply<D, E>(skey, current, { error, cooldown, expiration }, params)
     } finally {
       clearTimeout(timeout)
     }
@@ -81,7 +82,7 @@ export class Single {
     poster: Poster<D, K>,
     updater: Updater<D>,
     aborter = new AbortController(),
-    tparams: TimeParams = {},
+    params: Params<D, E> = {},
   ) {
     if (key === undefined) return
     if (skey === undefined) return
@@ -90,9 +91,9 @@ export class Single {
       cooldown: dcooldown = this.core.cooldown,
       expiration: dexpiration = this.core.expiration,
       timeout: dtimeout = this.core.timeout,
-    } = tparams
+    } = params
 
-    const current = await this.core.get<D, E>(skey)
+    const current = await this.core.get<D, E>(skey, params)
     const updated = updater(current?.data)
 
     const timeout = setTimeout(() => {
@@ -102,7 +103,7 @@ export class Single {
     try {
       const { signal } = aborter
 
-      await this.core.mutate(skey, { data: updated, time: current?.time })
+      await this.core.mutate(skey, { data: updated, time: current?.time }, params)
 
       const {
         data,
@@ -110,9 +111,9 @@ export class Single {
         expiration = getTimeFromDelay(dexpiration)
       } = await poster(key, { data: updated, signal })
 
-      return await this.core.mutate<D, E>(skey, { data, cooldown, expiration })
+      return await this.core.mutate<D, E>(skey, { data, cooldown, expiration }, params)
     } catch (error: any) {
-      this.core.mutate<D, E>(skey, current)
+      this.core.mutate<D, E>(skey, current, params)
       throw error
     } finally {
       clearTimeout(timeout)

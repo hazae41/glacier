@@ -30,6 +30,12 @@ export type Scroller<D = any, K = any> =
 export type Updater<D = any> =
   (previous?: D) => D
 
+export interface Params<D = any, E = any, K = any> extends TimeParams {
+  storage?: Storage<State<D, E>>
+  serializer?: Serializer<K>,
+  equals?: Equals
+}
+
 export interface CoreParams extends TimeParams {
   storage?: Storage<State>,
   serializer?: Serializer,
@@ -50,7 +56,7 @@ export class Core extends Ortho<string, State | undefined> {
   readonly expiration: number
   readonly timeout: number
 
-  protected mounted = true
+  _mounted = true
 
   constructor(params?: CoreParams) {
     super()
@@ -64,63 +70,72 @@ export class Core extends Ortho<string, State | undefined> {
     this.timeout ??= DEFAULT_TIMEOUT
   }
 
-  get async() {
-    if (!this.storage) return false
-    return isAsyncStorage(this.storage)
-  }
-
-  hasSync(
-    key: string | undefined
+  hasSync<D = any, E = any>(
+    key: string | undefined,
+    params: Params<D, E> = {}
   ): boolean {
     if (!key) return
 
     if (this.cache.has(key))
       return true
-    if (!this.storage)
-      return false
-    if (isAsyncStorage(this.storage))
-      return false
-    return this.storage.has(key)
+
+    const {
+      storage = this.storage
+    } = params
+    if (!storage) return false
+    if (isAsyncStorage(storage)) return false
+    return storage.has(key)
   }
 
-  async has(
-    key: string | undefined
+  async has<D = any, E = any>(
+    key: string | undefined,
+    params: Params<D, E> = {}
   ) {
     if (!key) return false
 
     if (this.cache.has(key))
       return true
-    if (!this.storage)
-      return false
-    return await this.storage.has(key)
+
+    const {
+      storage = this.storage
+    } = params
+    if (!storage) return false
+    return await storage.has(key)
   }
 
   getSync<D = any, E = any>(
-    key: string | undefined
+    key: string | undefined,
+    params: Params<D, E> = {}
   ): State<D, E> | undefined {
     if (!key) return
 
     if (this.cache.has(key))
       return this.cache.get(key)
-    if (!this.storage)
-      return
-    if (isAsyncStorage(this.storage))
-      return
-    const state = this.storage.get(key)
+
+    const {
+      storage = this.storage
+    } = params
+    if (!storage) return
+    if (isAsyncStorage(storage)) return
+    const state = storage.get(key)
     this.cache.set(key, state)
     return state
   }
 
   async get<D = any, E = any>(
-    key: string | undefined
+    key: string | undefined,
+    params: Params<D, E> = {}
   ): Promise<State<D, E> | undefined> {
     if (!key) return
 
     if (this.cache.has(key))
       return this.cache.get(key)
-    if (!this.storage)
-      return
-    const state = await this.storage.get(key)
+
+    const {
+      storage = this.storage
+    } = params
+    if (!storage) return
+    const state = await storage.get(key)
     this.cache.set(key, state)
     return state
   }
@@ -134,16 +149,19 @@ export class Core extends Ortho<string, State | undefined> {
    */
   async set<D = any, E = any>(
     key: string | undefined,
-    state: State<D, E>
+    state: State<D, E>,
+    params: Params<D, E> = {}
   ) {
     if (!key) return
 
     this.cache.set(key, state)
     this.publish(key, state)
 
-    if (!this.storage)
-      return
-    await this.storage.set(key, state)
+    const {
+      storage = this.storage
+    } = params
+    if (!storage) return
+    await storage.set(key, state)
   }
 
   /**
@@ -151,28 +169,32 @@ export class Core extends Ortho<string, State | undefined> {
    * @param key 
    * @returns 
    */
-  async delete(
-    key: string | undefined
+  async delete<D = any, E = any>(
+    key: string | undefined,
+    params: Params<D, E> = {}
   ) {
     if (!key) return
 
     this.cache.delete(key)
     this.publish(key, undefined)
 
-    if (!this.storage)
-      return
-    await this.storage.delete(key)
+    const {
+      storage = this.storage
+    } = params
+    if (!storage) return
+    await storage.delete(key)
   }
 
   async apply<D = any, E = any>(
     key: string | undefined,
     current?: State<D, E>,
-    state?: State<D, E>
+    state?: State<D, E>,
+    params: Params<D, E> = {}
   ): Promise<State<D, E> | undefined> {
     if (!key) return
 
     if (!state) {
-      await this.delete(key)
+      await this.delete(key, params)
       return
     }
 
@@ -181,9 +203,11 @@ export class Core extends Ortho<string, State | undefined> {
     if (current?.time !== undefined && state.time < current.time)
       return current
 
-    if (this.equals(state.data, current?.data))
+    const { equals = this.equals } = params
+
+    if (equals(state.data, current?.data))
       state.data = current?.data
-    if (this.equals(state.error, current?.error))
+    if (equals(state.error, current?.error))
       state.error = current?.error
 
     const next = { ...current, ...state }
@@ -197,20 +221,21 @@ export class Core extends Ortho<string, State | undefined> {
     if (state.cooldown === -1)
       delete next.cooldown
 
-    if (this.equals(current, next))
+    if (equals(current, next))
       return current
-    await this.set(key, next)
+    await this.set<D, E>(key, next, params)
     return next
   }
 
   async mutate<D = any, E = any>(
     key: string | undefined,
-    state?: State<D, E>
+    state?: State<D, E>,
+    params: Params<D, E> = {}
   ): Promise<State<D, E> | undefined> {
     if (!key) return
 
-    const current = await this.get<D, E>(key)
-    return await this.apply(key, current, state)
+    const current = await this.get<D, E>(key, params)
+    return await this.apply<D, E>(key, current, state, params)
   }
 
   /**
@@ -229,9 +254,10 @@ export class Core extends Ortho<string, State | undefined> {
   counts = new Map<string, number>()
   timeouts = new Map<string, NodeJS.Timeout>()
 
-  subscribe(
+  subscribe<D = any, E = any>(
     key: string | undefined,
-    listener: (x: State) => void
+    listener: (x: State<D, E>) => void,
+    params: Params<D, E> = {}
   ) {
     if (!key) return
 
@@ -247,9 +273,10 @@ export class Core extends Ortho<string, State | undefined> {
     this.timeouts.delete(key)
   }
 
-  async unsubscribe(
+  async unsubscribe<D = any, E = any>(
     key: string | undefined,
-    listener: (x: State) => void
+    listener: (x: State<D, E>) => void,
+    params: Params<D, E> = {}
   ) {
     if (!key) return
 
@@ -269,7 +296,7 @@ export class Core extends Ortho<string, State | undefined> {
     if (current?.expiration === -1) return
 
     const erase = async () => {
-      if (!this.mounted) return
+      if (!this._mounted) return
 
       const count = this.counts.get(key)
       if (count !== undefined) return
@@ -288,9 +315,13 @@ export class Core extends Ortho<string, State | undefined> {
     this.timeouts.set(key, timeout)
   }
 
+  get mounted() {
+    return this._mounted
+  }
+
   unmount() {
     for (const timeout of this.timeouts.values())
       clearTimeout(timeout)
-    this.mounted = false
+    this._mounted = false
   }
 }

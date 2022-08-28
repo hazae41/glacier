@@ -1,4 +1,3 @@
-import { useEffect } from "react"
 
 /**
  * Map of arrays data structure
@@ -49,19 +48,4 @@ export class Ortho<K = any, S = any> {
   unsubscribe(key: K, listener: (x: S) => void) {
     this.listeners.erase(key, listener)
   }
-}
-
-/**
- * Orthogonal state listener
- */
-export function useOrtho<K, S>(
-  ortho: Ortho<K, S>,
-  key: K | undefined,
-  callback: (s: S) => void
-) {
-  useEffect(() => {
-    if (!key) return
-    ortho.subscribe(key, callback)
-    return () => ortho.unsubscribe(key, callback)
-  }, [ortho, key, callback])
 }

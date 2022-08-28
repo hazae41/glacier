@@ -1,6 +1,5 @@
-import { Fetcher, Scroller } from "../core.js";
+import { Fetcher, Params, Scroller } from "../core.js";
 import { State } from "../storages/storage.js";
-import { TimeParams } from "../time.js";
 import { Handle } from "./handle.js";
 /**
  * Handle for a scrolling resource
@@ -18,4 +17,4 @@ export interface ScrollHandle<D = any, E = any, K = any> extends Handle<D[], E, 
  * @param tparams Time parameters (constant)
  * @returns Scrolling handle
  */
-export declare function useScroll<D = any, E = any, K = any>(scroller: Scroller<D, K>, fetcher: Fetcher<D, K>, tparams?: TimeParams): ScrollHandle<D, E, K>;
+export declare function useScroll<D = any, E = any, K = any>(scroller: Scroller<D, K>, fetcher: Fetcher<D, K>, params?: Params<D[], E>): ScrollHandle<D, E, K>;

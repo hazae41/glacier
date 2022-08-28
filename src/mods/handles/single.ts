@@ -1,9 +1,7 @@
 import { useCallback, useEffect, useMemo, useState } from "react"
 import { useCore } from "../../comps/core.js"
-import { useOrtho } from "../../libs/ortho.js"
-import { Poster, Updater } from "../core.js"
+import { Params, Poster, Updater } from "../core.js"
 import { State } from "../storages/storage.js"
-import { TimeParams } from "../time.js"
 import { Handle } from "./handle.js"
 
 /**
@@ -28,44 +26,51 @@ export interface SingleHandle<D = any, E = any, K = any> extends Handle<D, E, K>
 export function useSingle<D = any, E = any, K = any>(
   key: K | undefined,
   poster: Poster<D, K>,
-  tparams: TimeParams = {}
+  params: Params<D, E> = {},
 ): SingleHandle<D, E, K> {
   const core = useCore()
 
   const skey = useMemo(() => {
     if (key === undefined) return
-    return core.serializer.stringify(key)
+
+    const { serializer = core.serializer } = params
+    return serializer.stringify(key)
   }, [core, key])
 
-  const [ready, setReady] = useState(() => core.hasSync(skey))
-  const [state, setState] = useState(() => core.getSync<D, E>(skey))
+  const [ready, setReady] = useState(() => core.hasSync<D, E>(skey, params))
+  const [state, setState] = useState(() => core.getSync<D, E>(skey, params))
 
   useEffect(() => {
-    core.get(skey)
+    core.get(skey, params)
       .then(setState)
       .finally(() => setReady(true))
   }, [core, skey])
 
-  useOrtho(core, skey, setState)
+  useEffect(() => {
+    if (!skey) return
+
+    core.subscribe(skey, setState, params)
+    return () => void core.unsubscribe(skey, setState, params)
+  }, [core, skey])
 
   const mutate = useCallback(async (res: State<D, E>) => {
-    return await core.mutate<D, E>(skey, res)
+    return await core.mutate<D, E>(skey, res, params)
   }, [core, skey])
 
   const fetch = useCallback(async (aborter?: AbortController) => {
-    return await core.single.fetch<D, E, K>(key, skey, poster, aborter, tparams)
+    return await core.single.fetch<D, E, K>(key, skey, poster, aborter, params)
   }, [core, skey, poster])
 
   const refetch = useCallback(async (aborter?: AbortController) => {
-    return await core.single.fetch<D, E, K>(key, skey, poster, aborter, tparams, true)
+    return await core.single.fetch<D, E, K>(key, skey, poster, aborter, params, true)
   }, [core, skey, poster])
 
   const update = useCallback(async (updater: Updater<D>, aborter?: AbortController) => {
-    return await core.single.update<D, E, K>(key, skey, poster, updater, aborter, tparams)
+    return await core.single.update<D, E, K>(key, skey, poster, updater, aborter, params)
   }, [core, skey, poster])
 
   const clear = useCallback(async () => {
-    await core.delete(skey)
+    await core.delete(skey, params)
   }, [core, skey])
 
   const loading = Boolean(state?.aborter)

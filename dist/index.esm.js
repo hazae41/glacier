@@ -1,4 +1,4 @@
-import React, { useEffect, createContext, useContext, useRef, useMemo, useState, useCallback } from 'react';
+import React, { createContext, useContext, useRef, useEffect, useMemo, useState, useCallback } from 'react';
 
 /*! *****************************************************************************
 Copyright (c) Microsoft Corporation.
@@ -195,17 +195,6 @@ var Ortho = /** @class */ (function () {
     };
     return Ortho;
 }());
-/**
- * Orthogonal state listener
- */
-function useOrtho(ortho, key, callback) {
-    useEffect(function () {
-        if (!key)
-            return;
-        ortho.subscribe(key, callback);
-        return function () { return ortho.unsubscribe(key, callback); };
-    }, [ortho, key, callback]);
-}
 
 function jseq(a, b) {
     return a === b;
@@ -247,22 +236,22 @@ var Scroll = /** @class */ (function () {
      * @param force Should ignore cooldown
      * @returns The new state
      */
-    Scroll.prototype.first = function (skey, scroller, fetcher, aborter, tparams, force) {
+    Scroll.prototype.first = function (skey, scroller, fetcher, aborter, params, force) {
         var _a;
         if (aborter === void 0) { aborter = new AbortController(); }
-        if (tparams === void 0) { tparams = {}; }
+        if (params === void 0) { params = {}; }
         if (force === void 0) { force = false; }
         return __awaiter(this, void 0, void 0, function () {
-            var _b, dcooldown, _c, dexpiration, _d, dtimeout, current, pages, first, timeout, signal, _e, data, _f, cooldown, _g, expiration, _h, error_1, cooldown, expiration;
-            return __generator(this, function (_j) {
-                switch (_j.label) {
+            var _b, equals, _c, dcooldown, _d, dexpiration, _e, dtimeout, current, pages, first, timeout, signal, _f, data, _g, cooldown, _h, expiration, _j, error_1, cooldown, expiration;
+            return __generator(this, function (_k) {
+                switch (_k.label) {
                     case 0:
                         if (skey === undefined)
                             return [2 /*return*/];
-                        _b = tparams.cooldown, dcooldown = _b === void 0 ? this.core.cooldown : _b, _c = tparams.expiration, dexpiration = _c === void 0 ? this.core.expiration : _c, _d = tparams.timeout, dtimeout = _d === void 0 ? this.core.timeout : _d;
-                        return [4 /*yield*/, this.core.get(skey)];
+                        _b = params.equals, equals = _b === void 0 ? this.core.equals : _b, _c = params.cooldown, dcooldown = _c === void 0 ? this.core.cooldown : _c, _d = params.expiration, dexpiration = _d === void 0 ? this.core.expiration : _d, _e = params.timeout, dtimeout = _e === void 0 ? this.core.timeout : _e;
+                        return [4 /*yield*/, this.core.get(skey, params)];
                     case 1:
-                        current = _j.sent();
+                        current = _k.sent();
                         if (current === null || current === void 0 ? void 0 : current.aborter)
                             return [2 /*return*/, current];
                         if (this.core.shouldCooldown(current, force))
@@ -274,32 +263,32 @@ var Scroll = /** @class */ (function () {
                         timeout = setTimeout(function () {
                             aborter.abort("Timed out");
                         }, dtimeout);
-                        _j.label = 2;
+                        _k.label = 2;
                     case 2:
-                        _j.trys.push([2, 9, 11, 12]);
+                        _k.trys.push([2, 9, 11, 12]);
                         signal = aborter.signal;
-                        return [4 /*yield*/, this.core.apply(skey, current, { aborter: aborter })];
+                        return [4 /*yield*/, this.core.apply(skey, current, { aborter: aborter }, params)];
                     case 3:
-                        current = _j.sent();
+                        current = _k.sent();
                         return [4 /*yield*/, fetcher(first, { signal: signal })];
                     case 4:
-                        _e = _j.sent(), data = _e.data, _f = _e.cooldown, cooldown = _f === void 0 ? getTimeFromDelay(dcooldown) : _f, _g = _e.expiration, expiration = _g === void 0 ? getTimeFromDelay(dexpiration) : _g;
-                        if (!this.core.equals(data, pages[0])) return [3 /*break*/, 6];
-                        return [4 /*yield*/, this.core.apply(skey, current, { cooldown: cooldown, expiration: expiration })];
+                        _f = _k.sent(), data = _f.data, _g = _f.cooldown, cooldown = _g === void 0 ? getTimeFromDelay(dcooldown) : _g, _h = _f.expiration, expiration = _h === void 0 ? getTimeFromDelay(dexpiration) : _h;
+                        if (!equals(data, pages[0])) return [3 /*break*/, 6];
+                        return [4 /*yield*/, this.core.apply(skey, current, { cooldown: cooldown, expiration: expiration }, params)];
                     case 5:
-                        _h = _j.sent();
+                        _j = _k.sent();
                         return [3 /*break*/, 8];
-                    case 6: return [4 /*yield*/, this.core.apply(skey, current, { data: [data], cooldown: cooldown, expiration: expiration })];
+                    case 6: return [4 /*yield*/, this.core.apply(skey, current, { data: [data], cooldown: cooldown, expiration: expiration }, params)];
                     case 7:
-                        _h = _j.sent();
-                        _j.label = 8;
-                    case 8: return [2 /*return*/, _h];
+                        _j = _k.sent();
+                        _k.label = 8;
+                    case 8: return [2 /*return*/, _j];
                     case 9:
-                        error_1 = _j.sent();
+                        error_1 = _k.sent();
                         cooldown = getTimeFromDelay(dcooldown);
                         expiration = getTimeFromDelay(dexpiration);
-                        return [4 /*yield*/, this.core.apply(skey, current, { error: error_1, cooldown: cooldown, expiration: expiration })];
-                    case 10: return [2 /*return*/, _j.sent()];
+                        return [4 /*yield*/, this.core.apply(skey, current, { error: error_1, cooldown: cooldown, expiration: expiration }, params)];
+                    case 10: return [2 /*return*/, _k.sent()];
                     case 11:
                         clearTimeout(timeout);
                         return [7 /*endfinally*/];
@@ -318,10 +307,10 @@ var Scroll = /** @class */ (function () {
      * @param force Should ignore cooldown
      * @returns The new state
      */
-    Scroll.prototype.scroll = function (skey, scroller, fetcher, aborter, tparams, force) {
+    Scroll.prototype.scroll = function (skey, scroller, fetcher, aborter, params, force) {
         var _a;
         if (aborter === void 0) { aborter = new AbortController(); }
-        if (tparams === void 0) { tparams = {}; }
+        if (params === void 0) { params = {}; }
         if (force === void 0) { force = false; }
         return __awaiter(this, void 0, void 0, function () {
             var _b, dcooldown, _c, dexpiration, _d, dtimeout, current, pages, last, timeout, signal, _e, data, _f, cooldown, _g, expiration, error_2, cooldown, expiration;
@@ -330,8 +319,8 @@ var Scroll = /** @class */ (function () {
                     case 0:
                         if (skey === undefined)
                             return [2 /*return*/];
-                        _b = tparams.cooldown, dcooldown = _b === void 0 ? this.core.cooldown : _b, _c = tparams.expiration, dexpiration = _c === void 0 ? this.core.expiration : _c, _d = tparams.timeout, dtimeout = _d === void 0 ? this.core.timeout : _d;
-                        return [4 /*yield*/, this.core.get(skey)];
+                        _b = params.cooldown, dcooldown = _b === void 0 ? this.core.cooldown : _b, _c = params.expiration, dexpiration = _c === void 0 ? this.core.expiration : _c, _d = params.timeout, dtimeout = _d === void 0 ? this.core.timeout : _d;
+                        return [4 /*yield*/, this.core.get(skey, params)];
                     case 1:
                         current = _h.sent();
                         if (current === null || current === void 0 ? void 0 : current.aborter)
@@ -349,20 +338,20 @@ var Scroll = /** @class */ (function () {
                     case 2:
                         _h.trys.push([2, 6, 8, 9]);
                         signal = aborter.signal;
-                        return [4 /*yield*/, this.core.apply(skey, current, { aborter: aborter })];
+                        return [4 /*yield*/, this.core.apply(skey, current, { aborter: aborter }, params)];
                     case 3:
                         current = _h.sent();
                         return [4 /*yield*/, fetcher(last, { signal: signal })];
                     case 4:
                         _e = _h.sent(), data = _e.data, _f = _e.cooldown, cooldown = _f === void 0 ? getTimeFromDelay(dcooldown) : _f, _g = _e.expiration, expiration = _g === void 0 ? getTimeFromDelay(dexpiration) : _g;
                         expiration = Math.min(expiration, current.expiration);
-                        return [4 /*yield*/, this.core.apply(skey, current, { data: __spreadArray(__spreadArray([], __read(pages), false), [data], false), cooldown: cooldown, expiration: expiration })];
+                        return [4 /*yield*/, this.core.apply(skey, current, { data: __spreadArray(__spreadArray([], __read(pages), false), [data], false), cooldown: cooldown, expiration: expiration }, params)];
                     case 5: return [2 /*return*/, _h.sent()];
                     case 6:
                         error_2 = _h.sent();
                         cooldown = getTimeFromDelay(dcooldown);
                         expiration = getTimeFromDelay(dexpiration);
-                        return [4 /*yield*/, this.core.apply(skey, current, { error: error_2, cooldown: cooldown, expiration: expiration })];
+                        return [4 /*yield*/, this.core.apply(skey, current, { error: error_2, cooldown: cooldown, expiration: expiration }, params)];
                     case 7: return [2 /*return*/, _h.sent()];
                     case 8:
                         clearTimeout(timeout);
@@ -389,9 +378,9 @@ var Single = /** @class */ (function () {
      * @param force Should ignore cooldown
      * @returns The new state
      */
-    Single.prototype.fetch = function (key, skey, fetcher, aborter, tparams, force) {
+    Single.prototype.fetch = function (key, skey, fetcher, aborter, params, force) {
         if (aborter === void 0) { aborter = new AbortController(); }
-        if (tparams === void 0) { tparams = {}; }
+        if (params === void 0) { params = {}; }
         if (force === void 0) { force = false; }
         return __awaiter(this, void 0, void 0, function () {
             var _a, dcooldown, _b, dexpiration, _c, dtimeout, current, timeout, signal, _d, data, _e, cooldown, _f, expiration, error_1, cooldown, expiration;
@@ -402,8 +391,8 @@ var Single = /** @class */ (function () {
                             return [2 /*return*/];
                         if (skey === undefined)
                             return [2 /*return*/];
-                        _a = tparams.cooldown, dcooldown = _a === void 0 ? this.core.cooldown : _a, _b = tparams.expiration, dexpiration = _b === void 0 ? this.core.expiration : _b, _c = tparams.timeout, dtimeout = _c === void 0 ? this.core.timeout : _c;
-                        return [4 /*yield*/, this.core.get(skey)];
+                        _a = params.cooldown, dcooldown = _a === void 0 ? this.core.cooldown : _a, _b = params.expiration, dexpiration = _b === void 0 ? this.core.expiration : _b, _c = params.timeout, dtimeout = _c === void 0 ? this.core.timeout : _c;
+                        return [4 /*yield*/, this.core.get(skey, params)];
                     case 1:
                         current = _g.sent();
                         if (current === null || current === void 0 ? void 0 : current.aborter)
@@ -417,19 +406,19 @@ var Single = /** @class */ (function () {
                     case 2:
                         _g.trys.push([2, 6, 8, 9]);
                         signal = aborter.signal;
-                        return [4 /*yield*/, this.core.apply(skey, current, { aborter: aborter })];
+                        return [4 /*yield*/, this.core.apply(skey, current, { aborter: aborter }, params)];
                     case 3:
                         current = _g.sent();
                         return [4 /*yield*/, fetcher(key, { signal: signal })];
                     case 4:
                         _d = _g.sent(), data = _d.data, _e = _d.cooldown, cooldown = _e === void 0 ? getTimeFromDelay(dcooldown) : _e, _f = _d.expiration, expiration = _f === void 0 ? getTimeFromDelay(dexpiration) : _f;
-                        return [4 /*yield*/, this.core.apply(skey, current, { data: data, cooldown: cooldown, expiration: expiration })];
+                        return [4 /*yield*/, this.core.apply(skey, current, { data: data, cooldown: cooldown, expiration: expiration }, params)];
                     case 5: return [2 /*return*/, _g.sent()];
                     case 6:
                         error_1 = _g.sent();
                         cooldown = getTimeFromDelay(dcooldown);
                         expiration = getTimeFromDelay(dexpiration);
-                        return [4 /*yield*/, this.core.apply(skey, current, { error: error_1, cooldown: cooldown, expiration: expiration })];
+                        return [4 /*yield*/, this.core.apply(skey, current, { error: error_1, cooldown: cooldown, expiration: expiration }, params)];
                     case 7: return [2 /*return*/, _g.sent()];
                     case 8:
                         clearTimeout(timeout);
@@ -450,9 +439,9 @@ var Single = /** @class */ (function () {
      * @returns The new state
      * @throws Error
      */
-    Single.prototype.update = function (key, skey, poster, updater, aborter, tparams) {
+    Single.prototype.update = function (key, skey, poster, updater, aborter, params) {
         if (aborter === void 0) { aborter = new AbortController(); }
-        if (tparams === void 0) { tparams = {}; }
+        if (params === void 0) { params = {}; }
         return __awaiter(this, void 0, void 0, function () {
             var _a, dcooldown, _b, dexpiration, _c, dtimeout, current, updated, timeout, signal, _d, data, _e, cooldown, _f, expiration, error_2;
             return __generator(this, function (_g) {
@@ -462,8 +451,8 @@ var Single = /** @class */ (function () {
                             return [2 /*return*/];
                         if (skey === undefined)
                             return [2 /*return*/];
-                        _a = tparams.cooldown, dcooldown = _a === void 0 ? this.core.cooldown : _a, _b = tparams.expiration, dexpiration = _b === void 0 ? this.core.expiration : _b, _c = tparams.timeout, dtimeout = _c === void 0 ? this.core.timeout : _c;
-                        return [4 /*yield*/, this.core.get(skey)];
+                        _a = params.cooldown, dcooldown = _a === void 0 ? this.core.cooldown : _a, _b = params.expiration, dexpiration = _b === void 0 ? this.core.expiration : _b, _c = params.timeout, dtimeout = _c === void 0 ? this.core.timeout : _c;
+                        return [4 /*yield*/, this.core.get(skey, params)];
                     case 1:
                         current = _g.sent();
                         updated = updater(current === null || current === void 0 ? void 0 : current.data);
@@ -474,17 +463,17 @@ var Single = /** @class */ (function () {
                     case 2:
                         _g.trys.push([2, 6, 7, 8]);
                         signal = aborter.signal;
-                        return [4 /*yield*/, this.core.mutate(skey, { data: updated, time: current === null || current === void 0 ? void 0 : current.time })];
+                        return [4 /*yield*/, this.core.mutate(skey, { data: updated, time: current === null || current === void 0 ? void 0 : current.time }, params)];
                     case 3:
                         _g.sent();
                         return [4 /*yield*/, poster(key, { data: updated, signal: signal })];
                     case 4:
                         _d = _g.sent(), data = _d.data, _e = _d.cooldown, cooldown = _e === void 0 ? getTimeFromDelay(dcooldown) : _e, _f = _d.expiration, expiration = _f === void 0 ? getTimeFromDelay(dexpiration) : _f;
-                        return [4 /*yield*/, this.core.mutate(skey, { data: data, cooldown: cooldown, expiration: expiration })];
+                        return [4 /*yield*/, this.core.mutate(skey, { data: data, cooldown: cooldown, expiration: expiration }, params)];
                     case 5: return [2 /*return*/, _g.sent()];
                     case 6:
                         error_2 = _g.sent();
-                        this.core.mutate(skey, current);
+                        this.core.mutate(skey, current, params);
                         throw error_2;
                     case 7:
                         clearTimeout(timeout);
@@ -510,7 +499,7 @@ var Core = /** @class */ (function (_super) {
         _this.single = new Single(_this);
         _this.scroll = new Scroll(_this);
         _this.cache = new Map();
-        _this.mounted = true;
+        _this._mounted = true;
         _this.counts = new Map();
         _this.timeouts = new Map();
         Object.assign(_this, params);
@@ -521,71 +510,71 @@ var Core = /** @class */ (function (_super) {
         (_e = _this.timeout) !== null && _e !== void 0 ? _e : (_this.timeout = DEFAULT_TIMEOUT);
         return _this;
     }
-    Object.defineProperty(Core.prototype, "async", {
-        get: function () {
-            if (!this.storage)
-                return false;
-            return isAsyncStorage(this.storage);
-        },
-        enumerable: false,
-        configurable: true
-    });
-    Core.prototype.hasSync = function (key) {
+    Core.prototype.hasSync = function (key, params) {
+        if (params === void 0) { params = {}; }
         if (!key)
             return;
         if (this.cache.has(key))
             return true;
-        if (!this.storage)
+        var _a = params.storage, storage = _a === void 0 ? this.storage : _a;
+        if (!storage)
             return false;
-        if (isAsyncStorage(this.storage))
+        if (isAsyncStorage(storage))
             return false;
-        return this.storage.has(key);
+        return storage.has(key);
     };
-    Core.prototype.has = function (key) {
+    Core.prototype.has = function (key, params) {
+        if (params === void 0) { params = {}; }
         return __awaiter(this, void 0, void 0, function () {
-            return __generator(this, function (_a) {
-                switch (_a.label) {
+            var _a, storage;
+            return __generator(this, function (_b) {
+                switch (_b.label) {
                     case 0:
                         if (!key)
                             return [2 /*return*/, false];
                         if (this.cache.has(key))
                             return [2 /*return*/, true];
-                        if (!this.storage)
+                        _a = params.storage, storage = _a === void 0 ? this.storage : _a;
+                        if (!storage)
                             return [2 /*return*/, false];
-                        return [4 /*yield*/, this.storage.has(key)];
-                    case 1: return [2 /*return*/, _a.sent()];
+                        return [4 /*yield*/, storage.has(key)];
+                    case 1: return [2 /*return*/, _b.sent()];
                 }
             });
         });
     };
-    Core.prototype.getSync = function (key) {
+    Core.prototype.getSync = function (key, params) {
+        if (params === void 0) { params = {}; }
         if (!key)
             return;
         if (this.cache.has(key))
             return this.cache.get(key);
-        if (!this.storage)
+        var _a = params.storage, storage = _a === void 0 ? this.storage : _a;
+        if (!storage)
             return;
-        if (isAsyncStorage(this.storage))
+        if (isAsyncStorage(storage))
             return;
-        var state = this.storage.get(key);
+        var state = storage.get(key);
         this.cache.set(key, state);
         return state;
     };
-    Core.prototype.get = function (key) {
+    Core.prototype.get = function (key, params) {
+        if (params === void 0) { params = {}; }
         return __awaiter(this, void 0, void 0, function () {
-            var state;
-            return __generator(this, function (_a) {
-                switch (_a.label) {
+            var _a, storage, state;
+            return __generator(this, function (_b) {
+                switch (_b.label) {
                     case 0:
                         if (!key)
                             return [2 /*return*/];
                         if (this.cache.has(key))
                             return [2 /*return*/, this.cache.get(key)];
-                        if (!this.storage)
+                        _a = params.storage, storage = _a === void 0 ? this.storage : _a;
+                        if (!storage)
                             return [2 /*return*/];
-                        return [4 /*yield*/, this.storage.get(key)];
+                        return [4 /*yield*/, storage.get(key)];
                     case 1:
-                        state = _a.sent();
+                        state = _b.sent();
                         this.cache.set(key, state);
                         return [2 /*return*/, state];
                 }
@@ -599,20 +588,23 @@ var Core = /** @class */ (function (_super) {
      * @param state New state
      * @returns
      */
-    Core.prototype.set = function (key, state) {
+    Core.prototype.set = function (key, state, params) {
+        if (params === void 0) { params = {}; }
         return __awaiter(this, void 0, void 0, function () {
-            return __generator(this, function (_a) {
-                switch (_a.label) {
+            var _a, storage;
+            return __generator(this, function (_b) {
+                switch (_b.label) {
                     case 0:
                         if (!key)
                             return [2 /*return*/];
                         this.cache.set(key, state);
                         this.publish(key, state);
-                        if (!this.storage)
+                        _a = params.storage, storage = _a === void 0 ? this.storage : _a;
+                        if (!storage)
                             return [2 /*return*/];
-                        return [4 /*yield*/, this.storage.set(key, state)];
+                        return [4 /*yield*/, storage.set(key, state)];
                     case 1:
-                        _a.sent();
+                        _b.sent();
                         return [2 /*return*/];
                 }
             });
@@ -623,46 +615,51 @@ var Core = /** @class */ (function (_super) {
      * @param key
      * @returns
      */
-    Core.prototype.delete = function (key) {
+    Core.prototype.delete = function (key, params) {
+        if (params === void 0) { params = {}; }
         return __awaiter(this, void 0, void 0, function () {
-            return __generator(this, function (_a) {
-                switch (_a.label) {
+            var _a, storage;
+            return __generator(this, function (_b) {
+                switch (_b.label) {
                     case 0:
                         if (!key)
                             return [2 /*return*/];
                         this.cache.delete(key);
                         this.publish(key, undefined);
-                        if (!this.storage)
+                        _a = params.storage, storage = _a === void 0 ? this.storage : _a;
+                        if (!storage)
                             return [2 /*return*/];
-                        return [4 /*yield*/, this.storage.delete(key)];
+                        return [4 /*yield*/, storage.delete(key)];
                     case 1:
-                        _a.sent();
+                        _b.sent();
                         return [2 /*return*/];
                 }
             });
         });
     };
-    Core.prototype.apply = function (key, current, state) {
+    Core.prototype.apply = function (key, current, state, params) {
+        if (params === void 0) { params = {}; }
         return __awaiter(this, void 0, void 0, function () {
-            var next;
-            return __generator(this, function (_a) {
-                switch (_a.label) {
+            var _a, equals, next;
+            return __generator(this, function (_b) {
+                switch (_b.label) {
                     case 0:
                         if (!key)
                             return [2 /*return*/];
                         if (!!state) return [3 /*break*/, 2];
-                        return [4 /*yield*/, this.delete(key)];
+                        return [4 /*yield*/, this.delete(key, params)];
                     case 1:
-                        _a.sent();
+                        _b.sent();
                         return [2 /*return*/];
                     case 2:
                         if (state.time === undefined)
                             state.time = Date.now();
                         if ((current === null || current === void 0 ? void 0 : current.time) !== undefined && state.time < current.time)
                             return [2 /*return*/, current];
-                        if (this.equals(state.data, current === null || current === void 0 ? void 0 : current.data))
+                        _a = params.equals, equals = _a === void 0 ? this.equals : _a;
+                        if (equals(state.data, current === null || current === void 0 ? void 0 : current.data))
                             state.data = current === null || current === void 0 ? void 0 : current.data;
-                        if (this.equals(state.error, current === null || current === void 0 ? void 0 : current.error))
+                        if (equals(state.error, current === null || current === void 0 ? void 0 : current.error))
                             state.error = current === null || current === void 0 ? void 0 : current.error;
                         next = __assign(__assign({}, current), state);
                         if (state.data !== undefined)
@@ -673,17 +670,18 @@ var Core = /** @class */ (function (_super) {
                             delete next.expiration;
                         if (state.cooldown === -1)
                             delete next.cooldown;
-                        if (this.equals(current, next))
+                        if (equals(current, next))
                             return [2 /*return*/, current];
-                        return [4 /*yield*/, this.set(key, next)];
+                        return [4 /*yield*/, this.set(key, next, params)];
                     case 3:
-                        _a.sent();
+                        _b.sent();
                         return [2 /*return*/, next];
                 }
             });
         });
     };
-    Core.prototype.mutate = function (key, state) {
+    Core.prototype.mutate = function (key, state, params) {
+        if (params === void 0) { params = {}; }
         return __awaiter(this, void 0, void 0, function () {
             var current;
             return __generator(this, function (_a) {
@@ -691,10 +689,10 @@ var Core = /** @class */ (function (_super) {
                     case 0:
                         if (!key)
                             return [2 /*return*/];
-                        return [4 /*yield*/, this.get(key)];
+                        return [4 /*yield*/, this.get(key, params)];
                     case 1:
                         current = _a.sent();
-                        return [4 /*yield*/, this.apply(key, current, state)];
+                        return [4 /*yield*/, this.apply(key, current, state, params)];
                     case 2: return [2 /*return*/, _a.sent()];
                 }
             });
@@ -712,7 +710,7 @@ var Core = /** @class */ (function (_super) {
             return true;
         return false;
     };
-    Core.prototype.subscribe = function (key, listener) {
+    Core.prototype.subscribe = function (key, listener, params) {
         var _a;
         if (!key)
             return;
@@ -725,7 +723,7 @@ var Core = /** @class */ (function (_super) {
         clearTimeout(timeout);
         this.timeouts.delete(key);
     };
-    Core.prototype.unsubscribe = function (key, listener) {
+    Core.prototype.unsubscribe = function (key, listener, params) {
         return __awaiter(this, void 0, void 0, function () {
             var count, current, erase, delay, timeout;
             var _this = this;
@@ -753,7 +751,7 @@ var Core = /** @class */ (function (_super) {
                             return __generator(this, function (_a) {
                                 switch (_a.label) {
                                     case 0:
-                                        if (!this.mounted)
+                                        if (!this._mounted)
                                             return [2 /*return*/];
                                         count = this.counts.get(key);
                                         if (count !== undefined)
@@ -780,6 +778,13 @@ var Core = /** @class */ (function (_super) {
             });
         });
     };
+    Object.defineProperty(Core.prototype, "mounted", {
+        get: function () {
+            return this._mounted;
+        },
+        enumerable: false,
+        configurable: true
+    });
     Core.prototype.unmount = function () {
         var e_1, _a;
         try {
@@ -795,7 +800,7 @@ var Core = /** @class */ (function (_super) {
             }
             finally { if (e_1) throw e_1.error; }
         }
-        this.mounted = false;
+        this._mounted = false;
     };
     return Core;
 }(Ortho));
@@ -830,9 +835,9 @@ function isAbortError(e) {
  * @param tparams Time parameters (constant)
  * @returns Scrolling handle
  */
-function useScroll(scroller, fetcher, tparams) {
+function useScroll(scroller, fetcher, params) {
     var _this = this;
-    if (tparams === void 0) { tparams = {}; }
+    if (params === void 0) { params = {}; }
     var core = useCore();
     var key = useMemo(function () {
         return scroller();
@@ -840,20 +845,26 @@ function useScroll(scroller, fetcher, tparams) {
     var skey = useMemo(function () {
         if (key === undefined)
             return;
-        return "scroll:" + core.serializer.stringify(key);
+        var _a = params.serializer, serializer = _a === void 0 ? core.serializer : _a;
+        return "scroll:".concat(serializer.stringify(key));
     }, [core, key]);
-    var _a = __read(useState(!core.async), 2), ready = _a[0], setReady = _a[1];
-    var _b = __read(useState(function () { return core.getSync(skey); }), 2), state = _b[0], setState = _b[1];
+    var _a = __read(useState(function () { return core.hasSync(skey, params); }), 2), ready = _a[0], setReady = _a[1];
+    var _b = __read(useState(function () { return core.getSync(skey, params); }), 2), state = _b[0], setState = _b[1];
     useEffect(function () {
-        core.get(skey)
+        core.get(skey, params)
             .then(setState)
             .finally(function () { return setReady(true); });
     }, [core, skey]);
-    useOrtho(core, skey, setState);
+    useEffect(function () {
+        if (!skey)
+            return;
+        core.subscribe(skey, setState, params);
+        return function () { return void core.unsubscribe(skey, setState, params); };
+    }, [core, skey]);
     var mutate = useCallback(function (res) { return __awaiter(_this, void 0, void 0, function () {
         return __generator(this, function (_a) {
             switch (_a.label) {
-                case 0: return [4 /*yield*/, core.mutate(skey, res)];
+                case 0: return [4 /*yield*/, core.mutate(skey, res, params)];
                 case 1: return [2 /*return*/, _a.sent()];
             }
         });
@@ -861,7 +872,7 @@ function useScroll(scroller, fetcher, tparams) {
     var fetch = useCallback(function (aborter) { return __awaiter(_this, void 0, void 0, function () {
         return __generator(this, function (_a) {
             switch (_a.label) {
-                case 0: return [4 /*yield*/, core.scroll.first(skey, scroller, fetcher, aborter, tparams)];
+                case 0: return [4 /*yield*/, core.scroll.first(skey, scroller, fetcher, aborter, params)];
                 case 1: return [2 /*return*/, _a.sent()];
             }
         });
@@ -869,7 +880,7 @@ function useScroll(scroller, fetcher, tparams) {
     var refetch = useCallback(function (aborter) { return __awaiter(_this, void 0, void 0, function () {
         return __generator(this, function (_a) {
             switch (_a.label) {
-                case 0: return [4 /*yield*/, core.scroll.first(skey, scroller, fetcher, aborter, tparams, true)];
+                case 0: return [4 /*yield*/, core.scroll.first(skey, scroller, fetcher, aborter, params, true)];
                 case 1: return [2 /*return*/, _a.sent()];
             }
         });
@@ -877,7 +888,7 @@ function useScroll(scroller, fetcher, tparams) {
     var scroll = useCallback(function (aborter) { return __awaiter(_this, void 0, void 0, function () {
         return __generator(this, function (_a) {
             switch (_a.label) {
-                case 0: return [4 /*yield*/, core.scroll.scroll(skey, scroller, fetcher, aborter, tparams, true)];
+                case 0: return [4 /*yield*/, core.scroll.scroll(skey, scroller, fetcher, aborter, params, true)];
                 case 1: return [2 /*return*/, _a.sent()];
             }
         });
@@ -885,7 +896,7 @@ function useScroll(scroller, fetcher, tparams) {
     var clear = useCallback(function () { return __awaiter(_this, void 0, void 0, function () {
         return __generator(this, function (_a) {
             switch (_a.label) {
-                case 0: return [4 /*yield*/, core.delete(skey)];
+                case 0: return [4 /*yield*/, core.delete(skey, params)];
                 case 1:
                     _a.sent();
                     return [2 /*return*/];
@@ -903,27 +914,33 @@ function useScroll(scroller, fetcher, tparams) {
  * @param tparams Time parameters (constant)
  * @returns Single handle
  */
-function useSingle(key, poster, tparams) {
+function useSingle(key, poster, params) {
     var _this = this;
-    if (tparams === void 0) { tparams = {}; }
+    if (params === void 0) { params = {}; }
     var core = useCore();
     var skey = useMemo(function () {
         if (key === undefined)
             return;
-        return core.serializer.stringify(key);
+        var _a = params.serializer, serializer = _a === void 0 ? core.serializer : _a;
+        return serializer.stringify(key);
     }, [core, key]);
-    var _a = __read(useState(function () { return core.hasSync(skey); }), 2), ready = _a[0], setReady = _a[1];
-    var _b = __read(useState(function () { return core.getSync(skey); }), 2), state = _b[0], setState = _b[1];
+    var _a = __read(useState(function () { return core.hasSync(skey, params); }), 2), ready = _a[0], setReady = _a[1];
+    var _b = __read(useState(function () { return core.getSync(skey, params); }), 2), state = _b[0], setState = _b[1];
     useEffect(function () {
-        core.get(skey)
+        core.get(skey, params)
             .then(setState)
             .finally(function () { return setReady(true); });
     }, [core, skey]);
-    useOrtho(core, skey, setState);
+    useEffect(function () {
+        if (!skey)
+            return;
+        core.subscribe(skey, setState, params);
+        return function () { return void core.unsubscribe(skey, setState, params); };
+    }, [core, skey]);
     var mutate = useCallback(function (res) { return __awaiter(_this, void 0, void 0, function () {
         return __generator(this, function (_a) {
             switch (_a.label) {
-                case 0: return [4 /*yield*/, core.mutate(skey, res)];
+                case 0: return [4 /*yield*/, core.mutate(skey, res, params)];
                 case 1: return [2 /*return*/, _a.sent()];
             }
         });
@@ -931,7 +948,7 @@ function useSingle(key, poster, tparams) {
     var fetch = useCallback(function (aborter) { return __awaiter(_this, void 0, void 0, function () {
         return __generator(this, function (_a) {
             switch (_a.label) {
-                case 0: return [4 /*yield*/, core.single.fetch(key, skey, poster, aborter, tparams)];
+                case 0: return [4 /*yield*/, core.single.fetch(key, skey, poster, aborter, params)];
                 case 1: return [2 /*return*/, _a.sent()];
             }
         });
@@ -939,7 +956,7 @@ function useSingle(key, poster, tparams) {
     var refetch = useCallback(function (aborter) { return __awaiter(_this, void 0, void 0, function () {
         return __generator(this, function (_a) {
             switch (_a.label) {
-                case 0: return [4 /*yield*/, core.single.fetch(key, skey, poster, aborter, tparams, true)];
+                case 0: return [4 /*yield*/, core.single.fetch(key, skey, poster, aborter, params, true)];
                 case 1: return [2 /*return*/, _a.sent()];
             }
         });
@@ -947,7 +964,7 @@ function useSingle(key, poster, tparams) {
     var update = useCallback(function (updater, aborter) { return __awaiter(_this, void 0, void 0, function () {
         return __generator(this, function (_a) {
             switch (_a.label) {
-                case 0: return [4 /*yield*/, core.single.update(key, skey, poster, updater, aborter, tparams)];
+                case 0: return [4 /*yield*/, core.single.update(key, skey, poster, updater, aborter, params)];
                 case 1: return [2 /*return*/, _a.sent()];
             }
         });
@@ -955,7 +972,7 @@ function useSingle(key, poster, tparams) {
     var clear = useCallback(function () { return __awaiter(_this, void 0, void 0, function () {
         return __generator(this, function (_a) {
             switch (_a.label) {
-                case 0: return [4 /*yield*/, core.delete(skey)];
+                case 0: return [4 /*yield*/, core.delete(skey, params)];
                 case 1:
                     _a.sent();
                     return [2 /*return*/];

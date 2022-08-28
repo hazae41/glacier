@@ -1,6 +1,5 @@
-import { Poster, Updater } from "../core.js";
+import { Params, Poster, Updater } from "../core.js";
 import { State } from "../storages/storage.js";
-import { TimeParams } from "../time.js";
 import { Handle } from "./handle.js";
 /**
  * Handle for a single resource
@@ -20,4 +19,4 @@ export interface SingleHandle<D = any, E = any, K = any> extends Handle<D, E, K>
  * @param tparams Time parameters (constant)
  * @returns Single handle
  */
-export declare function useSingle<D = any, E = any, K = any>(key: K | undefined, poster: Poster<D, K>, tparams?: TimeParams): SingleHandle<D, E, K>;
+export declare function useSingle<D = any, E = any, K = any>(key: K | undefined, poster: Poster<D, K>, params?: Params<D, E>): SingleHandle<D, E, K>;

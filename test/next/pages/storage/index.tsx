@@ -22,15 +22,6 @@ class GZIP {
   }
 }
 
-export default function Wrapper() {
-  const storage = XSWR.useAsyncLocalStorage(GZIP)
-
-  return <XSWR.CoreProvider
-    storage={storage}>
-    <Page />
-  </XSWR.CoreProvider>
-}
-
 async function fetchAsJson<T>(url: string, more: XSWR.PosterMore<T>) {
   const { signal } = more
 
@@ -45,14 +36,18 @@ async function fetchAsJson<T>(url: string, more: XSWR.PosterMore<T>) {
 }
 
 function useHelloData() {
-  const handle = XSWR.useSingle<HelloData>("/api/hello", fetchAsJson)
+  const storage = XSWR.useAsyncLocalStorage(GZIP)
+
+  const handle = XSWR.useSingle<HelloData>(
+    "/api/hello",
+    fetchAsJson,
+    { storage })
 
   XSWR.useDebug(handle, "hello")
-  XSWR.useFetch(handle)
   return handle
 }
 
-export function Page() {
+export default function Page() {
   const { data, fetch, clear } = useHelloData()
 
   return <>
