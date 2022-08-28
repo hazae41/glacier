@@ -69,7 +69,7 @@ export declare class Core extends Ortho<string, State | undefined> {
      * @param state
      * @returns
      */
-    mutate<D = any, E = any>(key: string | undefined, state: State<D, E>): State<D, E> | undefined;
+    mutate<D = any, E = any>(key: string | undefined, state?: State<D, E>): State<D, E> | undefined;
     /**
      * True if we should cooldown this resource
      */

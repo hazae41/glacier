@@ -129,9 +129,14 @@ export class Core extends Ortho<string, State | undefined> {
    */
   mutate<D = any, E = any>(
     key: string | undefined,
-    state: State<D, E>
+    state?: State<D, E>
   ): State<D, E> | undefined {
     if (!key) return
+
+    if (!state) {
+      this.delete(key)
+      return
+    }
 
     const current = this.get<D, E>(key)
 

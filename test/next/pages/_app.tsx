@@ -1,5 +1,6 @@
 import { XSWR } from "@hazae41/xswr"
 import type { AppProps } from 'next/app'
+import "../styles/globals.css"
 
 function MyApp({ Component, pageProps }: AppProps) {
   return <XSWR.CoreProvider

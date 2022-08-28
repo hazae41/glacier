@@ -400,7 +400,7 @@ var Single = /** @class */ (function () {
                             return [2 /*return*/];
                         _a = tparams.cooldown, dcooldown = _a === void 0 ? this.core.cooldown : _a, _b = tparams.expiration, dexpiration = _b === void 0 ? this.core.expiration : _b, _c = tparams.timeout, dtimeout = _c === void 0 ? this.core.timeout : _c;
                         current = this.core.get(skey);
-                        updated = updater(current.data);
+                        updated = updater(current === null || current === void 0 ? void 0 : current.data);
                         timeout = setTimeout(function () {
                             aborter.abort("Timed out");
                         }, dtimeout);
@@ -408,7 +408,7 @@ var Single = /** @class */ (function () {
                     case 1:
                         _g.trys.push([1, 3, 4, 5]);
                         signal = aborter.signal;
-                        this.core.mutate(skey, { data: updated, time: current.time });
+                        this.core.mutate(skey, { data: updated, time: current === null || current === void 0 ? void 0 : current.time });
                         return [4 /*yield*/, poster(key, { data: updated, signal: signal })];
                     case 2:
                         _d = _g.sent(), data = _d.data, _e = _d.cooldown, cooldown = _e === void 0 ? getTimeFromDelay(dcooldown) : _e, _f = _d.expiration, expiration = _f === void 0 ? getTimeFromDelay(dexpiration) : _f;
@@ -501,6 +501,10 @@ var Core = /** @class */ (function (_super) {
     Core.prototype.mutate = function (key, state) {
         if (!key)
             return;
+        if (!state) {
+            this.delete(key);
+            return;
+        }
         var current = this.get(key);
         if (state.time === undefined)
             state.time = Date.now();

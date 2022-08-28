@@ -93,7 +93,7 @@ export class Single {
     } = tparams
 
     const current = this.core.get<D, E>(skey)
-    const updated = updater(current.data)
+    const updated = updater(current?.data)
 
     const timeout = setTimeout(() => {
       aborter.abort("Timed out")
@@ -102,7 +102,7 @@ export class Single {
     try {
       const { signal } = aborter
 
-      this.core.mutate(skey, { data: updated, time: current.time })
+      this.core.mutate(skey, { data: updated, time: current?.time })
 
       const {
         data,
