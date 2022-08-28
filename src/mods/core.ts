@@ -257,7 +257,7 @@ export class Core extends Ortho<string, State | undefined> {
   subscribe<D = any, E = any>(
     key: string | undefined,
     listener: (x: State<D, E>) => void,
-    params: Params<D, E> = {}
+    _: Params<D, E> = {}
   ) {
     if (!key) return
 
@@ -291,7 +291,7 @@ export class Core extends Ortho<string, State | undefined> {
 
     this.counts.delete(key)
 
-    const current = await this.get(key)
+    const current = await this.get(key, params)
     if (current?.expiration === undefined) return
     if (current?.expiration === -1) return
 
@@ -302,7 +302,7 @@ export class Core extends Ortho<string, State | undefined> {
       if (count !== undefined) return
 
       this.timeouts.delete(key)
-      await this.delete(key)
+      await this.delete(key, params)
     }
 
     if (Date.now() > current.expiration) {
