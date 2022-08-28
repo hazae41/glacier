@@ -11,8 +11,8 @@ export default function Page() {
     <Link href="/optimistic" passHref shallow>
       <a>Optimistic updates</a>
     </Link>
-    <Link href="/storage/sync" passHref shallow>
-      <a>Sync storage</a>
+    <Link href="/storage" passHref shallow>
+      <a>Storage</a>
     </Link>
   </div>
 }

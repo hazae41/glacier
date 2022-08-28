@@ -1,8 +1,29 @@
 import { XSWR } from "@hazae41/xswr";
+import { gunzipSync, gzipSync } from "zlib";
 import { HelloData } from "../../common/hello";
 
+class GZIP {
+  static stringify(value?: any) {
+    const text = JSON.stringify(value)
+    const buffer = Buffer.from(text)
+    const zbuffer = gzipSync(buffer)
+    const ztext = zbuffer.toString("base64")
+
+    return ztext
+  }
+
+  static parse(ztext: string) {
+    const zbuffer = Buffer.from(ztext, "base64")
+    const buffer = gunzipSync(zbuffer)
+    const text = buffer.toString()
+    const value = JSON.parse(text)
+
+    return value
+  }
+}
+
 export default function Wrapper() {
-  const storage = XSWR.useAsyncLocalStorage()
+  const storage = XSWR.useAsyncLocalStorage(GZIP)
 
   return <XSWR.CoreProvider
     storage={storage}>
