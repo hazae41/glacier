@@ -44,7 +44,7 @@ export default function Page() {
   }, [count])
 
   useEffect(() => {
-    console.log("core", core)
+    console.log("cache", core.cache)
   }, [core])
 
   return <>
