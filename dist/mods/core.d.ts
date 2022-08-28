@@ -69,7 +69,7 @@ export declare class Core extends Ortho<string, State | undefined> {
     shouldCooldown<D = any, E = any>(current?: State<D, E>, force?: boolean): boolean;
     counts: Map<string, number>;
     timeouts: Map<string, NodeJS.Timeout>;
-    subscribe<D = any, E = any>(key: string | undefined, listener: (x: State<D, E>) => void, params?: Params<D, E>): void;
+    subscribe<D = any, E = any>(key: string | undefined, listener: (x: State<D, E>) => void, _?: Params<D, E>): void;
     unsubscribe<D = any, E = any>(key: string | undefined, listener: (x: State<D, E>) => void, params?: Params<D, E>): Promise<void>;
     get mounted(): boolean;
     unmount(): void;

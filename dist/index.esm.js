@@ -710,7 +710,7 @@ var Core = /** @class */ (function (_super) {
             return true;
         return false;
     };
-    Core.prototype.subscribe = function (key, listener, params) {
+    Core.prototype.subscribe = function (key, listener, _) {
         var _a;
         if (!key)
             return;
@@ -724,6 +724,7 @@ var Core = /** @class */ (function (_super) {
         this.timeouts.delete(key);
     };
     Core.prototype.unsubscribe = function (key, listener, params) {
+        if (params === void 0) { params = {}; }
         return __awaiter(this, void 0, void 0, function () {
             var count, current, erase, delay, timeout;
             var _this = this;
@@ -739,7 +740,7 @@ var Core = /** @class */ (function (_super) {
                             return [2 /*return*/];
                         }
                         this.counts.delete(key);
-                        return [4 /*yield*/, this.get(key)];
+                        return [4 /*yield*/, this.get(key, params)];
                     case 1:
                         current = _a.sent();
                         if ((current === null || current === void 0 ? void 0 : current.expiration) === undefined)
@@ -757,7 +758,7 @@ var Core = /** @class */ (function (_super) {
                                         if (count !== undefined)
                                             return [2 /*return*/];
                                         this.timeouts.delete(key);
-                                        return [4 /*yield*/, this.delete(key)];
+                                        return [4 /*yield*/, this.delete(key, params)];
                                     case 1:
                                         _a.sent();
                                         return [2 /*return*/];
