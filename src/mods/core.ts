@@ -12,7 +12,7 @@ export interface Result<D = any> {
   expiration?: number
 }
 
-export type Fetcher<D = any, K = any,> =
+export type Fetcher<D = any, K = any> =
   (key: K, more: FetcherMore) => Promise<Result<D>>
 
 export type FetcherMore<D = any> =
