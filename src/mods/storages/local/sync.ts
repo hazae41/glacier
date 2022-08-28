@@ -1,5 +1,5 @@
 import { useRef } from "react"
-import { State, SyncStorage } from "../storage"
+import { Serializer, State, SyncStorage } from "../storage"
 
 /**
  * Synchronous local storage
@@ -11,11 +11,11 @@ import { State, SyncStorage } from "../storage"
  * 
  * @see AsyncLocalStorage
  */
-export function useSyncLocalStorage() {
+export function useSyncLocalStorage(serializer?: Serializer) {
   const storage = useRef<SyncLocalStorage>()
 
   if (!storage.current)
-    storage.current = new SyncLocalStorage()
+    storage.current = new SyncLocalStorage(serializer)
 
   return storage.current
 }
@@ -33,7 +33,9 @@ export function useSyncLocalStorage() {
 export class SyncLocalStorage implements SyncStorage<State> {
   readonly async = false
 
-  constructor() { }
+  constructor(
+    readonly serializer: Serializer = JSON
+  ) { }
 
   has(key: string) {
     if (typeof Storage === "undefined")
@@ -45,15 +47,14 @@ export class SyncLocalStorage implements SyncStorage<State> {
     if (typeof Storage === "undefined")
       return
     const item = localStorage.getItem(key)
-    if (item) return JSON.parse(item)
+    if (item) return this.serializer.parse(item)
   }
 
   set(key: string, state: State) {
     if (typeof Storage === "undefined")
       return
-    const { data, time, expiration } = state
-
-    const item = JSON.stringify({ data, time, expiration })
+    const { data, time, cooldown, expiration } = state
+    const item = this.serializer.stringify({ data, time, cooldown, expiration })
     localStorage.setItem(key, item)
   }
 

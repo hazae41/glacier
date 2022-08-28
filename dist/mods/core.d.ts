@@ -3,7 +3,7 @@ import { Ortho } from "../libs/ortho.js";
 import { Equals } from "./equals.js";
 import { Scroll } from "./scroll.js";
 import { Single } from "./single.js";
-import { State, Storage } from "./storages/storage.js";
+import { Serializer, State, Storage } from "./storages/storage.js";
 import { TimeParams } from "./time.js";
 export interface Result<D = any> {
     data: D;
@@ -31,6 +31,7 @@ export declare class Core extends Ortho<string, State | undefined> {
     readonly cache: Map<string, State<any, any>>;
     readonly storage?: Storage<State>;
     readonly equals: Equals;
+    readonly serializer: Serializer;
     readonly cooldown: number;
     readonly expiration: number;
     readonly timeout: number;

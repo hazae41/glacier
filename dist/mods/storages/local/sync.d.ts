@@ -1,8 +1,29 @@
-import { State, SyncStorage } from "../storage";
-export declare function useSyncLocalStorage(): SyncLocalStorage;
+import { Serializer, State, SyncStorage } from "../storage";
+/**
+ * Synchronous local storage
+ *
+ * Do NOT use with SSR, it will create hydratation errors
+ * Do NOT use for storing large objects, it will harm performances
+ *
+ * Will display data on first render
+ *
+ * @see AsyncLocalStorage
+ */
+export declare function useSyncLocalStorage(serializer?: Serializer): SyncLocalStorage;
+/**
+ * Synchronous local storage
+ *
+ * Do NOT use with SSR, it will create hydratation errors
+ * Do NOT use for storing large objects, it will harm performances
+ *
+ * Will display data on first render
+ *
+ * @see AsyncLocalStorage
+ */
 export declare class SyncLocalStorage implements SyncStorage<State> {
+    readonly serializer: Serializer;
     readonly async = false;
-    constructor();
+    constructor(serializer?: Serializer);
     has(key: string): boolean;
     get(key: string): State;
     set(key: string, state: State): void;

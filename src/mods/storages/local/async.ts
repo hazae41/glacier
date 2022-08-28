@@ -1,5 +1,5 @@
 import { useRef } from "react"
-import { AsyncStorage, State } from "../storage"
+import { AsyncStorage, Serializer, State } from "../storage"
 
 /**
  * Asynchronous local storage
@@ -14,11 +14,11 @@ import { AsyncStorage, State } from "../storage"
  * @see SyncLocalStorage
  * @see useFallback
  */
-export function useAsyncLocalStorage() {
+export function useAsyncLocalStorage(serializer?: Serializer) {
   const storage = useRef<AsyncLocalStorage>()
 
   if (!storage.current)
-    storage.current = new AsyncLocalStorage()
+    storage.current = new AsyncLocalStorage(serializer)
 
   return storage.current
 }
@@ -39,7 +39,9 @@ export function useAsyncLocalStorage() {
 export class AsyncLocalStorage implements AsyncStorage<State> {
   readonly async = true
 
-  constructor() { }
+  constructor(
+    readonly serializer: Serializer = JSON
+  ) { }
 
   async has(key: string) {
     if (typeof Storage === "undefined")
@@ -51,15 +53,14 @@ export class AsyncLocalStorage implements AsyncStorage<State> {
     if (typeof Storage === "undefined")
       return
     const item = localStorage.getItem(key)
-    if (item) return JSON.parse(item)
+    if (item) return this.serializer.parse(item)
   }
 
   async set(key: string, state: State) {
     if (typeof Storage === "undefined")
       return
-    const { data, time, expiration } = state
-
-    const item = JSON.stringify({ data, time, expiration })
+    const { data, time, cooldown, expiration } = state
+    const item = this.serializer.stringify({ data, time, cooldown, expiration })
     localStorage.setItem(key, item)
   }
 

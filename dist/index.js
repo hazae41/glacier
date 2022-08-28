@@ -223,6 +223,7 @@ function jsoneq(a, b) {
 }
 
 var DEFAULT_EQUALS = jsoneq;
+var DEFAULT_SERIALIZER = JSON;
 var DEFAULT_COOLDOWN = 1 * 1000;
 var DEFAULT_EXPIRATION = -1;
 var DEFAULT_TIMEOUT = 5 * 1000;
@@ -510,7 +511,7 @@ var Core = /** @class */ (function (_super) {
     __extends(Core, _super);
     function Core(params) {
         var _this = this;
-        var _a, _b, _c, _d;
+        var _a, _b, _c, _d, _e;
         _this = _super.call(this) || this;
         _this.single = new Single(_this);
         _this.scroll = new Scroll(_this);
@@ -520,9 +521,10 @@ var Core = /** @class */ (function (_super) {
         _this.timeouts = new Map();
         Object.assign(_this, params);
         (_a = _this.equals) !== null && _a !== void 0 ? _a : (_this.equals = DEFAULT_EQUALS);
-        (_b = _this.cooldown) !== null && _b !== void 0 ? _b : (_this.cooldown = DEFAULT_COOLDOWN);
-        (_c = _this.expiration) !== null && _c !== void 0 ? _c : (_this.expiration = DEFAULT_EXPIRATION);
-        (_d = _this.timeout) !== null && _d !== void 0 ? _d : (_this.timeout = DEFAULT_TIMEOUT);
+        (_b = _this.serializer) !== null && _b !== void 0 ? _b : (_this.serializer = DEFAULT_SERIALIZER);
+        (_c = _this.cooldown) !== null && _c !== void 0 ? _c : (_this.cooldown = DEFAULT_COOLDOWN);
+        (_d = _this.expiration) !== null && _d !== void 0 ? _d : (_this.expiration = DEFAULT_EXPIRATION);
+        (_e = _this.timeout) !== null && _e !== void 0 ? _e : (_this.timeout = DEFAULT_TIMEOUT);
         return _this;
     }
     Object.defineProperty(Core.prototype, "async", {
@@ -844,8 +846,8 @@ function useScroll(scroller, fetcher, tparams) {
     var skey = React.useMemo(function () {
         if (key === undefined)
             return;
-        return "scroll:" + JSON.stringify(key);
-    }, [key]);
+        return "scroll:" + core.serializer.stringify(key);
+    }, [core, key]);
     var _a = __read(React.useState(!core.async), 2), ready = _a[0], setReady = _a[1];
     var _b = __read(React.useState(function () { return core.getSync(skey); }), 2), state = _b[0], setState = _b[1];
     React.useEffect(function () {
@@ -914,8 +916,8 @@ function useSingle(key, poster, tparams) {
     var skey = React.useMemo(function () {
         if (key === undefined)
             return;
-        return JSON.stringify(key);
-    }, [key]);
+        return core.serializer.stringify(key);
+    }, [core, key]);
     var _a = __read(React.useState(function () { return core.hasSync(skey); }), 2), ready = _a[0], setReady = _a[1];
     var _b = __read(React.useState(function () { return core.getSync(skey); }), 2), state = _b[0], setState = _b[1];
     React.useEffect(function () {
@@ -1131,14 +1133,42 @@ function useVisible(handle) {
     }, [fetch]);
 }
 
-function useAsyncLocalStorage() {
+/**
+ * Asynchronous local storage
+ *
+ * Use for compatibility with SSR
+ * Use for storing large objects
+ *
+ * Won't display data on first render or hydratation, you can either:
+ * - use SyncLocalStorage
+ * - use useFallback
+ *
+ * @see SyncLocalStorage
+ * @see useFallback
+ */
+function useAsyncLocalStorage(serializer) {
     var storage = React.useRef();
     if (!storage.current)
-        storage.current = new AsyncLocalStorage();
+        storage.current = new AsyncLocalStorage(serializer);
     return storage.current;
 }
+/**
+ * Asynchronous local storage
+ *
+ * Use for compatibility with SSR
+ * Use for storing large objects
+ *
+ * Won't display data on first render or hydratation, you can either:
+ * - use SyncLocalStorage
+ * - use useFallback
+ *
+ * @see SyncLocalStorage
+ * @see useFallback
+ */
 var AsyncLocalStorage = /** @class */ (function () {
-    function AsyncLocalStorage() {
+    function AsyncLocalStorage(serializer) {
+        if (serializer === void 0) { serializer = JSON; }
+        this.serializer = serializer;
         this.async = true;
     }
     AsyncLocalStorage.prototype.has = function (key) {
@@ -1158,19 +1188,19 @@ var AsyncLocalStorage = /** @class */ (function () {
                     return [2 /*return*/];
                 item = localStorage.getItem(key);
                 if (item)
-                    return [2 /*return*/, JSON.parse(item)];
+                    return [2 /*return*/, this.serializer.parse(item)];
                 return [2 /*return*/];
             });
         });
     };
     AsyncLocalStorage.prototype.set = function (key, state) {
         return __awaiter(this, void 0, void 0, function () {
-            var data, time, expiration, item;
+            var data, time, cooldown, expiration, item;
             return __generator(this, function (_a) {
                 if (typeof Storage === "undefined")
                     return [2 /*return*/];
-                data = state.data, time = state.time, expiration = state.expiration;
-                item = JSON.stringify({ data: data, time: time, expiration: expiration });
+                data = state.data, time = state.time, cooldown = state.cooldown, expiration = state.expiration;
+                item = this.serializer.stringify({ data: data, time: time, cooldown: cooldown, expiration: expiration });
                 localStorage.setItem(key, item);
                 return [2 /*return*/];
             });
@@ -1189,14 +1219,36 @@ var AsyncLocalStorage = /** @class */ (function () {
     return AsyncLocalStorage;
 }());
 
-function useSyncLocalStorage() {
+/**
+ * Synchronous local storage
+ *
+ * Do NOT use with SSR, it will create hydratation errors
+ * Do NOT use for storing large objects, it will harm performances
+ *
+ * Will display data on first render
+ *
+ * @see AsyncLocalStorage
+ */
+function useSyncLocalStorage(serializer) {
     var storage = React.useRef();
     if (!storage.current)
-        storage.current = new SyncLocalStorage();
+        storage.current = new SyncLocalStorage(serializer);
     return storage.current;
 }
+/**
+ * Synchronous local storage
+ *
+ * Do NOT use with SSR, it will create hydratation errors
+ * Do NOT use for storing large objects, it will harm performances
+ *
+ * Will display data on first render
+ *
+ * @see AsyncLocalStorage
+ */
 var SyncLocalStorage = /** @class */ (function () {
-    function SyncLocalStorage() {
+    function SyncLocalStorage(serializer) {
+        if (serializer === void 0) { serializer = JSON; }
+        this.serializer = serializer;
         this.async = false;
     }
     SyncLocalStorage.prototype.has = function (key) {
@@ -1209,13 +1261,13 @@ var SyncLocalStorage = /** @class */ (function () {
             return;
         var item = localStorage.getItem(key);
         if (item)
-            return JSON.parse(item);
+            return this.serializer.parse(item);
     };
     SyncLocalStorage.prototype.set = function (key, state) {
         if (typeof Storage === "undefined")
             return;
-        var data = state.data, time = state.time, expiration = state.expiration;
-        var item = JSON.stringify({ data: data, time: time, expiration: expiration });
+        var data = state.data, time = state.time, cooldown = state.cooldown, expiration = state.expiration;
+        var item = this.serializer.stringify({ data: data, time: time, cooldown: cooldown, expiration: expiration });
         localStorage.setItem(key, item);
     };
     SyncLocalStorage.prototype.delete = function (key) {

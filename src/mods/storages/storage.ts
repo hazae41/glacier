@@ -7,15 +7,20 @@ export interface State<D = any, E = any> {
   expiration?: number
 }
 
-export type Storage<T> =
+export interface Serializer<T = any> {
+  stringify<T>(value: T): string
+  parse(text: string): T
+}
+
+export type Storage<T = any> =
   | SyncStorage<T>
   | AsyncStorage<T>
 
-export function isAsyncStorage<T>(storage: Storage<T>): storage is AsyncStorage<T> {
+export function isAsyncStorage<T = any>(storage: Storage<T>): storage is AsyncStorage<T> {
   return storage.async
 }
 
-export interface SyncStorage<T> {
+export interface SyncStorage<T = any> {
   async?: false
 
   has(key: string): boolean
@@ -24,7 +29,7 @@ export interface SyncStorage<T> {
   delete(key: string): void
 }
 
-export interface AsyncStorage<T> {
+export interface AsyncStorage<T = any> {
   async: true
 
   has(key: string): Promise<boolean>

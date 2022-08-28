@@ -34,8 +34,8 @@ export function useSingle<D = any, E = any, K = any>(
 
   const skey = useMemo(() => {
     if (key === undefined) return
-    return JSON.stringify(key)
-  }, [key])
+    return core.serializer.stringify(key)
+  }, [core, key])
 
   const [ready, setReady] = useState(() => core.hasSync(skey))
   const [state, setState] = useState(() => core.getSync<D, E>(skey))

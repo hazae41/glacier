@@ -36,8 +36,8 @@ export function useScroll<D = any, E = any, K = any>(
 
   const skey = useMemo(() => {
     if (key === undefined) return
-    return "scroll:" + JSON.stringify(key)
-  }, [key])
+    return "scroll:" + core.serializer.stringify(key)
+  }, [core, key])
 
   const [ready, setReady] = useState(!core.async)
   const [state, setState] = useState(() => core.getSync<D[], E>(skey))

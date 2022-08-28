@@ -1,9 +1,9 @@
 import { Ortho } from "../libs/ortho.js"
-import { DEFAULT_COOLDOWN, DEFAULT_EQUALS, DEFAULT_EXPIRATION, DEFAULT_TIMEOUT } from "./defaults.js"
+import { DEFAULT_COOLDOWN, DEFAULT_EQUALS, DEFAULT_EXPIRATION, DEFAULT_SERIALIZER, DEFAULT_TIMEOUT } from "./defaults.js"
 import { Equals } from "./equals.js"
 import { Scroll } from "./scroll.js"
 import { Single } from "./single.js"
-import { isAsyncStorage, State, Storage } from "./storages/storage.js"
+import { isAsyncStorage, Serializer, State, Storage } from "./storages/storage.js"
 import { TimeParams } from "./time.js"
 
 export interface Result<D = any> {
@@ -43,6 +43,7 @@ export class Core extends Ortho<string, State | undefined> {
   readonly storage?: Storage<State>
 
   readonly equals: Equals
+  readonly serializer: Serializer
 
   readonly cooldown: number
   readonly expiration: number
@@ -56,6 +57,7 @@ export class Core extends Ortho<string, State | undefined> {
     Object.assign(this, params)
 
     this.equals ??= DEFAULT_EQUALS
+    this.serializer ??= DEFAULT_SERIALIZER
     this.cooldown ??= DEFAULT_COOLDOWN
     this.expiration ??= DEFAULT_EXPIRATION
     this.timeout ??= DEFAULT_TIMEOUT
