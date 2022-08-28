@@ -1,6 +1,19 @@
 import { useRef } from "react"
 import { AsyncStorage, State } from "../storage"
 
+/**
+ * Asynchronous local storage
+ * 
+ * Use for compatibility with SSR
+ * Use for storing large objects
+ * 
+ * Won't display data on first render or hydratation, you can either:
+ * - use SyncLocalStorage
+ * - use useFallback
+ * 
+ * @see SyncLocalStorage
+ * @see useFallback
+ */
 export function useAsyncLocalStorage() {
   const storage = useRef<AsyncLocalStorage>()
 
@@ -10,6 +23,19 @@ export function useAsyncLocalStorage() {
   return storage.current
 }
 
+/**
+ * Asynchronous local storage
+ * 
+ * Use for compatibility with SSR
+ * Use for storing large objects
+ * 
+ * Won't display data on first render or hydratation, you can either:
+ * - use SyncLocalStorage
+ * - use useFallback
+ * 
+ * @see SyncLocalStorage
+ * @see useFallback
+ */
 export class AsyncLocalStorage implements AsyncStorage<State> {
   readonly async = true
 
