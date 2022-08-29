@@ -1,6 +1,7 @@
 import { lastOf } from "libs/arrays";
 import { getTimeFromDelay } from "libs/time";
-import { Core, Fetcher, Params, Scroller } from "mods/core";
+import { Core, Fetcher, Scroller } from "mods/core";
+import { Params } from "mods/types/params";
 import { DEFAULT_COOLDOWN, DEFAULT_EQUALS, DEFAULT_EXPIRATION, DEFAULT_TIMEOUT } from "mods/utils/defaults";
 
 export class Scroll {

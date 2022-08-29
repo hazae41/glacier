@@ -1,4 +1,4 @@
-import { State } from "mods/storages/state";
+import { State } from "mods/types/state";
 export interface Handle<D = any, E = any, K = any> {
     /**
      * Arbitrary key, must be serializable

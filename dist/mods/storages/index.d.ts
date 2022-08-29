@@ -1,3 +1,1 @@
-export * from "./local";
-export * from "./serializer";
-export * from "./storage";
+export * from "./localStorage";

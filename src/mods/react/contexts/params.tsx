@@ -1,5 +1,5 @@
 import { ChildrenProps } from "libs/react"
-import { Params } from "mods/core"
+import { Params } from "mods/types/params"
 import React, { createContext, useContext, useRef } from "react"
 
 export const ParamsContext =

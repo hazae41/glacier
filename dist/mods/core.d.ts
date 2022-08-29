@@ -2,10 +2,8 @@
 import { Ortho } from "libs/ortho.js";
 import { Scroll } from "mods/scroll";
 import { Single } from "mods/single";
-import { Serializer } from "mods/storages/serializer";
-import { State } from "mods/storages/state";
-import { Storage } from "mods/storages/storage";
-import { Equals } from "mods/utils/equals";
+import { Params } from "mods/types/params";
+import { State } from "mods/types/state";
 export interface Result<D = any> {
     data: D;
     cooldown?: number;
@@ -22,14 +20,6 @@ export declare type PosterMore<D = any> = {
 };
 export declare type Scroller<D = any, K = any> = (previous?: D) => K | undefined;
 export declare type Updater<D = any> = (previous?: D) => D;
-export interface Params<D = any, E = any, K = any> {
-    storage?: Storage<State<D, E>>;
-    serializer?: Serializer<K>;
-    equals?: Equals;
-    cooldown?: number;
-    expiration?: number;
-    timeout?: number;
-}
 export declare class Core extends Ortho<string, State | undefined> {
     readonly single: Single;
     readonly scroll: Scroll;

@@ -1,11 +1,10 @@
 import { Ortho } from "libs/ortho.js"
 import { Scroll } from "mods/scroll"
 import { Single } from "mods/single"
-import { Serializer } from "mods/storages/serializer"
-import { State } from "mods/storages/state"
-import { isAsyncStorage, Storage } from "mods/storages/storage"
+import { Params } from "mods/types/params"
+import { State } from "mods/types/state"
+import { isAsyncStorage } from "mods/types/storage"
 import { DEFAULT_EQUALS } from "mods/utils/defaults"
-import { Equals } from "mods/utils/equals"
 
 export interface Result<D = any> {
   data: D,
@@ -30,15 +29,6 @@ export type Scroller<D = any, K = any> =
 
 export type Updater<D = any> =
   (previous?: D) => D
-
-export interface Params<D = any, E = any, K = any> {
-  storage?: Storage<State<D, E>>
-  serializer?: Serializer<K>,
-  equals?: Equals,
-  cooldown?: number
-  expiration?: number
-  timeout?: number
-}
 
 export class Core extends Ortho<string, State | undefined> {
   readonly single = new Single(this)

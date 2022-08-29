@@ -1,5 +1,6 @@
 import { ChildrenProps } from "libs/react";
-import { Core, Params } from "mods/core";
+import { Core } from "mods/core";
+import { Params } from "mods/types/params";
 import React from "react";
 export declare const CoreContext: React.Context<Core>;
 export declare function useCore(): Core;
