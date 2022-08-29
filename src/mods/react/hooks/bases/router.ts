@@ -17,6 +17,6 @@ export function use<D = any, E = any, K = any>(
   if (descriptor instanceof SingleDescriptor)
     return useSingle<D, E, K>(descriptor.key, descriptor.poster, descriptor.params)
   if (descriptor instanceof ScrollDescriptor)
-    return useScroll<D, E, K>(descriptor.scroller, descriptor.fetcher, descriptor.current)
+    return useScroll<D, E, K>(descriptor.scroller, descriptor.fetcher, descriptor.params)
   throw new Error("Invalid resource descriptor")
 }

@@ -796,53 +796,191 @@ var Core = /** @class */ (function (_super) {
     return Core;
 }(Ortho));
 
-var ScrollDescriptor = /** @class */ (function () {
-    function ScrollDescriptor(scroller, fetcher, current) {
-        if (current === void 0) { current = {}; }
+/**
+ * Non-React version of ScrollHandle
+ */
+var ScrollInstance = /** @class */ (function () {
+    function ScrollInstance(core, scroller, fetcher, params, pparams) {
+        if (params === void 0) { params = {}; }
+        if (pparams === void 0) { pparams = {}; }
+        var _this = this;
+        this.core = core;
         this.scroller = scroller;
         this.fetcher = fetcher;
-        this.current = current;
+        this.params = params;
+        this.pparams = pparams;
+        this.mparams = __assign(__assign({}, pparams), params);
+        this.key = scroller();
+        this.skey = (function () {
+            var key = _this.key;
+            if (key === undefined)
+                return;
+            if (typeof key === "string")
+                return key;
+            var _a = _this.mparams.serializer, serializer = _a === void 0 ? DEFAULT_SERIALIZER : _a;
+            return "scroll:".concat(serializer.stringify(key));
+        })();
+        this._ready = (function () {
+            var _a = _this, core = _a.core, skey = _a.skey, mparams = _a.mparams;
+            return core.hasSync(skey, mparams);
+        })();
+        this._state = (function () {
+            var _a = _this, core = _a.core, skey = _a.skey, mparams = _a.mparams;
+            return core.getSync(skey, mparams);
+        })();
+        (function () { return __awaiter(_this, void 0, void 0, function () {
+            var _a, core, skey, mparams, _b;
+            return __generator(this, function (_c) {
+                switch (_c.label) {
+                    case 0:
+                        if (this.ready)
+                            return [2 /*return*/];
+                        _a = this, core = _a.core, skey = _a.skey, mparams = _a.mparams;
+                        _b = this;
+                        return [4 /*yield*/, core.get(skey, mparams)];
+                    case 1:
+                        _b._state = _c.sent();
+                        this._ready = true;
+                        return [2 /*return*/];
+                }
+            });
+        }); })();
+        {
+            var _a = this, core_1 = _a.core, skey_1 = _a.skey;
+            var setter_1 = function (state) {
+                return _this._state = state;
+            };
+            core_1.subscribe(this.skey, setter_1);
+            new FinalizationRegistry(function () {
+                core_1.unsubscribe(skey_1, setter_1);
+            }).register(this, undefined);
+        }
     }
-    return ScrollDescriptor;
+    Object.defineProperty(ScrollInstance.prototype, "state", {
+        get: function () { return this._state; },
+        enumerable: false,
+        configurable: true
+    });
+    Object.defineProperty(ScrollInstance.prototype, "ready", {
+        get: function () { return this._ready; },
+        enumerable: false,
+        configurable: true
+    });
+    ScrollInstance.prototype.mutate = function (state) {
+        return __awaiter(this, void 0, void 0, function () {
+            var _a, core, skey, mparams, _b;
+            return __generator(this, function (_c) {
+                switch (_c.label) {
+                    case 0:
+                        _a = this, core = _a.core, skey = _a.skey, mparams = _a.mparams;
+                        _b = this;
+                        return [4 /*yield*/, core.mutate(skey, state, mparams)];
+                    case 1: return [2 /*return*/, _b._state = _c.sent()];
+                }
+            });
+        });
+    };
+    ScrollInstance.prototype.fetch = function (aborter) {
+        return __awaiter(this, void 0, void 0, function () {
+            var _a, core, scroller, skey, fetcher, mparams, _b;
+            return __generator(this, function (_c) {
+                switch (_c.label) {
+                    case 0:
+                        _a = this, core = _a.core, scroller = _a.scroller, skey = _a.skey, fetcher = _a.fetcher, mparams = _a.mparams;
+                        _b = this;
+                        return [4 /*yield*/, core.scroll.first(skey, scroller, fetcher, aborter, mparams)];
+                    case 1: return [2 /*return*/, _b._state = _c.sent()];
+                }
+            });
+        });
+    };
+    ScrollInstance.prototype.refetch = function (aborter) {
+        return __awaiter(this, void 0, void 0, function () {
+            var _a, core, scroller, skey, fetcher, mparams, _b;
+            return __generator(this, function (_c) {
+                switch (_c.label) {
+                    case 0:
+                        _a = this, core = _a.core, scroller = _a.scroller, skey = _a.skey, fetcher = _a.fetcher, mparams = _a.mparams;
+                        _b = this;
+                        return [4 /*yield*/, core.scroll.first(skey, scroller, fetcher, aborter, mparams, true)];
+                    case 1: return [2 /*return*/, _b._state = _c.sent()];
+                }
+            });
+        });
+    };
+    ScrollInstance.prototype.scroll = function (aborter) {
+        return __awaiter(this, void 0, void 0, function () {
+            var _a, core, scroller, skey, fetcher, mparams, _b;
+            return __generator(this, function (_c) {
+                switch (_c.label) {
+                    case 0:
+                        _a = this, core = _a.core, scroller = _a.scroller, skey = _a.skey, fetcher = _a.fetcher, mparams = _a.mparams;
+                        _b = this;
+                        return [4 /*yield*/, core.scroll.scroll(skey, scroller, fetcher, aborter, mparams)];
+                    case 1: return [2 /*return*/, _b._state = _c.sent()];
+                }
+            });
+        });
+    };
+    ScrollInstance.prototype.clear = function () {
+        return __awaiter(this, void 0, void 0, function () {
+            var _a, core, skey, mparams;
+            return __generator(this, function (_b) {
+                switch (_b.label) {
+                    case 0:
+                        _a = this, core = _a.core, skey = _a.skey, mparams = _a.mparams;
+                        return [4 /*yield*/, core.delete(skey, mparams)];
+                    case 1:
+                        _b.sent();
+                        delete this._state;
+                        return [2 /*return*/];
+                }
+            });
+        });
+    };
+    return ScrollInstance;
 }());
 
 /**
  * Non-React version of SingleHandle
  */
 var SingleInstance = /** @class */ (function () {
-    function SingleInstance(core, key, poster, params) {
+    function SingleInstance(core, key, poster, params, pparams) {
         if (params === void 0) { params = {}; }
+        if (pparams === void 0) { pparams = {}; }
         var _this = this;
         this.core = core;
         this.key = key;
         this.poster = poster;
         this.params = params;
+        this.pparams = pparams;
+        this.mparams = __assign(__assign({}, pparams), params);
         this.skey = (function () {
             if (key === undefined)
                 return;
             if (typeof key === "string")
                 return key;
-            var _a = _this.params.serializer, serializer = _a === void 0 ? DEFAULT_SERIALIZER : _a;
+            var _a = _this.mparams.serializer, serializer = _a === void 0 ? DEFAULT_SERIALIZER : _a;
             return serializer.stringify(key);
         })();
         this._ready = (function () {
-            var _a = _this, core = _a.core, skey = _a.skey, params = _a.params;
-            return core.hasSync(skey, params);
+            var _a = _this, core = _a.core, skey = _a.skey, mparams = _a.mparams;
+            return core.hasSync(skey, mparams);
         })();
         this._state = (function () {
-            var _a = _this, core = _a.core, skey = _a.skey, params = _a.params;
-            return core.getSync(skey, params);
+            var _a = _this, core = _a.core, skey = _a.skey, mparams = _a.mparams;
+            return core.getSync(skey, mparams);
         })();
         (function () { return __awaiter(_this, void 0, void 0, function () {
-            var _a, core, skey, params, _b;
+            var _a, core, skey, mparams, _b;
             return __generator(this, function (_c) {
                 switch (_c.label) {
                     case 0:
                         if (this.ready)
                             return [2 /*return*/];
-                        _a = this, core = _a.core, skey = _a.skey, params = _a.params;
+                        _a = this, core = _a.core, skey = _a.skey, mparams = _a.mparams;
                         _b = this;
-                        return [4 /*yield*/, core.get(skey, params)];
+                        return [4 /*yield*/, core.get(skey, mparams)];
                     case 1:
                         _b._state = _c.sent();
                         this._ready = true;
@@ -873,13 +1011,13 @@ var SingleInstance = /** @class */ (function () {
     });
     SingleInstance.prototype.mutate = function (state) {
         return __awaiter(this, void 0, void 0, function () {
-            var _a, core, skey, params, _b;
+            var _a, core, skey, mparams, _b;
             return __generator(this, function (_c) {
                 switch (_c.label) {
                     case 0:
-                        _a = this, core = _a.core, skey = _a.skey, params = _a.params;
+                        _a = this, core = _a.core, skey = _a.skey, mparams = _a.mparams;
                         _b = this;
-                        return [4 /*yield*/, core.mutate(skey, state, params)];
+                        return [4 /*yield*/, core.mutate(skey, state, mparams)];
                     case 1: return [2 /*return*/, _b._state = _c.sent()];
                 }
             });
@@ -887,13 +1025,13 @@ var SingleInstance = /** @class */ (function () {
     };
     SingleInstance.prototype.fetch = function (aborter) {
         return __awaiter(this, void 0, void 0, function () {
-            var _a, core, key, skey, poster, params, _b;
+            var _a, core, key, skey, poster, mparams, _b;
             return __generator(this, function (_c) {
                 switch (_c.label) {
                     case 0:
-                        _a = this, core = _a.core, key = _a.key, skey = _a.skey, poster = _a.poster, params = _a.params;
+                        _a = this, core = _a.core, key = _a.key, skey = _a.skey, poster = _a.poster, mparams = _a.mparams;
                         _b = this;
-                        return [4 /*yield*/, core.single.fetch(key, skey, poster, aborter, params)];
+                        return [4 /*yield*/, core.single.fetch(key, skey, poster, aborter, mparams)];
                     case 1: return [2 /*return*/, _b._state = _c.sent()];
                 }
             });
@@ -901,13 +1039,13 @@ var SingleInstance = /** @class */ (function () {
     };
     SingleInstance.prototype.refetch = function (aborter) {
         return __awaiter(this, void 0, void 0, function () {
-            var _a, core, key, skey, poster, params, _b;
+            var _a, core, key, skey, poster, mparams, _b;
             return __generator(this, function (_c) {
                 switch (_c.label) {
                     case 0:
-                        _a = this, core = _a.core, key = _a.key, skey = _a.skey, poster = _a.poster, params = _a.params;
+                        _a = this, core = _a.core, key = _a.key, skey = _a.skey, poster = _a.poster, mparams = _a.mparams;
                         _b = this;
-                        return [4 /*yield*/, core.single.fetch(key, skey, poster, aborter, params, true)];
+                        return [4 /*yield*/, core.single.fetch(key, skey, poster, aborter, mparams, true)];
                     case 1: return [2 /*return*/, _b._state = _c.sent()];
                 }
             });
@@ -915,13 +1053,13 @@ var SingleInstance = /** @class */ (function () {
     };
     SingleInstance.prototype.update = function (updater, aborter) {
         return __awaiter(this, void 0, void 0, function () {
-            var _a, core, key, skey, poster, params, _b;
+            var _a, core, key, skey, poster, mparams, _b;
             return __generator(this, function (_c) {
                 switch (_c.label) {
                     case 0:
-                        _a = this, core = _a.core, key = _a.key, skey = _a.skey, poster = _a.poster, params = _a.params;
+                        _a = this, core = _a.core, key = _a.key, skey = _a.skey, poster = _a.poster, mparams = _a.mparams;
                         _b = this;
-                        return [4 /*yield*/, core.single.update(key, skey, poster, updater, aborter, params)];
+                        return [4 /*yield*/, core.single.update(key, skey, poster, updater, aborter, mparams)];
                     case 1: return [2 /*return*/, _b._state = _c.sent()];
                 }
             });
@@ -929,12 +1067,12 @@ var SingleInstance = /** @class */ (function () {
     };
     SingleInstance.prototype.clear = function () {
         return __awaiter(this, void 0, void 0, function () {
-            var _a, core, skey, params;
+            var _a, core, skey, mparams;
             return __generator(this, function (_b) {
                 switch (_b.label) {
                     case 0:
-                        _a = this, core = _a.core, skey = _a.skey, params = _a.params;
-                        return [4 /*yield*/, core.delete(skey, params)];
+                        _a = this, core = _a.core, skey = _a.skey, mparams = _a.mparams;
+                        return [4 /*yield*/, core.delete(skey, mparams)];
                     case 1:
                         _b.sent();
                         delete this._state;
@@ -946,6 +1084,29 @@ var SingleInstance = /** @class */ (function () {
     return SingleInstance;
 }());
 
+function getScroll(scroller, fetcher, params) {
+    if (params === void 0) { params = {}; }
+    return new ScrollDescriptor(scroller, fetcher, params);
+}
+var ScrollDescriptor = /** @class */ (function () {
+    function ScrollDescriptor(scroller, fetcher, params) {
+        if (params === void 0) { params = {}; }
+        this.scroller = scroller;
+        this.fetcher = fetcher;
+        this.params = params;
+    }
+    ScrollDescriptor.prototype.create = function (core, pparams) {
+        if (pparams === void 0) { pparams = {}; }
+        var _a = this, scroller = _a.scroller, fetcher = _a.fetcher, params = _a.params;
+        return new ScrollInstance(core, scroller, fetcher, params, pparams);
+    };
+    return ScrollDescriptor;
+}());
+
+function getSingle(key, poster, params) {
+    if (params === void 0) { params = {}; }
+    return new SingleDescriptor(key, poster, params);
+}
 var SingleDescriptor = /** @class */ (function () {
     function SingleDescriptor(key, poster, params) {
         if (params === void 0) { params = {}; }
@@ -956,8 +1117,7 @@ var SingleDescriptor = /** @class */ (function () {
     SingleDescriptor.prototype.create = function (core, pparams) {
         if (pparams === void 0) { pparams = {}; }
         var _a = this, key = _a.key, poster = _a.poster, params = _a.params;
-        var mparams = __assign(__assign({}, pparams), params);
-        return new SingleInstance(core, key, poster, mparams);
+        return new SingleInstance(core, key, poster, params, pparams);
     };
     return SingleDescriptor;
 }());
@@ -1178,7 +1338,7 @@ function use(descriptor) {
     if (descriptor instanceof SingleDescriptor)
         return useSingle(descriptor.key, descriptor.poster, descriptor.params);
     if (descriptor instanceof ScrollDescriptor)
-        return useScroll(descriptor.scroller, descriptor.fetcher, descriptor.current);
+        return useScroll(descriptor.scroller, descriptor.fetcher, descriptor.params);
     throw new Error("Invalid resource descriptor");
 }
 
@@ -1495,8 +1655,11 @@ function isAbortError(e) {
 var index = {
     __proto__: null,
     Core: Core,
+    getScroll: getScroll,
     ScrollDescriptor: ScrollDescriptor,
+    getSingle: getSingle,
     SingleDescriptor: SingleDescriptor,
+    ScrollInstance: ScrollInstance,
     SingleInstance: SingleInstance,
     CoreContext: CoreContext,
     useCore: useCore,

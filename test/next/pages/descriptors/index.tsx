@@ -14,15 +14,15 @@ async function fetchAsJson<T>([url, id]: any, more: XSWR.PosterMore<T>) {
   return { data, cooldown, expiration }
 }
 
-function getKeyDataDesc(id: string) {
-  return new XSWR.SingleDescriptor(
+function getKeyDesc(id: string) {
+  return XSWR.getSingle(
     ["/api/hello", id],
     fetchAsJson,
     { cooldown: 5000 })
 }
 
 function useKeyData(id: string) {
-  const handle = XSWR.use(getKeyDataDesc(id))
+  const handle = XSWR.use(getKeyDesc(id))
 
   XSWR.useFetch(handle)
   return handle
@@ -45,8 +45,8 @@ function Writer() {
   const { create } = XSWR.useXSWR()
 
   const write = useCallback(async () => {
-    const key = create(getKeyDataDesc("123"))
-    await key.mutate({ data: { hello: "world " } })
+    const key = create(getKeyDesc("123"))
+    await key.mutate({ data: { hello: "world" } })
   }, [create])
 
   return <button onClick={write}>
