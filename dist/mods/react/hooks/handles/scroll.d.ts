@@ -1,6 +1,7 @@
-import { Fetcher, Scroller } from "mods/core";
 import { Handle } from "mods/react/hooks/handles/handle";
+import { Fetcher } from "mods/types/fetcher";
 import { Params } from "mods/types/params";
+import { Scroller } from "mods/types/scroller";
 import { State } from "mods/types/state";
 /**
  * Handle for a scrolling resource

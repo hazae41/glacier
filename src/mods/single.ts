@@ -1,7 +1,10 @@
 import { getTimeFromDelay } from "libs/time";
-import { Core, Fetcher, Poster, Updater } from "mods/core";
+import { Core } from "mods/core";
+import { Fetcher } from "mods/types/fetcher";
 import { Params } from "mods/types/params";
+import { Poster } from "mods/types/poster";
 import { State } from "mods/types/state";
+import { Updater } from "mods/types/updater";
 import { DEFAULT_COOLDOWN, DEFAULT_EXPIRATION, DEFAULT_TIMEOUT } from "mods/utils/defaults";
 
 export class Single {

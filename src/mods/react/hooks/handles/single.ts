@@ -1,9 +1,11 @@
-import { Poster, Updater } from "mods/core"
-import { useCore, useParams } from "mods/react/contexts"
-import { Handle } from "mods/react/hooks/handles/handle"
-import { Params } from "mods/types/params"
-import { State } from "mods/types/state"
-import { useCallback, useEffect, useMemo, useState } from "react"
+import { useCore, useParams } from "mods/react/contexts";
+import { Handle } from "mods/react/hooks/handles/handle";
+import { Params } from "mods/types/params";
+import { Poster } from "mods/types/poster";
+import { State } from "mods/types/state";
+import { Updater } from "mods/types/updater";
+import { DEFAULT_SERIALIZER } from "mods/utils/defaults";
+import { useCallback, useEffect, useMemo, useState } from "react";
 
 /**
  * Handle for a single resource
@@ -37,7 +39,8 @@ export function useSingle<D = any, E = any, K = any>(
   const skey = useMemo(() => {
     if (key === undefined) return
     if (typeof key === "string") return key
-    return params.serializer.stringify(key)
+    const { serializer = DEFAULT_SERIALIZER } = params
+    return serializer.stringify(key)
   }, [core, key])
 
   const [ready, setReady] = useState(() => core.hasSync<D, E>(skey, params))

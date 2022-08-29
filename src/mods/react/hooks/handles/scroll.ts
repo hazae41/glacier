@@ -1,9 +1,11 @@
-import { Fetcher, Scroller } from "mods/core"
-import { useCore, useParams } from "mods/react/contexts"
-import { Handle } from "mods/react/hooks/handles/handle"
-import { Params } from "mods/types/params"
-import { State } from "mods/types/state"
-import { useCallback, useEffect, useMemo, useState } from "react"
+import { useCore, useParams } from "mods/react/contexts";
+import { Handle } from "mods/react/hooks/handles/handle";
+import { Fetcher } from "mods/types/fetcher";
+import { Params } from "mods/types/params";
+import { Scroller } from "mods/types/scroller";
+import { State } from "mods/types/state";
+import { DEFAULT_SERIALIZER } from "mods/utils/defaults";
+import { useCallback, useEffect, useMemo, useState } from "react";
 
 /**
  * Handle for a scrolling resource
@@ -39,7 +41,8 @@ export function useScroll<D = any, E = any, K = any>(
   const skey = useMemo(() => {
     if (key === undefined) return
     if (typeof key === "string") return key
-    return `scroll:${params.serializer.stringify(key)}`
+    const { serializer = DEFAULT_SERIALIZER } = params
+    return `scroll:${serializer.stringify(key)}`
   }, [core, key])
 
   const [ready, setReady] = useState(() => core.hasSync<D[], E>(skey, params))

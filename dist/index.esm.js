@@ -857,7 +857,8 @@ function useScroll(scroller, fetcher, current) {
             return;
         if (typeof key === "string")
             return key;
-        return "scroll:".concat(params.serializer.stringify(key));
+        var _a = params.serializer, serializer = _a === void 0 ? DEFAULT_SERIALIZER : _a;
+        return "scroll:".concat(serializer.stringify(key));
     }, [core, key]);
     var _a = __read(useState(function () { return core.hasSync(skey, params); }), 2), ready = _a[0], setReady = _a[1];
     var _b = __read(useState(function () { return core.getSync(skey, params); }), 2), state = _b[0], setState = _b[1];
@@ -937,7 +938,8 @@ function useSingle(key, poster, current) {
             return;
         if (typeof key === "string")
             return key;
-        return params.serializer.stringify(key);
+        var _a = params.serializer, serializer = _a === void 0 ? DEFAULT_SERIALIZER : _a;
+        return serializer.stringify(key);
     }, [core, key]);
     var _a = __read(useState(function () { return core.hasSync(skey, params); }), 2), ready = _a[0], setReady = _a[1];
     var _b = __read(useState(function () { return core.getSync(skey, params); }), 2), state = _b[0], setState = _b[1];

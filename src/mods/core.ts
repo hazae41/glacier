@@ -6,30 +6,6 @@ import { State } from "mods/types/state"
 import { isAsyncStorage } from "mods/types/storage"
 import { DEFAULT_EQUALS } from "mods/utils/defaults"
 
-export interface Result<D = any> {
-  data: D,
-  cooldown?: number
-  expiration?: number
-}
-
-export type Fetcher<D = any, K = any> =
-  (key: K, more: FetcherMore) => Promise<Result<D>>
-
-export type FetcherMore<D = any> =
-  { signal: AbortSignal }
-
-export type Poster<D = any, K = any> =
-  (key: K, more: PosterMore) => Promise<Result<D>>
-
-export type PosterMore<D = any> =
-  { signal: AbortSignal, data: D }
-
-export type Scroller<D = any, K = any> =
-  (previous?: D) => K | undefined
-
-export type Updater<D = any> =
-  (previous?: D) => D
-
 export class Core extends Ortho<string, State | undefined> {
   readonly single = new Single(this)
   readonly scroll = new Scroll(this)

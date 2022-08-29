@@ -4,22 +4,6 @@ import { Scroll } from "mods/scroll";
 import { Single } from "mods/single";
 import { Params } from "mods/types/params";
 import { State } from "mods/types/state";
-export interface Result<D = any> {
-    data: D;
-    cooldown?: number;
-    expiration?: number;
-}
-export declare type Fetcher<D = any, K = any> = (key: K, more: FetcherMore) => Promise<Result<D>>;
-export declare type FetcherMore<D = any> = {
-    signal: AbortSignal;
-};
-export declare type Poster<D = any, K = any> = (key: K, more: PosterMore) => Promise<Result<D>>;
-export declare type PosterMore<D = any> = {
-    signal: AbortSignal;
-    data: D;
-};
-export declare type Scroller<D = any, K = any> = (previous?: D) => K | undefined;
-export declare type Updater<D = any> = (previous?: D) => D;
 export declare class Core extends Ortho<string, State | undefined> {
     readonly single: Single;
     readonly scroll: Scroll;
