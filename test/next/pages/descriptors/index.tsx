@@ -42,13 +42,12 @@ function Reader() {
 }
 
 function Writer() {
-  const core = XSWR.useCore()
-  const params = XSWR.useParams()
+  const { create } = XSWR.useXSWR()
 
   const write = useCallback(async () => {
-    const key = getKeyDataDesc("123").create(core, params)
+    const key = create(getKeyDataDesc("123"))
     await key.mutate({ data: { hello: "world " } })
-  }, [core, params])
+  }, [create])
 
   return <button onClick={write}>
     Write

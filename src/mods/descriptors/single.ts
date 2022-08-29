@@ -14,6 +14,6 @@ export class SingleDescriptor<D = any, E = any, K = any> {
     const { key, poster, params } = this
 
     const mparams = { ...pparams, ...params }
-    return new SingleInstance(core, key, poster, mparams)
+    return new SingleInstance<D, E, K>(core, key, poster, mparams)
   }
 }

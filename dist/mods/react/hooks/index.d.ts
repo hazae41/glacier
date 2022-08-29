@@ -1,2 +1,2 @@
 export * from "./handles";
-export * from "./utils";
+export * from "./ingredients";

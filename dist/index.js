@@ -1006,6 +1006,15 @@ function CoreProvider(props) {
         React__default["default"].createElement(ParamsContext.Provider, { value: params }, children));
 }
 
+function useXSWR() {
+    var core = useCore();
+    var params = useParams();
+    var create = React.useCallback(function (descriptor) {
+        return descriptor.create(core, params);
+    }, [core, params]);
+    return { core: core, params: params, create: create };
+}
+
 /**
  * Scrolling resource handle factory
  * @param scroller Key scroller (memoized)
@@ -1503,6 +1512,7 @@ var index = {
     useParams: useParams,
     useParamsProvider: useParamsProvider,
     ParamsProvider: ParamsProvider,
+    useXSWR: useXSWR,
     use: use,
     useScroll: useScroll,
     useSingle: useSingle,

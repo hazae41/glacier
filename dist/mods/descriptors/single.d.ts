@@ -7,5 +7,5 @@ export declare class SingleDescriptor<D = any, E = any, K = any> {
     readonly poster: Poster<D, K>;
     readonly params: Params<D, E, K>;
     constructor(key: K | undefined, poster: Poster<D, K>, params?: Params<D, E, K>);
-    create(core: Core, pparams?: Params): SingleInstance<any, any, any>;
+    create(core: Core, pparams?: Params): SingleInstance<D, E, K>;
 }
