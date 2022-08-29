@@ -1,6 +1,6 @@
 {
   "name": "@hazae41/xswr",
-  "version": "1.0.45",
+  "version": "1.0.46",
   "author": "hazae41",
   "license": "MIT",
   "description": "The simplest React data (re)fetching library ever made",
