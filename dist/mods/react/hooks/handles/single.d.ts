@@ -1,6 +1,6 @@
 import { Params, Poster, Updater } from "mods/core";
 import { Handle } from "mods/react/hooks/handles/handle";
-import { State } from "mods/storages";
+import { State } from "mods/storages/state";
 /**
  * Handle for a single resource
  */

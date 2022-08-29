@@ -1,5 +1,5 @@
 import { Handle } from "mods/react/hooks/handles"
-import { State } from "mods/storages"
+import { State } from "mods/storages/state"
 
 /**
  * Fallback to given data/error if there is no data/error

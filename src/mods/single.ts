@@ -1,7 +1,7 @@
+import { getTimeFromDelay } from "libs/time";
 import { Core, Fetcher, Params, Poster, Updater } from "mods/core";
-import { State } from "mods/storages/storage";
+import { State } from "mods/storages/state";
 import { DEFAULT_COOLDOWN, DEFAULT_EXPIRATION, DEFAULT_TIMEOUT } from "mods/utils/defaults";
-import { getTimeFromDelay } from "mods/utils/time";
 
 export class Single {
   constructor(readonly core: Core) { }

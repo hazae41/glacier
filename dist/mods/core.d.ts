@@ -2,7 +2,9 @@
 import { Ortho } from "libs/ortho.js";
 import { Scroll } from "mods/scroll";
 import { Single } from "mods/single";
-import { Serializer, State, Storage } from "mods/storages/storage";
+import { Serializer } from "mods/storages/serializer";
+import { State } from "mods/storages/state";
+import { Storage } from "mods/storages/storage";
 import { Equals } from "mods/utils/equals";
 export interface Result<D = any> {
     data: D;

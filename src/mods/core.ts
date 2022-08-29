@@ -1,7 +1,9 @@
 import { Ortho } from "libs/ortho.js"
 import { Scroll } from "mods/scroll"
 import { Single } from "mods/single"
-import { isAsyncStorage, Serializer, State, Storage } from "mods/storages/storage"
+import { Serializer } from "mods/storages/serializer"
+import { State } from "mods/storages/state"
+import { isAsyncStorage, Storage } from "mods/storages/storage"
 import { DEFAULT_EQUALS } from "mods/utils/defaults"
 import { Equals } from "mods/utils/equals"
 

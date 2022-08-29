@@ -1,4 +1,4 @@
-import { State } from "mods/storages/storage"
+import { State } from "mods/storages/state"
 
 export interface Handle<D = any, E = any, K = any> {
   /**

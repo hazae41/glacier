@@ -1,24 +1,6 @@
-export interface State<D = any, E = any> {
-  data?: D
-  error?: E
-  time?: number,
-  aborter?: AbortController
-  cooldown?: number
-  expiration?: number
-}
-
-export interface Serializer<T = any> {
-  stringify<T>(value: T): string
-  parse(text: string): T
-}
-
 export type Storage<T = any> =
   | SyncStorage<T>
   | AsyncStorage<T>
-
-export function isAsyncStorage<T = any>(storage: Storage<T>): storage is AsyncStorage<T> {
-  return storage.async
-}
 
 export interface SyncStorage<T = any> {
   async?: false
@@ -36,4 +18,8 @@ export interface AsyncStorage<T = any> {
   get(key: string): Promise<T | undefined>
   set(key: string, value: T): Promise<void>
   delete(key: string): Promise<void>
+}
+
+export function isAsyncStorage<T = any>(storage: Storage<T>): storage is AsyncStorage<T> {
+  return storage.async
 }

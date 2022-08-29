@@ -207,6 +207,12 @@ function lastOf(array) {
         return array[array.length - 1];
 }
 
+function getTimeFromDelay(delay) {
+    if (delay === -1)
+        return -1;
+    return Date.now() + delay;
+}
+
 function jseq(a, b) {
     return a === b;
 }
@@ -221,12 +227,6 @@ var DEFAULT_SERIALIZER = JSON;
 var DEFAULT_COOLDOWN = 1 * 1000;
 var DEFAULT_EXPIRATION = -1;
 var DEFAULT_TIMEOUT = 5 * 1000;
-
-function getTimeFromDelay(delay) {
-    if (delay === -1)
-        return -1;
-    return Date.now() + delay;
-}
 
 var Scroll = /** @class */ (function () {
     function Scroll(core) {
@@ -1352,8 +1352,7 @@ var index = {
     DEFAULT_TIMEOUT: DEFAULT_TIMEOUT,
     jseq: jseq,
     jsoneq: jsoneq,
-    isAbortError: isAbortError,
-    getTimeFromDelay: getTimeFromDelay
+    isAbortError: isAbortError
 };
 
 exports.XSWR = index;

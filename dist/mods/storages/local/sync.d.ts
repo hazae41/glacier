@@ -1,4 +1,6 @@
-import { Serializer, State, SyncStorage } from "mods/storages/storage";
+import { Serializer } from "mods/storages/serializer";
+import { State } from "mods/storages/state";
+import { SyncStorage } from "mods/storages/storage";
 /**
  * Synchronous local storage
  *

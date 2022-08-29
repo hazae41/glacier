@@ -1,5 +1,5 @@
 import { Core, Fetcher, Params, Poster, Updater } from "mods/core";
-import { State } from "mods/storages/storage";
+import { State } from "mods/storages/state";
 export declare class Single {
     readonly core: Core;
     constructor(core: Core);
