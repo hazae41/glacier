@@ -14,7 +14,7 @@ async function fetchAsJson<T>([url, id]: any, more: XSWR.PosterMore<T>) {
 
 function useKeyData(id: number) {
   const handle = XSWR.useSingle(
-    ["/api/keys", id],
+    id > 0 ? ["/api/keys", id] : undefined,
     fetchAsJson)
 
   XSWR.useFetch(handle)
