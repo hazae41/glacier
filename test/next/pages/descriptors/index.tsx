@@ -45,7 +45,7 @@ function Writer() {
   const { create } = XSWR.useXSWR()
 
   const write = useCallback(async () => {
-    const key = create(getKeyDesc("123"))
+    const key = create(getKeyDesc("123")) as XSWR.SingleInstance
     await key.mutate({ data: { hello: "world" } })
   }, [create])
 
