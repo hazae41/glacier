@@ -1,5 +1,6 @@
 import { lastOf } from "../libs/arrays.js";
 import { Core, Fetcher, Scroller } from "./core.js";
+import { DEFAULT_COOLDOWN, DEFAULT_EQUALS, DEFAULT_EXPIRATION, DEFAULT_TIMEOUT } from "./defaults.js";
 import { Params } from "./index.js";
 import { getTimeFromDelay } from "./time.js";
 
@@ -27,10 +28,10 @@ export class Scroll {
     if (skey === undefined) return
 
     const {
-      equals = this.core.equals,
-      cooldown: dcooldown = this.core.cooldown,
-      expiration: dexpiration = this.core.expiration,
-      timeout: dtimeout = this.core.timeout,
+      equals = DEFAULT_EQUALS,
+      cooldown: dcooldown = DEFAULT_COOLDOWN,
+      expiration: dexpiration = DEFAULT_EXPIRATION,
+      timeout: dtimeout = DEFAULT_TIMEOUT,
     } = params
 
     let current = await this.core.get<D[], E>(skey, params)
@@ -92,9 +93,9 @@ export class Scroll {
     if (skey === undefined) return
 
     const {
-      cooldown: dcooldown = this.core.cooldown,
-      expiration: dexpiration = this.core.expiration,
-      timeout: dtimeout = this.core.timeout,
+      cooldown: dcooldown = DEFAULT_COOLDOWN,
+      expiration: dexpiration = DEFAULT_EXPIRATION,
+      timeout: dtimeout = DEFAULT_TIMEOUT,
     } = params
 
     let current = await this.core.get<D[], E>(skey, params)

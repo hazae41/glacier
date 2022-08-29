@@ -212,7 +212,6 @@ function jsoneq(a, b) {
 }
 
 var DEFAULT_EQUALS = jsoneq;
-var DEFAULT_SERIALIZER = JSON;
 var DEFAULT_COOLDOWN = 1 * 1000;
 var DEFAULT_EXPIRATION = -1;
 var DEFAULT_TIMEOUT = 5 * 1000;
@@ -254,7 +253,7 @@ var Scroll = /** @class */ (function () {
                     case 0:
                         if (skey === undefined)
                             return [2 /*return*/];
-                        _b = params.equals, equals = _b === void 0 ? this.core.equals : _b, _c = params.cooldown, dcooldown = _c === void 0 ? this.core.cooldown : _c, _d = params.expiration, dexpiration = _d === void 0 ? this.core.expiration : _d, _e = params.timeout, dtimeout = _e === void 0 ? this.core.timeout : _e;
+                        _b = params.equals, equals = _b === void 0 ? DEFAULT_EQUALS : _b, _c = params.cooldown, dcooldown = _c === void 0 ? DEFAULT_COOLDOWN : _c, _d = params.expiration, dexpiration = _d === void 0 ? DEFAULT_EXPIRATION : _d, _e = params.timeout, dtimeout = _e === void 0 ? DEFAULT_TIMEOUT : _e;
                         return [4 /*yield*/, this.core.get(skey, params)];
                     case 1:
                         current = _k.sent();
@@ -325,7 +324,7 @@ var Scroll = /** @class */ (function () {
                     case 0:
                         if (skey === undefined)
                             return [2 /*return*/];
-                        _b = params.cooldown, dcooldown = _b === void 0 ? this.core.cooldown : _b, _c = params.expiration, dexpiration = _c === void 0 ? this.core.expiration : _c, _d = params.timeout, dtimeout = _d === void 0 ? this.core.timeout : _d;
+                        _b = params.cooldown, dcooldown = _b === void 0 ? DEFAULT_COOLDOWN : _b, _c = params.expiration, dexpiration = _c === void 0 ? DEFAULT_EXPIRATION : _c, _d = params.timeout, dtimeout = _d === void 0 ? DEFAULT_TIMEOUT : _d;
                         return [4 /*yield*/, this.core.get(skey, params)];
                     case 1:
                         current = _h.sent();
@@ -397,7 +396,7 @@ var Single = /** @class */ (function () {
                             return [2 /*return*/];
                         if (skey === undefined)
                             return [2 /*return*/];
-                        _a = params.cooldown, dcooldown = _a === void 0 ? this.core.cooldown : _a, _b = params.expiration, dexpiration = _b === void 0 ? this.core.expiration : _b, _c = params.timeout, dtimeout = _c === void 0 ? this.core.timeout : _c;
+                        _a = params.cooldown, dcooldown = _a === void 0 ? DEFAULT_COOLDOWN : _a, _b = params.expiration, dexpiration = _b === void 0 ? DEFAULT_EXPIRATION : _b, _c = params.timeout, dtimeout = _c === void 0 ? DEFAULT_TIMEOUT : _c;
                         return [4 /*yield*/, this.core.get(skey, params)];
                     case 1:
                         current = _g.sent();
@@ -457,7 +456,7 @@ var Single = /** @class */ (function () {
                             return [2 /*return*/];
                         if (skey === undefined)
                             return [2 /*return*/];
-                        _a = params.cooldown, dcooldown = _a === void 0 ? this.core.cooldown : _a, _b = params.expiration, dexpiration = _b === void 0 ? this.core.expiration : _b, _c = params.timeout, dtimeout = _c === void 0 ? this.core.timeout : _c;
+                        _a = params.cooldown, dcooldown = _a === void 0 ? DEFAULT_COOLDOWN : _a, _b = params.expiration, dexpiration = _b === void 0 ? DEFAULT_EXPIRATION : _b, _c = params.timeout, dtimeout = _c === void 0 ? DEFAULT_TIMEOUT : _c;
                         return [4 /*yield*/, this.core.get(skey, params)];
                     case 1:
                         current = _g.sent();
@@ -498,22 +497,14 @@ function isAsyncStorage(storage) {
 
 var Core = /** @class */ (function (_super) {
     __extends(Core, _super);
-    function Core(params) {
-        var _this = this;
-        var _a, _b, _c, _d, _e;
-        _this = _super.call(this) || this;
+    function Core() {
+        var _this = _super.call(this) || this;
         _this.single = new Single(_this);
         _this.scroll = new Scroll(_this);
         _this.cache = new Map();
         _this._mounted = true;
         _this.counts = new Map();
         _this.timeouts = new Map();
-        Object.assign(_this, params);
-        (_a = _this.equals) !== null && _a !== void 0 ? _a : (_this.equals = DEFAULT_EQUALS);
-        (_b = _this.serializer) !== null && _b !== void 0 ? _b : (_this.serializer = DEFAULT_SERIALIZER);
-        (_c = _this.cooldown) !== null && _c !== void 0 ? _c : (_this.cooldown = DEFAULT_COOLDOWN);
-        (_d = _this.expiration) !== null && _d !== void 0 ? _d : (_this.expiration = DEFAULT_EXPIRATION);
-        (_e = _this.timeout) !== null && _e !== void 0 ? _e : (_this.timeout = DEFAULT_TIMEOUT);
         return _this;
     }
     Core.prototype.hasSync = function (key, params) {
@@ -522,7 +513,7 @@ var Core = /** @class */ (function (_super) {
             return;
         if (this.cache.has(key))
             return true;
-        var _a = params.storage, storage = _a === void 0 ? this.storage : _a;
+        var storage = params.storage;
         if (!storage)
             return false;
         if (isAsyncStorage(storage))
@@ -532,19 +523,19 @@ var Core = /** @class */ (function (_super) {
     Core.prototype.has = function (key, params) {
         if (params === void 0) { params = {}; }
         return __awaiter(this, void 0, void 0, function () {
-            var _a, storage;
-            return __generator(this, function (_b) {
-                switch (_b.label) {
+            var storage;
+            return __generator(this, function (_a) {
+                switch (_a.label) {
                     case 0:
                         if (!key)
                             return [2 /*return*/, false];
                         if (this.cache.has(key))
                             return [2 /*return*/, true];
-                        _a = params.storage, storage = _a === void 0 ? this.storage : _a;
+                        storage = params.storage;
                         if (!storage)
                             return [2 /*return*/, false];
                         return [4 /*yield*/, storage.has(key)];
-                    case 1: return [2 /*return*/, _b.sent()];
+                    case 1: return [2 /*return*/, _a.sent()];
                 }
             });
         });
@@ -555,7 +546,7 @@ var Core = /** @class */ (function (_super) {
             return;
         if (this.cache.has(key))
             return this.cache.get(key);
-        var _a = params.storage, storage = _a === void 0 ? this.storage : _a;
+        var storage = params.storage;
         if (!storage)
             return;
         if (isAsyncStorage(storage))
@@ -567,20 +558,20 @@ var Core = /** @class */ (function (_super) {
     Core.prototype.get = function (key, params) {
         if (params === void 0) { params = {}; }
         return __awaiter(this, void 0, void 0, function () {
-            var _a, storage, state;
-            return __generator(this, function (_b) {
-                switch (_b.label) {
+            var storage, state;
+            return __generator(this, function (_a) {
+                switch (_a.label) {
                     case 0:
                         if (!key)
                             return [2 /*return*/];
                         if (this.cache.has(key))
                             return [2 /*return*/, this.cache.get(key)];
-                        _a = params.storage, storage = _a === void 0 ? this.storage : _a;
+                        storage = params.storage;
                         if (!storage)
                             return [2 /*return*/];
                         return [4 /*yield*/, storage.get(key)];
                     case 1:
-                        state = _b.sent();
+                        state = _a.sent();
                         this.cache.set(key, state);
                         return [2 /*return*/, state];
                 }
@@ -597,20 +588,20 @@ var Core = /** @class */ (function (_super) {
     Core.prototype.set = function (key, state, params) {
         if (params === void 0) { params = {}; }
         return __awaiter(this, void 0, void 0, function () {
-            var _a, storage;
-            return __generator(this, function (_b) {
-                switch (_b.label) {
+            var storage;
+            return __generator(this, function (_a) {
+                switch (_a.label) {
                     case 0:
                         if (!key)
                             return [2 /*return*/];
                         this.cache.set(key, state);
                         this.publish(key, state);
-                        _a = params.storage, storage = _a === void 0 ? this.storage : _a;
+                        storage = params.storage;
                         if (!storage)
                             return [2 /*return*/];
                         return [4 /*yield*/, storage.set(key, state)];
                     case 1:
-                        _b.sent();
+                        _a.sent();
                         return [2 /*return*/];
                 }
             });
@@ -624,20 +615,20 @@ var Core = /** @class */ (function (_super) {
     Core.prototype.delete = function (key, params) {
         if (params === void 0) { params = {}; }
         return __awaiter(this, void 0, void 0, function () {
-            var _a, storage;
-            return __generator(this, function (_b) {
-                switch (_b.label) {
+            var storage;
+            return __generator(this, function (_a) {
+                switch (_a.label) {
                     case 0:
                         if (!key)
                             return [2 /*return*/];
                         this.cache.delete(key);
                         this.publish(key, undefined);
-                        _a = params.storage, storage = _a === void 0 ? this.storage : _a;
+                        storage = params.storage;
                         if (!storage)
                             return [2 /*return*/];
                         return [4 /*yield*/, storage.delete(key)];
                     case 1:
-                        _b.sent();
+                        _a.sent();
                         return [2 /*return*/];
                 }
             });
@@ -662,7 +653,7 @@ var Core = /** @class */ (function (_super) {
                             state.time = Date.now();
                         if ((current === null || current === void 0 ? void 0 : current.time) !== undefined && state.time < current.time)
                             return [2 /*return*/, current];
-                        _a = params.equals, equals = _a === void 0 ? this.equals : _a;
+                        _a = params.equals, equals = _a === void 0 ? DEFAULT_EQUALS : _a;
                         if (equals(state.data, current === null || current === void 0 ? void 0 : current.data))
                             state.data = current === null || current === void 0 ? void 0 : current.data;
                         if (equals(state.error, current === null || current === void 0 ? void 0 : current.error))
@@ -812,23 +803,37 @@ var Core = /** @class */ (function (_super) {
     return Core;
 }(Ortho));
 
+var ParamsContext = React.createContext(undefined);
+function useParams() {
+    return React.useContext(ParamsContext);
+}
+function useParamsProvider(current) {
+    var parent = useParams();
+    var paramsRef = React.useRef();
+    if (!paramsRef.current)
+        paramsRef.current = __assign(__assign({}, parent), current);
+    return paramsRef.current;
+}
+
 var CoreContext = React.createContext(undefined);
 function useCore() {
     return React.useContext(CoreContext);
 }
-function useCoreProvider(params) {
-    var core = React.useRef();
-    if (!core.current)
-        core.current = new Core(params);
+function useCoreProvider() {
+    var coreRef = React.useRef();
+    if (!coreRef.current)
+        coreRef.current = new Core();
     React.useEffect(function () { return function () {
-        core.current.unmount();
+        coreRef.current.unmount();
     }; }, []);
-    return core.current;
+    return coreRef.current;
 }
 function CoreProvider(props) {
-    var children = props.children, params = __rest(props, ["children"]);
-    var core = useCoreProvider(params);
-    return React__default["default"].createElement(CoreContext.Provider, { value: core }, children);
+    var children = props.children, current = __rest(props, ["children"]);
+    var core = useCoreProvider();
+    var params = useParamsProvider(current);
+    return React__default["default"].createElement(CoreContext.Provider, { value: core },
+        React__default["default"].createElement(ParamsContext.Provider, { value: params }, children));
 }
 
 function isAbortError(e) {
@@ -839,13 +844,15 @@ function isAbortError(e) {
  * Scrolling resource handle factory
  * @param scroller Key scroller (memoized)
  * @param fetcher Resource fetcher (memoized)
- * @param tparams Time parameters (constant)
+ * @param params Parameters (static)
  * @returns Scrolling handle
  */
-function useScroll(scroller, fetcher, params) {
+function useScroll(scroller, fetcher, current) {
     var _this = this;
-    if (params === void 0) { params = {}; }
+    if (current === void 0) { current = {}; }
     var core = useCore();
+    var parent = useParams();
+    var params = __assign(__assign({}, parent), current);
     var key = React.useMemo(function () {
         return scroller();
     }, [scroller]);
@@ -854,8 +861,7 @@ function useScroll(scroller, fetcher, params) {
             return;
         if (typeof key === "string")
             return key;
-        var _a = params.serializer, serializer = _a === void 0 ? core.serializer : _a;
-        return "scroll:".concat(serializer.stringify(key));
+        return "scroll:".concat(params.serializer.stringify(key));
     }, [core, key]);
     var _a = __read(React.useState(function () { return core.hasSync(skey, params); }), 2), ready = _a[0], setReady = _a[1];
     var _b = __read(React.useState(function () { return core.getSync(skey, params); }), 2), state = _b[0], setState = _b[1];
@@ -921,20 +927,21 @@ function useScroll(scroller, fetcher, params) {
  * Single resource handle factory
  * @param key Key (memoized)
  * @param poster Resource poster or fetcher (memoized)
- * @param tparams Time parameters (constant)
+ * @param params Parameters (static)
  * @returns Single handle
  */
-function useSingle(key, poster, params) {
+function useSingle(key, poster, current) {
     var _this = this;
-    if (params === void 0) { params = {}; }
+    if (current === void 0) { current = {}; }
     var core = useCore();
+    var parent = useParams();
+    var params = __assign(__assign({}, parent), current);
     var skey = React.useMemo(function () {
         if (key === undefined)
             return;
         if (typeof key === "string")
             return key;
-        var _a = params.serializer, serializer = _a === void 0 ? core.serializer : _a;
-        return serializer.stringify(key);
+        return params.serializer.stringify(key);
     }, [core, key]);
     var _a = __read(React.useState(function () { return core.hasSync(skey, params); }), 2), ready = _a[0], setReady = _a[1];
     var _b = __read(React.useState(function () { return core.getSync(skey, params); }), 2), state = _b[0], setState = _b[1];

@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useMemo, useState } from "react"
 import { useCore } from "../../comps/index.js"
+import { useParams } from "../../comps/params.js"
 import { Fetcher, Params, Scroller } from "../core.js"
 import { State } from "../storages/storage.js"
 import { Handle } from "./handle.js"
@@ -18,15 +19,18 @@ export interface ScrollHandle<D = any, E = any, K = any> extends Handle<D[], E, 
  * Scrolling resource handle factory
  * @param scroller Key scroller (memoized)
  * @param fetcher Resource fetcher (memoized)
- * @param tparams Time parameters (constant)
+ * @param params Parameters (static)
  * @returns Scrolling handle
  */
 export function useScroll<D = any, E = any, K = any>(
   scroller: Scroller<D, K>,
   fetcher: Fetcher<D, K>,
-  params: Params<D[], E> = {},
+  current: Params<D[], E> = {},
 ): ScrollHandle<D, E, K> {
   const core = useCore()
+  const parent = useParams()
+
+  const params = { ...parent, ...current }
 
   const key = useMemo(() => {
     return scroller()
@@ -35,8 +39,7 @@ export function useScroll<D = any, E = any, K = any>(
   const skey = useMemo(() => {
     if (key === undefined) return
     if (typeof key === "string") return key
-    const { serializer = core.serializer } = params
-    return `scroll:${serializer.stringify(key)}`
+    return `scroll:${params.serializer.stringify(key)}`
   }, [core, key])
 
   const [ready, setReady] = useState(() => core.hasSync<D[], E>(skey, params))

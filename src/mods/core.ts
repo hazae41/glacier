@@ -1,5 +1,5 @@
 import { Ortho } from "../libs/ortho.js"
-import { DEFAULT_COOLDOWN, DEFAULT_EQUALS, DEFAULT_EXPIRATION, DEFAULT_SERIALIZER, DEFAULT_TIMEOUT } from "./defaults.js"
+import { DEFAULT_EQUALS } from "./defaults.js"
 import { Equals } from "./equals.js"
 import { Scroll } from "./scroll.js"
 import { Single } from "./single.js"
@@ -36,39 +36,15 @@ export interface Params<D = any, E = any, K = any> extends TimeParams {
   equals?: Equals
 }
 
-export interface CoreParams extends TimeParams {
-  storage?: Storage<State>,
-  serializer?: Serializer,
-  equals?: Equals
-}
-
 export class Core extends Ortho<string, State | undefined> {
   readonly single = new Single(this)
   readonly scroll = new Scroll(this)
 
   readonly cache = new Map<string, State>()
-  readonly storage?: Storage<State>
-
-  readonly equals: Equals
-  readonly serializer: Serializer
-
-  readonly cooldown: number
-  readonly expiration: number
-  readonly timeout: number
 
   _mounted = true
 
-  constructor(params?: CoreParams) {
-    super()
-
-    Object.assign(this, params)
-
-    this.equals ??= DEFAULT_EQUALS
-    this.serializer ??= DEFAULT_SERIALIZER
-    this.cooldown ??= DEFAULT_COOLDOWN
-    this.expiration ??= DEFAULT_EXPIRATION
-    this.timeout ??= DEFAULT_TIMEOUT
-  }
+  constructor() { super() }
 
   hasSync<D = any, E = any>(
     key: string | undefined,
@@ -79,9 +55,7 @@ export class Core extends Ortho<string, State | undefined> {
     if (this.cache.has(key))
       return true
 
-    const {
-      storage = this.storage
-    } = params
+    const { storage } = params
     if (!storage) return false
     if (isAsyncStorage(storage)) return false
     return storage.has(key)
@@ -96,9 +70,7 @@ export class Core extends Ortho<string, State | undefined> {
     if (this.cache.has(key))
       return true
 
-    const {
-      storage = this.storage
-    } = params
+    const { storage } = params
     if (!storage) return false
     return await storage.has(key)
   }
@@ -112,9 +84,7 @@ export class Core extends Ortho<string, State | undefined> {
     if (this.cache.has(key))
       return this.cache.get(key)
 
-    const {
-      storage = this.storage
-    } = params
+    const { storage } = params
     if (!storage) return
     if (isAsyncStorage(storage)) return
     const state = storage.get(key)
@@ -131,9 +101,7 @@ export class Core extends Ortho<string, State | undefined> {
     if (this.cache.has(key))
       return this.cache.get(key)
 
-    const {
-      storage = this.storage
-    } = params
+    const { storage } = params
     if (!storage) return
     const state = await storage.get(key)
     this.cache.set(key, state)
@@ -157,9 +125,7 @@ export class Core extends Ortho<string, State | undefined> {
     this.cache.set(key, state)
     this.publish(key, state)
 
-    const {
-      storage = this.storage
-    } = params
+    const { storage } = params
     if (!storage) return
     await storage.set(key, state)
   }
@@ -178,9 +144,7 @@ export class Core extends Ortho<string, State | undefined> {
     this.cache.delete(key)
     this.publish(key, undefined)
 
-    const {
-      storage = this.storage
-    } = params
+    const { storage } = params
     if (!storage) return
     await storage.delete(key)
   }
@@ -203,7 +167,7 @@ export class Core extends Ortho<string, State | undefined> {
     if (current?.time !== undefined && state.time < current.time)
       return current
 
-    const { equals = this.equals } = params
+    const { equals = DEFAULT_EQUALS } = params
 
     if (equals(state.data, current?.data))
       state.data = current?.data

@@ -26,23 +26,12 @@ export interface Params<D = any, E = any, K = any> extends TimeParams {
     serializer?: Serializer<K>;
     equals?: Equals;
 }
-export interface CoreParams extends TimeParams {
-    storage?: Storage<State>;
-    serializer?: Serializer;
-    equals?: Equals;
-}
 export declare class Core extends Ortho<string, State | undefined> {
     readonly single: Single;
     readonly scroll: Scroll;
     readonly cache: Map<string, State<any, any>>;
-    readonly storage?: Storage<State>;
-    readonly equals: Equals;
-    readonly serializer: Serializer;
-    readonly cooldown: number;
-    readonly expiration: number;
-    readonly timeout: number;
     _mounted: boolean;
-    constructor(params?: CoreParams);
+    constructor();
     hasSync<D = any, E = any>(key: string | undefined, params?: Params<D, E>): boolean;
     has<D = any, E = any>(key: string | undefined, params?: Params<D, E>): Promise<boolean>;
     getSync<D = any, E = any>(key: string | undefined, params?: Params<D, E>): State<D, E> | undefined;

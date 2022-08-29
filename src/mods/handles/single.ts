@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useMemo, useState } from "react"
 import { useCore } from "../../comps/core.js"
+import { useParams } from "../../comps/params.js"
 import { Params, Poster, Updater } from "../core.js"
 import { State } from "../storages/storage.js"
 import { Handle } from "./handle.js"
@@ -20,21 +21,23 @@ export interface SingleHandle<D = any, E = any, K = any> extends Handle<D, E, K>
  * Single resource handle factory
  * @param key Key (memoized)
  * @param poster Resource poster or fetcher (memoized)
- * @param tparams Time parameters (constant)
+ * @param params Parameters (static)
  * @returns Single handle
  */
 export function useSingle<D = any, E = any, K = any>(
   key: K | undefined,
   poster: Poster<D, K>,
-  params: Params<D, E> = {},
+  current: Params<D, E> = {},
 ): SingleHandle<D, E, K> {
   const core = useCore()
+  const parent = useParams()
+
+  const params = { ...parent, ...current }
 
   const skey = useMemo(() => {
     if (key === undefined) return
     if (typeof key === "string") return key
-    const { serializer = core.serializer } = params
-    return serializer.stringify(key)
+    return params.serializer.stringify(key)
   }, [core, key])
 
   const [ready, setReady] = useState(() => core.hasSync<D, E>(skey, params))

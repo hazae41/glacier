@@ -1,6 +1,7 @@
 import React, { createContext, useContext, useEffect, useRef } from "react"
 import { ChildrenProps } from "../libs/react.js"
-import { Core, CoreParams } from "../mods/core.js"
+import { Core, Params } from "../mods/core.js"
+import { ParamsContext, useParamsProvider } from "./params.js"
 
 export const CoreContext =
   createContext<Core | undefined>(undefined)
@@ -9,25 +10,28 @@ export function useCore() {
   return useContext(CoreContext)!
 }
 
-export function useCoreProvider(params?: CoreParams) {
-  const core = useRef<Core>()
+export function useCoreProvider() {
+  const coreRef = useRef<Core>()
 
-  if (!core.current)
-    core.current = new Core(params)
+  if (!coreRef.current)
+    coreRef.current = new Core()
 
   useEffect(() => () => {
-    core.current.unmount()
+    coreRef.current.unmount()
   }, [])
 
-  return core.current
+  return coreRef.current
 }
 
-export function CoreProvider(props: ChildrenProps & CoreParams) {
-  const { children, ...params } = props
+export function CoreProvider(props: ChildrenProps & Params) {
+  const { children, ...current } = props
 
-  const core = useCoreProvider(params)
+  const core = useCoreProvider()
+  const params = useParamsProvider(current)
 
   return <CoreContext.Provider value={core}>
-    {children}
+    <ParamsContext.Provider value={params}>
+      {children}
+    </ParamsContext.Provider>
   </CoreContext.Provider>
 }
