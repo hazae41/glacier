@@ -39,7 +39,7 @@ function useHelloData() {
   const storage = XSWR.useAsyncLocalStorage(GZIP)
 
   const handle = XSWR.useSingle<HelloData>(
-    "/api/hello",
+    ["/api/hello"],
     fetchAsJson,
     { storage })
 
