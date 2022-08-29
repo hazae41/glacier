@@ -1,11 +1,11 @@
 import { useCore, useParams } from "mods/react/contexts";
-import { Handle } from "mods/react/hooks/handles/handle";
 import { Fetcher } from "mods/types/fetcher";
 import { Params } from "mods/types/params";
 import { Scroller } from "mods/types/scroller";
 import { State } from "mods/types/state";
 import { DEFAULT_SERIALIZER } from "mods/utils/defaults";
 import { useCallback, useEffect, useMemo, useState } from "react";
+import { Handle } from "./handle";
 
 /**
  * Handle for a scrolling resource
