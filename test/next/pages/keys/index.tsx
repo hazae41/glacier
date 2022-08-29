@@ -1,52 +1,51 @@
 import { XSWR } from "@hazae41/xswr"
-import { useMemo, useState } from "react"
-import { HelloData } from "../../common/hello"
+import { useState } from "react"
 
-async function fetchAsJson<T>([url, id]: [string, number], more: XSWR.PosterMore<T>) {
+async function fetchAsJson<T>([url, id]: any, more: XSWR.PosterMore<T>) {
   const { signal } = more
 
   const res = await fetch(`${url}?id=${id}`, { signal })
   if (!res.ok) throw new Error(await res.text())
 
-  return { data: await res.json() }
+  const data = await res.json() as T
+
+  return { data }
 }
 
-function useHelloData(id: number) {
-  const key = useMemo(() => {
-    if (id) return ["/api/keys", id]
-  }, [id])
-
-  const handle = XSWR.useSingle<HelloData>(key, fetchAsJson)
+function useKeyData(id: number) {
+  const handle = XSWR.useSingle(
+    ["/api/keys", id],
+    fetchAsJson)
 
   XSWR.useFetch(handle)
   return handle
 }
 
 export default function Page() {
-  const hello0 = useHelloData(0)
-  const hello1 = useHelloData(1)
-  const hello2 = useHelloData(2)
-  const hello3 = useHelloData(3)
+  const key0 = useKeyData(0)
+  const key1 = useKeyData(1)
+  const key2 = useKeyData(2)
+  const key3 = useKeyData(3)
 
   const [time, setTime] = useState(Date.now())
 
-  const helloTime = useHelloData(time)
+  const keyTime = useKeyData(time)
 
   return <>
     <div>
-      {JSON.stringify(hello0.data) ?? "undefined"}
+      {JSON.stringify(key0.data) ?? "undefined"}
     </div>
     <div>
-      {JSON.stringify(hello1.data) ?? "undefined"}
+      {JSON.stringify(key1.data) ?? "undefined"}
     </div>
     <div>
-      {JSON.stringify(hello2.data) ?? "undefined"}
+      {JSON.stringify(key2.data) ?? "undefined"}
     </div>
     <div>
-      {JSON.stringify(hello3.data) ?? "undefined"}
+      {JSON.stringify(key3.data) ?? "undefined"}
     </div>
     <div>
-      {JSON.stringify(helloTime.data) ?? "undefined"}
+      {JSON.stringify(keyTime.data) ?? "undefined"}
     </div>
     <button onClick={() => setTime(Date.now())}>
       Render

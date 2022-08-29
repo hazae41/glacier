@@ -1,4 +1,4 @@
-import { State } from "mods/types/state";
+import { State } from "../../../types/state";
 export interface Handle<D = any, E = any, K = any> {
     /**
      * Arbitrary key, must be serializable
@@ -55,7 +55,7 @@ export interface Handle<D = any, E = any, K = any> {
      * Mutate the cache
      * @param res
      */
-    mutate(res: State<D, E>): Promise<State<D, E> | undefined>;
+    mutate(state?: State<D, E>): Promise<State<D, E> | undefined>;
     /**
      * Clear the cache
      */

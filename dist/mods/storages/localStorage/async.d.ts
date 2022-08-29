@@ -1,6 +1,6 @@
-import { Serializer } from "mods/types/serializer";
-import { State } from "mods/types/state";
-import { AsyncStorage } from "mods/types/storage";
+import { Serializer } from "../../types/serializer";
+import { State } from "../../types/state";
+import { AsyncStorage } from "../../types/storage";
 /**
  * Asynchronous local storage
  *

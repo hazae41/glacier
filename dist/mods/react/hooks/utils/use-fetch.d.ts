@@ -1,4 +1,4 @@
-import { Handle } from "mods/react/hooks/handles";
+import { Handle } from "../handles";
 /**
  * Do a request on mount and url change
  * @see useMount for doing a request on mount only

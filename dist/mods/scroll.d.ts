@@ -1,8 +1,9 @@
-import { Core } from "mods/core";
-import { Fetcher } from "mods/types/fetcher";
-import { Params } from "mods/types/params";
-import { Scroller } from "mods/types/scroller";
-export declare class Scroll {
+import { Core } from "./core";
+import { Fetcher } from "./types/fetcher";
+import { Params } from "./types/params";
+import { Scroller } from "./types/scroller";
+import { State } from "./types/state";
+export declare class ScrollCore {
     readonly core: Core;
     constructor(core: Core);
     /**
@@ -15,7 +16,7 @@ export declare class Scroll {
      * @param force Should ignore cooldown
      * @returns The new state
      */
-    first<D = any, E = any, K = any>(skey: string | undefined, scroller: Scroller<D, K>, fetcher: Fetcher<D, K>, aborter?: AbortController, params?: Params<D[], E>, force?: boolean): Promise<import("./index").State<D[], E>>;
+    first<D = any, E = any, K = any>(skey: string | undefined, scroller: Scroller<D, K>, fetcher: Fetcher<D, K>, aborter?: AbortController, params?: Params<D[], E>, force?: boolean): Promise<State<D[], E>>;
     /**
      * Scroll to the next page
      * @param skey Storage key
@@ -26,5 +27,5 @@ export declare class Scroll {
      * @param force Should ignore cooldown
      * @returns The new state
      */
-    scroll<D = any, E = any, K = any>(skey: string | undefined, scroller: Scroller<D, K>, fetcher: Fetcher<D, K>, aborter?: AbortController, params?: Params<D[], E>, force?: boolean): Promise<import("./index").State<D[], E>>;
+    scroll<D = any, E = any, K = any>(skey: string | undefined, scroller: Scroller<D, K>, fetcher: Fetcher<D, K>, aborter?: AbortController, params?: Params<D[], E>, force?: boolean): Promise<State<D[], E>>;
 }

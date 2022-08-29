@@ -10,15 +10,15 @@
   "types": "./dist/index.d.ts",
   "sideEffects": false,
   "scripts": {
-    "build": "rm -rf dist && bunchee ./src/index.ts --no-sourcemap"
-  },
-  "dependencies": {
-    "react": "^18.2.0",
-    "typescript": "^4.8.2"
+    "build": "rimraf dist && bunchee ./src/index.ts --no-sourcemap && ttsc"
   },
   "devDependencies": {
     "@types/react": "^18.0.17",
-    "bunchee": "^1.9.1"
+    "bunchee": "^1.9.1",
+    "rimraf": "^3.0.2",
+    "ttypescript": "^1.5.13",
+    "typescript": "^4.8.2",
+    "typescript-transform-paths": "^3.3.1"
   },
   "repository": {
     "type": "git",
@@ -26,5 +26,8 @@
   },
   "bugs": {
     "url": "https://github.com/hazae41/xswr/issues"
+  },
+  "dependencies": {
+    "react": "^18.2.0"
   }
 }

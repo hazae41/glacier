@@ -1,35 +1,35 @@
 /// <reference types="node" />
-import { Ortho } from "libs/ortho.js";
-import { Scroll } from "mods/scroll";
-import { Single } from "mods/single";
-import { Params } from "mods/types/params";
-import { State } from "mods/types/state";
+import { Ortho } from "../libs/ortho";
+import { ScrollCore } from "./scroll";
+import { SingleCore } from "./single";
+import { Params } from "./types/params";
+import { State } from "./types/state";
 export declare class Core extends Ortho<string, State | undefined> {
-    readonly single: Single;
-    readonly scroll: Scroll;
+    readonly single: SingleCore;
+    readonly scroll: ScrollCore;
     readonly cache: Map<string, State<any, any>>;
     private _mounted;
     constructor();
     get mounted(): boolean;
     unmount(): void;
-    hasSync<D = any, E = any>(key: string | undefined, params?: Params<D, E>): boolean;
-    has<D = any, E = any>(key: string | undefined, params?: Params<D, E>): Promise<boolean>;
-    getSync<D = any, E = any>(key: string | undefined, params?: Params<D, E>): State<D, E> | undefined;
-    get<D = any, E = any>(key: string | undefined, params?: Params<D, E>): Promise<State<D, E> | undefined>;
+    hasSync<D = any, E = any>(skey: string | undefined, params?: Params<D, E>): boolean;
+    has<D = any, E = any>(skey: string | undefined, params?: Params<D, E>): Promise<boolean>;
+    getSync<D = any, E = any>(skey: string | undefined, params?: Params<D, E>): State<D, E> | undefined;
+    get<D = any, E = any>(skey: string | undefined, params?: Params<D, E>): Promise<State<D, E> | undefined>;
     /**
      * Force set a key to a state and publish it
      * No check, no merge
-     * @param key Key
+     * @param skey Key
      * @param state New state
      * @returns
      */
-    set<D = any, E = any>(key: string | undefined, state: State<D, E>, params?: Params<D, E>): Promise<void>;
+    set<D = any, E = any>(skey: string | undefined, state: State<D, E>, params?: Params<D, E>): Promise<void>;
     /**
      * Delete key and publish undefined
-     * @param key
+     * @param skey
      * @returns
      */
-    delete<D = any, E = any>(key: string | undefined, params?: Params<D, E>): Promise<void>;
+    delete<D = any, E = any>(skey: string | undefined, params?: Params<D, E>): Promise<void>;
     apply<D = any, E = any>(key: string | undefined, current?: State<D, E>, state?: State<D, E>, params?: Params<D, E>): Promise<State<D, E> | undefined>;
     mutate<D = any, E = any>(key: string | undefined, state?: State<D, E>, params?: Params<D, E>): Promise<State<D, E> | undefined>;
     /**

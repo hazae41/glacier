@@ -1,4 +1,4 @@
-import { Handle } from "mods/react/hooks/handles";
+import { Handle } from "../handles";
 export interface RetryOptions {
     init?: number;
     base?: number;

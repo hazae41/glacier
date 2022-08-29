@@ -1,4 +1,4 @@
-import { Handle } from "mods/react/hooks/handles";
+import { Handle } from "../handles";
 /**
  * Do a request when the browser is online
  * @param handle

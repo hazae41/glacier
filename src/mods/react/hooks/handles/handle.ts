@@ -68,7 +68,7 @@ export interface Handle<D = any, E = any, K = any> {
    * Mutate the cache
    * @param res 
    */
-  mutate(res: State<D, E>): Promise<State<D, E> | undefined>
+  mutate(state?: State<D, E>): Promise<State<D, E> | undefined>
 
   /**
    * Clear the cache

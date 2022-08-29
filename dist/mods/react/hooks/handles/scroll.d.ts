@@ -1,7 +1,7 @@
-import { Fetcher } from "mods/types/fetcher";
-import { Params } from "mods/types/params";
-import { Scroller } from "mods/types/scroller";
-import { State } from "mods/types/state";
+import { Fetcher } from "../../../types/fetcher";
+import { Params } from "../../../types/params";
+import { Scroller } from "../../../types/scroller";
+import { State } from "../../../types/state";
 import { Handle } from "./handle";
 /**
  * Handle for a scrolling resource
@@ -19,4 +19,4 @@ export interface ScrollHandle<D = any, E = any, K = any> extends Handle<D[], E, 
  * @param params Parameters (static)
  * @returns Scrolling handle
  */
-export declare function useScroll<D = any, E = any, K = any>(scroller: Scroller<D, K>, fetcher: Fetcher<D, K>, current?: Params<D[], E>): ScrollHandle<D, E, K>;
+export declare function useScroll<D = any, E = any, K = any>(scroller: Scroller<D, K>, fetcher: Fetcher<D, K>, params?: Params<D[], E>): ScrollHandle<D, E, K>;

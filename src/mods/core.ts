@@ -1,14 +1,14 @@
-import { Ortho } from "libs/ortho.js"
-import { Scroll } from "mods/scroll"
-import { Single } from "mods/single"
+import { Ortho } from "libs/ortho"
+import { ScrollCore } from "mods/scroll"
+import { SingleCore } from "mods/single"
 import { Params } from "mods/types/params"
 import { State } from "mods/types/state"
 import { isAsyncStorage } from "mods/types/storage"
 import { DEFAULT_EQUALS } from "mods/utils/defaults"
 
 export class Core extends Ortho<string, State | undefined> {
-  readonly single = new Single(this)
-  readonly scroll = new Scroll(this)
+  readonly single = new SingleCore(this)
+  readonly scroll = new ScrollCore(this)
 
   readonly cache = new Map<string, State>()
 
@@ -16,9 +16,7 @@ export class Core extends Ortho<string, State | undefined> {
 
   constructor() { super() }
 
-  get mounted() {
-    return this._mounted
-  }
+  get mounted() { return this._mounted }
 
   unmount() {
     for (const timeout of this.timeouts.values())
@@ -27,106 +25,106 @@ export class Core extends Ortho<string, State | undefined> {
   }
 
   hasSync<D = any, E = any>(
-    key: string | undefined,
+    skey: string | undefined,
     params: Params<D, E> = {}
   ): boolean {
-    if (!key) return
+    if (!skey) return
 
-    if (this.cache.has(key))
+    if (this.cache.has(skey))
       return true
 
     const { storage } = params
     if (!storage) return false
     if (isAsyncStorage(storage)) return false
-    return storage.has(key)
+    return storage.has(skey)
   }
 
   async has<D = any, E = any>(
-    key: string | undefined,
+    skey: string | undefined,
     params: Params<D, E> = {}
   ) {
-    if (!key) return false
+    if (!skey) return false
 
-    if (this.cache.has(key))
+    if (this.cache.has(skey))
       return true
 
     const { storage } = params
     if (!storage) return false
-    return await storage.has(key)
+    return await storage.has(skey)
   }
 
   getSync<D = any, E = any>(
-    key: string | undefined,
+    skey: string | undefined,
     params: Params<D, E> = {}
   ): State<D, E> | undefined {
-    if (!key) return
+    if (!skey) return
 
-    if (this.cache.has(key))
-      return this.cache.get(key)
+    if (this.cache.has(skey))
+      return this.cache.get(skey)
 
     const { storage } = params
     if (!storage) return
     if (isAsyncStorage(storage)) return
-    const state = storage.get(key)
-    this.cache.set(key, state)
+    const state = storage.get(skey)
+    this.cache.set(skey, state)
     return state
   }
 
   async get<D = any, E = any>(
-    key: string | undefined,
+    skey: string | undefined,
     params: Params<D, E> = {}
   ): Promise<State<D, E> | undefined> {
-    if (!key) return
+    if (!skey) return
 
-    if (this.cache.has(key))
-      return this.cache.get(key)
+    if (this.cache.has(skey))
+      return this.cache.get(skey)
 
     const { storage } = params
     if (!storage) return
-    const state = await storage.get(key)
-    this.cache.set(key, state)
+    const state = await storage.get(skey)
+    this.cache.set(skey, state)
     return state
   }
 
   /**
    * Force set a key to a state and publish it
    * No check, no merge
-   * @param key Key
+   * @param skey Key
    * @param state New state
    * @returns 
    */
   async set<D = any, E = any>(
-    key: string | undefined,
+    skey: string | undefined,
     state: State<D, E>,
     params: Params<D, E> = {}
   ) {
-    if (!key) return
+    if (!skey) return
 
-    this.cache.set(key, state)
-    this.publish(key, state)
+    this.cache.set(skey, state)
+    this.publish(skey, state)
 
     const { storage } = params
     if (!storage) return
-    await storage.set(key, state)
+    await storage.set(skey, state)
   }
 
   /**
    * Delete key and publish undefined
-   * @param key 
+   * @param skey 
    * @returns 
    */
   async delete<D = any, E = any>(
-    key: string | undefined,
+    skey: string | undefined,
     params: Params<D, E> = {}
   ) {
-    if (!key) return
+    if (!skey) return
 
-    this.cache.delete(key)
-    this.publish(key, undefined)
+    this.cache.delete(skey)
+    this.publish(skey, undefined)
 
     const { storage } = params
     if (!storage) return
-    await storage.delete(key)
+    await storage.delete(skey)
   }
 
   async apply<D = any, E = any>(

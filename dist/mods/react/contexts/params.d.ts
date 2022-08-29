@@ -1,5 +1,5 @@
-import { ChildrenProps } from "libs/react";
-import { Params } from "mods/types/params";
+import { ChildrenProps } from "../../../libs/react";
+import { Params } from "../../types/params";
 import React from "react";
 export declare const ParamsContext: React.Context<Params<any, any, any>>;
 export declare function useParams(): Params<any, any, any>;

@@ -1,4 +1,6 @@
 export * from "./core"
+export * from "./descriptors"
+export * from "./instances"
 export * from "./react"
 export * from "./scroll"
 export * from "./single"

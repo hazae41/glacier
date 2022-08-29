@@ -1,7 +1,7 @@
-import { Params } from "mods/types/params";
-import { Poster } from "mods/types/poster";
-import { State } from "mods/types/state";
-import { Updater } from "mods/types/updater";
+import { Params } from "../../../types/params";
+import { Poster } from "../../../types/poster";
+import { State } from "../../../types/state";
+import { Updater } from "../../../types/updater";
 import { Handle } from "./handle";
 /**
  * Handle for a single resource
@@ -21,4 +21,4 @@ export interface SingleHandle<D = any, E = any, K = any> extends Handle<D, E, K>
  * @param params Parameters (static)
  * @returns Single handle
  */
-export declare function useSingle<D = any, E = any, K = any>(key: K | undefined, poster: Poster<D, K>, current?: Params<D, E>): SingleHandle<D, E, K>;
+export declare function useSingle<D = any, E = any, K = any>(key: K | undefined, poster: Poster<D, K>, params?: Params<D, E>): SingleHandle<D, E, K>;

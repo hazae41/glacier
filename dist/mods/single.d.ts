@@ -1,10 +1,10 @@
-import { Core } from "mods/core";
-import { Fetcher } from "mods/types/fetcher";
-import { Params } from "mods/types/params";
-import { Poster } from "mods/types/poster";
-import { State } from "mods/types/state";
-import { Updater } from "mods/types/updater";
-export declare class Single {
+import { Core } from "./core";
+import { Fetcher } from "./types/fetcher";
+import { Params } from "./types/params";
+import { Poster } from "./types/poster";
+import { State } from "./types/state";
+import { Updater } from "./types/updater";
+export declare class SingleCore {
     readonly core: Core;
     constructor(core: Core);
     /**
