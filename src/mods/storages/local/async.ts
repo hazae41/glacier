@@ -1,5 +1,5 @@
+import { AsyncStorage, Serializer, State } from "mods/storages/storage"
 import { useRef } from "react"
-import { AsyncStorage, Serializer, State } from "../storage"
 
 /**
  * Asynchronous local storage

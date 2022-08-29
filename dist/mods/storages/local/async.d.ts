@@ -1,4 +1,4 @@
-import { AsyncStorage, Serializer, State } from "../storage";
+import { AsyncStorage, Serializer, State } from "mods/storages/storage";
 /**
  * Asynchronous local storage
  *

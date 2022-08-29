@@ -1,9 +1,9 @@
-import { Ortho } from "../libs/ortho.js"
-import { DEFAULT_EQUALS } from "./defaults.js"
-import { Equals } from "./equals.js"
-import { Scroll } from "./scroll.js"
-import { Single } from "./single.js"
-import { isAsyncStorage, Serializer, State, Storage } from "./storages/storage.js"
+import { Ortho } from "libs/ortho.js"
+import { DEFAULT_EQUALS } from "mods/defaults"
+import { Equals } from "mods/equals"
+import { Scroll } from "mods/scroll"
+import { Single } from "mods/single"
+import { isAsyncStorage, Serializer, State, Storage } from "mods/storages/storage"
 import { TimeParams } from "./time.js"
 
 export interface Result<D = any> {
@@ -42,9 +42,19 @@ export class Core extends Ortho<string, State | undefined> {
 
   readonly cache = new Map<string, State>()
 
-  _mounted = true
+  private _mounted = true
 
   constructor() { super() }
+
+  get mounted() {
+    return this._mounted
+  }
+
+  unmount() {
+    for (const timeout of this.timeouts.values())
+      clearTimeout(timeout)
+    this._mounted = false
+  }
 
   hasSync<D = any, E = any>(
     key: string | undefined,
@@ -277,15 +287,5 @@ export class Core extends Ortho<string, State | undefined> {
     const delay = current.expiration - Date.now()
     const timeout = setTimeout(erase, delay)
     this.timeouts.set(key, timeout)
-  }
-
-  get mounted() {
-    return this._mounted
-  }
-
-  unmount() {
-    for (const timeout of this.timeouts.values())
-      clearTimeout(timeout)
-    this._mounted = false
   }
 }

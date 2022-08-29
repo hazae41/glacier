@@ -212,6 +212,7 @@ function jsoneq(a, b) {
 }
 
 var DEFAULT_EQUALS = jsoneq;
+var DEFAULT_SERIALIZER = JSON;
 var DEFAULT_COOLDOWN = 1 * 1000;
 var DEFAULT_EXPIRATION = -1;
 var DEFAULT_TIMEOUT = 5 * 1000;
@@ -507,6 +508,30 @@ var Core = /** @class */ (function (_super) {
         _this.timeouts = new Map();
         return _this;
     }
+    Object.defineProperty(Core.prototype, "mounted", {
+        get: function () {
+            return this._mounted;
+        },
+        enumerable: false,
+        configurable: true
+    });
+    Core.prototype.unmount = function () {
+        var e_1, _a;
+        try {
+            for (var _b = __values(this.timeouts.values()), _c = _b.next(); !_c.done; _c = _b.next()) {
+                var timeout = _c.value;
+                clearTimeout(timeout);
+            }
+        }
+        catch (e_1_1) { e_1 = { error: e_1_1 }; }
+        finally {
+            try {
+                if (_c && !_c.done && (_a = _b.return)) _a.call(_b);
+            }
+            finally { if (e_1) throw e_1.error; }
+        }
+        this._mounted = false;
+    };
     Core.prototype.hasSync = function (key, params) {
         if (params === void 0) { params = {}; }
         if (!key)
@@ -776,32 +801,12 @@ var Core = /** @class */ (function (_super) {
             });
         });
     };
-    Object.defineProperty(Core.prototype, "mounted", {
-        get: function () {
-            return this._mounted;
-        },
-        enumerable: false,
-        configurable: true
-    });
-    Core.prototype.unmount = function () {
-        var e_1, _a;
-        try {
-            for (var _b = __values(this.timeouts.values()), _c = _b.next(); !_c.done; _c = _b.next()) {
-                var timeout = _c.value;
-                clearTimeout(timeout);
-            }
-        }
-        catch (e_1_1) { e_1 = { error: e_1_1 }; }
-        finally {
-            try {
-                if (_c && !_c.done && (_a = _b.return)) _a.call(_b);
-            }
-            finally { if (e_1) throw e_1.error; }
-        }
-        this._mounted = false;
-    };
     return Core;
 }(Ortho));
+
+function isAbortError(e) {
+    return e instanceof DOMException && e.name === "AbortError";
+}
 
 var ParamsContext = React.createContext(undefined);
 function useParams() {
@@ -839,10 +844,6 @@ function CoreProvider(props) {
     var params = useParamsProvider(current);
     return React__default["default"].createElement(CoreContext.Provider, { value: core },
         React__default["default"].createElement(ParamsContext.Provider, { value: params }, children));
-}
-
-function isAbortError(e) {
-    return e instanceof DOMException && e.name === "AbortError";
 }
 
 /**
@@ -1314,8 +1315,17 @@ var SyncLocalStorage = /** @class */ (function () {
     return SyncLocalStorage;
 }());
 
-var mod = {
+var index = {
     __proto__: null,
+    Core: Core,
+    DEFAULT_EQUALS: DEFAULT_EQUALS,
+    DEFAULT_SERIALIZER: DEFAULT_SERIALIZER,
+    DEFAULT_COOLDOWN: DEFAULT_COOLDOWN,
+    DEFAULT_EXPIRATION: DEFAULT_EXPIRATION,
+    DEFAULT_TIMEOUT: DEFAULT_TIMEOUT,
+    jseq: jseq,
+    jsoneq: jsoneq,
+    isAbortError: isAbortError,
     CoreContext: CoreContext,
     useCore: useCore,
     useCoreProvider: useCoreProvider,
@@ -1324,10 +1334,6 @@ var mod = {
     useParams: useParams,
     useParamsProvider: useParamsProvider,
     ParamsProvider: ParamsProvider,
-    Core: Core,
-    jseq: jseq,
-    jsoneq: jsoneq,
-    isAbortError: isAbortError,
     useScroll: useScroll,
     useSingle: useSingle,
     useDebug: useDebug,
@@ -1350,4 +1356,4 @@ var mod = {
     getTimeFromDelay: getTimeFromDelay
 };
 
-exports.XSWR = mod;
+exports.XSWR = index;

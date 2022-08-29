@@ -1,9 +1,9 @@
 /// <reference types="node" />
-import { Ortho } from "../libs/ortho.js";
-import { Equals } from "./equals.js";
-import { Scroll } from "./scroll.js";
-import { Single } from "./single.js";
-import { Serializer, State, Storage } from "./storages/storage.js";
+import { Ortho } from "libs/ortho.js";
+import { Equals } from "mods/equals";
+import { Scroll } from "mods/scroll";
+import { Single } from "mods/single";
+import { Serializer, State, Storage } from "mods/storages/storage";
 import { TimeParams } from "./time.js";
 export interface Result<D = any> {
     data: D;
@@ -30,8 +30,10 @@ export declare class Core extends Ortho<string, State | undefined> {
     readonly single: Single;
     readonly scroll: Scroll;
     readonly cache: Map<string, State<any, any>>;
-    _mounted: boolean;
+    private _mounted;
     constructor();
+    get mounted(): boolean;
+    unmount(): void;
     hasSync<D = any, E = any>(key: string | undefined, params?: Params<D, E>): boolean;
     has<D = any, E = any>(key: string | undefined, params?: Params<D, E>): Promise<boolean>;
     getSync<D = any, E = any>(key: string | undefined, params?: Params<D, E>): State<D, E> | undefined;
@@ -60,6 +62,4 @@ export declare class Core extends Ortho<string, State | undefined> {
     timeouts: Map<string, NodeJS.Timeout>;
     subscribe<D = any, E = any>(key: string | undefined, listener: (x: State<D, E>) => void, _?: Params<D, E>): void;
     unsubscribe<D = any, E = any>(key: string | undefined, listener: (x: State<D, E>) => void, params?: Params<D, E>): Promise<void>;
-    get mounted(): boolean;
-    unmount(): void;
 }

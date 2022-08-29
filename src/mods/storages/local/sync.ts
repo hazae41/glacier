@@ -1,5 +1,5 @@
+import { Serializer, State, SyncStorage } from "mods/storages/storage"
 import { useRef } from "react"
-import { Serializer, State, SyncStorage } from "../storage"
 
 /**
  * Synchronous local storage
