@@ -14,8 +14,8 @@ export default function Page() {
     <Link href="/storage" passHref shallow>
       <a>Storage</a>
     </Link>
-    <Link href="/descriptors" passHref shallow>
-      <a>Descriptors</a>
+    <Link href="/schemas" passHref shallow>
+      <a>Schemas</a>
     </Link>
   </div>
 }

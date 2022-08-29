@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useRef, useEffect, useCallback, useMemo, useState } from 'react';
+import React, { createContext, useContext, useRef, useEffect, useMemo, useState, useCallback } from 'react';
 
 /*! *****************************************************************************
 Copyright (c) Microsoft Corporation.
@@ -222,8 +222,8 @@ var DEFAULT_COOLDOWN = 1 * 1000;
 var DEFAULT_EXPIRATION = -1;
 var DEFAULT_TIMEOUT = 5 * 1000;
 
-var ScrollCore = /** @class */ (function () {
-    function ScrollCore(core) {
+var ScrollHelper = /** @class */ (function () {
+    function ScrollHelper(core) {
         this.core = core;
     }
     /**
@@ -236,7 +236,7 @@ var ScrollCore = /** @class */ (function () {
      * @param force Should ignore cooldown
      * @returns The new state
      */
-    ScrollCore.prototype.first = function (skey, scroller, fetcher, aborter, params, force) {
+    ScrollHelper.prototype.first = function (skey, scroller, fetcher, aborter, params, force) {
         var _a;
         if (aborter === void 0) { aborter = new AbortController(); }
         if (params === void 0) { params = {}; }
@@ -307,7 +307,7 @@ var ScrollCore = /** @class */ (function () {
      * @param force Should ignore cooldown
      * @returns The new state
      */
-    ScrollCore.prototype.scroll = function (skey, scroller, fetcher, aborter, params, force) {
+    ScrollHelper.prototype.scroll = function (skey, scroller, fetcher, aborter, params, force) {
         var _a;
         if (aborter === void 0) { aborter = new AbortController(); }
         if (params === void 0) { params = {}; }
@@ -361,11 +361,11 @@ var ScrollCore = /** @class */ (function () {
             });
         });
     };
-    return ScrollCore;
+    return ScrollHelper;
 }());
 
-var SingleCore = /** @class */ (function () {
-    function SingleCore(core) {
+var SingleHelper = /** @class */ (function () {
+    function SingleHelper(core) {
         this.core = core;
     }
     /**
@@ -378,7 +378,7 @@ var SingleCore = /** @class */ (function () {
      * @param force Should ignore cooldown
      * @returns The new state
      */
-    SingleCore.prototype.fetch = function (key, skey, fetcher, aborter, params, force) {
+    SingleHelper.prototype.fetch = function (key, skey, fetcher, aborter, params, force) {
         if (aborter === void 0) { aborter = new AbortController(); }
         if (params === void 0) { params = {}; }
         if (force === void 0) { force = false; }
@@ -439,7 +439,7 @@ var SingleCore = /** @class */ (function () {
      * @returns The new state
      * @throws Error
      */
-    SingleCore.prototype.update = function (key, skey, poster, updater, aborter, params) {
+    SingleHelper.prototype.update = function (key, skey, poster, updater, aborter, params) {
         if (aborter === void 0) { aborter = new AbortController(); }
         if (params === void 0) { params = {}; }
         return __awaiter(this, void 0, void 0, function () {
@@ -483,7 +483,7 @@ var SingleCore = /** @class */ (function () {
             });
         });
     };
-    return SingleCore;
+    return SingleHelper;
 }());
 
 function isAsyncStorage(storage) {
@@ -494,8 +494,8 @@ var Core = /** @class */ (function (_super) {
     __extends(Core, _super);
     function Core() {
         var _this = _super.call(this) || this;
-        _this.single = new SingleCore(_this);
-        _this.scroll = new ScrollCore(_this);
+        _this.single = new SingleHelper(_this);
+        _this.scroll = new ScrollHelper(_this);
         _this.cache = new Map();
         _this._mounted = true;
         _this.counts = new Map();
@@ -799,8 +799,8 @@ var Core = /** @class */ (function (_super) {
 /**
  * Non-React version of ScrollHandle
  */
-var ScrollInstance = /** @class */ (function () {
-    function ScrollInstance(core, scroller, fetcher, params, pparams) {
+var ScrollObject = /** @class */ (function () {
+    function ScrollObject(core, scroller, fetcher, params, pparams) {
         if (params === void 0) { params = {}; }
         if (pparams === void 0) { pparams = {}; }
         var _this = this;
@@ -856,17 +856,17 @@ var ScrollInstance = /** @class */ (function () {
             }).register(this, undefined);
         }
     }
-    Object.defineProperty(ScrollInstance.prototype, "state", {
+    Object.defineProperty(ScrollObject.prototype, "state", {
         get: function () { return this._state; },
         enumerable: false,
         configurable: true
     });
-    Object.defineProperty(ScrollInstance.prototype, "ready", {
+    Object.defineProperty(ScrollObject.prototype, "ready", {
         get: function () { return this._ready; },
         enumerable: false,
         configurable: true
     });
-    ScrollInstance.prototype.mutate = function (state) {
+    ScrollObject.prototype.mutate = function (state) {
         return __awaiter(this, void 0, void 0, function () {
             var _a, core, skey, mparams, _b;
             return __generator(this, function (_c) {
@@ -880,7 +880,7 @@ var ScrollInstance = /** @class */ (function () {
             });
         });
     };
-    ScrollInstance.prototype.fetch = function (aborter) {
+    ScrollObject.prototype.fetch = function (aborter) {
         return __awaiter(this, void 0, void 0, function () {
             var _a, core, scroller, skey, fetcher, mparams, _b;
             return __generator(this, function (_c) {
@@ -894,7 +894,7 @@ var ScrollInstance = /** @class */ (function () {
             });
         });
     };
-    ScrollInstance.prototype.refetch = function (aborter) {
+    ScrollObject.prototype.refetch = function (aborter) {
         return __awaiter(this, void 0, void 0, function () {
             var _a, core, scroller, skey, fetcher, mparams, _b;
             return __generator(this, function (_c) {
@@ -908,7 +908,7 @@ var ScrollInstance = /** @class */ (function () {
             });
         });
     };
-    ScrollInstance.prototype.scroll = function (aborter) {
+    ScrollObject.prototype.scroll = function (aborter) {
         return __awaiter(this, void 0, void 0, function () {
             var _a, core, scroller, skey, fetcher, mparams, _b;
             return __generator(this, function (_c) {
@@ -922,7 +922,7 @@ var ScrollInstance = /** @class */ (function () {
             });
         });
     };
-    ScrollInstance.prototype.clear = function () {
+    ScrollObject.prototype.clear = function () {
         return __awaiter(this, void 0, void 0, function () {
             var _a, core, skey, mparams;
             return __generator(this, function (_b) {
@@ -938,14 +938,14 @@ var ScrollInstance = /** @class */ (function () {
             });
         });
     };
-    return ScrollInstance;
+    return ScrollObject;
 }());
 
 /**
  * Non-React version of SingleHandle
  */
-var SingleInstance = /** @class */ (function () {
-    function SingleInstance(core, key, poster, params, pparams) {
+var SingleObject = /** @class */ (function () {
+    function SingleObject(core, key, poster, params, pparams) {
         if (params === void 0) { params = {}; }
         if (pparams === void 0) { pparams = {}; }
         var _this = this;
@@ -999,17 +999,17 @@ var SingleInstance = /** @class */ (function () {
             }).register(this, undefined);
         }
     }
-    Object.defineProperty(SingleInstance.prototype, "state", {
+    Object.defineProperty(SingleObject.prototype, "state", {
         get: function () { return this._state; },
         enumerable: false,
         configurable: true
     });
-    Object.defineProperty(SingleInstance.prototype, "ready", {
+    Object.defineProperty(SingleObject.prototype, "ready", {
         get: function () { return this._ready; },
         enumerable: false,
         configurable: true
     });
-    SingleInstance.prototype.mutate = function (state) {
+    SingleObject.prototype.mutate = function (state) {
         return __awaiter(this, void 0, void 0, function () {
             var _a, core, skey, mparams, _b;
             return __generator(this, function (_c) {
@@ -1023,7 +1023,7 @@ var SingleInstance = /** @class */ (function () {
             });
         });
     };
-    SingleInstance.prototype.fetch = function (aborter) {
+    SingleObject.prototype.fetch = function (aborter) {
         return __awaiter(this, void 0, void 0, function () {
             var _a, core, key, skey, poster, mparams, _b;
             return __generator(this, function (_c) {
@@ -1037,7 +1037,7 @@ var SingleInstance = /** @class */ (function () {
             });
         });
     };
-    SingleInstance.prototype.refetch = function (aborter) {
+    SingleObject.prototype.refetch = function (aborter) {
         return __awaiter(this, void 0, void 0, function () {
             var _a, core, key, skey, poster, mparams, _b;
             return __generator(this, function (_c) {
@@ -1051,7 +1051,7 @@ var SingleInstance = /** @class */ (function () {
             });
         });
     };
-    SingleInstance.prototype.update = function (updater, aborter) {
+    SingleObject.prototype.update = function (updater, aborter) {
         return __awaiter(this, void 0, void 0, function () {
             var _a, core, key, skey, poster, mparams, _b;
             return __generator(this, function (_c) {
@@ -1065,7 +1065,7 @@ var SingleInstance = /** @class */ (function () {
             });
         });
     };
-    SingleInstance.prototype.clear = function () {
+    SingleObject.prototype.clear = function () {
         return __awaiter(this, void 0, void 0, function () {
             var _a, core, skey, mparams;
             return __generator(this, function (_b) {
@@ -1081,45 +1081,7 @@ var SingleInstance = /** @class */ (function () {
             });
         });
     };
-    return SingleInstance;
-}());
-
-function getScroll(scroller, fetcher, params) {
-    if (params === void 0) { params = {}; }
-    return new ScrollDescriptor(scroller, fetcher, params);
-}
-var ScrollDescriptor = /** @class */ (function () {
-    function ScrollDescriptor(scroller, fetcher, params) {
-        if (params === void 0) { params = {}; }
-        this.scroller = scroller;
-        this.fetcher = fetcher;
-        this.params = params;
-    }
-    ScrollDescriptor.prototype.create = function (core, pparams) {
-        if (pparams === void 0) { pparams = {}; }
-        var _a = this, scroller = _a.scroller, fetcher = _a.fetcher, params = _a.params;
-        return new ScrollInstance(core, scroller, fetcher, params, pparams);
-    };
-    return ScrollDescriptor;
-}());
-
-function getSingle(key, poster, params) {
-    if (params === void 0) { params = {}; }
-    return new SingleDescriptor(key, poster, params);
-}
-var SingleDescriptor = /** @class */ (function () {
-    function SingleDescriptor(key, poster, params) {
-        if (params === void 0) { params = {}; }
-        this.key = key;
-        this.poster = poster;
-        this.params = params;
-    }
-    SingleDescriptor.prototype.create = function (core, pparams) {
-        if (pparams === void 0) { pparams = {}; }
-        var _a = this, key = _a.key, poster = _a.poster, params = _a.params;
-        return new SingleInstance(core, key, poster, params, pparams);
-    };
-    return SingleDescriptor;
+    return SingleObject;
 }());
 
 var ParamsContext = createContext(undefined);
@@ -1160,14 +1122,216 @@ function CoreProvider(props) {
         React.createElement(ParamsContext.Provider, { value: params }, children));
 }
 
-function useXSWR() {
-    var core = useCore();
-    var params = useParams();
-    var create = useCallback(function (descriptor) {
-        return descriptor.create(core, params);
-    }, [core, params]);
-    return { core: core, params: params, create: create };
+/**
+ * Show handle in console when it changes
+ * @param handle
+ */
+function useDebug(handle, label) {
+    var time = handle.time;
+    useEffect(function () {
+        console.debug(label, handle);
+    }, [time]);
 }
+
+/**
+ * Call a function on error
+ * @param handle
+ * @param callback
+ */
+function useError(handle, callback) {
+    var ready = handle.ready, error = handle.error;
+    useEffect(function () {
+        if (!ready)
+            return;
+        if (error !== undefined)
+            callback(error);
+    }, [ready, error, callback]);
+}
+
+/**
+ * Fallback to given data/error if there is no data/error
+ * @example You got some data/error using SSR/ISR and want to display it on first render
+ * @example You still want to display something even if the fetcher returned nothing
+ * @param handle
+ * @param state
+ */
+function useFallback(handle, state) {
+    var data = handle.data, error = handle.error;
+    if (data !== undefined)
+        return;
+    if (error !== undefined)
+        return;
+    Object.assign(handle, state);
+}
+
+/**
+ * Do a request on mount and url change
+ * @see useMount for doing a request on mount only
+ * @see useOnce for doing a request only if there is no data yet
+ * @param handle
+ */
+function useFetch(handle) {
+    var fetch = handle.fetch;
+    useEffect(function () {
+        fetch();
+    }, [fetch]);
+}
+
+/**
+ * Do a request on interval
+ * @see useRetry for error retry
+ * @param handle
+ * @param options
+ */
+function useInterval(handle, interval) {
+    var fetch = handle.fetch;
+    useEffect(function () {
+        if (!interval)
+            return;
+        var i = setInterval(fetch, interval);
+        return function () { return clearInterval(i); };
+    }, [fetch, interval]);
+}
+
+/**
+ * Do a request on mount only
+ * @see useFetch for doing a request on url change
+ * @see useOnce for doing a request only if there is no data yet
+ * @param handle
+ */
+function useMount(handle) {
+    var fetch = handle.fetch;
+    useEffect(function () {
+        fetch();
+    }, []);
+}
+
+/**
+ * Do a request on mount and url change only if there is no data yet
+ * @warning Will still try to fetch is there is an error
+ * @param handle
+ * @example You want to get some data once and share it in multiple components
+ */
+function useOnce(handle) {
+    var ready = handle.ready, data = handle.data, fetch = handle.fetch;
+    useEffect(function () {
+        if (!ready)
+            return;
+        if (data === undefined)
+            fetch();
+    }, [ready, data, fetch]);
+}
+
+/**
+ * Do a request when the browser is online
+ * @param handle
+ */
+function useOnline(handle) {
+    var fetch = handle.fetch;
+    useEffect(function () {
+        var f = function () { return fetch(); };
+        addEventListener("online", f);
+        return function () { return removeEventListener("online", f); };
+    }, [fetch]);
+}
+
+/**
+ * Retry request on error using exponential backoff
+ * @see useInterval for interval based requests
+ * @param handle
+ * @param options
+ * @param options.init Initial timeout to be multiplied (in milliseconds)
+ * @param options.base Exponent base (2 means the next timeout will be 2 times longer)
+ * @param options.max Maximum count (3 means do not retry after 3 retries)
+ * @see https://en.wikipedia.org/wiki/Exponential_backoff
+ * @see https://en.wikipedia.org/wiki/Geometric_progression
+ */
+function useRetry(handle, options) {
+    if (options === void 0) { options = {}; }
+    var ready = handle.ready, refetch = handle.refetch, error = handle.error, time = handle.time;
+    var _a = options.init, init = _a === void 0 ? 1000 : _a, _b = options.base, base = _b === void 0 ? 2 : _b, _c = options.max, max = _c === void 0 ? 3 : _c;
+    var count = useRef(0);
+    useEffect(function () {
+        count.current = 0;
+    }, [refetch]);
+    useEffect(function () {
+        if (!ready)
+            return;
+        if (error === undefined) {
+            count.current = 0;
+            return;
+        }
+        if (count.current >= max)
+            return;
+        var ratio = Math.pow(base, count.current);
+        var f = function () { count.current++; refetch(); };
+        var t = setTimeout(f, init * ratio);
+        return function () { return clearTimeout(t); };
+    }, [ready, error, time, refetch]);
+}
+
+/**
+ * Do a request when the tab is visible
+ * @param handle
+ */
+function useVisible(handle) {
+    var fetch = handle.fetch;
+    useEffect(function () {
+        var f = function () { return !document.hidden && fetch(); };
+        document.addEventListener("visibilitychange", f);
+        return function () { return document.removeEventListener("visibilitychange", f); };
+    }, [fetch]);
+}
+
+var Schema = /** @class */ (function () {
+    function Schema() {
+    }
+    return Schema;
+}());
+
+function scroll(scroller, fetcher, params) {
+    if (params === void 0) { params = {}; }
+    return new ScrollSchema(scroller, fetcher, params);
+}
+var ScrollSchema = /** @class */ (function (_super) {
+    __extends(ScrollSchema, _super);
+    function ScrollSchema(scroller, fetcher, params) {
+        if (params === void 0) { params = {}; }
+        var _this = _super.call(this) || this;
+        _this.scroller = scroller;
+        _this.fetcher = fetcher;
+        _this.params = params;
+        return _this;
+    }
+    ScrollSchema.prototype.make = function (core, pparams) {
+        if (pparams === void 0) { pparams = {}; }
+        var _a = this, scroller = _a.scroller, fetcher = _a.fetcher, params = _a.params;
+        return new ScrollObject(core, scroller, fetcher, params, pparams);
+    };
+    return ScrollSchema;
+}(Schema));
+
+function single(key, poster, params) {
+    if (params === void 0) { params = {}; }
+    return new SingleSchema(key, poster, params);
+}
+var SingleSchema = /** @class */ (function (_super) {
+    __extends(SingleSchema, _super);
+    function SingleSchema(key, poster, params) {
+        if (params === void 0) { params = {}; }
+        var _this = _super.call(this) || this;
+        _this.key = key;
+        _this.poster = poster;
+        _this.params = params;
+        return _this;
+    }
+    SingleSchema.prototype.make = function (core, pparams) {
+        if (pparams === void 0) { pparams = {}; }
+        var _a = this, key = _a.key, poster = _a.poster, params = _a.params;
+        return new SingleObject(core, key, poster, params, pparams);
+    };
+    return SingleSchema;
+}(Schema));
 
 /**
  * Scrolling resource handle factory
@@ -1334,173 +1498,21 @@ function useSingle(key, poster, params) {
     return { key: key, skey: skey, data: data, error: error, time: time, cooldown: cooldown, expiration: expiration, aborter: aborter, loading: loading, ready: ready, mutate: mutate, fetch: fetch, refetch: refetch, update: update, clear: clear };
 }
 
-function use(descriptor) {
-    if (descriptor instanceof SingleDescriptor)
-        return useSingle(descriptor.key, descriptor.poster, descriptor.params);
-    if (descriptor instanceof ScrollDescriptor)
-        return useScroll(descriptor.scroller, descriptor.fetcher, descriptor.params);
-    throw new Error("Invalid resource descriptor");
+function use(schema) {
+    if (schema instanceof SingleSchema)
+        return useSingle(schema.key, schema.poster, schema.params);
+    if (schema instanceof ScrollSchema)
+        return useScroll(schema.scroller, schema.fetcher, schema.params);
+    throw new Error("Invalid resource schema");
 }
 
-/**
- * Show handle in console when it changes
- * @param handle
- */
-function useDebug(handle, label) {
-    var time = handle.time;
-    useEffect(function () {
-        console.debug(label, handle);
-    }, [time]);
-}
-
-/**
- * Call a function on error
- * @param handle
- * @param callback
- */
-function useError(handle, callback) {
-    var ready = handle.ready, error = handle.error;
-    useEffect(function () {
-        if (!ready)
-            return;
-        if (error !== undefined)
-            callback(error);
-    }, [ready, error, callback]);
-}
-
-/**
- * Fallback to given data/error if there is no data/error
- * @example You got some data/error using SSR/ISR and want to display it on first render
- * @example You still want to display something even if the fetcher returned nothing
- * @param handle
- * @param state
- */
-function useFallback(handle, state) {
-    var data = handle.data, error = handle.error;
-    if (data !== undefined)
-        return;
-    if (error !== undefined)
-        return;
-    Object.assign(handle, state);
-}
-
-/**
- * Do a request on mount and url change
- * @see useMount for doing a request on mount only
- * @see useOnce for doing a request only if there is no data yet
- * @param handle
- */
-function useFetch(handle) {
-    var fetch = handle.fetch;
-    useEffect(function () {
-        fetch();
-    }, [fetch]);
-}
-
-/**
- * Do a request on interval
- * @see useRetry for error retry
- * @param handle
- * @param options
- */
-function useInterval(handle, interval) {
-    var fetch = handle.fetch;
-    useEffect(function () {
-        if (!interval)
-            return;
-        var i = setInterval(fetch, interval);
-        return function () { return clearInterval(i); };
-    }, [fetch, interval]);
-}
-
-/**
- * Do a request on mount only
- * @see useFetch for doing a request on url change
- * @see useOnce for doing a request only if there is no data yet
- * @param handle
- */
-function useMount(handle) {
-    var fetch = handle.fetch;
-    useEffect(function () {
-        fetch();
-    }, []);
-}
-
-/**
- * Do a request on mount and url change only if there is no data yet
- * @warning Will still try to fetch is there is an error
- * @param handle
- * @example You want to get some data once and share it in multiple components
- */
-function useOnce(handle) {
-    var ready = handle.ready, data = handle.data, fetch = handle.fetch;
-    useEffect(function () {
-        if (!ready)
-            return;
-        if (data === undefined)
-            fetch();
-    }, [ready, data, fetch]);
-}
-
-/**
- * Do a request when the browser is online
- * @param handle
- */
-function useOnline(handle) {
-    var fetch = handle.fetch;
-    useEffect(function () {
-        var f = function () { return fetch(); };
-        addEventListener("online", f);
-        return function () { return removeEventListener("online", f); };
-    }, [fetch]);
-}
-
-/**
- * Retry request on error using exponential backoff
- * @see useInterval for interval based requests
- * @param handle
- * @param options
- * @param options.init Initial timeout to be multiplied (in milliseconds)
- * @param options.base Exponent base (2 means the next timeout will be 2 times longer)
- * @param options.max Maximum count (3 means do not retry after 3 retries)
- * @see https://en.wikipedia.org/wiki/Exponential_backoff
- * @see https://en.wikipedia.org/wiki/Geometric_progression
- */
-function useRetry(handle, options) {
-    if (options === void 0) { options = {}; }
-    var ready = handle.ready, refetch = handle.refetch, error = handle.error, time = handle.time;
-    var _a = options.init, init = _a === void 0 ? 1000 : _a, _b = options.base, base = _b === void 0 ? 2 : _b, _c = options.max, max = _c === void 0 ? 3 : _c;
-    var count = useRef(0);
-    useEffect(function () {
-        count.current = 0;
-    }, [refetch]);
-    useEffect(function () {
-        if (!ready)
-            return;
-        if (error === undefined) {
-            count.current = 0;
-            return;
-        }
-        if (count.current >= max)
-            return;
-        var ratio = Math.pow(base, count.current);
-        var f = function () { count.current++; refetch(); };
-        var t = setTimeout(f, init * ratio);
-        return function () { return clearTimeout(t); };
-    }, [ready, error, time, refetch]);
-}
-
-/**
- * Do a request when the tab is visible
- * @param handle
- */
-function useVisible(handle) {
-    var fetch = handle.fetch;
-    useEffect(function () {
-        var f = function () { return !document.hidden && fetch(); };
-        document.addEventListener("visibilitychange", f);
-        return function () { return document.removeEventListener("visibilitychange", f); };
-    }, [fetch]);
+function useXSWR() {
+    var core = useCore();
+    var params = useParams();
+    var make = useCallback(function (desc) {
+        return desc.make(core, params);
+    }, [core, params]);
+    return { core: core, params: params, make: make };
 }
 
 /**
@@ -1655,12 +1667,8 @@ function isAbortError(e) {
 var index = {
     __proto__: null,
     Core: Core,
-    getScroll: getScroll,
-    ScrollDescriptor: ScrollDescriptor,
-    getSingle: getSingle,
-    SingleDescriptor: SingleDescriptor,
-    ScrollInstance: ScrollInstance,
-    SingleInstance: SingleInstance,
+    ScrollObject: ScrollObject,
+    SingleObject: SingleObject,
     CoreContext: CoreContext,
     useCore: useCore,
     useCoreProvider: useCoreProvider,
@@ -1669,10 +1677,6 @@ var index = {
     useParams: useParams,
     useParamsProvider: useParamsProvider,
     ParamsProvider: ParamsProvider,
-    useXSWR: useXSWR,
-    use: use,
-    useScroll: useScroll,
-    useSingle: useSingle,
     useDebug: useDebug,
     useError: useError,
     useFallback: useFallback,
@@ -1683,8 +1687,17 @@ var index = {
     useOnline: useOnline,
     useRetry: useRetry,
     useVisible: useVisible,
-    ScrollCore: ScrollCore,
-    SingleCore: SingleCore,
+    use: use,
+    useScroll: useScroll,
+    useSingle: useSingle,
+    useXSWR: useXSWR,
+    Schema: Schema,
+    scroll: scroll,
+    ScrollSchema: ScrollSchema,
+    single: single,
+    SingleSchema: SingleSchema,
+    ScrollHelper: ScrollHelper,
+    SingleHelper: SingleHelper,
     useAsyncLocalStorage: useAsyncLocalStorage,
     AsyncLocalStorage: AsyncLocalStorage,
     useSyncLocalStorage: useSyncLocalStorage,

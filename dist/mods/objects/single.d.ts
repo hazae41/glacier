@@ -6,7 +6,7 @@ import { Updater } from "../types/updater";
 /**
  * Non-React version of SingleHandle
  */
-export declare class SingleInstance<D = any, E = any, K = any> {
+export declare class SingleObject<D = any, E = any, K = any> {
     readonly core: Core;
     readonly key: K | undefined;
     readonly poster: Poster<D, K>;

@@ -1,12 +1,12 @@
 /// <reference types="node" />
 import { Ortho } from "../libs/ortho";
-import { ScrollCore } from "./scroll";
-import { SingleCore } from "./single";
+import { ScrollHelper } from "./scroll";
+import { SingleHelper } from "./single";
 import { Params } from "./types/params";
 import { State } from "./types/state";
 export declare class Core extends Ortho<string, State | undefined> {
-    readonly single: SingleCore;
-    readonly scroll: ScrollCore;
+    readonly single: SingleHelper;
+    readonly scroll: ScrollHelper;
     readonly cache: Map<string, State<any, any>>;
     private _mounted;
     constructor();

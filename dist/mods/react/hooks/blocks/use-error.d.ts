@@ -1,4 +1,4 @@
-import { Handle } from "../bases";
+import { Handle } from "../handles";
 /**
  * Call a function on error
  * @param handle

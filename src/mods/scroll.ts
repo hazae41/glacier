@@ -7,7 +7,7 @@ import { Scroller } from "mods/types/scroller";
 import { State } from "mods/types/state";
 import { DEFAULT_COOLDOWN, DEFAULT_EQUALS, DEFAULT_EXPIRATION, DEFAULT_TIMEOUT } from "mods/utils/defaults";
 
-export class ScrollCore {
+export class ScrollHelper {
   constructor(readonly core: Core) { }
 
   /**

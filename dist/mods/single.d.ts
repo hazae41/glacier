@@ -4,7 +4,7 @@ import { Params } from "./types/params";
 import { Poster } from "./types/poster";
 import { State } from "./types/state";
 import { Updater } from "./types/updater";
-export declare class SingleCore {
+export declare class SingleHelper {
     readonly core: Core;
     constructor(core: Core);
     /**

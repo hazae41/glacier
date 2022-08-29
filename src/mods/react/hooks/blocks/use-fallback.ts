@@ -1,4 +1,4 @@
-import { Handle } from "mods/react/hooks/bases"
+import { Handle } from "mods/react/hooks/handles"
 import { State } from "mods/types/state"
 
 /**

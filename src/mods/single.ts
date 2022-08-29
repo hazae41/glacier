@@ -7,7 +7,7 @@ import { State } from "mods/types/state";
 import { Updater } from "mods/types/updater";
 import { DEFAULT_COOLDOWN, DEFAULT_EXPIRATION, DEFAULT_TIMEOUT } from "mods/utils/defaults";
 
-export class SingleCore {
+export class SingleHelper {
   constructor(readonly core: Core) { }
 
   /**

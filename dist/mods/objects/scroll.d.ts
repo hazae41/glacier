@@ -6,7 +6,7 @@ import { State } from "../types/state";
 /**
  * Non-React version of ScrollHandle
  */
-export declare class ScrollInstance<D = any, E = any, K = any> {
+export declare class ScrollObject<D = any, E = any, K = any> {
     readonly core: Core;
     readonly scroller: Scroller<D, K>;
     readonly fetcher: Fetcher<D, K>;

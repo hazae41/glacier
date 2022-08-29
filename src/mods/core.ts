@@ -1,14 +1,14 @@
 import { Ortho } from "libs/ortho"
-import { ScrollCore } from "mods/scroll"
-import { SingleCore } from "mods/single"
+import { ScrollHelper } from "mods/scroll"
+import { SingleHelper } from "mods/single"
 import { Params } from "mods/types/params"
 import { State } from "mods/types/state"
 import { isAsyncStorage } from "mods/types/storage"
 import { DEFAULT_EQUALS } from "mods/utils/defaults"
 
 export class Core extends Ortho<string, State | undefined> {
-  readonly single = new SingleCore(this)
-  readonly scroll = new ScrollCore(this)
+  readonly single = new SingleHelper(this)
+  readonly scroll = new ScrollHelper(this)
 
   readonly cache = new Map<string, State>()
 

@@ -1,0 +1,1 @@
+export class Schema<D = any, E = any, K = any> { }

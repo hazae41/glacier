@@ -1,4 +1,4 @@
-import { Handle } from "../bases";
+import { Handle } from "../handles";
 /**
  * Do a request when the tab is visible
  * @param handle

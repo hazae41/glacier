@@ -1,4 +1,4 @@
-import { Handle } from "mods/react/hooks/bases"
+import { Handle } from "mods/react/hooks/handles"
 import { useEffect, useRef } from "react"
 
 export interface RetryOptions {
