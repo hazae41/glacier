@@ -1,8 +1,8 @@
 import { Fetcher, Params, Scroller } from "mods/core.js"
 import { useCore, useParams } from "mods/react/contexts"
+import { Handle } from "mods/react/hooks/handles/handle"
 import { State } from "mods/storages"
 import { useCallback, useEffect, useMemo, useState } from "react"
-import { Handle } from "./handle"
 
 /**
  * Handle for a scrolling resource

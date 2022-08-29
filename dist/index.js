@@ -202,6 +202,11 @@ var Ortho = /** @class */ (function () {
     return Ortho;
 }());
 
+function lastOf(array) {
+    if (array.length)
+        return array[array.length - 1];
+}
+
 function jseq(a, b) {
     return a === b;
 }
@@ -216,11 +221,6 @@ var DEFAULT_SERIALIZER = JSON;
 var DEFAULT_COOLDOWN = 1 * 1000;
 var DEFAULT_EXPIRATION = -1;
 var DEFAULT_TIMEOUT = 5 * 1000;
-
-function lastOf(array) {
-    if (array.length)
-        return array[array.length - 1];
-}
 
 function getTimeFromDelay(delay) {
     if (delay === -1)
@@ -804,10 +804,6 @@ var Core = /** @class */ (function (_super) {
     return Core;
 }(Ortho));
 
-function isAbortError(e) {
-    return e instanceof DOMException && e.name === "AbortError";
-}
-
 var ParamsContext = React.createContext(undefined);
 function useParams() {
     return React.useContext(ParamsContext);
@@ -1315,17 +1311,13 @@ var SyncLocalStorage = /** @class */ (function () {
     return SyncLocalStorage;
 }());
 
+function isAbortError(e) {
+    return e instanceof DOMException && e.name === "AbortError";
+}
+
 var index = {
     __proto__: null,
     Core: Core,
-    DEFAULT_EQUALS: DEFAULT_EQUALS,
-    DEFAULT_SERIALIZER: DEFAULT_SERIALIZER,
-    DEFAULT_COOLDOWN: DEFAULT_COOLDOWN,
-    DEFAULT_EXPIRATION: DEFAULT_EXPIRATION,
-    DEFAULT_TIMEOUT: DEFAULT_TIMEOUT,
-    jseq: jseq,
-    jsoneq: jsoneq,
-    isAbortError: isAbortError,
     CoreContext: CoreContext,
     useCore: useCore,
     useCoreProvider: useCoreProvider,
@@ -1353,6 +1345,14 @@ var index = {
     useSyncLocalStorage: useSyncLocalStorage,
     SyncLocalStorage: SyncLocalStorage,
     isAsyncStorage: isAsyncStorage,
+    DEFAULT_EQUALS: DEFAULT_EQUALS,
+    DEFAULT_SERIALIZER: DEFAULT_SERIALIZER,
+    DEFAULT_COOLDOWN: DEFAULT_COOLDOWN,
+    DEFAULT_EXPIRATION: DEFAULT_EXPIRATION,
+    DEFAULT_TIMEOUT: DEFAULT_TIMEOUT,
+    jseq: jseq,
+    jsoneq: jsoneq,
+    isAbortError: isAbortError,
     getTimeFromDelay: getTimeFromDelay
 };
 

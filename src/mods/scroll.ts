@@ -1,8 +1,7 @@
-import { lastOf } from "../libs/arrays.js";
-import { Core, Fetcher, Scroller } from "./core.js";
-import { DEFAULT_COOLDOWN, DEFAULT_EQUALS, DEFAULT_EXPIRATION, DEFAULT_TIMEOUT } from "./defaults.js";
-import { Params } from "./index.js";
-import { getTimeFromDelay } from "./time.js";
+import { lastOf } from "libs/arrays";
+import { Core, Fetcher, Params, Scroller } from "mods/core";
+import { DEFAULT_COOLDOWN, DEFAULT_EQUALS, DEFAULT_EXPIRATION, DEFAULT_TIMEOUT } from "mods/utils/defaults";
+import { getTimeFromDelay } from "mods/utils/time";
 
 export class Scroll {
   constructor(readonly core: Core) { }

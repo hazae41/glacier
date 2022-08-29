@@ -1,7 +1,7 @@
 import { ChildrenProps } from "libs/react"
 import { Core, Params } from "mods/core"
+import { ParamsContext, useParamsProvider } from "mods/react/contexts/params"
 import React, { createContext, useContext, useEffect, useRef } from "react"
-import { ParamsContext, useParamsProvider } from "./params"
 
 export const CoreContext =
   createContext<Core | undefined>(undefined)

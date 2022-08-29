@@ -1,8 +1,7 @@
-import { Core, Fetcher, Poster, Updater } from "./core.js";
-import { DEFAULT_COOLDOWN, DEFAULT_EXPIRATION, DEFAULT_TIMEOUT } from "./defaults.js";
-import { Params } from "./index.js";
-import { State } from "./storages/storage.js";
-import { getTimeFromDelay } from "./time.js";
+import { Core, Fetcher, Params, Poster, Updater } from "mods/core";
+import { State } from "mods/storages/storage";
+import { DEFAULT_COOLDOWN, DEFAULT_EXPIRATION, DEFAULT_TIMEOUT } from "mods/utils/defaults";
+import { getTimeFromDelay } from "mods/utils/time";
 
 export class Single {
   constructor(readonly core: Core) { }

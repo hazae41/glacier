@@ -1,4 +1,4 @@
-import { jsoneq } from "./equals";
+import { jsoneq } from "mods/utils/equals";
 export declare const DEFAULT_EQUALS: typeof jsoneq;
 export declare const DEFAULT_SERIALIZER: JSON;
 export declare const DEFAULT_COOLDOWN: number;

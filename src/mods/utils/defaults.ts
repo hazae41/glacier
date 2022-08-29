@@ -1,4 +1,4 @@
-import { jsoneq } from "./equals"
+import { jsoneq } from "mods/utils/equals"
 
 export const DEFAULT_EQUALS = jsoneq
 export const DEFAULT_SERIALIZER = JSON

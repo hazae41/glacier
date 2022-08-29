@@ -1,10 +1,7 @@
 export * from "./core"
-export * from "./defaults"
-export * from "./equals"
-export * from "./errors"
 export * from "./react"
 export * from "./scroll"
 export * from "./single"
 export * from "./storages"
-export * from "./time"
+export * from "./utils"
 
