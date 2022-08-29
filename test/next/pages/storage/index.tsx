@@ -22,7 +22,7 @@ class GZIP {
   }
 }
 
-async function fetchAsJson<T>(url: string, more: XSWR.PosterMore<T>) {
+async function fetchAsJson<T>([url]: [string], more: XSWR.PosterMore<T>) {
   const { signal } = more
 
   const res = await fetch(url, { signal })
@@ -47,7 +47,14 @@ function useHelloData() {
   return handle
 }
 
-export default function Page() {
+export default function Wrapper() {
+  return <XSWR.ParamsProvider
+    serializer={GZIP}>
+    <Page />
+  </XSWR.ParamsProvider>
+}
+
+export function Page() {
   const { data, fetch, clear } = useHelloData()
 
   return <>

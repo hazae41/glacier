@@ -808,6 +808,11 @@ function useParamsProvider(current) {
         paramsRef.current = __assign(__assign({}, parent), current);
     return paramsRef.current;
 }
+function ParamsProvider(props) {
+    var children = props.children, current = __rest(props, ["children"]);
+    var params = useParamsProvider(current);
+    return React.createElement(ParamsContext.Provider, { value: params }, children);
+}
 
 var CoreContext = createContext(undefined);
 function useCore() {
@@ -1309,6 +1314,10 @@ var mod = {
     useCore: useCore,
     useCoreProvider: useCoreProvider,
     CoreProvider: CoreProvider,
+    ParamsContext: ParamsContext,
+    useParams: useParams,
+    useParamsProvider: useParamsProvider,
+    ParamsProvider: ParamsProvider,
     Core: Core,
     jseq: jseq,
     jsoneq: jsoneq,
