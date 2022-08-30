@@ -1502,7 +1502,6 @@ function useSingle(key, poster, params) {
 }
 
 function use(schema, deps) {
-    if (deps === void 0) { deps = [schema]; }
     var rschema = React.useMemo(function () {
         return schema;
     }, deps);

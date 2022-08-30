@@ -1496,7 +1496,6 @@ function useSingle(key, poster, params) {
 }
 
 function use(schema, deps) {
-    if (deps === void 0) { deps = [schema]; }
     var rschema = useMemo(function () {
         return schema;
     }, deps);

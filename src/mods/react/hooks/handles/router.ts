@@ -17,7 +17,7 @@ export function use<D = any, E = any, K = any>(
 
 export function use<D = any, E = any, K = any>(
   schema: Schema<D, E, K>,
-  deps: DependencyList = [schema]
+  deps: DependencyList
 ) {
   const rschema = useMemo(() => {
     return schema
