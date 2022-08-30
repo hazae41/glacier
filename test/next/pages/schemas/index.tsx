@@ -25,7 +25,7 @@ function getKeySchema(id: string) {
 }
 
 function useKeyBase(id: string) {
-  return XSWR.use(getKeySchema(id), [id])
+  return XSWR.use(getKeySchema, [id])
 }
 
 function useKeyMix(id: string) {

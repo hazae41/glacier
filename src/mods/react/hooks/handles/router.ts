@@ -5,29 +5,26 @@ import { DependencyList, useMemo } from "react";
 import { ScrollHandle, useScroll } from "./scroll";
 import { SingleHandle, useSingle } from "./single";
 
-export function use<D = any, E = any, K = any>(
-  schema: SingleSchema<D, E, K>,
-  deps: DependencyList
+export function use<D = any, E = any, K = any, L extends DependencyList = []>(
+  factory: (...params: L) => SingleSchema<D, E, K>, deps: L
 ): SingleHandle<D, E, K>
 
-export function use<D = any, E = any, K = any>(
-  schema: ScrollSchema<D, E, K>,
-  deps: DependencyList
+export function use<D = any, E = any, K = any, L extends DependencyList = []>(
+  factory: (...params: L) => ScrollSchema<D, E, K>, deps: L
 ): ScrollHandle<D, E, K>
 
-export function use<D = any, E = any, K = any>(
-  schema: Schema<D, E, K>,
-  deps: DependencyList
+export function use<D = any, E = any, K = any, L extends DependencyList = []>(
+  factory: (...params: L) => Schema<D, E, K>, deps: L
 ) {
-  const rschema = useMemo(() => {
-    return schema
+  const schema = useMemo(() => {
+    return factory(...deps)
   }, deps)
 
-  if (rschema instanceof SingleSchema)
-    return useSingle<D, E, K>(rschema.key, rschema.poster, rschema.params)
+  if (schema instanceof SingleSchema)
+    return useSingle<D, E, K>(schema.key, schema.poster, schema.params)
 
-  if (rschema instanceof ScrollSchema)
-    return useScroll<D, E, K>(rschema.scroller, rschema.fetcher, rschema.params)
+  if (schema instanceof ScrollSchema)
+    return useScroll<D, E, K>(schema.scroller, schema.fetcher, schema.params)
 
   throw new Error("Invalid resource schema")
 }
