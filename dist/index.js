@@ -1501,11 +1501,15 @@ function useSingle(key, poster, params) {
     return { key: key, skey: skey, data: data, error: error, time: time, cooldown: cooldown, expiration: expiration, aborter: aborter, loading: loading, ready: ready, mutate: mutate, fetch: fetch, refetch: refetch, update: update, clear: clear };
 }
 
-function use(schema) {
-    if (schema instanceof SingleSchema)
-        return useSingle(schema.key, schema.poster, schema.params);
-    if (schema instanceof ScrollSchema)
-        return useScroll(schema.scroller, schema.fetcher, schema.params);
+function use(schema, deps) {
+    if (deps === void 0) { deps = [schema]; }
+    var rschema = React.useMemo(function () {
+        return schema;
+    }, deps);
+    if (rschema instanceof SingleSchema)
+        return useSingle(rschema.key, rschema.poster, rschema.params);
+    if (rschema instanceof ScrollSchema)
+        return useScroll(rschema.scroller, rschema.fetcher, rschema.params);
     throw new Error("Invalid resource schema");
 }
 
