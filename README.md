@@ -40,7 +40,7 @@ By using these two approaches, XSWR aims to help you reuse things in an elegant 
 - Cancellable requests
 - Automatic cancellation 
 - Automatic garbage collection
-- Per-query persistence
+- Per-query persistent storage
 
 ### Upcoming features
 
