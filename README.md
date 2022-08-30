@@ -10,15 +10,11 @@ npm i @hazae41/xswr
 
 ## Philosophy
 
-XSWR is very inspired from SWR (which stands for "Stale While Revalidate").
-
-In fact, it's a side project I made to fill in the gaps of SWR, that ended up production-ready.
-
 XSWR uses two new approaches compared to other data fetching libraries like swr or react-query:
 1) Encapsulating key, fetcher and resource type in a single abstraction called "handle".
 2) Composing features with very simple hooks instead of having bloated configuration patterns and unexpected behaviours.
 
-By using these two approaches, XSWR aims to help you highly [centralize and reuse things](https://xswr.hazae41.me/patterns/centralization).
+By using these two approaches, XSWR aims to help you reuse things in an elegant manner.
 
 ### [Comparison with swr and react-query](https://xswr.hazae41.me/faq/comparison)
 
@@ -52,6 +48,8 @@ By using these two approaches, XSWR aims to help you highly [centralize and reus
 - Store normalization
 - Bidirectional scrolling
 - React suspense
+
+# Getting started
 
 ## Preparing your app
 
