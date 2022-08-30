@@ -3,6 +3,7 @@ import { Params } from "../types/params";
 import { Poster } from "../types/poster";
 import { State } from "../types/state";
 import { Updater } from "../types/updater";
+export declare function getSingleStorageKey<K = any>(key: K, params: Params): string;
 /**
  * Non-React version of SingleHandle
  */

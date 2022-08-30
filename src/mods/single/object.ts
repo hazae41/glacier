@@ -5,6 +5,19 @@ import { State } from "mods/types/state";
 import { Updater } from "mods/types/updater";
 import { DEFAULT_SERIALIZER } from "mods/utils/defaults";
 
+export function getSingleStorageKey<K = any>(key: K, params: Params) {
+  if (key === undefined)
+    return undefined
+  if (typeof key === "string")
+    return key
+
+  const {
+    serializer = DEFAULT_SERIALIZER
+  } = params
+
+  return serializer.stringify(key)
+}
+
 /**
  * Non-React version of SingleHandle
  */
@@ -26,16 +39,9 @@ export class SingleObject<D = any, E = any, K = any> {
     this.mparams = { ...pparams, ...params }
 
     this.skey = (() => {
-      if (key === undefined)
-        return
-      if (typeof key === "string")
-        return key
+      const { mparams } = this
 
-      const {
-        serializer = DEFAULT_SERIALIZER
-      } = this.mparams
-
-      return serializer.stringify(key)
+      return getSingleStorageKey(key, mparams)
     })();
 
     this._ready = (() => {

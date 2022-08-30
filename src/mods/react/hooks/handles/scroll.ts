@@ -1,9 +1,9 @@
 import { useCore, useParams } from "mods/react/contexts";
+import { getScrollStorageKey } from "mods/scroll/object";
 import { Fetcher } from "mods/types/fetcher";
 import { Params } from "mods/types/params";
 import { Scroller } from "mods/types/scroller";
 import { State } from "mods/types/state";
-import { DEFAULT_SERIALIZER } from "mods/utils/defaults";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { Handle } from "./handle";
 
@@ -15,19 +15,6 @@ export interface ScrollHandle<D = any, E = any, K = any> extends Handle<D[], E, 
    * Fetch the next page
    */
   scroll(): Promise<State<D[], E> | undefined>
-}
-
-export function getScrollStorageKey<T = any>(key: T, params: Params) {
-  if (key === undefined)
-    return undefined
-  if (typeof key === "string")
-    return key
-
-  const {
-    serializer = DEFAULT_SERIALIZER
-  } = params
-
-  return `scroll:${serializer.stringify(key)}`
 }
 
 /**
@@ -77,15 +64,15 @@ export function useScroll<D = any, E = any, K = any>(
 
   const fetch = useCallback(async (aborter?: AbortController) => {
     return await core.scroll.first<D, E, K>(skey, scroller, fetcher, aborter, mparams)
-  }, [core, skey, fetcher])
+  }, [core, skey, scroller, fetcher])
 
   const refetch = useCallback(async (aborter?: AbortController) => {
     return await core.scroll.first<D, E, K>(skey, scroller, fetcher, aborter, mparams, true)
-  }, [core, skey, fetcher])
+  }, [core, skey, scroller, fetcher])
 
   const scroll = useCallback(async (aborter?: AbortController) => {
     return await core.scroll.scroll<D, E, K>(skey, scroller, fetcher, aborter, mparams, true)
-  }, [core, skey, fetcher])
+  }, [core, skey, scroller, fetcher])
 
   const clear = useCallback(async () => {
     await core.delete(skey, mparams)

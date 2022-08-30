@@ -370,6 +370,14 @@ var ScrollHelper = /** @class */ (function () {
     return ScrollHelper;
 }());
 
+function getScrollStorageKey(key, params) {
+    if (key === undefined)
+        return undefined;
+    if (typeof key === "string")
+        return key;
+    var _a = params.serializer, serializer = _a === void 0 ? DEFAULT_SERIALIZER : _a;
+    return "scroll:".concat(serializer.stringify(key));
+}
 /**
  * Non-React version of ScrollHandle
  */
@@ -386,13 +394,8 @@ var ScrollObject = /** @class */ (function () {
         this.mparams = __assign(__assign({}, pparams), params);
         this.key = scroller();
         this.skey = (function () {
-            var key = _this.key;
-            if (key === undefined)
-                return;
-            if (typeof key === "string")
-                return key;
-            var _a = _this.mparams.serializer, serializer = _a === void 0 ? DEFAULT_SERIALIZER : _a;
-            return "scroll:".concat(serializer.stringify(key));
+            var _a = _this, key = _a.key, mparams = _a.mparams;
+            return getScrollStorageKey(key, mparams);
         })();
         this._ready = (function () {
             var _a = _this, core = _a.core, skey = _a.skey, mparams = _a.mparams;
@@ -665,6 +668,14 @@ var SingleHelper = /** @class */ (function () {
     return SingleHelper;
 }());
 
+function getSingleStorageKey(key, params) {
+    if (key === undefined)
+        return undefined;
+    if (typeof key === "string")
+        return key;
+    var _a = params.serializer, serializer = _a === void 0 ? DEFAULT_SERIALIZER : _a;
+    return serializer.stringify(key);
+}
 /**
  * Non-React version of SingleHandle
  */
@@ -680,12 +691,8 @@ var SingleObject = /** @class */ (function () {
         this.pparams = pparams;
         this.mparams = __assign(__assign({}, pparams), params);
         this.skey = (function () {
-            if (key === undefined)
-                return;
-            if (typeof key === "string")
-                return key;
-            var _a = _this.mparams.serializer, serializer = _a === void 0 ? DEFAULT_SERIALIZER : _a;
-            return serializer.stringify(key);
+            var mparams = _this.mparams;
+            return getSingleStorageKey(key, mparams);
         })();
         this._ready = (function () {
             var _a = _this, core = _a.core, skey = _a.skey, mparams = _a.mparams;
@@ -1339,14 +1346,6 @@ function useVisible(handle) {
     }, [fetch]);
 }
 
-function getScrollStorageKey(key, params) {
-    if (key === undefined)
-        return undefined;
-    if (typeof key === "string")
-        return key;
-    var _a = params.serializer, serializer = _a === void 0 ? DEFAULT_SERIALIZER : _a;
-    return "scroll:".concat(serializer.stringify(key));
-}
 /**
  * Scrolling resource handle factory
  * @param scroller Key scroller (memoized)
@@ -1394,7 +1393,7 @@ function useScroll(scroller, fetcher, params) {
                 case 1: return [2 /*return*/, _a.sent()];
             }
         });
-    }); }, [core, skey, fetcher]);
+    }); }, [core, skey, scroller, fetcher]);
     var refetch = React.useCallback(function (aborter) { return __awaiter(_this, void 0, void 0, function () {
         return __generator(this, function (_a) {
             switch (_a.label) {
@@ -1402,7 +1401,7 @@ function useScroll(scroller, fetcher, params) {
                 case 1: return [2 /*return*/, _a.sent()];
             }
         });
-    }); }, [core, skey, fetcher]);
+    }); }, [core, skey, scroller, fetcher]);
     var scroll = React.useCallback(function (aborter) { return __awaiter(_this, void 0, void 0, function () {
         return __generator(this, function (_a) {
             switch (_a.label) {
@@ -1410,7 +1409,7 @@ function useScroll(scroller, fetcher, params) {
                 case 1: return [2 /*return*/, _a.sent()];
             }
         });
-    }); }, [core, skey, fetcher]);
+    }); }, [core, skey, scroller, fetcher]);
     var clear = React.useCallback(function () { return __awaiter(_this, void 0, void 0, function () {
         return __generator(this, function (_a) {
             switch (_a.label) {
@@ -1440,13 +1439,8 @@ function useSingle(key, poster, params) {
     var pparams = useParams();
     var mparams = __assign(__assign({}, pparams), params);
     var skey = React.useMemo(function () {
-        if (key === undefined)
-            return;
-        if (typeof key === "string")
-            return key;
-        var _a = mparams.serializer, serializer = _a === void 0 ? DEFAULT_SERIALIZER : _a;
-        return serializer.stringify(key);
-    }, [core, key]);
+        return getSingleStorageKey(key, mparams);
+    }, [key]);
     var _a = __read(React.useState(function () { return core.hasSync(skey, mparams); }), 2), ready = _a[0], setReady = _a[1];
     var _b = __read(React.useState(function () { return core.getSync(skey, mparams); }), 2), state = _b[0], setState = _b[1];
     React.useEffect(function () {
@@ -1695,15 +1689,16 @@ var index = {
     useRetry: useRetry,
     useVisible: useVisible,
     use: use,
-    getScrollStorageKey: getScrollStorageKey,
     useScroll: useScroll,
     useSingle: useSingle,
     useXSWR: useXSWR,
     ScrollHelper: ScrollHelper,
+    getScrollStorageKey: getScrollStorageKey,
     ScrollObject: ScrollObject,
     scroll: scroll,
     ScrollSchema: ScrollSchema,
     SingleHelper: SingleHelper,
+    getSingleStorageKey: getSingleStorageKey,
     SingleObject: SingleObject,
     single: single,
     SingleSchema: SingleSchema,

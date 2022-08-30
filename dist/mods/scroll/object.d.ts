@@ -3,6 +3,7 @@ import { Fetcher } from "../index";
 import { Params } from "../types/params";
 import { Scroller } from "../types/scroller";
 import { State } from "../types/state";
+export declare function getScrollStorageKey<K = any>(key: K, params: Params): string;
 /**
  * Non-React version of ScrollHandle
  */

@@ -1,9 +1,9 @@
 import { useCore, useParams } from "mods/react/contexts";
+import { getSingleStorageKey } from "mods/single/object";
 import { Params } from "mods/types/params";
 import { Poster } from "mods/types/poster";
 import { State } from "mods/types/state";
 import { Updater } from "mods/types/updater";
-import { DEFAULT_SERIALIZER } from "mods/utils/defaults";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { Handle } from "./handle";
 
@@ -37,17 +37,8 @@ export function useSingle<D = any, E = any, K = any>(
   const mparams = { ...pparams, ...params }
 
   const skey = useMemo(() => {
-    if (key === undefined)
-      return
-    if (typeof key === "string")
-      return key
-
-    const {
-      serializer = DEFAULT_SERIALIZER
-    } = mparams
-
-    return serializer.stringify(key)
-  }, [core, key])
+    return getSingleStorageKey(key, mparams)
+  }, [key])
 
   const [ready, setReady] = useState(() => core.hasSync<D, E>(skey, mparams))
   const [state, setState] = useState(() => core.getSync<D, E>(skey, mparams))

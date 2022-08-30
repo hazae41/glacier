@@ -12,7 +12,6 @@ export interface ScrollHandle<D = any, E = any, K = any> extends Handle<D[], E, 
      */
     scroll(): Promise<State<D[], E> | undefined>;
 }
-export declare function getScrollStorageKey<T = any>(key: T, params: Params): string;
 /**
  * Scrolling resource handle factory
  * @param scroller Key scroller (memoized)
