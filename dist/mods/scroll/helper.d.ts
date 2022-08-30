@@ -1,8 +1,8 @@
-import { Core } from "./core";
-import { Fetcher } from "./types/fetcher";
-import { Params } from "./types/params";
-import { Scroller } from "./types/scroller";
-import { State } from "./types/state";
+import { Core } from "../core";
+import { Fetcher } from "../types/fetcher";
+import { Params } from "../types/params";
+import { Scroller } from "../types/scroller";
+import { State } from "../types/state";
 export declare class ScrollHelper {
     readonly core: Core;
     constructor(core: Core);

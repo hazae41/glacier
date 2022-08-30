@@ -1,8 +1,8 @@
 import { Core } from "mods/core"
-import { Params } from "mods/index"
+import { useCore } from "mods/react/contexts/core"
+import { useParams } from "mods/react/contexts/params"
+import { Params } from "mods/types/params"
 import { useCallback } from "react"
-import { useCore } from "../contexts/core"
-import { useParams } from "../contexts/params"
 
 export type Maker = <T>(x: {
   make(core: Core, params: Params): T

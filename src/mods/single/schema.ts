@@ -1,8 +1,8 @@
 import { Core } from "mods/core";
-import { SingleObject } from "mods/objects/single";
+import { Params } from "mods/types/params";
 import { Poster } from "mods/types/poster";
-import { Params } from "../types/params";
-import { Schema } from "./schema";
+import { Schema } from "mods/types/schema";
+import { SingleObject } from "./object";
 
 export function single<D = any, E = any, K = any>(
   key: K | undefined,

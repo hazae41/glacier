@@ -1,5 +1,5 @@
+import { Handle } from "mods/react/hooks/handles"
 import { useEffect } from "react"
-import { Handle } from "../index"
 
 /**
  * Show handle in console when it changes

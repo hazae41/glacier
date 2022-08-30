@@ -1,5 +1,5 @@
 import { Core } from "../../core";
-import { Params } from "../../index";
+import { Params } from "../../types/params";
 export declare type Maker = <T>(x: {
     make(core: Core, params: Params): T;
 }) => T;

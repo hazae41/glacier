@@ -1,9 +1,9 @@
 import { Core } from "mods/core";
-import { ScrollObject } from "mods/objects/index";
 import { Fetcher } from "mods/types/fetcher";
 import { Params } from "mods/types/params";
-import { Scroller } from "../types/scroller";
-import { Schema } from "./schema";
+import { Schema } from "mods/types/schema";
+import { Scroller } from "mods/types/scroller";
+import { ScrollObject } from "./object";
 
 export function scroll<D = any, E = any, K = any>(
   scroller: Scroller<D, K>,

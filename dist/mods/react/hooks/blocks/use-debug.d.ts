@@ -1,4 +1,4 @@
-import { Handle } from "../index";
+import { Handle } from "../handles";
 /**
  * Show handle in console when it changes
  * @param handle

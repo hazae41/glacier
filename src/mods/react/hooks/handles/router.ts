@@ -1,5 +1,6 @@
-import { ScrollSchema, SingleSchema } from "mods/schemas";
-import { Schema } from "mods/schemas/schema";
+import { ScrollSchema } from "mods/scroll";
+import { SingleSchema } from "mods/single";
+import { Schema } from "mods/types/schema";
 import { ScrollHandle, useScroll } from "./scroll";
 import { SingleHandle, useSingle } from "./single";
 

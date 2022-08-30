@@ -2,6 +2,7 @@ export * from "./fetcher";
 export * from "./params";
 export * from "./poster";
 export * from "./result";
+export * from "./schema";
 export * from "./scroller";
 export * from "./serializer";
 export * from "./state";
