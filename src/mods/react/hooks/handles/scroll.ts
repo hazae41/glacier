@@ -4,7 +4,7 @@ import { Fetcher } from "mods/types/fetcher";
 import { Params } from "mods/types/params";
 import { Scroller } from "mods/types/scroller";
 import { State } from "mods/types/state";
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Handle } from "./handle";
 
 /**
@@ -42,13 +42,14 @@ export function useScroll<D = any, E = any, K = any>(
     return getScrollStorageKey(key, mparams)
   }, [key])
 
-  const [ready, setReady] = useState(() => core.hasSync<D[], E>(skey, mparams))
-  const [state, setState] = useState(() => core.getSync<D[], E>(skey, mparams))
+  const [state, setState] = useState(() =>
+    core.getSync<D[], E>(skey, mparams))
+  const init = useRef(true)
 
   useEffect(() => {
-    core.get<D[], E>(skey, mparams)
-      .then(setState)
-      .finally(() => setReady(true))
+    if (state !== null && init.current) return
+    core.get<D[], E>(skey, mparams).then(setState)
+    init.current = false
   }, [core, skey])
 
   useEffect(() => {
@@ -80,6 +81,7 @@ export function useScroll<D = any, E = any, K = any>(
 
   const { data, error, time, cooldown, expiration, aborter } = state ?? {}
 
+  const ready = state !== null
   const loading = Boolean(aborter)
 
   return { key, skey, data, error, time, cooldown, expiration, aborter, loading, ready, mutate, fetch, refetch, scroll, clear }

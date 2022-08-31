@@ -14,7 +14,7 @@ export declare class Core extends Ortho<string, State | undefined> {
     unmount(): void;
     hasSync<D = any, E = any>(skey: string | undefined, params?: Params<D, E>): boolean;
     has<D = any, E = any>(skey: string | undefined, params?: Params<D, E>): Promise<boolean>;
-    getSync<D = any, E = any>(skey: string | undefined, params?: Params<D, E>): State<D, E> | undefined;
+    getSync<D = any, E = any>(skey: string | undefined, params?: Params<D, E>): State<D, E> | undefined | null;
     get<D = any, E = any>(skey: string | undefined, params?: Params<D, E>): Promise<State<D, E> | undefined>;
     /**
      * Force set a key to a state and publish it

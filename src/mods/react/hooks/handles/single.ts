@@ -4,7 +4,7 @@ import { Params } from "mods/types/params";
 import { Poster } from "mods/types/poster";
 import { State } from "mods/types/state";
 import { Updater } from "mods/types/updater";
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Handle } from "./handle";
 
 /**
@@ -40,13 +40,14 @@ export function useSingle<D = any, E = any, K = any>(
     return getSingleStorageKey(key, mparams)
   }, [key])
 
-  const [ready, setReady] = useState(() => core.hasSync<D, E>(skey, mparams))
-  const [state, setState] = useState(() => core.getSync<D, E>(skey, mparams))
+  const [state, setState] = useState(() =>
+    core.getSync<D, E>(skey, mparams))
+  const init = useRef(true)
 
   useEffect(() => {
-    core.get(skey, mparams)
-      .then(setState)
-      .finally(() => setReady(true))
+    if (state !== null && init.current) return
+    core.get(skey, mparams).then(setState)
+    init.current = false
   }, [core, skey])
 
   useEffect(() => {
@@ -78,6 +79,7 @@ export function useSingle<D = any, E = any, K = any>(
 
   const { data, error, time, cooldown, expiration, aborter } = state ?? {}
 
+  const ready = state !== null
   const loading = Boolean(aborter)
 
   return { key, skey, data, error, time, cooldown, expiration, aborter, loading, ready, mutate, fetch, refetch, update, clear }

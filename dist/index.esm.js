@@ -880,14 +880,14 @@ var Core = /** @class */ (function (_super) {
             return false;
         if (isAsyncStorage(storage))
             return false;
-        return storage.has(skey);
+        return Boolean(storage.get(skey));
     };
     Core.prototype.has = function (skey, params) {
         if (params === void 0) { params = {}; }
         return __awaiter(this, void 0, void 0, function () {
-            var storage;
-            return __generator(this, function (_a) {
-                switch (_a.label) {
+            var storage, _a;
+            return __generator(this, function (_b) {
+                switch (_b.label) {
                     case 0:
                         if (!skey)
                             return [2 /*return*/, false];
@@ -896,8 +896,9 @@ var Core = /** @class */ (function (_super) {
                         storage = params.storage;
                         if (!storage)
                             return [2 /*return*/, false];
-                        return [4 /*yield*/, storage.has(skey)];
-                    case 1: return [2 /*return*/, _a.sent()];
+                        _a = Boolean;
+                        return [4 /*yield*/, storage.get(skey)];
+                    case 1: return [2 /*return*/, _a.apply(void 0, [_b.sent()])];
                 }
             });
         });
@@ -912,7 +913,7 @@ var Core = /** @class */ (function (_super) {
         if (!storage)
             return;
         if (isAsyncStorage(storage))
-            return;
+            return null;
         var state = storage.get(skey);
         this.cache.set(skey, state);
         return state;
@@ -1359,12 +1360,15 @@ function useScroll(scroller, fetcher, params) {
     var skey = useMemo(function () {
         return getScrollStorageKey(key, mparams);
     }, [key]);
-    var _a = __read(useState(function () { return core.hasSync(skey, mparams); }), 2), ready = _a[0], setReady = _a[1];
-    var _b = __read(useState(function () { return core.getSync(skey, mparams); }), 2), state = _b[0], setState = _b[1];
+    var _a = __read(useState(function () {
+        return core.getSync(skey, mparams);
+    }), 2), state = _a[0], setState = _a[1];
+    var init = useRef(true);
     useEffect(function () {
-        core.get(skey, mparams)
-            .then(setState)
-            .finally(function () { return setReady(true); });
+        if (state !== null && init.current)
+            return;
+        core.get(skey, mparams).then(setState);
+        init.current = false;
     }, [core, skey]);
     useEffect(function () {
         if (!skey)
@@ -1414,7 +1418,8 @@ function useScroll(scroller, fetcher, params) {
             }
         });
     }); }, [core, skey]);
-    var _c = state !== null && state !== void 0 ? state : {}, data = _c.data, error = _c.error, time = _c.time, cooldown = _c.cooldown, expiration = _c.expiration, aborter = _c.aborter;
+    var _b = state !== null && state !== void 0 ? state : {}, data = _b.data, error = _b.error, time = _b.time, cooldown = _b.cooldown, expiration = _b.expiration, aborter = _b.aborter;
+    var ready = state !== null;
     var loading = Boolean(aborter);
     return { key: key, skey: skey, data: data, error: error, time: time, cooldown: cooldown, expiration: expiration, aborter: aborter, loading: loading, ready: ready, mutate: mutate, fetch: fetch, refetch: refetch, scroll: scroll, clear: clear };
 }
@@ -1435,12 +1440,15 @@ function useSingle(key, poster, params) {
     var skey = useMemo(function () {
         return getSingleStorageKey(key, mparams);
     }, [key]);
-    var _a = __read(useState(function () { return core.hasSync(skey, mparams); }), 2), ready = _a[0], setReady = _a[1];
-    var _b = __read(useState(function () { return core.getSync(skey, mparams); }), 2), state = _b[0], setState = _b[1];
+    var _a = __read(useState(function () {
+        return core.getSync(skey, mparams);
+    }), 2), state = _a[0], setState = _a[1];
+    var init = useRef(true);
     useEffect(function () {
-        core.get(skey, mparams)
-            .then(setState)
-            .finally(function () { return setReady(true); });
+        if (state !== null && init.current)
+            return;
+        core.get(skey, mparams).then(setState);
+        init.current = false;
     }, [core, skey]);
     useEffect(function () {
         if (!skey)
@@ -1490,7 +1498,8 @@ function useSingle(key, poster, params) {
             }
         });
     }); }, [core, skey]);
-    var _c = state !== null && state !== void 0 ? state : {}, data = _c.data, error = _c.error, time = _c.time, cooldown = _c.cooldown, expiration = _c.expiration, aborter = _c.aborter;
+    var _b = state !== null && state !== void 0 ? state : {}, data = _b.data, error = _b.error, time = _b.time, cooldown = _b.cooldown, expiration = _b.expiration, aborter = _b.aborter;
+    var ready = state !== null;
     var loading = Boolean(aborter);
     return { key: key, skey: skey, data: data, error: error, time: time, cooldown: cooldown, expiration: expiration, aborter: aborter, loading: loading, ready: ready, mutate: mutate, fetch: fetch, refetch: refetch, update: update, clear: clear };
 }
@@ -1514,6 +1523,143 @@ function useXSWR() {
     }, [core, params]);
     return { core: core, params: params, make: make };
 }
+
+function useIDBStorage(name) {
+    var ref = useRef();
+    if (ref.current)
+        ref.current = new IDBStorage(name);
+    return ref.current;
+}
+var IDBStorage = /** @class */ (function () {
+    function IDBStorage(name) {
+        this.name = name;
+        this.async = true;
+        this.initialization = this.initialize();
+    }
+    Object.defineProperty(IDBStorage.prototype, "database", {
+        get: function () { return this._database; },
+        enumerable: false,
+        configurable: true
+    });
+    IDBStorage.prototype.initialize = function () {
+        return __awaiter(this, void 0, void 0, function () {
+            var _a;
+            var _this = this;
+            return __generator(this, function (_b) {
+                switch (_b.label) {
+                    case 0:
+                        _a = this;
+                        return [4 /*yield*/, new Promise(function (ok, err) {
+                                var req = indexedDB.open(_this.name, 1);
+                                req.onupgradeneeded = function () {
+                                    return req.result.createObjectStore("keyval", {});
+                                };
+                                req.onblocked = function () { return err("blocked"); };
+                                req.onsuccess = function () { return ok(req.result); };
+                                req.onerror = function () { return err(req.error); };
+                            })];
+                    case 1:
+                        _a._database = _b.sent();
+                        return [2 /*return*/];
+                }
+            });
+        });
+    };
+    IDBStorage.prototype.transact = function (callback, mode) {
+        return __awaiter(this, void 0, void 0, function () {
+            var _this = this;
+            return __generator(this, function (_a) {
+                switch (_a.label) {
+                    case 0:
+                        if (!!this.database) return [3 /*break*/, 2];
+                        return [4 /*yield*/, this.initialization];
+                    case 1:
+                        _a.sent();
+                        _a.label = 2;
+                    case 2: return [4 /*yield*/, new Promise(function (ok, err) {
+                            var tx = _this.database.transaction("keyval", mode);
+                            tx.onerror = function () { return err(tx.error); };
+                            tx.oncomplete = function () { return ok(result); };
+                            var result;
+                            callback(tx.objectStore("keyval"))
+                                .then(function (x) { return result = x; })
+                                .then(function () { return tx.commit(); })
+                                .catch(err);
+                        })];
+                    case 3: return [2 /*return*/, _a.sent()];
+                }
+            });
+        });
+    };
+    IDBStorage.prototype.get = function (key) {
+        return __awaiter(this, void 0, void 0, function () {
+            var _this = this;
+            return __generator(this, function (_a) {
+                switch (_a.label) {
+                    case 0: return [4 /*yield*/, this.transact(function (store) { return __awaiter(_this, void 0, void 0, function () {
+                            return __generator(this, function (_a) {
+                                switch (_a.label) {
+                                    case 0: return [4 /*yield*/, new Promise(function (ok, err) {
+                                            var req = store.get(key);
+                                            req.onerror = function () { return err(req.error); };
+                                            req.onsuccess = function () { return ok(req.result); };
+                                        })];
+                                    case 1: return [2 /*return*/, _a.sent()];
+                                }
+                            });
+                        }); }, "readonly")];
+                    case 1: return [2 /*return*/, _a.sent()];
+                }
+            });
+        });
+    };
+    IDBStorage.prototype.set = function (key, state) {
+        return __awaiter(this, void 0, void 0, function () {
+            var _this = this;
+            return __generator(this, function (_a) {
+                switch (_a.label) {
+                    case 0: return [4 /*yield*/, this.transact(function (store) { return __awaiter(_this, void 0, void 0, function () {
+                            return __generator(this, function (_a) {
+                                switch (_a.label) {
+                                    case 0: return [4 /*yield*/, new Promise(function (ok, err) {
+                                            var data = state.data, time = state.time, cooldown = state.cooldown, expiration = state.expiration;
+                                            var req = store.put({ data: data, time: time, cooldown: cooldown, expiration: expiration }, key);
+                                            req.onerror = function () { return err(req.error); };
+                                            req.onsuccess = function () { return ok(); };
+                                        })];
+                                    case 1: return [2 /*return*/, _a.sent()];
+                                }
+                            });
+                        }); }, "readwrite")];
+                    case 1: return [2 /*return*/, _a.sent()];
+                }
+            });
+        });
+    };
+    IDBStorage.prototype.delete = function (key) {
+        return __awaiter(this, void 0, void 0, function () {
+            var _this = this;
+            return __generator(this, function (_a) {
+                switch (_a.label) {
+                    case 0: return [4 /*yield*/, this.transact(function (store) { return __awaiter(_this, void 0, void 0, function () {
+                            return __generator(this, function (_a) {
+                                switch (_a.label) {
+                                    case 0: return [4 /*yield*/, new Promise(function (ok, err) {
+                                            var req = store.delete(key);
+                                            req.onerror = function () { return err(req.error); };
+                                            req.onsuccess = function () { return ok(); };
+                                        })];
+                                    case 1: return [2 /*return*/, _a.sent()];
+                                }
+                            });
+                        }); }, "readwrite")];
+                    case 1: return [2 /*return*/, _a.sent()];
+                }
+            });
+        });
+    };
+    return IDBStorage;
+}());
 
 /**
  * Asynchronous local storage
@@ -1699,6 +1845,8 @@ var index = {
     SingleObject: SingleObject,
     single: single,
     SingleSchema: SingleSchema,
+    useIDBStorage: useIDBStorage,
+    IDBStorage: IDBStorage,
     useAsyncLocalStorage: useAsyncLocalStorage,
     AsyncLocalStorage: AsyncLocalStorage,
     useSyncLocalStorage: useSyncLocalStorage,

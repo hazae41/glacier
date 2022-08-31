@@ -36,7 +36,7 @@ export class Core extends Ortho<string, State | undefined> {
     const { storage } = params
     if (!storage) return false
     if (isAsyncStorage(storage)) return false
-    return storage.has(skey)
+    return Boolean(storage.get(skey))
   }
 
   async has<D = any, E = any>(
@@ -50,13 +50,13 @@ export class Core extends Ortho<string, State | undefined> {
 
     const { storage } = params
     if (!storage) return false
-    return await storage.has(skey)
+    return Boolean(await storage.get(skey))
   }
 
   getSync<D = any, E = any>(
     skey: string | undefined,
     params: Params<D, E> = {}
-  ): State<D, E> | undefined {
+  ): State<D, E> | undefined | null {
     if (!skey) return
 
     if (this.cache.has(skey))
@@ -64,7 +64,9 @@ export class Core extends Ortho<string, State | undefined> {
 
     const { storage } = params
     if (!storage) return
-    if (isAsyncStorage(storage)) return
+
+    if (isAsyncStorage(storage))
+      return null
     const state = storage.get(skey)
     this.cache.set(skey, state)
     return state
@@ -81,6 +83,7 @@ export class Core extends Ortho<string, State | undefined> {
 
     const { storage } = params
     if (!storage) return
+
     const state = await storage.get(skey)
     this.cache.set(skey, state)
     return state

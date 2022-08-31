@@ -5,7 +5,6 @@ export type Storage<T = any> =
 export interface SyncStorage<T = any> {
   async?: false
 
-  has(key: string): boolean
   get(key: string): T | undefined
   set(key: string, value: T): void
   delete(key: string): void
@@ -14,7 +13,6 @@ export interface SyncStorage<T = any> {
 export interface AsyncStorage<T = any> {
   async: true
 
-  has(key: string): Promise<boolean>
   get(key: string): Promise<T | undefined>
   set(key: string, value: T): Promise<void>
   delete(key: string): Promise<void>
