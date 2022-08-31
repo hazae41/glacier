@@ -1547,6 +1547,8 @@ var IDBStorage = /** @class */ (function () {
             return __generator(this, function (_b) {
                 switch (_b.label) {
                     case 0:
+                        if (typeof indexedDB === "undefined")
+                            return [2 /*return*/];
                         _a = this;
                         return [4 /*yield*/, new Promise(function (ok, err) {
                                 var req = indexedDB.open(_this.name, 1);
@@ -1570,6 +1572,8 @@ var IDBStorage = /** @class */ (function () {
             return __generator(this, function (_a) {
                 switch (_a.label) {
                     case 0:
+                        if (typeof indexedDB === "undefined")
+                            return [2 /*return*/];
                         if (!!this.database) return [3 /*break*/, 2];
                         return [4 /*yield*/, this.initialization];
                     case 1:

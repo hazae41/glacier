@@ -21,6 +21,9 @@ export class IDBStorage implements AsyncStorage {
   get database() { return this._database }
 
   private async initialize() {
+    if (typeof indexedDB === "undefined")
+      return
+
     this._database = await new Promise<IDBDatabase>((ok, err) => {
       const req = indexedDB.open(this.name, 1)
 
@@ -33,7 +36,10 @@ export class IDBStorage implements AsyncStorage {
   }
 
   async transact<T>(callback: (store: IDBObjectStore) => Promise<T>, mode: IDBTransactionMode) {
-    if (!this.database) await this.initialization
+    if (typeof indexedDB === "undefined")
+      return
+    if (!this.database)
+      await this.initialization
 
     return await new Promise<T>((ok, err) => {
       const tx = this.database.transaction("keyval", mode)
