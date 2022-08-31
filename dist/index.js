@@ -957,7 +957,7 @@ var Core = /** @class */ (function (_super) {
     Core.prototype.set = function (skey, state, params) {
         if (params === void 0) { params = {}; }
         return __awaiter(this, void 0, void 0, function () {
-            var storage;
+            var storage, data, time, cooldown, expiration;
             return __generator(this, function (_a) {
                 switch (_a.label) {
                     case 0:
@@ -968,7 +968,8 @@ var Core = /** @class */ (function (_super) {
                         storage = params.storage;
                         if (!storage)
                             return [2 /*return*/];
-                        return [4 /*yield*/, storage.set(skey, state)];
+                        data = state.data, time = state.time, cooldown = state.cooldown, expiration = state.expiration;
+                        return [4 /*yield*/, storage.set(skey, { data: data, time: time, cooldown: cooldown, expiration: expiration })];
                     case 1:
                         _a.sent();
                         return [2 /*return*/];
@@ -1369,12 +1370,11 @@ function useScroll(scroller, fetcher, params) {
     var _a = __read(React.useState(function () {
         return core.getSync(skey, mparams);
     }), 2), state = _a[0], setState = _a[1];
-    var init = React.useRef(true);
+    var first = React.useRef(true);
     React.useEffect(function () {
-        if (state !== null && init.current)
-            return;
-        core.get(skey, mparams).then(setState);
-        init.current = false;
+        if (state === null || !first.current)
+            core.get(skey, mparams).then(setState);
+        first.current = false;
     }, [core, skey]);
     React.useEffect(function () {
         if (!skey)
@@ -1449,12 +1449,11 @@ function useSingle(key, poster, params) {
     var _a = __read(React.useState(function () {
         return core.getSync(skey, mparams);
     }), 2), state = _a[0], setState = _a[1];
-    var init = React.useRef(true);
+    var first = React.useRef(true);
     React.useEffect(function () {
-        if (state !== null && init.current)
-            return;
-        core.get(skey, mparams).then(setState);
-        init.current = false;
+        if (state === null || !first.current)
+            core.get(skey, mparams).then(setState);
+        first.current = false;
     }, [core, skey]);
     React.useEffect(function () {
         if (!skey)
@@ -1532,7 +1531,7 @@ function useXSWR() {
 
 function useIDBStorage(name) {
     var ref = React.useRef();
-    if (ref.current)
+    if (!ref.current)
         ref.current = new IDBStorage(name);
     return ref.current;
 }
@@ -1619,7 +1618,7 @@ var IDBStorage = /** @class */ (function () {
             });
         });
     };
-    IDBStorage.prototype.set = function (key, state) {
+    IDBStorage.prototype.set = function (key, value) {
         return __awaiter(this, void 0, void 0, function () {
             var _this = this;
             return __generator(this, function (_a) {
@@ -1628,8 +1627,7 @@ var IDBStorage = /** @class */ (function () {
                             return __generator(this, function (_a) {
                                 switch (_a.label) {
                                     case 0: return [4 /*yield*/, new Promise(function (ok, err) {
-                                            var data = state.data, time = state.time, cooldown = state.cooldown, expiration = state.expiration;
-                                            var req = store.put({ data: data, time: time, cooldown: cooldown, expiration: expiration }, key);
+                                            var req = store.put(value, key);
                                             req.onerror = function () { return err(req.error); };
                                             req.onsuccess = function () { return ok(); };
                                         })];
@@ -1705,15 +1703,6 @@ var AsyncLocalStorage = /** @class */ (function () {
         this.serializer = serializer;
         this.async = true;
     }
-    AsyncLocalStorage.prototype.has = function (key) {
-        return __awaiter(this, void 0, void 0, function () {
-            return __generator(this, function (_a) {
-                if (typeof Storage === "undefined")
-                    return [2 /*return*/];
-                return [2 /*return*/, Boolean(localStorage.getItem(key))];
-            });
-        });
-    };
     AsyncLocalStorage.prototype.get = function (key) {
         return __awaiter(this, void 0, void 0, function () {
             var item;
@@ -1727,14 +1716,13 @@ var AsyncLocalStorage = /** @class */ (function () {
             });
         });
     };
-    AsyncLocalStorage.prototype.set = function (key, state) {
+    AsyncLocalStorage.prototype.set = function (key, value) {
         return __awaiter(this, void 0, void 0, function () {
-            var data, time, cooldown, expiration, item;
+            var item;
             return __generator(this, function (_a) {
                 if (typeof Storage === "undefined")
                     return [2 /*return*/];
-                data = state.data, time = state.time, cooldown = state.cooldown, expiration = state.expiration;
-                item = this.serializer.stringify({ data: data, time: time, cooldown: cooldown, expiration: expiration });
+                item = this.serializer.stringify(value);
                 localStorage.setItem(key, item);
                 return [2 /*return*/];
             });
@@ -1785,11 +1773,6 @@ var SyncLocalStorage = /** @class */ (function () {
         this.serializer = serializer;
         this.async = false;
     }
-    SyncLocalStorage.prototype.has = function (key) {
-        if (typeof Storage === "undefined")
-            return;
-        return Boolean(localStorage.getItem(key));
-    };
     SyncLocalStorage.prototype.get = function (key) {
         if (typeof Storage === "undefined")
             return;
@@ -1797,11 +1780,10 @@ var SyncLocalStorage = /** @class */ (function () {
         if (item)
             return this.serializer.parse(item);
     };
-    SyncLocalStorage.prototype.set = function (key, state) {
+    SyncLocalStorage.prototype.set = function (key, value) {
         if (typeof Storage === "undefined")
             return;
-        var data = state.data, time = state.time, cooldown = state.cooldown, expiration = state.expiration;
-        var item = this.serializer.stringify({ data: data, time: time, cooldown: cooldown, expiration: expiration });
+        var item = this.serializer.stringify(value);
         localStorage.setItem(key, item);
     };
     SyncLocalStorage.prototype.delete = function (key) {

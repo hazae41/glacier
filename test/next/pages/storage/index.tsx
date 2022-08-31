@@ -1,4 +1,5 @@
 import { XSWR } from "@hazae41/xswr";
+import { useMemo } from "react";
 import { gunzipSync, gzipSync } from "zlib";
 import { HelloData } from "../../common/hello";
 
@@ -36,10 +37,10 @@ async function fetchAsJson<T>([url]: [string], more: XSWR.PosterMore<T>) {
 }
 
 function useHelloData() {
-  const storage = XSWR.useAsyncLocalStorage(GZIP)
+  const storage = XSWR.useIDBStorage("cache")
 
   const handle = XSWR.useSingle<HelloData>(
-    ["/api/hello"],
+    useMemo(() => ["/api/hello"], []),
     fetchAsJson,
     { storage })
 

@@ -1,5 +1,4 @@
 import { Serializer } from "mods/types/serializer"
-import { State } from "mods/types/state"
 import { SyncStorage } from "mods/types/storage"
 import { useRef } from "react"
 
@@ -32,31 +31,24 @@ export function useSyncLocalStorage(serializer?: Serializer) {
  * 
  * @see AsyncLocalStorage
  */
-export class SyncLocalStorage implements SyncStorage<State> {
+export class SyncLocalStorage implements SyncStorage {
   readonly async = false
 
   constructor(
     readonly serializer: Serializer = JSON
   ) { }
 
-  has(key: string) {
-    if (typeof Storage === "undefined")
-      return
-    return Boolean(localStorage.getItem(key))
-  }
-
-  get(key: string): State {
+  get<T = any>(key: string): T {
     if (typeof Storage === "undefined")
       return
     const item = localStorage.getItem(key)
     if (item) return this.serializer.parse(item)
   }
 
-  set(key: string, state: State) {
+  set<T = any>(key: string, value: T) {
     if (typeof Storage === "undefined")
       return
-    const { data, time, cooldown, expiration } = state
-    const item = this.serializer.stringify({ data, time, cooldown, expiration })
+    const item = this.serializer.stringify(value)
     localStorage.setItem(key, item)
   }
 

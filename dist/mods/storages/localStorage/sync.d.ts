@@ -1,5 +1,4 @@
 import { Serializer } from "../../types/serializer";
-import { State } from "../../types/state";
 import { SyncStorage } from "../../types/storage";
 /**
  * Synchronous local storage
@@ -22,12 +21,11 @@ export declare function useSyncLocalStorage(serializer?: Serializer): SyncLocalS
  *
  * @see AsyncLocalStorage
  */
-export declare class SyncLocalStorage implements SyncStorage<State> {
+export declare class SyncLocalStorage implements SyncStorage {
     readonly serializer: Serializer;
     readonly async = false;
     constructor(serializer?: Serializer);
-    has(key: string): boolean;
-    get(key: string): State;
-    set(key: string, state: State): void;
+    get<T = any>(key: string): T;
+    set<T = any>(key: string, value: T): void;
     delete(key: string): Promise<void>;
 }

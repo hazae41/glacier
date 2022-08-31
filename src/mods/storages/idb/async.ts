@@ -1,15 +1,14 @@
-import { State } from "mods/types/state"
 import { AsyncStorage } from "mods/types/storage"
 import { useRef } from "react"
 
 export function useIDBStorage(name: string) {
   const ref = useRef<IDBStorage>()
-  if (ref.current)
+  if (!ref.current)
     ref.current = new IDBStorage(name)
   return ref.current
 }
 
-export class IDBStorage implements AsyncStorage<State> {
+export class IDBStorage implements AsyncStorage {
   readonly async = true
   readonly initialization: Promise<void>
 
@@ -42,6 +41,7 @@ export class IDBStorage implements AsyncStorage<State> {
       tx.oncomplete = () => ok(result)
 
       let result: T;
+
       callback(tx.objectStore("keyval"))
         .then(x => result = x)
         .then(() => tx.commit())
@@ -49,9 +49,9 @@ export class IDBStorage implements AsyncStorage<State> {
     })
   }
 
-  async get(key: string) {
+  async get<T = any>(key: string) {
     return await this.transact(async (store) => {
-      return await new Promise<State>((ok, err) => {
+      return await new Promise<T>((ok, err) => {
         const req = store.get(key)
         req.onerror = () => err(req.error)
         req.onsuccess = () => ok(req.result)
@@ -59,11 +59,10 @@ export class IDBStorage implements AsyncStorage<State> {
     }, "readonly")
   }
 
-  async set(key: string, state: State) {
+  async set<T = any>(key: string, value: T) {
     return await this.transact(async (store) => {
       return await new Promise<void>((ok, err) => {
-        const { data, time, cooldown, expiration } = state
-        const req = store.put({ data, time, cooldown, expiration }, key)
+        const req = store.put(value, key)
         req.onerror = () => err(req.error)
         req.onsuccess = () => ok()
       })

@@ -1,14 +1,14 @@
-export declare type Storage<T = any> = SyncStorage<T> | AsyncStorage<T>;
-export interface SyncStorage<T = any> {
+export declare type Storage = SyncStorage | AsyncStorage;
+export interface SyncStorage {
     async?: false;
-    get(key: string): T | undefined;
-    set(key: string, value: T): void;
+    get<T = any>(key: string): T | undefined;
+    set<T = any>(key: string, value: T): void;
     delete(key: string): void;
 }
-export interface AsyncStorage<T = any> {
+export interface AsyncStorage {
     async: true;
-    get(key: string): Promise<T | undefined>;
-    set(key: string, value: T): Promise<void>;
+    get<T = any>(key: string): Promise<T | undefined>;
+    set<T = any>(key: string, value: T): Promise<void>;
     delete(key: string): Promise<void>;
 }
-export declare function isAsyncStorage<T = any>(storage: Storage<T>): storage is AsyncStorage<T>;
+export declare function isAsyncStorage(storage: Storage): storage is AsyncStorage;

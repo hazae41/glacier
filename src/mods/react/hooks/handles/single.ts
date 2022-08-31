@@ -42,12 +42,12 @@ export function useSingle<D = any, E = any, K = any>(
 
   const [state, setState] = useState(() =>
     core.getSync<D, E>(skey, mparams))
-  const init = useRef(true)
+  const first = useRef(true)
 
   useEffect(() => {
-    if (state !== null && init.current) return
-    core.get(skey, mparams).then(setState)
-    init.current = false
+    if (state === null || !first.current)
+      core.get(skey, mparams).then(setState)
+    first.current = false
   }, [core, skey])
 
   useEffect(() => {

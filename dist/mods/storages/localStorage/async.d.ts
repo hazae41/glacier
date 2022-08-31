@@ -1,5 +1,4 @@
 import { Serializer } from "../../types/serializer";
-import { State } from "../../types/state";
 import { AsyncStorage } from "../../types/storage";
 /**
  * Asynchronous local storage
@@ -28,12 +27,11 @@ export declare function useAsyncLocalStorage(serializer?: Serializer): AsyncLoca
  * @see SyncLocalStorage
  * @see useFallback
  */
-export declare class AsyncLocalStorage implements AsyncStorage<State> {
+export declare class AsyncLocalStorage implements AsyncStorage {
     readonly serializer: Serializer;
     readonly async = true;
     constructor(serializer?: Serializer);
-    has(key: string): Promise<boolean>;
-    get(key: string): Promise<State>;
-    set(key: string, state: State): Promise<void>;
+    get<T = any>(key: string): Promise<T>;
+    set<T = any>(key: string, value: T): Promise<void>;
     delete(key: string): Promise<void>;
 }

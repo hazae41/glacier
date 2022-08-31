@@ -1,5 +1,4 @@
 import { Serializer } from "mods/types/serializer"
-import { State } from "mods/types/state"
 import { AsyncStorage } from "mods/types/storage"
 import { useRef } from "react"
 
@@ -38,31 +37,24 @@ export function useAsyncLocalStorage(serializer?: Serializer) {
  * @see SyncLocalStorage
  * @see useFallback
  */
-export class AsyncLocalStorage implements AsyncStorage<State> {
+export class AsyncLocalStorage implements AsyncStorage {
   readonly async = true
 
   constructor(
     readonly serializer: Serializer = JSON
   ) { }
 
-  async has(key: string) {
-    if (typeof Storage === "undefined")
-      return
-    return Boolean(localStorage.getItem(key))
-  }
-
-  async get(key: string): Promise<State> {
+  async get<T = any>(key: string): Promise<T> {
     if (typeof Storage === "undefined")
       return
     const item = localStorage.getItem(key)
     if (item) return this.serializer.parse(item)
   }
 
-  async set(key: string, state: State) {
+  async set<T = any>(key: string, value: T) {
     if (typeof Storage === "undefined")
       return
-    const { data, time, cooldown, expiration } = state
-    const item = this.serializer.stringify({ data, time, cooldown, expiration })
+    const item = this.serializer.stringify(value)
     localStorage.setItem(key, item)
   }
 

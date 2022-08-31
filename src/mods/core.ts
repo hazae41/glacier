@@ -108,7 +108,8 @@ export class Core extends Ortho<string, State | undefined> {
 
     const { storage } = params
     if (!storage) return
-    await storage.set(skey, state)
+    const { data, time, cooldown, expiration } = state
+    await storage.set(skey, { data, time, cooldown, expiration })
   }
 
   /**
