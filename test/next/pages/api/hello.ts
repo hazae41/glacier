@@ -1,5 +1,5 @@
 import type { NextApiRequest, NextApiResponse } from 'next'
-import { HelloData } from '../../common/hello'
+import { HelloData } from '../../types/hello'
 
 const config = {
   rollback: false

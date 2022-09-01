@@ -11,7 +11,7 @@ async function fetchAsJson<T>([url, id]: any) {
 }
 
 function getKeySchema(id: string) {
-  return XSWR.single(["/api/hello", id], fetchAsJson)
+  return XSWR.single<unknown>(["/api/keys", id], fetchAsJson)
 }
 
 function useAutoFetchMixture(handle: XSWR.Handle) {

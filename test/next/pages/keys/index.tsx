@@ -13,7 +13,7 @@ async function fetchAsJson<T>([url, id]: any[], more: XSWR.PosterMore<T>) {
 }
 
 function getKeySchema(id: number) {
-  return XSWR.single(["/api/hello", id], fetchAsJson)
+  return XSWR.single<unknown>(["/api/keys", id], fetchAsJson)
 }
 
 function useKey(id: number) {

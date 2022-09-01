@@ -1,5 +1,6 @@
 import { XSWR } from "@hazae41/xswr";
 import { gunzipSync, gzipSync } from "zlib";
+import { HelloData } from "../../types/hello";
 
 class GZIP {
   static stringify(value?: any) {
@@ -35,7 +36,7 @@ async function fetchAsJson<T>(url: string, more: XSWR.PosterMore<T>) {
 }
 
 function getHelloSchema(storage?: XSWR.Storage) {
-  return XSWR.single("/api/hello", fetchAsJson, { storage })
+  return XSWR.single<HelloData>("/api/hello", fetchAsJson, { storage })
 }
 
 function useStoredHello() {
