@@ -1,6 +1,5 @@
 import { XSWR } from "@hazae41/xswr"
 import { useCallback, useEffect, useState } from "react"
-import { HelloData } from "../../common/hello"
 
 async function fetchAsJson<T>(url: string, more: XSWR.PosterMore<T>) {
   const { signal } = more
@@ -15,17 +14,19 @@ async function fetchAsJson<T>(url: string, more: XSWR.PosterMore<T>) {
   return { data, cooldown, expiration }
 }
 
-function useHelloData() {
-  const handle = XSWR.useSingle<HelloData>(
-    "/api/hello",
-    fetchAsJson)
+function getHelloSchema() {
+  return XSWR.single("/api/hello", fetchAsJson)
+}
+
+function useHello() {
+  const handle = XSWR.use(getHelloSchema, [])
 
   XSWR.useFetch(handle)
   return handle
 }
 
 function Consumer() {
-  const hello = useHelloData()
+  const hello = useHello()
 
   return <div>
     {JSON.stringify(hello.data) ?? "undefined"}

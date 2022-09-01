@@ -1,6 +1,5 @@
 import { XSWR } from "@hazae41/xswr";
 import { gunzipSync, gzipSync } from "zlib";
-import { HelloData } from "../../common/hello";
 
 class GZIP {
   static stringify(value?: any) {
@@ -35,27 +34,20 @@ async function fetchAsJson<T>(url: string, more: XSWR.PosterMore<T>) {
   return { data, cooldown, expiration }
 }
 
-function useHelloData() {
-  const storage = XSWR.useIDBStorage("cache")
+function getHelloSchema(storage?: XSWR.Storage) {
+  return XSWR.single("/api/hello", fetchAsJson, { storage })
+}
 
-  const handle = XSWR.useSingle<HelloData>(
-    "/api/hello",
-    fetchAsJson,
-    { storage })
+function useStoredHello() {
+  const storage = XSWR.useIDBStorage("cache")
+  const handle = XSWR.use(getHelloSchema, [storage])
 
   XSWR.useDebug(handle, "hello")
   return handle
 }
 
-export default function Wrapper() {
-  return <XSWR.ParamsProvider
-    serializer={GZIP}>
-    <Page />
-  </XSWR.ParamsProvider>
-}
-
-export function Page() {
-  const { data, fetch, clear } = useHelloData()
+function Page() {
+  const { data, fetch, clear } = useStoredHello()
 
   return <>
     <div>
@@ -68,4 +60,11 @@ export function Page() {
       Delete
     </button>
   </>
+}
+
+export default function Wrapper() {
+  return <XSWR.ParamsProvider
+    serializer={GZIP}>
+    <Page />
+  </XSWR.ParamsProvider>
 }

@@ -1,7 +1,7 @@
 import { XSWR } from "@hazae41/xswr"
-import { useMemo, useState } from "react"
+import { useState } from "react"
 
-async function fetchAsJson<T>([url, id]: any, more: XSWR.PosterMore<T>) {
+async function fetchAsJson<T>([url, id]: any[], more: XSWR.PosterMore<T>) {
   const { signal } = more
 
   const res = await fetch(`${url}?id=${id}`, { signal })
@@ -12,24 +12,26 @@ async function fetchAsJson<T>([url, id]: any, more: XSWR.PosterMore<T>) {
   return { data }
 }
 
-function useKeyData(id: number) {
-  const handle = XSWR.useSingle(
-    useMemo(() => ["/api/keys", id], [id]),
-    fetchAsJson)
+function getKeySchema(id: number) {
+  return XSWR.single(["/api/hello", id], fetchAsJson)
+}
+
+function useKey(id: number) {
+  const handle = XSWR.use(getKeySchema, [id])
 
   XSWR.useFetch(handle)
   return handle
 }
 
 export default function Page() {
-  const key0 = useKeyData(0)
-  const key1 = useKeyData(1)
-  const key2 = useKeyData(2)
-  const key3 = useKeyData(3)
+  const key0 = useKey(0)
+  const key1 = useKey(1)
+  const key2 = useKey(2)
+  const key3 = useKey(3)
 
   const [time, setTime] = useState(Date.now())
 
-  const keyTime = useKeyData(time)
+  const keyTime = useKey(time)
 
   return <>
     <div>

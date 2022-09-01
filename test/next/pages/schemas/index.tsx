@@ -10,15 +10,15 @@ async function fetchAsJson<T>([url, id]: any) {
   return { data }
 }
 
+function getKeySchema(id: string) {
+  return XSWR.single(["/api/hello", id], fetchAsJson)
+}
+
 function useAutoFetchMixture(handle: XSWR.Handle) {
   XSWR.useFetch(handle)
   XSWR.useOnline(handle)
   XSWR.useVisible(handle)
   return handle
-}
-
-function getKeySchema(id: string) {
-  return XSWR.single(["/api/hello", id], fetchAsJson, { cooldown: 5000 })
 }
 
 function useKeyMix(id: string) {
