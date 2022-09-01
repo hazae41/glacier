@@ -1,5 +1,5 @@
 import { XSWR } from "@hazae41/xswr"
-import { useState } from "react"
+import { useMemo, useState } from "react"
 
 async function fetchAsJson<T>([url, id]: any, more: XSWR.PosterMore<T>) {
   const { signal } = more
@@ -14,7 +14,7 @@ async function fetchAsJson<T>([url, id]: any, more: XSWR.PosterMore<T>) {
 
 function useKeyData(id: number) {
   const handle = XSWR.useSingle(
-    id > 0 ? ["/api/keys", id] : undefined,
+    useMemo(() => ["/api/keys", id], [id]),
     fetchAsJson)
 
   XSWR.useFetch(handle)

@@ -18,18 +18,11 @@ function useAutoFetchMixture(handle: XSWR.Handle) {
 }
 
 function getKeySchema(id: string) {
-  return XSWR.single(
-    ["/api/hello", id],
-    fetchAsJson,
-    { cooldown: 5000 })
-}
-
-function useKeyBase(id: string) {
-  return XSWR.use(getKeySchema, [id])
+  return XSWR.single(["/api/hello", id], fetchAsJson, { cooldown: 5000 })
 }
 
 function useKeyMix(id: string) {
-  const handle = useKeyBase(id)
+  const handle = XSWR.use(getKeySchema, [id])
   return useAutoFetchMixture(handle)
 }
 

@@ -15,7 +15,9 @@ async function postAsJson<T>(url: string, more: XSWR.PosterMore<T>) {
 }
 
 function useHelloData() {
-  const handle = XSWR.useSingle<HelloData>("/api/hello", postAsJson)
+  const handle = XSWR.useSingle<HelloData>(
+    "/api/hello",
+    postAsJson)
 
   XSWR.useFetch(handle)
   return handle
