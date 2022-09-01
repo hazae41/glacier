@@ -12,10 +12,10 @@ export default function Page() {
       <a>Optimistic updates</a>
     </Link>
     <Link href="/storage" passHref shallow>
-      <a>Storage</a>
+      <a>Persistent storage</a>
     </Link>
-    <Link href="/schemas" passHref shallow>
-      <a>Schemas</a>
+    <Link href="/make" passHref shallow>
+      <a>Schema maker</a>
     </Link>
   </div>
 }
