@@ -22,7 +22,7 @@ By using these two approaches, XSWR aims to help you reuse things in an elegant 
 
 ### Current features
 
-- 100% TypeScript
+- 100% TypeScript and ESM
 - Composition-based hooks
 - Very easy learning curve
 - No dependency except React
@@ -41,6 +41,7 @@ By using these two approaches, XSWR aims to help you reuse things in an elegant 
 - Automatic cancellation 
 - Automatic garbage collection
 - Per-query persistent storage
+- Out of the box IndexedDB and LocalStorage
 
 ### Upcoming features
 
