@@ -11,7 +11,7 @@ npm i @hazae41/xswr
 ## Philosophy
 
 XSWR uses two new approaches compared to other data fetching libraries like swr or react-query:
-1) Encapsulating key, fetcher and resource type in a single abstraction called "handle".
+1) Encapsulating key+fetcher+params in a single abstraction called schema.
 2) Composing features with very simple hooks instead of having bloated configuration patterns and unexpected behaviours.
 
 By using these two approaches, XSWR aims to help you reuse things in an elegant manner.
