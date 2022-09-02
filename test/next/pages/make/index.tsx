@@ -18,12 +18,12 @@ function useAutoFetchMixture(handle: XSWR.Handle) {
   XSWR.useFetch(handle)
   XSWR.useOnline(handle)
   XSWR.useVisible(handle)
-  return handle
 }
 
 function useKeyMix(id: string) {
   const handle = XSWR.use(getKeySchema, [id])
-  return useAutoFetchMixture(handle)
+  useAutoFetchMixture(handle)
+  return handle
 }
 
 function Reader() {

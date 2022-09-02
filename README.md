@@ -154,7 +154,6 @@ function useAutoFetchMixture(handle: XSWR.Handle) {
   XSWR.useFetch(handle)
   XSWR.useVisible(handle)
   XSWR.useOnline(handle)
-  return handle
 }
 ```
 
@@ -165,7 +164,8 @@ Once you got a schema and a mixture, you just have to mix it.
 ```tsx
 function useHelloMix() {
   const handle = XSWR.use(getHelloSchema, [])
-  return useAutoFetchMixture(handle)
+  useAutoFetchMixture(handle)
+  return handle
 }
 ```
 
