@@ -2,7 +2,7 @@ import { XSWR } from "@hazae41/xswr"
 import { useCallback } from "react"
 import { HelloData } from "../../types/hello"
 
-async function postAsJson<T>(url: string, more: XSWR.PosterMore<T>) {
+async function postAsJson<T extends HelloData>(url: string, more: XSWR.PosterMore<T>) {
   const { signal } = more
 
   const method = more.data ? "POST" : "GET"
@@ -18,7 +18,8 @@ async function postAsJson<T>(url: string, more: XSWR.PosterMore<T>) {
   }
 
   const data = await res.json() as T
-  return { data, cooldown, expiration }
+  const time = data.time
+  return { data, time, cooldown, expiration }
 }
 
 function getHelloSchema() {

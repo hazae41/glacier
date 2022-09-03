@@ -17,5 +17,8 @@ export default function Page() {
     <Link href="/make" passHref shallow>
       <a>Schema maker</a>
     </Link>
+    <Link href="/scroll" passHref shallow>
+      <a>Scroll pagination</a>
+    </Link>
   </div>
 }

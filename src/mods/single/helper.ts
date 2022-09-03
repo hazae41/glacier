@@ -49,7 +49,7 @@ export class SingleHelper {
     if (this.core.shouldCooldown(current, force))
       return current
 
-    const count = (current?.count ?? 0) + 1
+    const count = Date.now()
 
     const timeout = setTimeout(() => {
       aborter.abort("Timed out")
@@ -58,11 +58,16 @@ export class SingleHelper {
     try {
       const { signal } = aborter
 
-      current = await this.core.apply(skey, current, { count, aborter }, params)
+      {
+        const time = current?.time
+
+        current = await this.core.apply(skey, current, { count, time, aborter }, params)
+      }
 
       const {
         data,
         error,
+        time = Date.now(),
         cooldown = getTimeFromDelay(dcooldown),
         expiration = getTimeFromDelay(dexpiration)
       } = await fetcher(key, { signal })
@@ -70,7 +75,7 @@ export class SingleHelper {
       if (signal.aborted)
         throw new AbortError(signal)
 
-      return await this.core.mutate<D, E>(skey, { count, data, error, cooldown, expiration }, params)
+      return await this.core.mutate<D, E>(skey, { count, time, data, error, cooldown, expiration }, params)
     } catch (error: any) {
       const cooldown = getTimeFromDelay(dcooldown)
       const expiration = getTimeFromDelay(dexpiration)
@@ -118,7 +123,7 @@ export class SingleHelper {
 
     const updated = updater(current?.data)
 
-    const count = (current?.count ?? 0) + 1
+    const count = Date.now()
 
     const timeout = setTimeout(() => {
       aborter.abort("Timed out")
@@ -129,8 +134,8 @@ export class SingleHelper {
 
       {
         const data = updated
-        const time = current?.time
         const error = current?.error
+        const time = current?.time
         const optimistic = true
 
         await this.core.apply(skey, current, { count, time, data, error, aborter, optimistic }, params)
@@ -139,6 +144,7 @@ export class SingleHelper {
       const {
         data,
         error,
+        time = Date.now(),
         cooldown = getTimeFromDelay(dcooldown),
         expiration = getTimeFromDelay(dexpiration)
       } = await poster(key, { data: updated, signal })
@@ -153,7 +159,7 @@ export class SingleHelper {
         return await this.core.apply<D, E>(skey, current, { count, time, data, error, cooldown, expiration }, params)
       }
 
-      return await this.core.mutate<D, E>(skey, { count, data, cooldown, expiration }, params)
+      return await this.core.mutate<D, E>(skey, { count, time, data, cooldown, expiration }, params)
     } catch (error: any) {
       const time = current?.time
       const data = current?.data

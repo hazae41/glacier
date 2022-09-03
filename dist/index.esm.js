@@ -252,18 +252,18 @@ var ScrollHelper = /** @class */ (function () {
      * @returns The new state
      */
     ScrollHelper.prototype.first = function (skey, scroller, fetcher, aborter, params, force) {
-        var _a, _b;
+        var _a;
         if (aborter === void 0) { aborter = new AbortController(); }
         if (params === void 0) { params = {}; }
         if (force === void 0) { force = false; }
         return __awaiter(this, void 0, void 0, function () {
-            var _c, equals, _d, dcooldown, _e, dexpiration, _f, dtimeout, current, first, count, timeout, signal, _g, data, error, _h, cooldown, _j, expiration, data2, error_1, cooldown, expiration;
+            var _b, equals, _c, dcooldown, _d, dexpiration, _e, dtimeout, current, first, count, timeout, signal, time_1, _f, data, error, _g, time, _h, cooldown, _j, expiration, data2, error_1, cooldown, expiration;
             return __generator(this, function (_k) {
                 switch (_k.label) {
                     case 0:
                         if (skey === undefined)
                             return [2 /*return*/];
-                        _c = params.equals, equals = _c === void 0 ? DEFAULT_EQUALS : _c, _d = params.cooldown, dcooldown = _d === void 0 ? DEFAULT_COOLDOWN : _d, _e = params.expiration, dexpiration = _e === void 0 ? DEFAULT_EXPIRATION : _e, _f = params.timeout, dtimeout = _f === void 0 ? DEFAULT_TIMEOUT : _f;
+                        _b = params.equals, equals = _b === void 0 ? DEFAULT_EQUALS : _b, _c = params.cooldown, dcooldown = _c === void 0 ? DEFAULT_COOLDOWN : _c, _d = params.expiration, dexpiration = _d === void 0 ? DEFAULT_EXPIRATION : _d, _e = params.timeout, dtimeout = _e === void 0 ? DEFAULT_TIMEOUT : _e;
                         return [4 /*yield*/, this.core.get(skey, params)];
                     case 1:
                         current = _k.sent();
@@ -278,7 +278,7 @@ var ScrollHelper = /** @class */ (function () {
                         first = scroller(undefined);
                         if (!first)
                             return [2 /*return*/, current];
-                        count = ((_a = current === null || current === void 0 ? void 0 : current.count) !== null && _a !== void 0 ? _a : 0) + 1;
+                        count = Date.now();
                         timeout = setTimeout(function () {
                             aborter.abort("Timed out");
                         }, dtimeout);
@@ -286,21 +286,22 @@ var ScrollHelper = /** @class */ (function () {
                     case 2:
                         _k.trys.push([2, 7, 9, 10]);
                         signal = aborter.signal;
-                        return [4 /*yield*/, this.core.apply(skey, current, { count: count, aborter: aborter }, params)];
+                        time_1 = current === null || current === void 0 ? void 0 : current.time;
+                        return [4 /*yield*/, this.core.apply(skey, current, { count: count, time: time_1, aborter: aborter }, params)];
                     case 3:
                         current = _k.sent();
                         return [4 /*yield*/, fetcher(first, { signal: signal })];
                     case 4:
-                        _g = _k.sent(), data = _g.data, error = _g.error, _h = _g.cooldown, cooldown = _h === void 0 ? getTimeFromDelay(dcooldown) : _h, _j = _g.expiration, expiration = _j === void 0 ? getTimeFromDelay(dexpiration) : _j;
+                        _f = _k.sent(), data = _f.data, error = _f.error, _g = _f.time, time = _g === void 0 ? Date.now() : _g, _h = _f.cooldown, cooldown = _h === void 0 ? getTimeFromDelay(dcooldown) : _h, _j = _f.expiration, expiration = _j === void 0 ? getTimeFromDelay(dexpiration) : _j;
                         if (signal.aborted)
                             throw new AbortError(signal);
                         return [4 /*yield*/, this.core.get(skey, params)];
                     case 5:
                         current = _k.sent();
-                        data2 = (data === undefined || equals(data, (_b = current === null || current === void 0 ? void 0 : current.data) === null || _b === void 0 ? void 0 : _b[0]))
+                        data2 = (data === undefined || equals(data, (_a = current === null || current === void 0 ? void 0 : current.data) === null || _a === void 0 ? void 0 : _a[0]))
                             ? undefined
                             : [data];
-                        return [4 /*yield*/, this.core.apply(skey, current, { count: count, data: data2, error: error, cooldown: cooldown, expiration: expiration }, params)];
+                        return [4 /*yield*/, this.core.apply(skey, current, { count: count, time: time, data: data2, error: error, cooldown: cooldown, expiration: expiration }, params)];
                     case 6: return [2 /*return*/, _k.sent()];
                     case 7:
                         error_1 = _k.sent();
@@ -327,18 +328,18 @@ var ScrollHelper = /** @class */ (function () {
      * @returns The new state
      */
     ScrollHelper.prototype.scroll = function (skey, scroller, fetcher, aborter, params, force) {
-        var _a, _b, _c;
+        var _a, _b;
         if (aborter === void 0) { aborter = new AbortController(); }
         if (params === void 0) { params = {}; }
         if (force === void 0) { force = false; }
         return __awaiter(this, void 0, void 0, function () {
-            var _d, dcooldown, _e, dexpiration, _f, dtimeout, current, pages, last, count, timeout, signal, _g, data, error, _h, cooldown, _j, expiration, data2, error_2, cooldown, expiration;
+            var _c, dcooldown, _d, dexpiration, _e, dtimeout, current, pages, last, count, timeout, signal, time_2, _f, data, error, _g, time, _h, cooldown, _j, expiration, data2, error_2, cooldown, expiration;
             return __generator(this, function (_k) {
                 switch (_k.label) {
                     case 0:
                         if (skey === undefined)
                             return [2 /*return*/];
-                        _d = params.cooldown, dcooldown = _d === void 0 ? DEFAULT_COOLDOWN : _d, _e = params.expiration, dexpiration = _e === void 0 ? DEFAULT_EXPIRATION : _e, _f = params.timeout, dtimeout = _f === void 0 ? DEFAULT_TIMEOUT : _f;
+                        _c = params.cooldown, dcooldown = _c === void 0 ? DEFAULT_COOLDOWN : _c, _d = params.expiration, dexpiration = _d === void 0 ? DEFAULT_EXPIRATION : _d, _e = params.timeout, dtimeout = _e === void 0 ? DEFAULT_TIMEOUT : _e;
                         return [4 /*yield*/, this.core.get(skey, params)];
                     case 1:
                         current = _k.sent();
@@ -354,7 +355,7 @@ var ScrollHelper = /** @class */ (function () {
                         last = scroller(lastOf(pages));
                         if (!last)
                             return [2 /*return*/, current];
-                        count = ((_b = current === null || current === void 0 ? void 0 : current.count) !== null && _b !== void 0 ? _b : 0) + 1;
+                        count = Date.now();
                         timeout = setTimeout(function () {
                             aborter.abort("Timed out");
                         }, dtimeout);
@@ -362,12 +363,13 @@ var ScrollHelper = /** @class */ (function () {
                     case 2:
                         _k.trys.push([2, 7, 9, 10]);
                         signal = aborter.signal;
-                        return [4 /*yield*/, this.core.apply(skey, current, { count: count, aborter: aborter }, params)];
+                        time_2 = current === null || current === void 0 ? void 0 : current.time;
+                        return [4 /*yield*/, this.core.apply(skey, current, { count: count, time: time_2, aborter: aborter }, params)];
                     case 3:
                         current = _k.sent();
                         return [4 /*yield*/, fetcher(last, { signal: signal })];
                     case 4:
-                        _g = _k.sent(), data = _g.data, error = _g.error, _h = _g.cooldown, cooldown = _h === void 0 ? getTimeFromDelay(dcooldown) : _h, _j = _g.expiration, expiration = _j === void 0 ? getTimeFromDelay(dexpiration) : _j;
+                        _f = _k.sent(), data = _f.data, error = _f.error, _g = _f.time, time = _g === void 0 ? Date.now() : _g, _h = _f.cooldown, cooldown = _h === void 0 ? getTimeFromDelay(dcooldown) : _h, _j = _f.expiration, expiration = _j === void 0 ? getTimeFromDelay(dexpiration) : _j;
                         if (signal.aborted)
                             throw new AbortError(signal);
                         expiration = (current === null || current === void 0 ? void 0 : current.expiration) !== undefined
@@ -377,8 +379,8 @@ var ScrollHelper = /** @class */ (function () {
                     case 5:
                         current = _k.sent();
                         data2 = data !== undefined
-                            ? __spreadArray(__spreadArray([], __read((_c = current === null || current === void 0 ? void 0 : current.data) !== null && _c !== void 0 ? _c : []), false), [data], false) : undefined;
-                        return [4 /*yield*/, this.core.apply(skey, current, { count: count, data: data2, error: error, cooldown: cooldown, expiration: expiration }, params)];
+                            ? __spreadArray(__spreadArray([], __read((_b = current === null || current === void 0 ? void 0 : current.data) !== null && _b !== void 0 ? _b : []), false), [data], false) : undefined;
+                        return [4 /*yield*/, this.core.apply(skey, current, { count: count, time: time, data: data2, error: error, cooldown: cooldown, expiration: expiration }, params)];
                     case 6: return [2 /*return*/, _k.sent()];
                     case 7:
                         error_2 = _k.sent();
@@ -578,12 +580,11 @@ var SingleHelper = /** @class */ (function () {
      * @returns The new state
      */
     SingleHelper.prototype.fetch = function (key, skey, fetcher, aborter, params, force) {
-        var _a;
         if (aborter === void 0) { aborter = new AbortController(); }
         if (params === void 0) { params = {}; }
         if (force === void 0) { force = false; }
         return __awaiter(this, void 0, void 0, function () {
-            var _b, dcooldown, _c, dexpiration, _d, dtimeout, current, count, timeout, signal, _e, data, error, _f, cooldown, _g, expiration, error_1, cooldown, expiration;
+            var _a, dcooldown, _b, dexpiration, _c, dtimeout, current, count, timeout, signal, time_1, _d, data, error, _e, time, _f, cooldown, _g, expiration, error_1, cooldown, expiration;
             return __generator(this, function (_h) {
                 switch (_h.label) {
                     case 0:
@@ -591,7 +592,7 @@ var SingleHelper = /** @class */ (function () {
                             return [2 /*return*/];
                         if (skey === undefined)
                             return [2 /*return*/];
-                        _b = params.cooldown, dcooldown = _b === void 0 ? DEFAULT_COOLDOWN : _b, _c = params.expiration, dexpiration = _c === void 0 ? DEFAULT_EXPIRATION : _c, _d = params.timeout, dtimeout = _d === void 0 ? DEFAULT_TIMEOUT : _d;
+                        _a = params.cooldown, dcooldown = _a === void 0 ? DEFAULT_COOLDOWN : _a, _b = params.expiration, dexpiration = _b === void 0 ? DEFAULT_EXPIRATION : _b, _c = params.timeout, dtimeout = _c === void 0 ? DEFAULT_TIMEOUT : _c;
                         return [4 /*yield*/, this.core.get(skey, params)];
                     case 1:
                         current = _h.sent();
@@ -603,7 +604,7 @@ var SingleHelper = /** @class */ (function () {
                             current.aborter.abort("Replaced");
                         if (this.core.shouldCooldown(current, force))
                             return [2 /*return*/, current];
-                        count = ((_a = current === null || current === void 0 ? void 0 : current.count) !== null && _a !== void 0 ? _a : 0) + 1;
+                        count = Date.now();
                         timeout = setTimeout(function () {
                             aborter.abort("Timed out");
                         }, dtimeout);
@@ -611,15 +612,16 @@ var SingleHelper = /** @class */ (function () {
                     case 2:
                         _h.trys.push([2, 6, 8, 9]);
                         signal = aborter.signal;
-                        return [4 /*yield*/, this.core.apply(skey, current, { count: count, aborter: aborter }, params)];
+                        time_1 = current === null || current === void 0 ? void 0 : current.time;
+                        return [4 /*yield*/, this.core.apply(skey, current, { count: count, time: time_1, aborter: aborter }, params)];
                     case 3:
                         current = _h.sent();
                         return [4 /*yield*/, fetcher(key, { signal: signal })];
                     case 4:
-                        _e = _h.sent(), data = _e.data, error = _e.error, _f = _e.cooldown, cooldown = _f === void 0 ? getTimeFromDelay(dcooldown) : _f, _g = _e.expiration, expiration = _g === void 0 ? getTimeFromDelay(dexpiration) : _g;
+                        _d = _h.sent(), data = _d.data, error = _d.error, _e = _d.time, time = _e === void 0 ? Date.now() : _e, _f = _d.cooldown, cooldown = _f === void 0 ? getTimeFromDelay(dcooldown) : _f, _g = _d.expiration, expiration = _g === void 0 ? getTimeFromDelay(dexpiration) : _g;
                         if (signal.aborted)
                             throw new AbortError(signal);
-                        return [4 /*yield*/, this.core.mutate(skey, { count: count, data: data, error: error, cooldown: cooldown, expiration: expiration }, params)];
+                        return [4 /*yield*/, this.core.mutate(skey, { count: count, time: time, data: data, error: error, cooldown: cooldown, expiration: expiration }, params)];
                     case 5: return [2 /*return*/, _h.sent()];
                     case 6:
                         error_1 = _h.sent();
@@ -647,11 +649,10 @@ var SingleHelper = /** @class */ (function () {
      * @throws Error
      */
     SingleHelper.prototype.update = function (key, skey, poster, updater, aborter, params) {
-        var _a;
         if (aborter === void 0) { aborter = new AbortController(); }
         if (params === void 0) { params = {}; }
         return __awaiter(this, void 0, void 0, function () {
-            var _b, dcooldown, _c, dexpiration, _d, dtimeout, current, updated, count, timeout, signal, data_1, time, error_3, optimistic, _e, data, error, _f, cooldown, _g, expiration, time, data_2, error_2, time, data, cooldown, expiration;
+            var _a, dcooldown, _b, dexpiration, _c, dtimeout, current, updated, count, timeout, signal, data_1, error_3, time_2, optimistic, _d, data, error, _e, time, _f, cooldown, _g, expiration, time_3, data_2, error_2, time, data, cooldown, expiration;
             return __generator(this, function (_h) {
                 switch (_h.label) {
                     case 0:
@@ -659,7 +660,7 @@ var SingleHelper = /** @class */ (function () {
                             return [2 /*return*/];
                         if (skey === undefined)
                             return [2 /*return*/];
-                        _b = params.cooldown, dcooldown = _b === void 0 ? DEFAULT_COOLDOWN : _b, _c = params.expiration, dexpiration = _c === void 0 ? DEFAULT_EXPIRATION : _c, _d = params.timeout, dtimeout = _d === void 0 ? DEFAULT_TIMEOUT : _d;
+                        _a = params.cooldown, dcooldown = _a === void 0 ? DEFAULT_COOLDOWN : _a, _b = params.expiration, dexpiration = _b === void 0 ? DEFAULT_EXPIRATION : _b, _c = params.timeout, dtimeout = _c === void 0 ? DEFAULT_TIMEOUT : _c;
                         return [4 /*yield*/, this.core.get(skey, params)];
                     case 1:
                         current = _h.sent();
@@ -668,7 +669,7 @@ var SingleHelper = /** @class */ (function () {
                         if (current === null || current === void 0 ? void 0 : current.aborter)
                             current.aborter.abort("Replaced");
                         updated = updater(current === null || current === void 0 ? void 0 : current.data);
-                        count = ((_a = current === null || current === void 0 ? void 0 : current.count) !== null && _a !== void 0 ? _a : 0) + 1;
+                        count = Date.now();
                         timeout = setTimeout(function () {
                             aborter.abort("Timed out");
                         }, dtimeout);
@@ -677,23 +678,23 @@ var SingleHelper = /** @class */ (function () {
                         _h.trys.push([2, 8, 10, 11]);
                         signal = aborter.signal;
                         data_1 = updated;
-                        time = current === null || current === void 0 ? void 0 : current.time;
                         error_3 = current === null || current === void 0 ? void 0 : current.error;
+                        time_2 = current === null || current === void 0 ? void 0 : current.time;
                         optimistic = true;
-                        return [4 /*yield*/, this.core.apply(skey, current, { count: count, time: time, data: data_1, error: error_3, aborter: aborter, optimistic: optimistic }, params)];
+                        return [4 /*yield*/, this.core.apply(skey, current, { count: count, time: time_2, data: data_1, error: error_3, aborter: aborter, optimistic: optimistic }, params)];
                     case 3:
                         _h.sent();
                         return [4 /*yield*/, poster(key, { data: updated, signal: signal })];
                     case 4:
-                        _e = _h.sent(), data = _e.data, error = _e.error, _f = _e.cooldown, cooldown = _f === void 0 ? getTimeFromDelay(dcooldown) : _f, _g = _e.expiration, expiration = _g === void 0 ? getTimeFromDelay(dexpiration) : _g;
+                        _d = _h.sent(), data = _d.data, error = _d.error, _e = _d.time, time = _e === void 0 ? Date.now() : _e, _f = _d.cooldown, cooldown = _f === void 0 ? getTimeFromDelay(dcooldown) : _f, _g = _d.expiration, expiration = _g === void 0 ? getTimeFromDelay(dexpiration) : _g;
                         if (signal.aborted)
                             throw new AbortError(signal);
                         if (!(error !== undefined)) return [3 /*break*/, 6];
-                        time = current === null || current === void 0 ? void 0 : current.time;
+                        time_3 = current === null || current === void 0 ? void 0 : current.time;
                         data_2 = current === null || current === void 0 ? void 0 : current.data;
-                        return [4 /*yield*/, this.core.apply(skey, current, { count: count, time: time, data: data_2, error: error, cooldown: cooldown, expiration: expiration }, params)];
+                        return [4 /*yield*/, this.core.apply(skey, current, { count: count, time: time_3, data: data_2, error: error, cooldown: cooldown, expiration: expiration }, params)];
                     case 5: return [2 /*return*/, _h.sent()];
-                    case 6: return [4 /*yield*/, this.core.mutate(skey, { count: count, data: data, cooldown: cooldown, expiration: expiration }, params)];
+                    case 6: return [4 /*yield*/, this.core.mutate(skey, { count: count, time: time, data: data, cooldown: cooldown, expiration: expiration }, params)];
                     case 7: return [2 /*return*/, _h.sent()];
                     case 8:
                         error_2 = _h.sent();
@@ -1025,22 +1026,45 @@ var Core = /** @class */ (function (_super) {
                         next = {};
                         count = (_a = current === null || current === void 0 ? void 0 : current.count) !== null && _a !== void 0 ? _a : 0;
                         time = (_b = current === null || current === void 0 ? void 0 : current.time) !== null && _b !== void 0 ? _b : 0;
-                        next.count = (_c = state.count) !== null && _c !== void 0 ? _c : (count + 1);
-                        next.time = (_d = state.time) !== null && _d !== void 0 ? _d : Date.now();
-                        if (next.count < count)
-                            return [2 /*return*/, current];
-                        if (next.time < time)
-                            return [2 /*return*/, current];
-                        next.data = (_e = state.data) !== null && _e !== void 0 ? _e : current === null || current === void 0 ? void 0 : current.data;
-                        next.error = (_f = state.error) !== null && _f !== void 0 ? _f : (state.data === undefined ? current === null || current === void 0 ? void 0 : current.error : undefined);
+                        // Merge count and time
+                        next.count = (_c = state.count) !== null && _c !== void 0 ? _c : current === null || current === void 0 ? void 0 : current.count;
+                        next.time = (_d = state.time) !== null && _d !== void 0 ? _d : current === null || current === void 0 ? void 0 : current.time;
+                        // Set both to now if not explicitly set
+                        if (!("count" in state))
+                            next.count = Date.now();
+                        if (!("time" in state))
+                            next.time = Date.now();
+                        // If this is a previous request, ignore
+                        if (next.count !== undefined && next.count < count)
+                            return [2 /*return*/, current
+                                // If time is before current time ...
+                            ];
+                        // If time is before current time ...
+                        if (next.time !== undefined && next.time < time) {
+                            // ... keep current data/error
+                            next.time = current === null || current === void 0 ? void 0 : current.time;
+                            next.data = current === null || current === void 0 ? void 0 : current.data;
+                            next.error = current === null || current === void 0 ? void 0 : current.error;
+                        }
+                        else {
+                            // ... else merge data and error
+                            next.data = (_e = state.data) !== null && _e !== void 0 ? _e : current === null || current === void 0 ? void 0 : current.data;
+                            next.error = (_f = state.error) !== null && _f !== void 0 ? _f : current === null || current === void 0 ? void 0 : current.error;
+                        }
+                        // Clear error if data is given but not error
+                        if (state.data !== undefined && state.error === undefined)
+                            next.error = undefined;
+                        // Do not merge aborter and optimistic
                         next.aborter = state.aborter;
                         next.optimistic = state.optimistic;
-                        next.cooldown = state.cooldown !== -1
-                            ? (_g = state.cooldown) !== null && _g !== void 0 ? _g : current === null || current === void 0 ? void 0 : current.cooldown
-                            : undefined;
-                        next.expiration = state.expiration !== -1
-                            ? (_h = state.expiration) !== null && _h !== void 0 ? _h : current === null || current === void 0 ? void 0 : current.expiration
-                            : undefined;
+                        // Merge cooldown and expiration
+                        next.cooldown = (_g = state.cooldown) !== null && _g !== void 0 ? _g : current === null || current === void 0 ? void 0 : current.cooldown;
+                        next.expiration = (_h = state.expiration) !== null && _h !== void 0 ? _h : current === null || current === void 0 ? void 0 : current.expiration;
+                        // Clean cooldown and expiration
+                        if (next.cooldown === -1)
+                            next.cooldown = undefined;
+                        if (next.expiration === -1)
+                            next.expiration = undefined;
                         _j = params.equals, equals = _j === void 0 ? DEFAULT_EQUALS : _j;
                         if (equals(next.data, current === null || current === void 0 ? void 0 : current.data))
                             next.data = current === null || current === void 0 ? void 0 : current.data;
@@ -1199,10 +1223,10 @@ function CoreProvider(props) {
  * @param handle
  */
 function useDebug(handle, label) {
-    var time = handle.time;
+    var data = handle.data, error = handle.error, time = handle.time;
     useEffect(function () {
         console.debug(label, handle);
-    }, [time]);
+    }, [data, error, time]);
 }
 
 /**

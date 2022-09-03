@@ -123,27 +123,49 @@ export class Core extends Ortho<string, State | undefined> {
     const count = current?.count ?? 0
     const time = current?.time ?? 0
 
-    next.count = state.count ?? (count + 1)
-    next.time = state.time ?? Date.now()
+    // Set count and time
+    next.count = state.count
+    next.time = state.time
 
-    if (next.count < count)
+    // Set both to now if not explicitly set
+    if (!("count" in state))
+      next.count = Date.now()
+    if (!("time" in state))
+      next.time = Date.now()
+
+    // If this is a previous request, ignore
+    if (next.count !== undefined && next.count < count)
       return current
-    if (next.time < time)
-      return current
 
-    next.data = state.data ?? current?.data
-    next.error = state.error ?? (state.data === undefined ? current?.error : undefined)
+    // If time is before current time ...
+    if (next.time !== undefined && next.time < time) {
+      // ... keep current data/error
+      next.time = current?.time
+      next.data = current?.data
+      next.error = current?.error
+    } else {
+      // ... else merge data and error
+      next.data = state.data ?? current?.data
+      next.error = state.error ?? current?.error
+    }
 
+    // Clear error if data is given but not error
+    if (state.data !== undefined && state.error === undefined)
+      next.error = undefined
+
+    // Do not merge aborter and optimistic
     next.aborter = state.aborter
     next.optimistic = state.optimistic
 
-    next.cooldown = state.cooldown !== -1
-      ? state.cooldown ?? current?.cooldown
-      : undefined
+    // Merge cooldown and expiration
+    next.cooldown = state.cooldown ?? current?.cooldown
+    next.expiration = state.expiration ?? current?.expiration
 
-    next.expiration = state.expiration !== -1
-      ? state.expiration ?? current?.expiration
-      : undefined
+    // Clean cooldown and expiration
+    if (next.cooldown === -1)
+      next.cooldown = undefined
+    if (next.expiration === -1)
+      next.expiration = undefined
 
     const { equals = DEFAULT_EQUALS } = params
 
