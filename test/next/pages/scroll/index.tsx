@@ -1,6 +1,5 @@
 import { XSWR } from "@hazae41/xswr"
 import { useCallback } from "react"
-import { HelloData } from "../../types/hello"
 
 async function fetchAsJson<T>(url: string, more: XSWR.FetcherMore<T>) {
   const { signal } = more
@@ -18,57 +17,55 @@ async function fetchAsJson<T>(url: string, more: XSWR.FetcherMore<T>) {
   return { data, cooldown, expiration }
 }
 
-function getHelloSchema() {
-  return XSWR.scroll<HelloData>((previous) => {
-    if (previous)
-      return "/api/hello"
+function getScrollsSchema() {
+  return XSWR.scroll<{ data: number[], after?: string }>((previous) => {
+    if (!previous)
+      return `/api/scroll`
+    if (!previous.after)
+      return undefined
+    return `/api/scroll?after=${previous.after}`
   }, fetchAsJson)
 }
 
-function useHelloData() {
-  const handle = XSWR.use(getHelloSchema, [])
+function useScrollsData() {
+  const handle = XSWR.use(getScrollsSchema, [])
 
   XSWR.useFetch(handle)
   return handle
 }
 
 export default function Page() {
-  const hello = useHelloData()
+  const scrolls = useScrollsData()
 
   // this is for you, gaearon
-  const { data, error, loading, update, refetch, aborter, optimistic } = hello
+  const { data, error, loading, refetch, scroll, aborter } = scrolls
 
   const onRefreshClick = useCallback(() => {
     refetch()
   }, [refetch])
 
-  const onUpdateClick = useCallback(async () => {
-    const aborter = new AbortController()
-
-    update(previous => ({
-      name: previous?.name.replace("Doe", "Smith") ?? "None",
-      time: new Date().getSeconds()
-    }), aborter)
-
-    // await new Promise(ok => setTimeout(ok, 500))
-    // aborter.abort()
-  }, [update])
+  const onScrollClick = useCallback(() => {
+    scroll()
+  }, [scroll])
 
   const onAbortClick = useCallback(() => {
     aborter!.abort("dd")
   }, [aborter])
 
   return <>
-    <div>
-      {JSON.stringify(data) ?? "undefined"}
-    </div>
+    {(() => {
+      if (!data)
+        return <div>Empty</div>
+      return data.map((page, i) => <div key={i}>
+        <div>page {i}</div>
+        {page.data.map(element =>
+          <div key={element}>{element}</div>)}
+      </div>)
+    })()}
     <div style={{ color: "red" }}>
-      {error && XSWR.isAbortError(error)
-        ? "Aborted"
+      {error instanceof Error
+        ? error.message
         : JSON.stringify(error)}
-    </div>
-    <div>
-      {optimistic && "Optimistic"}
     </div>
     <div>
       {loading && "Loading..."}
@@ -76,8 +73,8 @@ export default function Page() {
     <button onClick={onRefreshClick}>
       Refresh
     </button>
-    <button onClick={onUpdateClick}>
-      Update
+    <button onClick={onScrollClick}>
+      Scroll
     </button>
     {aborter &&
       <button onClick={onAbortClick}>

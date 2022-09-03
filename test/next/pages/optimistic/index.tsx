@@ -63,11 +63,9 @@ export default function Page() {
       {JSON.stringify(data) ?? "undefined"}
     </div>
     <div style={{ color: "red" }}>
-      {error && XSWR.isAbortError(error)
-        ? "Aborted"
-        : error instanceof Error
-          ? error.message
-          : JSON.stringify(error)}
+      {error instanceof Error
+        ? error.message
+        : JSON.stringify(error)}
     </div>
     <div>
       {optimistic && "Optimistic"}
