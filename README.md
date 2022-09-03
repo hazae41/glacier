@@ -121,12 +121,18 @@ Last example was good, but here is the best way to use XSWR.
 
 Our fetcher was good, but this one can be aborted.
 
+It also returns an error if the request failed.
+
 ```tsx
 async function fetchAsJson<T>(url: string, more: XSWR.FetcherMore<T>) {
   const { signal } = more
 
   const res = await fetch(url, { signal })
-  if (!res.ok) throw new Error()
+
+  if (!res.ok) {
+    const error = new Error(await res.text())
+    return { error }
+  }
 
   const data = await res.json() as T
   return { data }
