@@ -9,8 +9,8 @@ export default async function handler(
   // return res.status(400).json({ message: "An error occured" })
 
   if (req.method === "GET")
-    return res.status(200).json({ name: "John Doe", time: new Date().getSeconds() })
+    return res.status(200).json({ name: "John Doe", time: ~~(Date.now() / 1000) })
 
   if (req.method === "POST")
-    return res.status(200).json({ name: "John Smith", time: new Date().getSeconds() })
+    return res.status(200).json({ name: "John Smith", time: ~~(Date.now() / 1000) })
 }

@@ -18,7 +18,7 @@ async function postAsJson<T extends HelloData>(url: string, more: XSWR.PosterMor
   }
 
   const data = await res.json() as T
-  const time = data.time
+  const time = data.time * 1000
   return { data, time, cooldown, expiration }
 }
 
@@ -48,7 +48,7 @@ export default function Page() {
 
     update(previous => ({
       name: previous?.name.replace("Doe", "Smith") ?? "None",
-      time: new Date().getSeconds()
+      time: ~~(Date.now() / 1000)
     }), aborter)
 
     // await new Promise(ok => setTimeout(ok, 500))
