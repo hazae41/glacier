@@ -24,7 +24,7 @@ export class ScrollHelper {
   async first<D = any, E = any, K = any>(
     skey: string | undefined,
     scroller: Scroller<D, K>,
-    fetcher: Fetcher<D, K>,
+    fetcher: Fetcher<D, E, K>,
     aborter = new AbortController(),
     params: Params<D[], E> = {},
     force = false
@@ -49,7 +49,6 @@ export class ScrollHelper {
     if (this.core.shouldCooldown(current, force))
       return current
 
-    const pages = current?.data ?? []
     const first = scroller(undefined)
     if (!first) return current
 
@@ -66,6 +65,7 @@ export class ScrollHelper {
 
       const {
         data,
+        error,
         cooldown = getTimeFromDelay(dcooldown),
         expiration = getTimeFromDelay(dexpiration)
       } = await fetcher(first, { signal })
@@ -73,9 +73,13 @@ export class ScrollHelper {
       if (signal.aborted)
         throw new AbortError(signal)
 
-      return equals(data, pages[0])
-        ? await this.core.mutate<D[], E>(skey, { count, data: pages, cooldown, expiration }, params)
-        : await this.core.mutate<D[], E>(skey, { count, data: [data], cooldown, expiration }, params)
+      current = await this.core.get(skey, params)
+
+      const data2 = (data === undefined || equals(data, current?.data?.[0]))
+        ? undefined
+        : [data]
+
+      return await this.core.apply<D[], E>(skey, current, { count, data: data2, error, cooldown, expiration }, params)
     } catch (error: any) {
       const cooldown = getTimeFromDelay(dcooldown)
       const expiration = getTimeFromDelay(dexpiration)
@@ -99,7 +103,7 @@ export class ScrollHelper {
   async scroll<D = any, E = any, K = any>(
     skey: string | undefined,
     scroller: Scroller<D, K>,
-    fetcher: Fetcher<D, K>,
+    fetcher: Fetcher<D, E, K>,
     aborter = new AbortController(),
     params: Params<D[], E> = {},
     force = false
@@ -140,6 +144,7 @@ export class ScrollHelper {
 
       let {
         data,
+        error,
         cooldown = getTimeFromDelay(dcooldown),
         expiration = getTimeFromDelay(dexpiration)
       } = await fetcher(last, { signal })
@@ -147,10 +152,17 @@ export class ScrollHelper {
       if (signal.aborted)
         throw new AbortError(signal)
 
-      if (current?.expiration)
-        expiration = Math.min(expiration, current.expiration)
+      expiration = current?.expiration !== undefined
+        ? Math.min(expiration, current?.expiration)
+        : expiration
 
-      return await this.core.mutate<D[], E>(skey, { count, data: [...pages, data], cooldown, expiration }, params)
+      current = await this.core.get(skey, params)
+
+      const data2 = data !== undefined
+        ? [...current?.data ?? [], data]
+        : undefined
+
+      return await this.core.apply<D[], E>(skey, current, { count, data: data2, error, cooldown, expiration }, params)
     } catch (error: any) {
       const cooldown = getTimeFromDelay(dcooldown)
       const expiration = getTimeFromDelay(dexpiration)

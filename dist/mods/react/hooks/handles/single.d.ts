@@ -21,4 +21,4 @@ export interface SingleHandle<D = any, E = any, K = any> extends Handle<D, E, K>
  * @param params Parameters (static)
  * @returns Single handle
  */
-export declare function useSingle<D = any, E = any, K = any>(key: K | undefined, poster: Poster<D, K>, params?: Params<D, E>): SingleHandle<D, E, K>;
+export declare function useSingle<D = any, E = any, K = any>(key: K | undefined, poster: Poster<D, E, K>, params?: Params<D, E>): SingleHandle<D, E, K>;

@@ -118,37 +118,38 @@ export class Core extends Ortho<string, State | undefined> {
       return
     }
 
-    if (state.time === undefined)
-      state.time = Date.now()
-    if (current?.time !== undefined && state.time < current.time)
+    const next: State<D, E> = {}
+
+    const count = current?.count ?? 0
+    const time = current?.time ?? 0
+
+    next.count = state.count ?? (count + 1)
+    next.time = state.time ?? Date.now()
+
+    if (next.count < count)
+      return current
+    if (next.time < time)
       return current
 
-    if (state.count === undefined)
-      state.count = (current?.count ?? 0) + 1
-    if (current?.count !== undefined && state.count < current.count)
-      return current
+    next.data = state.data ?? current?.data
+    next.error = state.error ?? (state.data === undefined ? current?.error : undefined)
+
+    next.aborter = state.aborter
+    next.optimistic = state.optimistic
+
+    next.cooldown = state.cooldown !== -1
+      ? state.cooldown ?? current?.cooldown
+      : undefined
+
+    next.expiration = state.expiration !== -1
+      ? state.expiration ?? current?.expiration
+      : undefined
 
     const { equals = DEFAULT_EQUALS } = params
 
-    if (equals(state.data, current?.data))
-      state.data = current?.data
-    if (equals(state.error, current?.error))
-      state.error = current?.error
-
-    const next = { ...current, ...state }
-
-    if (state.error === undefined && state.data !== undefined)
-      delete next.error
-    if (state.aborter === undefined)
-      delete next.aborter
-    if (state.optimistic === undefined)
-      delete next.optimistic
-    if (state.expiration === -1)
-      delete next.expiration
-    if (state.cooldown === -1)
-      delete next.cooldown
-
-    if (equals(current, next))
+    if (equals(next.data, current?.data))
+      next.data = current?.data
+    if (equals(next, current))
       return current
     await this.set<D, E>(key, next, params)
     return next

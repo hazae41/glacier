@@ -4,7 +4,7 @@ export class AbortError extends Error {
   }
 }
 
-export function isAbortError(e: unknown): e is DOMException {
+export function isAbortError(e: unknown): e is AbortError | DOMException {
   if (e instanceof AbortError)
     return true
   if (e instanceof DOMException && e.name === "AbortError")

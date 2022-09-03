@@ -31,7 +31,7 @@ export class SingleObject<D = any, E = any, K = any> {
   constructor(
     readonly core: Core,
     readonly key: K | undefined,
-    readonly poster: Poster<D, K>,
+    readonly poster: Poster<D, E, K>,
     readonly params: Params<D, E, K> = {},
     readonly pparams: Params<D, E, K> = {}
   ) {

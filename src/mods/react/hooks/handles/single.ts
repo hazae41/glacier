@@ -28,7 +28,7 @@ export interface SingleHandle<D = any, E = any, K = any> extends Handle<D, E, K>
  */
 export function useSingle<D = any, E = any, K = any>(
   key: K | undefined,
-  poster: Poster<D, K>,
+  poster: Poster<D, E, K>,
   params: Params<D, E> = {},
 ): SingleHandle<D, E, K> {
   const core = useCore()

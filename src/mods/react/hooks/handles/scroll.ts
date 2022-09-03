@@ -26,7 +26,7 @@ export interface ScrollHandle<D = any, E = any, K = any> extends Handle<D[], E, 
  */
 export function useScroll<D = any, E = any, K = any>(
   scroller: Scroller<D, K>,
-  fetcher: Fetcher<D, K>,
+  fetcher: Fetcher<D, E, K>,
   params: Params<D[], E> = {},
 ): ScrollHandle<D, E, K> {
   const core = useCore()

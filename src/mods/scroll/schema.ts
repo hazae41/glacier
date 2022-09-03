@@ -7,7 +7,7 @@ import { ScrollObject } from "./object";
 
 export function scroll<D = any, E = any, K = any>(
   scroller: Scroller<D, K>,
-  fetcher: Fetcher<D, K>,
+  fetcher: Fetcher<D, E, K>,
   params: Params<D[], E, K> = {},
 ) {
   return new ScrollSchema(scroller, fetcher, params)
@@ -16,7 +16,7 @@ export function scroll<D = any, E = any, K = any>(
 export class ScrollSchema<D = any, E = any, K = any> extends Schema<D, E, K> {
   constructor(
     readonly scroller: Scroller<D, K>,
-    readonly fetcher: Fetcher<D, K>,
+    readonly fetcher: Fetcher<D, E, K>,
     readonly params: Params<D[], E, K> = {},
   ) { super() }
 

@@ -19,4 +19,4 @@ export interface ScrollHandle<D = any, E = any, K = any> extends Handle<D[], E, 
  * @param params Parameters (static)
  * @returns Scrolling handle
  */
-export declare function useScroll<D = any, E = any, K = any>(scroller: Scroller<D, K>, fetcher: Fetcher<D, K>, params?: Params<D[], E>): ScrollHandle<D, E, K>;
+export declare function useScroll<D = any, E = any, K = any>(scroller: Scroller<D, K>, fetcher: Fetcher<D, E, K>, params?: Params<D[], E>): ScrollHandle<D, E, K>;

@@ -24,7 +24,7 @@ export class SingleHelper {
   async fetch<D = any, E = any, K = any>(
     key: K | undefined,
     skey: string | undefined,
-    fetcher: Fetcher<D, K>,
+    fetcher: Fetcher<D, E, K>,
     aborter = new AbortController(),
     params: Params<D, E> = {},
     force = false
@@ -62,6 +62,7 @@ export class SingleHelper {
 
       const {
         data,
+        error,
         cooldown = getTimeFromDelay(dcooldown),
         expiration = getTimeFromDelay(dexpiration)
       } = await fetcher(key, { signal })
@@ -69,7 +70,7 @@ export class SingleHelper {
       if (signal.aborted)
         throw new AbortError(signal)
 
-      return await this.core.mutate<D, E>(skey, { count, data, cooldown, expiration }, params)
+      return await this.core.mutate<D, E>(skey, { count, data, error, cooldown, expiration }, params)
     } catch (error: any) {
       const cooldown = getTimeFromDelay(dcooldown)
       const expiration = getTimeFromDelay(dexpiration)
@@ -94,7 +95,7 @@ export class SingleHelper {
   async update<D = any, E = any, K = any>(
     key: K | undefined,
     skey: string | undefined,
-    poster: Poster<D, K>,
+    poster: Poster<D, E, K>,
     updater: Updater<D>,
     aborter = new AbortController(),
     params: Params<D, E> = {},
@@ -126,19 +127,31 @@ export class SingleHelper {
     try {
       const { signal } = aborter
 
-      const time = current?.time
-      const error = current?.error
+      {
+        const data = updated
+        const time = current?.time
+        const error = current?.error
+        const optimistic = true
 
-      await this.core.apply(skey, current, { count, time, data: updated, error, aborter, optimistic: true }, params)
+        await this.core.apply(skey, current, { count, time, data, error, aborter, optimistic }, params)
+      }
 
       const {
         data,
+        error,
         cooldown = getTimeFromDelay(dcooldown),
         expiration = getTimeFromDelay(dexpiration)
       } = await poster(key, { data: updated, signal })
 
       if (signal.aborted)
         throw new AbortError(signal)
+
+      if (error !== undefined) {
+        const time = current?.time
+        const data = current?.data
+
+        return await this.core.apply<D, E>(skey, current, { count, time, data, error, cooldown, expiration }, params)
+      }
 
       return await this.core.mutate<D, E>(skey, { count, data, cooldown, expiration }, params)
     } catch (error: any) {
@@ -148,7 +161,7 @@ export class SingleHelper {
       const cooldown = getTimeFromDelay(dcooldown)
       const expiration = getTimeFromDelay(dexpiration)
 
-      return await this.core.mutate<D, E>(skey, { count, time, data, error, cooldown, expiration }, params)
+      return await this.core.apply<D, E>(skey, current, { count, time, data, error, cooldown, expiration }, params)
     } finally {
       clearTimeout(timeout)
     }

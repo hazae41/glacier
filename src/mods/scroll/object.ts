@@ -32,7 +32,7 @@ export class ScrollObject<D = any, E = any, K = any> {
   constructor(
     readonly core: Core,
     readonly scroller: Scroller<D, K>,
-    readonly fetcher: Fetcher<D, K>,
+    readonly fetcher: Fetcher<D, E, K>,
     readonly params: Params<D[], E, K> = {},
     readonly pparams: Params<D[], E, K> = {},
   ) {

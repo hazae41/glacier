@@ -2,13 +2,10 @@ import { XSWR } from "@hazae41/xswr"
 import { useCallback } from "react"
 import { HelloData } from "../../types/hello"
 
-async function postAsJson<T>(url: string, more: XSWR.PosterMore<T>) {
+async function fetchAsJson<T>(url: string, more: XSWR.FetcherMore<T>) {
   const { signal } = more
 
-  const method = more.data ? "POST" : "GET"
-  const body = more.data ? JSON.stringify(more.data) : undefined
-
-  const res = await fetch(url, { method, body, signal })
+  const res = await fetch(url, { signal })
   const cooldown = Date.now() + (5 * 1000)
   const expiration = Date.now() + (10 * 1000)
 
@@ -22,7 +19,10 @@ async function postAsJson<T>(url: string, more: XSWR.PosterMore<T>) {
 }
 
 function getHelloSchema() {
-  return XSWR.single<HelloData>("/api/hello", postAsJson)
+  return XSWR.scroll<HelloData>((previous) => {
+    if (previous)
+      return "/api/hello"
+  }, fetchAsJson)
 }
 
 function useHelloData() {
@@ -65,9 +65,7 @@ export default function Page() {
     <div style={{ color: "red" }}>
       {error && XSWR.isAbortError(error)
         ? "Aborted"
-        : error instanceof Error
-          ? error.message
-          : JSON.stringify(error)}
+        : JSON.stringify(error)}
     </div>
     <div>
       {optimistic && "Optimistic"}
