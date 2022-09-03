@@ -33,6 +33,11 @@ export interface Handle<D = any, E = any, K = any> {
      */
     aborter?: AbortController;
     /**
+     * - Whether the data is from an optimistic update
+     * - Whether the ongoing request is an optimistic update
+     */
+    optimistic?: boolean;
+    /**
      * Expiration time of this resource, if any, may be useful for fetching just before the resource becomes stale
      */
     expiration?: number;
