@@ -27,21 +27,6 @@ export class Core extends Ortho<string, State | undefined> {
     this._mounted = false
   }
 
-  hasSync<D = any, E = any>(
-    skey: string | undefined,
-    params: Params<D, E> = {}
-  ): boolean {
-    if (skey === undefined) return false
-
-    if (this.cache.has(skey))
-      return true
-
-    const { storage } = params
-    if (!storage) return false
-    if (isAsyncStorage(storage)) return false
-    return Boolean(storage.get(skey))
-  }
-
   getSync<D = any, E = any>(
     skey: string | undefined,
     params: Params<D, E> = {}

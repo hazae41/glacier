@@ -907,19 +907,6 @@ var Core = /** @class */ (function (_super) {
         }
         this._mounted = false;
     };
-    Core.prototype.hasSync = function (skey, params) {
-        if (params === void 0) { params = {}; }
-        if (skey === undefined)
-            return false;
-        if (this.cache.has(skey))
-            return true;
-        var storage = params.storage;
-        if (!storage)
-            return false;
-        if (isAsyncStorage(storage))
-            return false;
-        return Boolean(storage.get(skey));
-    };
     Core.prototype.getSync = function (skey, params) {
         if (params === void 0) { params = {}; }
         if (skey === undefined)

@@ -13,7 +13,6 @@ export declare class Core extends Ortho<string, State | undefined> {
     constructor();
     get mounted(): boolean;
     unmount(): void;
-    hasSync<D = any, E = any>(skey: string | undefined, params?: Params<D, E>): boolean;
     getSync<D = any, E = any>(skey: string | undefined, params?: Params<D, E>): State<D, E> | undefined | null;
     get<D = any, E = any>(skey: string | undefined, params?: Params<D, E>): Promise<State<D, E> | undefined>;
     /**
