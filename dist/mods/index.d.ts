@@ -1,4 +1,5 @@
 export * from "./core";
+export * from "./errors";
 export * from "./react";
 export * from "./scroll";
 export * from "./single";

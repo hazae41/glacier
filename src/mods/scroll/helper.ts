@@ -1,6 +1,7 @@
 import { lastOf } from "libs/arrays";
 import { getTimeFromDelay } from "libs/time";
 import { Core } from "mods/core";
+import { AbortError } from "mods/errors";
 import { Fetcher } from "mods/types/fetcher";
 import { Params } from "mods/types/params";
 import { Scroller } from "mods/types/scroller";
@@ -38,8 +39,10 @@ export class ScrollHelper {
     } = params
 
     let current = await this.core.get<D[], E>(skey, params)
-    if (current?.aborter)
+    if (current?.aborter && !force)
       return current
+    if (current?.aborter && force)
+      current.aborter.abort()
     if (this.core.shouldCooldown(current, force))
       return current
 
@@ -61,6 +64,8 @@ export class ScrollHelper {
         cooldown = getTimeFromDelay(dcooldown),
         expiration = getTimeFromDelay(dexpiration)
       } = await fetcher(first, { signal })
+
+      if (signal.aborted) throw new AbortError()
 
       return equals(data, pages[0])
         ? await this.core.apply<D[], E>(skey, current, { cooldown, expiration }, params)
@@ -125,6 +130,8 @@ export class ScrollHelper {
         cooldown = getTimeFromDelay(dcooldown),
         expiration = getTimeFromDelay(dexpiration)
       } = await fetcher(last, { signal })
+
+      if (signal.aborted) throw new AbortError()
 
       expiration = Math.min(expiration, current.expiration)
 

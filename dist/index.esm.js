@@ -207,6 +207,17 @@ function getTimeFromDelay(delay) {
     return Date.now() + delay;
 }
 
+var AbortError = /** @class */ (function (_super) {
+    __extends(AbortError, _super);
+    function AbortError() {
+        return _super.call(this, "Aborted", "AbortError") || this;
+    }
+    return AbortError;
+}(DOMException));
+function isAbortError(e) {
+    return e instanceof DOMException && e.name === "AbortError";
+}
+
 function jseq(a, b) {
     return a === b;
 }
@@ -252,8 +263,10 @@ var ScrollHelper = /** @class */ (function () {
                         return [4 /*yield*/, this.core.get(skey, params)];
                     case 1:
                         current = _k.sent();
-                        if (current === null || current === void 0 ? void 0 : current.aborter)
+                        if ((current === null || current === void 0 ? void 0 : current.aborter) && !force)
                             return [2 /*return*/, current];
+                        if ((current === null || current === void 0 ? void 0 : current.aborter) && force)
+                            current.aborter.abort();
                         if (this.core.shouldCooldown(current, force))
                             return [2 /*return*/, current];
                         pages = (_a = current === null || current === void 0 ? void 0 : current.data) !== null && _a !== void 0 ? _a : [];
@@ -273,6 +286,8 @@ var ScrollHelper = /** @class */ (function () {
                         return [4 /*yield*/, fetcher(first, { signal: signal })];
                     case 4:
                         _f = _k.sent(), data = _f.data, _g = _f.cooldown, cooldown = _g === void 0 ? getTimeFromDelay(dcooldown) : _g, _h = _f.expiration, expiration = _h === void 0 ? getTimeFromDelay(dexpiration) : _h;
+                        if (signal.aborted)
+                            throw new AbortError();
                         if (!equals(data, pages[0])) return [3 /*break*/, 6];
                         return [4 /*yield*/, this.core.apply(skey, current, { cooldown: cooldown, expiration: expiration }, params)];
                     case 5:
@@ -344,6 +359,8 @@ var ScrollHelper = /** @class */ (function () {
                         return [4 /*yield*/, fetcher(last, { signal: signal })];
                     case 4:
                         _e = _h.sent(), data = _e.data, _f = _e.cooldown, cooldown = _f === void 0 ? getTimeFromDelay(dcooldown) : _f, _g = _e.expiration, expiration = _g === void 0 ? getTimeFromDelay(dexpiration) : _g;
+                        if (signal.aborted)
+                            throw new AbortError();
                         expiration = Math.min(expiration, current.expiration);
                         return [4 /*yield*/, this.core.apply(skey, current, { data: __spreadArray(__spreadArray([], __read(pages), false), [data], false), cooldown: cooldown, expiration: expiration }, params)];
                     case 5: return [2 /*return*/, _h.sent()];
@@ -571,8 +588,10 @@ var SingleHelper = /** @class */ (function () {
                         return [4 /*yield*/, this.core.get(skey, params)];
                     case 1:
                         current = _g.sent();
-                        if (current === null || current === void 0 ? void 0 : current.aborter)
+                        if ((current === null || current === void 0 ? void 0 : current.aborter) && !force)
                             return [2 /*return*/, current];
+                        if ((current === null || current === void 0 ? void 0 : current.aborter) && force)
+                            current.aborter.abort();
                         if (this.core.shouldCooldown(current, force))
                             return [2 /*return*/, current];
                         timeout = setTimeout(function () {
@@ -588,6 +607,8 @@ var SingleHelper = /** @class */ (function () {
                         return [4 /*yield*/, fetcher(key, { signal: signal })];
                     case 4:
                         _d = _g.sent(), data = _d.data, _e = _d.cooldown, cooldown = _e === void 0 ? getTimeFromDelay(dcooldown) : _e, _f = _d.expiration, expiration = _f === void 0 ? getTimeFromDelay(dexpiration) : _f;
+                        if (signal.aborted)
+                            throw new AbortError();
                         return [4 /*yield*/, this.core.apply(skey, current, { data: data, cooldown: cooldown, expiration: expiration }, params)];
                     case 5: return [2 /*return*/, _g.sent()];
                     case 6:
@@ -645,6 +666,8 @@ var SingleHelper = /** @class */ (function () {
                         return [4 /*yield*/, poster(key, { data: updated, signal: signal })];
                     case 4:
                         _d = _g.sent(), data = _d.data, _e = _d.cooldown, cooldown = _e === void 0 ? getTimeFromDelay(dcooldown) : _e, _f = _d.expiration, expiration = _f === void 0 ? getTimeFromDelay(dexpiration) : _f;
+                        if (signal.aborted)
+                            throw new AbortError();
                         return [4 /*yield*/, this.core.mutate(skey, { data: data, cooldown: cooldown, expiration: expiration }, params)];
                     case 5: return [2 /*return*/, _g.sent()];
                     case 6:
@@ -1792,13 +1815,11 @@ var SyncLocalStorage = /** @class */ (function () {
     return SyncLocalStorage;
 }());
 
-function isAbortError(e) {
-    return e instanceof DOMException && e.name === "AbortError";
-}
-
 var index = {
     __proto__: null,
     Core: Core,
+    AbortError: AbortError,
+    isAbortError: isAbortError,
     CoreContext: CoreContext,
     useCore: useCore,
     useCoreProvider: useCoreProvider,
@@ -1845,8 +1866,7 @@ var index = {
     DEFAULT_EXPIRATION: DEFAULT_EXPIRATION,
     DEFAULT_TIMEOUT: DEFAULT_TIMEOUT,
     jseq: jseq,
-    jsoneq: jsoneq,
-    isAbortError: isAbortError
+    jsoneq: jsoneq
 };
 
 export { index as XSWR };

@@ -1,5 +1,6 @@
 import { getTimeFromDelay } from "libs/time";
 import { Core } from "mods/core";
+import { AbortError } from "mods/errors";
 import { Fetcher } from "mods/types/fetcher";
 import { Params } from "mods/types/params";
 import { Poster } from "mods/types/poster";
@@ -38,8 +39,10 @@ export class SingleHelper {
     } = params
 
     let current = await this.core.get<D, E>(skey, params)
-    if (current?.aborter)
+    if (current?.aborter && !force)
       return current
+    if (current?.aborter && force)
+      current.aborter.abort()
     if (this.core.shouldCooldown(current, force))
       return current
 
@@ -57,6 +60,8 @@ export class SingleHelper {
         cooldown = getTimeFromDelay(dcooldown),
         expiration = getTimeFromDelay(dexpiration)
       } = await fetcher(key, { signal })
+
+      if (signal.aborted) throw new AbortError()
 
       return await this.core.apply<D, E>(skey, current, { data, cooldown, expiration }, params)
     } catch (error: any) {
@@ -114,6 +119,8 @@ export class SingleHelper {
         cooldown = getTimeFromDelay(dcooldown),
         expiration = getTimeFromDelay(dexpiration)
       } = await poster(key, { data: updated, signal })
+
+      if (signal.aborted) throw new AbortError()
 
       return await this.core.mutate<D, E>(skey, { data, cooldown, expiration }, params)
     } catch (error: any) {
