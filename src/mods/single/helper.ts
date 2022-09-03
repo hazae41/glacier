@@ -75,13 +75,15 @@ export class SingleHelper {
       if (signal.aborted)
         throw new AbortError(signal)
 
-      return await this.core.mutate<D, E>(skey, { count, time, data, error, cooldown, expiration }, params)
-    } catch (error: any) {
-      const time = Date.now()
-      const cooldown = getTimeFromDelay(dcooldown)
-      const expiration = getTimeFromDelay(dexpiration)
+      const state: State<D, E> = {}
 
-      return await this.core.mutate<D, E>(skey, { count, time, error, cooldown, expiration }, params)
+      if (data !== undefined)
+        state.data = data
+      state.error = error
+
+      return await this.core.mutate<D, E>(skey, { count, time, cooldown, expiration, ...state }, params)
+    } catch (error: any) {
+      return await this.core.mutate<D, E>(skey, { count, error }, params)
     } finally {
       clearTimeout(timeout)
     }
@@ -157,18 +159,21 @@ export class SingleHelper {
         const time = current?.time
         const data = current?.data
 
-        return await this.core.apply<D, E>(skey, current, { count, time, data, error, cooldown, expiration }, params)
+        return await this.core.mutate<D, E>(skey, { count, time, cooldown, expiration, data, error }, params)
       }
 
-      return await this.core.mutate<D, E>(skey, { count, time, data, cooldown, expiration }, params)
+      const state: State<D, E> = {}
+
+      if (data !== undefined)
+        state.data = data
+      state.error = error
+
+      return await this.core.mutate<D, E>(skey, { count, time, cooldown, expiration, ...state }, params)
     } catch (error: any) {
       const time = current?.time
       const data = current?.data
 
-      const cooldown = getTimeFromDelay(dcooldown)
-      const expiration = getTimeFromDelay(dexpiration)
-
-      return await this.core.apply<D, E>(skey, current, { count, time, data, error, cooldown, expiration }, params)
+      return await this.core.mutate<D, E>(skey, { count, time, data, error }, params)
     } finally {
       clearTimeout(timeout)
     }

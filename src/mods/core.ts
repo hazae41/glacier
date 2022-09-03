@@ -118,20 +118,18 @@ export class Core extends Ortho<string, State | undefined> {
       return
     }
 
-    const next: State<D, E> = {}
+    const next: State<D, E> = {
+      count: Date.now(),
+      time: Date.now(),
+      data: current?.data,
+      error: current?.error,
+      cooldown: current?.cooldown,
+      expiration: current?.expiration,
+      ...state
+    }
 
     const count = current?.count ?? 0
     const time = current?.time ?? 0
-
-    // Set count and time
-    next.count = state.count
-    next.time = state.time
-
-    // Set both to now if not explicitly set
-    if (!("count" in state))
-      next.count = Date.now()
-    if (!("time" in state))
-      next.time = Date.now()
 
     // If this is a previous request, ignore
     if (next.count !== undefined && next.count < count)
@@ -144,29 +142,7 @@ export class Core extends Ortho<string, State | undefined> {
       next.time = current?.time
       next.data = current?.data
       next.error = current?.error
-    } else {
-      // ... else merge data and error
-      next.data = state.data ?? current?.data
-      next.error = state.error ?? current?.error
     }
-
-    // Clear error if data is given (but not error, for supporting rollbacks)
-    if (state.data !== undefined && state.error === undefined)
-      next.error = undefined
-
-    // Do not merge aborter and optimistic
-    next.aborter = state.aborter
-    next.optimistic = state.optimistic
-
-    // Merge cooldown and expiration
-    next.cooldown = state.cooldown ?? current?.cooldown
-    next.expiration = state.expiration ?? current?.expiration
-
-    // Clean cooldown and expiration
-    if (next.cooldown === -1)
-      next.cooldown = undefined
-    if (next.expiration === -1)
-      next.expiration = undefined
 
     const { equals = DEFAULT_EQUALS } = params
 

@@ -1,1 +1,1 @@
-export declare function getTimeFromDelay(delay: number): number;
+export declare function getTimeFromDelay(delay: number): number | undefined;
