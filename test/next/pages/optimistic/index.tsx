@@ -29,7 +29,7 @@ export default function Page() {
   const hello = useHelloData()
 
   // this is for you, gaearon
-  const { data, error, loading, update, refetch, aborter } = hello
+  const { data, error, loading, update, refetch, aborter, optimistic } = hello
 
   const onRefreshClick = useCallback(() => {
     refetch()
@@ -59,6 +59,9 @@ export default function Page() {
       {error && XSWR.isAbortError(error)
         ? "Aborted"
         : JSON.stringify(error)}
+    </div>
+    <div>
+      {optimistic && "Optimistic"}
     </div>
     <div>
       {loading && "Loading..."}
