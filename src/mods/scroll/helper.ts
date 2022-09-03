@@ -86,10 +86,11 @@ export class ScrollHelper {
 
       return await this.core.apply<D[], E>(skey, current, { count, time, data: data2, error, cooldown, expiration }, params)
     } catch (error: any) {
+      const time = Date.now()
       const cooldown = getTimeFromDelay(dcooldown)
       const expiration = getTimeFromDelay(dexpiration)
 
-      return await this.core.mutate<D[], E>(skey, { count, error, cooldown, expiration }, params)
+      return await this.core.mutate<D[], E>(skey, { count, time, error, cooldown, expiration }, params)
     } finally {
       clearTimeout(timeout)
     }
@@ -162,9 +163,8 @@ export class ScrollHelper {
       if (signal.aborted)
         throw new AbortError(signal)
 
-      expiration = current?.expiration !== undefined
-        ? Math.min(expiration, current?.expiration)
-        : expiration
+      if (current?.expiration !== undefined)
+        expiration = Math.min(expiration, current?.expiration)
 
       current = await this.core.get(skey, params)
 
@@ -174,10 +174,11 @@ export class ScrollHelper {
 
       return await this.core.apply<D[], E>(skey, current, { count, time, data: data2, error, cooldown, expiration }, params)
     } catch (error: any) {
+      const time = Date.now()
       const cooldown = getTimeFromDelay(dcooldown)
       const expiration = getTimeFromDelay(dexpiration)
 
-      return await this.core.mutate<D[], E>(skey, { count, error, cooldown, expiration }, params)
+      return await this.core.mutate<D[], E>(skey, { count, time, error, cooldown, expiration }, params)
     } finally {
       clearTimeout(timeout)
     }

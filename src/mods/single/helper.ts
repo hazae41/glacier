@@ -77,10 +77,11 @@ export class SingleHelper {
 
       return await this.core.mutate<D, E>(skey, { count, time, data, error, cooldown, expiration }, params)
     } catch (error: any) {
+      const time = Date.now()
       const cooldown = getTimeFromDelay(dcooldown)
       const expiration = getTimeFromDelay(dexpiration)
 
-      return await this.core.mutate<D, E>(skey, { count, error, cooldown, expiration }, params)
+      return await this.core.mutate<D, E>(skey, { count, time, error, cooldown, expiration }, params)
     } finally {
       clearTimeout(timeout)
     }

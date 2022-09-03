@@ -140,6 +140,7 @@ export class Core extends Ortho<string, State | undefined> {
     // If time is before current time ...
     if (next.time !== undefined && next.time < time) {
       // ... keep current data/error
+      next.count = current?.count
       next.time = current?.time
       next.data = current?.data
       next.error = current?.error
@@ -149,7 +150,7 @@ export class Core extends Ortho<string, State | undefined> {
       next.error = state.error ?? current?.error
     }
 
-    // Clear error if data is given but not error
+    // Clear error if data is given but not error (for supporting rollbacks)
     if (state.data !== undefined && state.error === undefined)
       next.error = undefined
 
