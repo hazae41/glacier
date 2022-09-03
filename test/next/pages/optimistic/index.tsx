@@ -41,7 +41,7 @@ export default function Page() {
     update(previous => ({
       name: previous?.name.replace("Doe", "Smith") ?? "None",
       time: new Date().getSeconds()
-    }), aborter).catch(alert)
+    }), aborter)
 
     // await new Promise(ok => setTimeout(ok, 500))
     // aborter.abort()
