@@ -26,8 +26,7 @@ export class SingleObject<D = any, E = any, K = any> {
 
   readonly mparams: Params<D, E, K>
 
-  private _ready: boolean
-  private _state: State<D, E>
+  private _state?: State<D, E> | null
 
   constructor(
     readonly core: Core,
@@ -44,12 +43,6 @@ export class SingleObject<D = any, E = any, K = any> {
       return getSingleStorageKey(key, mparams)
     })();
 
-    this._ready = (() => {
-      const { core, skey, mparams } = this
-
-      return core.hasSync(skey, mparams)
-    })();
-
     this._state = (() => {
       const { core, skey, mparams } = this
 
@@ -57,12 +50,11 @@ export class SingleObject<D = any, E = any, K = any> {
     })();
 
     (async () => {
-      if (this.ready) return
+      if (this._state !== null) return
 
       const { core, skey, mparams } = this
 
       this._state = await core.get(skey, mparams)
-      this._ready = true
     })();
 
     {
@@ -80,7 +72,6 @@ export class SingleObject<D = any, E = any, K = any> {
   }
 
   get state() { return this._state }
-  get ready() { return this._ready }
 
   async mutate(state?: State<D, E>) {
     const { core, skey, mparams } = this

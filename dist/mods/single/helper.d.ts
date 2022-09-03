@@ -29,5 +29,5 @@ export declare class SingleHelper {
      * @returns The new state
      * @throws Error
      */
-    update<D = any, E = any, K = any>(key: K | undefined, skey: string | undefined, poster: Poster<D, K>, updater: Updater<D>, aborter?: AbortController, params?: Params<D, E>): Promise<State<D, E>>;
+    update<D = any, E = any, K = any>(key: K | undefined, skey: string | undefined, poster: Poster<D, K>, updater: Updater<D>, aborter?: AbortController, params?: Params<D, E>): Promise<State<D, E> | undefined>;
 }

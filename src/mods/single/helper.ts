@@ -39,12 +39,17 @@ export class SingleHelper {
     } = params
 
     let current = await this.core.get<D, E>(skey, params)
+
     if (current?.aborter && !force)
       return current
-    if (current?.aborter && force)
-      current.aborter.abort()
+    if (current?.aborter && current?.optimistic)
+      return current
+    if (current?.aborter)
+      current.aborter.abort("Replaced")
     if (this.core.shouldCooldown(current, force))
       return current
+
+    const count = (current?.count ?? 0) + 1
 
     const timeout = setTimeout(() => {
       aborter.abort("Timed out")
@@ -53,7 +58,7 @@ export class SingleHelper {
     try {
       const { signal } = aborter
 
-      current = await this.core.apply(skey, current, { aborter }, params)
+      current = await this.core.apply(skey, current, { count, aborter }, params)
 
       const {
         data,
@@ -61,14 +66,15 @@ export class SingleHelper {
         expiration = getTimeFromDelay(dexpiration)
       } = await fetcher(key, { signal })
 
-      if (signal.aborted) throw new AbortError()
+      if (signal.aborted)
+        throw new AbortError(signal)
 
-      return await this.core.apply<D, E>(skey, current, { data, cooldown, expiration }, params)
+      return await this.core.mutate<D, E>(skey, { count, data, cooldown, expiration }, params)
     } catch (error: any) {
       const cooldown = getTimeFromDelay(dcooldown)
       const expiration = getTimeFromDelay(dexpiration)
 
-      return await this.core.apply<D, E>(skey, current, { error, cooldown, expiration }, params)
+      return await this.core.mutate<D, E>(skey, { count, error, cooldown, expiration }, params)
     } finally {
       clearTimeout(timeout)
     }
@@ -103,9 +109,15 @@ export class SingleHelper {
     } = params
 
     const current = await this.core.get<D, E>(skey, params)
-    if (current.aborter)
-      current.aborter.abort()
+
+    if (current?.aborter && current?.optimistic)
+      return current
+    if (current?.aborter)
+      current.aborter.abort("Replaced")
+
     const updated = updater(current?.data)
+
+    const count = (current?.count ?? 0) + 1
 
     const timeout = setTimeout(() => {
       aborter.abort("Timed out")
@@ -114,7 +126,10 @@ export class SingleHelper {
     try {
       const { signal } = aborter
 
-      await this.core.mutate(skey, { data: updated, time: current?.time }, params)
+      const time = current?.time
+      const error = current?.error
+
+      await this.core.apply(skey, current, { count, time, data: updated, error, aborter, optimistic: true }, params)
 
       const {
         data,
@@ -122,12 +137,18 @@ export class SingleHelper {
         expiration = getTimeFromDelay(dexpiration)
       } = await poster(key, { data: updated, signal })
 
-      if (signal.aborted) throw new AbortError()
+      if (signal.aborted)
+        throw new AbortError(signal)
 
-      return await this.core.mutate<D, E>(skey, { data, cooldown, expiration }, params)
+      return await this.core.mutate<D, E>(skey, { count, data, cooldown, expiration }, params)
     } catch (error: any) {
-      this.core.mutate<D, E>(skey, current, params)
-      throw error
+      const time = current?.time
+      const data = current?.data
+
+      const cooldown = getTimeFromDelay(dcooldown)
+      const expiration = getTimeFromDelay(dexpiration)
+
+      return await this.core.mutate<D, E>(skey, { count, time, data, error, cooldown, expiration }, params)
     } finally {
       clearTimeout(timeout)
     }

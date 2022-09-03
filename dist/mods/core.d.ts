@@ -4,6 +4,7 @@ import { ScrollHelper } from "./scroll";
 import { SingleHelper } from "./single";
 import { Params } from "./types/params";
 import { State } from "./types/state";
+export declare type Listener<D = any, E = any> = (x?: State<D, E>) => void;
 export declare class Core extends Ortho<string, State | undefined> {
     readonly single: SingleHelper;
     readonly scroll: ScrollHelper;
@@ -13,7 +14,6 @@ export declare class Core extends Ortho<string, State | undefined> {
     get mounted(): boolean;
     unmount(): void;
     hasSync<D = any, E = any>(skey: string | undefined, params?: Params<D, E>): boolean;
-    has<D = any, E = any>(skey: string | undefined, params?: Params<D, E>): Promise<boolean>;
     getSync<D = any, E = any>(skey: string | undefined, params?: Params<D, E>): State<D, E> | undefined | null;
     get<D = any, E = any>(skey: string | undefined, params?: Params<D, E>): Promise<State<D, E> | undefined>;
     /**
@@ -38,6 +38,6 @@ export declare class Core extends Ortho<string, State | undefined> {
     shouldCooldown<D = any, E = any>(current?: State<D, E>, force?: boolean): boolean;
     counts: Map<string, number>;
     timeouts: Map<string, NodeJS.Timeout>;
-    subscribe<D = any, E = any>(key: string | undefined, listener: (x: State<D, E>) => void, _?: Params<D, E>): void;
-    unsubscribe<D = any, E = any>(key: string | undefined, listener: (x: State<D, E>) => void, params?: Params<D, E>): Promise<void>;
+    subscribe<D = any, E = any>(key: string | undefined, listener: Listener<D, E>, _?: Params<D, E>): void;
+    unsubscribe<D = any, E = any>(key: string | undefined, listener: Listener<D, E>, params?: Params<D, E>): Promise<void>;
 }

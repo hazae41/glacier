@@ -3,7 +3,7 @@
  */
 export declare class MapOfArrays<K = any, V = any> {
     private map;
-    get(key: K): V[];
+    get(key: K): V[] | undefined;
     push(key: K, value: V): void;
     erase(key: K, value: V): void;
 }

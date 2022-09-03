@@ -44,11 +44,11 @@ export class AsyncLocalStorage implements AsyncStorage {
     readonly serializer: Serializer = JSON
   ) { }
 
-  async get<T = any>(key: string): Promise<T> {
+  async get<T = any>(key: string) {
     if (typeof Storage === "undefined")
       return
     const item = localStorage.getItem(key)
-    if (item) return this.serializer.parse(item)
+    if (item) return this.serializer.parse(item) as T
   }
 
   async set<T = any>(key: string, value: T) {
@@ -58,7 +58,7 @@ export class AsyncLocalStorage implements AsyncStorage {
     localStorage.setItem(key, item)
   }
 
-  async delete(key: string): Promise<void> {
+  async delete(key: string) {
     if (typeof Storage === "undefined")
       return
     localStorage.removeItem(key)

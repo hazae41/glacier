@@ -18,7 +18,7 @@ export function useCoreProvider() {
     coreRef.current = new Core()
 
   useEffect(() => () => {
-    coreRef.current.unmount()
+    coreRef.current!.unmount()
   }, [])
 
   return coreRef.current

@@ -6,6 +6,9 @@ import { State } from "mods/types/state"
 import { isAsyncStorage } from "mods/types/storage"
 import { DEFAULT_EQUALS } from "mods/utils/defaults"
 
+export type Listener<D = any, E = any> =
+  (x?: State<D, E>) => void
+
 export class Core extends Ortho<string, State | undefined> {
   readonly single = new SingleHelper(this)
   readonly scroll = new ScrollHelper(this)
@@ -28,7 +31,7 @@ export class Core extends Ortho<string, State | undefined> {
     skey: string | undefined,
     params: Params<D, E> = {}
   ): boolean {
-    if (!skey) return
+    if (skey === undefined) return false
 
     if (this.cache.has(skey))
       return true
@@ -39,25 +42,11 @@ export class Core extends Ortho<string, State | undefined> {
     return Boolean(storage.get(skey))
   }
 
-  async has<D = any, E = any>(
-    skey: string | undefined,
-    params: Params<D, E> = {}
-  ) {
-    if (!skey) return false
-
-    if (this.cache.has(skey))
-      return true
-
-    const { storage } = params
-    if (!storage) return false
-    return Boolean(await storage.get(skey))
-  }
-
   getSync<D = any, E = any>(
     skey: string | undefined,
     params: Params<D, E> = {}
   ): State<D, E> | undefined | null {
-    if (!skey) return
+    if (skey === undefined) return
 
     if (this.cache.has(skey))
       return this.cache.get(skey)
@@ -76,7 +65,7 @@ export class Core extends Ortho<string, State | undefined> {
     skey: string | undefined,
     params: Params<D, E> = {}
   ): Promise<State<D, E> | undefined> {
-    if (!skey) return
+    if (skey === undefined) return
 
     if (this.cache.has(skey))
       return this.cache.get(skey)
@@ -101,7 +90,7 @@ export class Core extends Ortho<string, State | undefined> {
     state: State<D, E>,
     params: Params<D, E> = {}
   ) {
-    if (!skey) return
+    if (skey === undefined) return
 
     this.cache.set(skey, state)
     this.publish(skey, state)
@@ -149,6 +138,11 @@ export class Core extends Ortho<string, State | undefined> {
     if (current?.time !== undefined && state.time < current.time)
       return current
 
+    if (state.count === undefined)
+      state.count = (current?.count ?? 0) + 1
+    if (current?.count !== undefined && state.count < current.count)
+      return current
+
     const { equals = DEFAULT_EQUALS } = params
 
     if (equals(state.data, current?.data))
@@ -158,10 +152,12 @@ export class Core extends Ortho<string, State | undefined> {
 
     const next = { ...current, ...state }
 
-    if (state.data !== undefined)
+    if (state.error === undefined && state.data !== undefined)
       delete next.error
     if (state.aborter === undefined)
       delete next.aborter
+    if (state.optimistic === undefined)
+      delete next.optimistic
     if (state.expiration === -1)
       delete next.expiration
     if (state.cooldown === -1)
@@ -202,7 +198,7 @@ export class Core extends Ortho<string, State | undefined> {
 
   subscribe<D = any, E = any>(
     key: string | undefined,
-    listener: (x: State<D, E>) => void,
+    listener: Listener<D, E>,
     _: Params<D, E> = {}
   ) {
     if (!key) return
@@ -221,7 +217,7 @@ export class Core extends Ortho<string, State | undefined> {
 
   async unsubscribe<D = any, E = any>(
     key: string | undefined,
-    listener: (x: State<D, E>) => void,
+    listener: Listener<D, E>,
     params: Params<D, E> = {}
   ) {
     if (!key) return

@@ -1,9 +1,13 @@
-export class AbortError extends DOMException {
-  constructor() {
-    super("Aborted", "AbortError")
+export class AbortError extends Error {
+  constructor(signal: AbortSignal) {
+    super("Aborted", { cause: signal })
   }
 }
 
 export function isAbortError(e: unknown): e is DOMException {
-  return e instanceof DOMException && e.name === "AbortError"
+  if (e instanceof AbortError)
+    return true
+  if (e instanceof DOMException && e.name === "AbortError")
+    return true
+  return false
 }

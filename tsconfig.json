@@ -12,6 +12,7 @@
     ],
     "jsx": "react",
     "downlevelIteration": true,
+    "strict": true,
     "allowSyntheticDefaultImports": true,
     "paths": {
       "mods/*": [

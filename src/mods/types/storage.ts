@@ -19,5 +19,5 @@ export interface AsyncStorage {
 }
 
 export function isAsyncStorage(storage: Storage): storage is AsyncStorage {
-  return storage.async
+  return Boolean(storage.async)
 }

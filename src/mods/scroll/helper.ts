@@ -28,7 +28,7 @@ export class ScrollHelper {
     aborter = new AbortController(),
     params: Params<D[], E> = {},
     force = false
-  ): Promise<State<D[], E>> {
+  ): Promise<State<D[], E> | undefined> {
     if (skey === undefined) return
 
     const {
@@ -39,16 +39,21 @@ export class ScrollHelper {
     } = params
 
     let current = await this.core.get<D[], E>(skey, params)
+
     if (current?.aborter && !force)
       return current
-    if (current?.aborter && force)
-      current.aborter.abort()
+    if (current?.aborter && current?.optimistic)
+      return current
+    if (current?.aborter)
+      current.aborter.abort("Replaced")
     if (this.core.shouldCooldown(current, force))
       return current
 
     const pages = current?.data ?? []
     const first = scroller(undefined)
     if (!first) return current
+
+    const count = (current?.count ?? 0) + 1
 
     const timeout = setTimeout(() => {
       aborter.abort("Timed out")
@@ -57,7 +62,7 @@ export class ScrollHelper {
     try {
       const { signal } = aborter
 
-      current = await this.core.apply(skey, current, { aborter }, params)
+      current = await this.core.apply(skey, current, { count, aborter }, params)
 
       const {
         data,
@@ -65,16 +70,17 @@ export class ScrollHelper {
         expiration = getTimeFromDelay(dexpiration)
       } = await fetcher(first, { signal })
 
-      if (signal.aborted) throw new AbortError()
+      if (signal.aborted)
+        throw new AbortError(signal)
 
       return equals(data, pages[0])
-        ? await this.core.apply<D[], E>(skey, current, { cooldown, expiration }, params)
-        : await this.core.apply<D[], E>(skey, current, { data: [data], cooldown, expiration }, params)
+        ? await this.core.mutate<D[], E>(skey, { count, data: pages, cooldown, expiration }, params)
+        : await this.core.mutate<D[], E>(skey, { count, data: [data], cooldown, expiration }, params)
     } catch (error: any) {
       const cooldown = getTimeFromDelay(dcooldown)
       const expiration = getTimeFromDelay(dexpiration)
 
-      return await this.core.apply<D[], E>(skey, current, { error, cooldown, expiration }, params)
+      return await this.core.mutate<D[], E>(skey, { count, error, cooldown, expiration }, params)
     } finally {
       clearTimeout(timeout)
     }
@@ -97,7 +103,7 @@ export class ScrollHelper {
     aborter = new AbortController(),
     params: Params<D[], E> = {},
     force = false
-  ): Promise<State<D[], E>> {
+  ): Promise<State<D[], E> | undefined> {
     if (skey === undefined) return
 
     const {
@@ -107,14 +113,21 @@ export class ScrollHelper {
     } = params
 
     let current = await this.core.get<D[], E>(skey, params)
-    if (current?.aborter)
+
+    if (current?.aborter && !force)
       return current
+    if (current?.aborter && current?.optimistic)
+      return current
+    if (current?.aborter)
+      current.aborter.abort("Replaced")
     if (this.core.shouldCooldown(current, force))
       return current
 
     const pages = current?.data ?? []
     const last = scroller(lastOf(pages))
     if (!last) return current
+
+    const count = (current?.count ?? 0) + 1
 
     const timeout = setTimeout(() => {
       aborter.abort("Timed out")
@@ -123,7 +136,7 @@ export class ScrollHelper {
     try {
       const { signal } = aborter
 
-      current = await this.core.apply(skey, current, { aborter }, params)
+      current = await this.core.apply(skey, current, { count, aborter }, params)
 
       let {
         data,
@@ -131,16 +144,18 @@ export class ScrollHelper {
         expiration = getTimeFromDelay(dexpiration)
       } = await fetcher(last, { signal })
 
-      if (signal.aborted) throw new AbortError()
+      if (signal.aborted)
+        throw new AbortError(signal)
 
-      expiration = Math.min(expiration, current.expiration)
+      if (current?.expiration)
+        expiration = Math.min(expiration, current.expiration)
 
-      return await this.core.apply<D[], E>(skey, current, { data: [...pages, data], cooldown, expiration }, params)
+      return await this.core.mutate<D[], E>(skey, { count, data: [...pages, data], cooldown, expiration }, params)
     } catch (error: any) {
       const cooldown = getTimeFromDelay(dcooldown)
       const expiration = getTimeFromDelay(dexpiration)
 
-      return await this.core.apply<D[], E>(skey, current, { error, cooldown, expiration }, params)
+      return await this.core.mutate<D[], E>(skey, { count, error, cooldown, expiration }, params)
     } finally {
       clearTimeout(timeout)
     }

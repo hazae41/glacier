@@ -25,7 +25,7 @@ export declare class SyncLocalStorage implements SyncStorage {
     readonly serializer: Serializer;
     readonly async = false;
     constructor(serializer?: Serializer);
-    get<T = any>(key: string): T;
+    get<T = any>(key: string): T | undefined;
     set<T = any>(key: string, value: T): void;
-    delete(key: string): Promise<void>;
+    delete(key: string): void;
 }

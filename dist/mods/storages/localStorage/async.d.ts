@@ -31,7 +31,7 @@ export declare class AsyncLocalStorage implements AsyncStorage {
     readonly serializer: Serializer;
     readonly async = true;
     constructor(serializer?: Serializer);
-    get<T = any>(key: string): Promise<T>;
+    get<T = any>(key: string): Promise<T | undefined>;
     set<T = any>(key: string, value: T): Promise<void>;
     delete(key: string): Promise<void>;
 }

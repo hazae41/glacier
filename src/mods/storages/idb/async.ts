@@ -12,7 +12,7 @@ export class IDBStorage implements AsyncStorage {
   readonly async = true
   readonly initialization: Promise<void>
 
-  _database: IDBDatabase
+  _database?: IDBDatabase
 
   constructor(readonly name: string) {
     this.initialization = this.initialize()
@@ -42,7 +42,7 @@ export class IDBStorage implements AsyncStorage {
       await this.initialization
 
     return await new Promise<T>((ok, err) => {
-      const tx = this.database.transaction("keyval", mode)
+      const tx = this.database!.transaction("keyval", mode)
       tx.onerror = () => err(tx.error)
       tx.oncomplete = () => ok(result)
 

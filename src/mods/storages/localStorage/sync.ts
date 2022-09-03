@@ -38,11 +38,11 @@ export class SyncLocalStorage implements SyncStorage {
     readonly serializer: Serializer = JSON
   ) { }
 
-  get<T = any>(key: string): T {
+  get<T = any>(key: string) {
     if (typeof Storage === "undefined")
       return
     const item = localStorage.getItem(key)
-    if (item) return this.serializer.parse(item)
+    if (item) return this.serializer.parse(item) as T
   }
 
   set<T = any>(key: string, value: T) {
@@ -52,7 +52,7 @@ export class SyncLocalStorage implements SyncStorage {
     localStorage.setItem(key, item)
   }
 
-  delete(key: string): Promise<void> {
+  delete(key: string) {
     if (typeof Storage === "undefined")
       return
     localStorage.removeItem(key)
