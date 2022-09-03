@@ -103,6 +103,8 @@ export class SingleHelper {
     } = params
 
     const current = await this.core.get<D, E>(skey, params)
+    if (current.aborter)
+      current.aborter.abort()
     const updated = updater(current?.data)
 
     const timeout = setTimeout(() => {
