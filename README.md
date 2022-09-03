@@ -121,8 +121,6 @@ Last example was good, but here is the best way to use XSWR.
 
 Our fetcher was good, but this one can be aborted.
 
-It also returns an error if the request failed.
-
 ```tsx
 async function fetchAsJson<T>(url: string, more: XSWR.FetcherMore<T>) {
   const { signal } = more
@@ -138,6 +136,8 @@ async function fetchAsJson<T>(url: string, more: XSWR.FetcherMore<T>) {
   return { data }
 }
 ```
+
+It also returns an error if the request failed.
 
 ## Defining schemas 📐
 
