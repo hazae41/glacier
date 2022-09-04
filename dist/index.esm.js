@@ -1051,18 +1051,22 @@ var Core = /** @class */ (function (_super) {
                         return [2 /*return*/];
                     case 2:
                         next = __assign({ time: Date.now(), data: current === null || current === void 0 ? void 0 : current.data, error: current === null || current === void 0 ? void 0 : current.error, cooldown: current === null || current === void 0 ? void 0 : current.cooldown, expiration: current === null || current === void 0 ? void 0 : current.expiration, aborter: current === null || current === void 0 ? void 0 : current.aborter }, state);
+                        // Force prevent requests from mutating the aborter if it's not their own
                         if (aborter)
                             next.aborter = aborter === (current === null || current === void 0 ? void 0 : current.aborter)
                                 ? state.aborter
                                 : current === null || current === void 0 ? void 0 : current.aborter;
+                        // Keep the current state if the new state is older
                         if (next.time !== undefined && next.time < ((_a = current === null || current === void 0 ? void 0 : current.time) !== null && _a !== void 0 ? _a : 0)) {
                             next.time = current === null || current === void 0 ? void 0 : current.time;
                             next.data = current === null || current === void 0 ? void 0 : current.data;
                             next.error = current === null || current === void 0 ? void 0 : current.error;
                         }
                         _b = params.equals, equals = _b === void 0 ? DEFAULT_EQUALS : _b;
+                        // Prevent some renders if the data is the same
                         if (equals(next.data, current === null || current === void 0 ? void 0 : current.data))
                             next.data = current === null || current === void 0 ? void 0 : current.data;
+                        // Shallow comparison because aborter is not serializable
                         if (shallowEquals(next, current))
                             return [2 /*return*/, current];
                         return [4 /*yield*/, this.set(skey, next, params)];
