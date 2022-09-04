@@ -130,11 +130,13 @@ export class Core extends Ortho<string, State | undefined> {
       ...state
     }
 
+    // Force prevent requests from mutating the aborter if it's not their own
     if (aborter)
       next.aborter = aborter === current?.aborter
         ? state.aborter
         : current?.aborter
 
+    // Keep the current state if the new state is older
     if (next.time !== undefined && next.time < (current?.time ?? 0)) {
       next.time = current?.time
       next.data = current?.data
@@ -143,10 +145,14 @@ export class Core extends Ortho<string, State | undefined> {
 
     const { equals = DEFAULT_EQUALS } = params
 
+    // Prevent some renders if the data is the same
     if (equals(next.data, current?.data))
       next.data = current?.data
+
+    // Shallow comparison because aborter is not serializable
     if (shallowEquals(next, current))
       return current
+
     await this.set<D, E>(skey, next, params)
     return next
   }
