@@ -5,6 +5,7 @@ import { Params } from "mods/types/params"
 import { State } from "mods/types/state"
 import { isAsyncStorage } from "mods/types/storage"
 import { DEFAULT_EQUALS } from "mods/utils/defaults"
+import { shallowEquals } from "mods/utils/equals"
 
 export type Listener<D = any, E = any> =
   (x?: State<D, E>) => void
@@ -106,39 +107,38 @@ export class Core extends Ortho<string, State | undefined> {
   }
 
   async apply<D = any, E = any>(
-    key: string | undefined,
+    skey: string | undefined,
     current?: State<D, E>,
     state?: State<D, E>,
-    params: Params<D, E> = {}
+    params: Params<D, E> = {},
+    aborterToBeDeleted?: AbortController
   ): Promise<State<D, E> | undefined> {
-    if (!key) return
+    if (skey === undefined) return
 
     if (!state) {
-      await this.delete(key, params)
+      await this.delete(skey, params)
       return
     }
 
     const next: State<D, E> = {
-      count: Date.now(),
       time: Date.now(),
       data: current?.data,
       error: current?.error,
       cooldown: current?.cooldown,
       expiration: current?.expiration,
+      aborter: current?.aborter,
       ...state
     }
 
-    const count = current?.count ?? 0
-    const time = current?.time ?? 0
+    // Hack to delete aborter only if it's the same
+    if (aborterToBeDeleted) {
+      if (aborterToBeDeleted === current?.aborter)
+        next.aborter = state?.aborter
+      else
+        next.error = undefined
+    }
 
-    // If this is a previous request, ignore
-    if (next.count !== undefined && next.count < count)
-      return current
-
-    // If time is before current time ...
-    if (next.time !== undefined && next.time < time) {
-      // ... keep current data and error
-      next.count = current?.count
+    if (next.time !== undefined && next.time < (current?.time ?? 0)) {
       next.time = current?.time
       next.data = current?.data
       next.error = current?.error
@@ -148,21 +148,22 @@ export class Core extends Ortho<string, State | undefined> {
 
     if (equals(next.data, current?.data))
       next.data = current?.data
-    if (equals(next, current))
+    if (shallowEquals(next, current))
       return current
-    await this.set<D, E>(key, next, params)
+    await this.set<D, E>(skey, next, params)
     return next
   }
 
   async mutate<D = any, E = any>(
     key: string | undefined,
     state?: State<D, E>,
-    params: Params<D, E> = {}
+    params: Params<D, E> = {},
+    aborter?: AbortController
   ): Promise<State<D, E> | undefined> {
     if (!key) return
 
     const current = await this.get<D, E>(key, params)
-    return await this.apply<D, E>(key, current, state, params)
+    return await this.apply<D, E>(key, current, state, params, aborter)
   }
 
   /**

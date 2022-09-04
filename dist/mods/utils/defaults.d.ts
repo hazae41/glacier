@@ -1,5 +1,5 @@
-import { jsoneq } from "./equals";
-export declare const DEFAULT_EQUALS: typeof jsoneq;
+import { jsonEquals } from "./equals";
+export declare const DEFAULT_EQUALS: typeof jsonEquals;
 export declare const DEFAULT_SERIALIZER: JSON;
 export declare const DEFAULT_COOLDOWN: number;
 export declare const DEFAULT_EXPIRATION = -1;

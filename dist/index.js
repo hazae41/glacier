@@ -228,16 +228,44 @@ function isAbortError(e) {
     return false;
 }
 
-function jseq(a, b) {
+function refEquals(a, b) {
     return a === b;
 }
-function jsoneq(a, b) {
+function jsonEquals(a, b) {
     if (a === b)
         return true;
+    if (typeof a !== typeof b)
+        return false;
     return JSON.stringify(a) === JSON.stringify(b);
 }
+function shallowEquals(a, b) {
+    var e_1, _a;
+    if (a === b)
+        return true;
+    if (typeof a !== typeof b)
+        return false;
+    var ka = Object.keys(a);
+    var kb = Object.keys(b);
+    if (ka.length !== kb.length)
+        return false;
+    try {
+        for (var ka_1 = __values(ka), ka_1_1 = ka_1.next(); !ka_1_1.done; ka_1_1 = ka_1.next()) {
+            var key = ka_1_1.value;
+            if (a[key] !== b[key])
+                return false;
+        }
+    }
+    catch (e_1_1) { e_1 = { error: e_1_1 }; }
+    finally {
+        try {
+            if (ka_1_1 && !ka_1_1.done && (_a = ka_1.return)) _a.call(ka_1);
+        }
+        finally { if (e_1) throw e_1.error; }
+    }
+    return true;
+}
 
-var DEFAULT_EQUALS = jsoneq;
+var DEFAULT_EQUALS = jsonEquals;
 var DEFAULT_SERIALIZER = JSON;
 var DEFAULT_COOLDOWN = 1 * 1000;
 var DEFAULT_EXPIRATION = -1;
@@ -263,7 +291,7 @@ var ScrollHelper = /** @class */ (function () {
         if (params === void 0) { params = {}; }
         if (force === void 0) { force = false; }
         return __awaiter(this, void 0, void 0, function () {
-            var _b, equals, _c, dcooldown, _d, dexpiration, _e, dtimeout, current, first, count, timeout, signal, time_1, _f, data, error, _g, time, _h, cooldown, _j, expiration, state, error_1;
+            var _b, equals, _c, dcooldown, _d, dexpiration, _e, dtimeout, current, first, timeout, signal, _f, data, error, _g, time, _h, cooldown, _j, expiration, state, error_1;
             return __generator(this, function (_k) {
                 switch (_k.label) {
                     case 0:
@@ -284,7 +312,6 @@ var ScrollHelper = /** @class */ (function () {
                         first = scroller(undefined);
                         if (!first)
                             return [2 /*return*/, current];
-                        count = Date.now();
                         timeout = setTimeout(function () {
                             aborter.abort("Timed out");
                         }, dtimeout);
@@ -292,8 +319,7 @@ var ScrollHelper = /** @class */ (function () {
                     case 2:
                         _k.trys.push([2, 7, 9, 10]);
                         signal = aborter.signal;
-                        time_1 = current === null || current === void 0 ? void 0 : current.time;
-                        return [4 /*yield*/, this.core.apply(skey, current, { count: count, time: time_1, aborter: aborter }, params)];
+                        return [4 /*yield*/, this.core.apply(skey, current, { time: current === null || current === void 0 ? void 0 : current.time, aborter: aborter }, params)];
                     case 3:
                         current = _k.sent();
                         return [4 /*yield*/, fetcher(first, { signal: signal })];
@@ -308,11 +334,11 @@ var ScrollHelper = /** @class */ (function () {
                         if (data !== undefined && !equals(data, (_a = current === null || current === void 0 ? void 0 : current.data) === null || _a === void 0 ? void 0 : _a[0]))
                             state.data = [data];
                         state.error = error;
-                        return [4 /*yield*/, this.core.apply(skey, current, __assign({ count: count, time: time, cooldown: cooldown, expiration: expiration }, state), params)];
+                        return [4 /*yield*/, this.core.apply(skey, current, __assign({ time: time, cooldown: cooldown, expiration: expiration }, state), params, aborter)];
                     case 6: return [2 /*return*/, _k.sent()];
                     case 7:
                         error_1 = _k.sent();
-                        return [4 /*yield*/, this.core.mutate(skey, { count: count, error: error_1 }, params)];
+                        return [4 /*yield*/, this.core.mutate(skey, { error: error_1 }, params, aborter)];
                     case 8: return [2 /*return*/, _k.sent()];
                     case 9:
                         clearTimeout(timeout);
@@ -338,7 +364,7 @@ var ScrollHelper = /** @class */ (function () {
         if (params === void 0) { params = {}; }
         if (force === void 0) { force = false; }
         return __awaiter(this, void 0, void 0, function () {
-            var _c, dcooldown, _d, dexpiration, _e, dtimeout, current, pages, last, count, timeout, signal, time_2, _f, data, error, _g, time, _h, cooldown, _j, expiration, state, error_2;
+            var _c, dcooldown, _d, dexpiration, _e, dtimeout, current, pages, last, timeout, signal, _f, data, error, _g, time, _h, cooldown, _j, expiration, state, error_2;
             return __generator(this, function (_k) {
                 switch (_k.label) {
                     case 0:
@@ -360,7 +386,6 @@ var ScrollHelper = /** @class */ (function () {
                         last = scroller(lastOf(pages));
                         if (!last)
                             return [2 /*return*/, current];
-                        count = Date.now();
                         timeout = setTimeout(function () {
                             aborter.abort("Timed out");
                         }, dtimeout);
@@ -368,8 +393,7 @@ var ScrollHelper = /** @class */ (function () {
                     case 2:
                         _k.trys.push([2, 7, 9, 10]);
                         signal = aborter.signal;
-                        time_2 = current === null || current === void 0 ? void 0 : current.time;
-                        return [4 /*yield*/, this.core.apply(skey, current, { count: count, time: time_2, aborter: aborter }, params)];
+                        return [4 /*yield*/, this.core.apply(skey, current, { time: current === null || current === void 0 ? void 0 : current.time, aborter: aborter }, params)];
                     case 3:
                         current = _k.sent();
                         return [4 /*yield*/, fetcher(last, { signal: signal })];
@@ -386,11 +410,11 @@ var ScrollHelper = /** @class */ (function () {
                         if (data !== undefined)
                             state.data = __spreadArray(__spreadArray([], __read(((_b = current === null || current === void 0 ? void 0 : current.data) !== null && _b !== void 0 ? _b : [])), false), [data], false);
                         state.error = error;
-                        return [4 /*yield*/, this.core.apply(skey, current, __assign({ count: count, time: time, cooldown: cooldown, expiration: expiration }, state), params)];
+                        return [4 /*yield*/, this.core.apply(skey, current, __assign({ time: time, cooldown: cooldown, expiration: expiration }, state), params, aborter)];
                     case 6: return [2 /*return*/, _k.sent()];
                     case 7:
                         error_2 = _k.sent();
-                        return [4 /*yield*/, this.core.mutate(skey, { count: count, error: error_2 }, params)];
+                        return [4 /*yield*/, this.core.mutate(skey, { error: error_2 }, params, aborter)];
                     case 8: return [2 /*return*/, _k.sent()];
                     case 9:
                         clearTimeout(timeout);
@@ -588,7 +612,7 @@ var SingleHelper = /** @class */ (function () {
         if (params === void 0) { params = {}; }
         if (force === void 0) { force = false; }
         return __awaiter(this, void 0, void 0, function () {
-            var _a, dcooldown, _b, dexpiration, _c, dtimeout, current, count, timeout, signal, time_1, _d, data, error, _e, time, _f, cooldown, _g, expiration, state, error_1;
+            var _a, dcooldown, _b, dexpiration, _c, dtimeout, current, timeout, state, signal, _d, data, error, _e, time, _f, cooldown, _g, expiration, error_1;
             return __generator(this, function (_h) {
                 switch (_h.label) {
                     case 0:
@@ -608,16 +632,15 @@ var SingleHelper = /** @class */ (function () {
                             current.aborter.abort("Replaced");
                         if (this.core.shouldCooldown(current, force))
                             return [2 /*return*/, current];
-                        count = Date.now();
                         timeout = setTimeout(function () {
                             aborter.abort("Timed out");
                         }, dtimeout);
+                        state = {};
                         _h.label = 2;
                     case 2:
-                        _h.trys.push([2, 6, 8, 9]);
+                        _h.trys.push([2, 7, 9, 10]);
                         signal = aborter.signal;
-                        time_1 = current === null || current === void 0 ? void 0 : current.time;
-                        return [4 /*yield*/, this.core.apply(skey, current, { count: count, time: time_1, aborter: aborter }, params)];
+                        return [4 /*yield*/, this.core.apply(skey, current, { time: current === null || current === void 0 ? void 0 : current.time, aborter: aborter }, params)];
                     case 3:
                         current = _h.sent();
                         return [4 /*yield*/, fetcher(key, { signal: signal })];
@@ -625,20 +648,22 @@ var SingleHelper = /** @class */ (function () {
                         _d = _h.sent(), data = _d.data, error = _d.error, _e = _d.time, time = _e === void 0 ? Date.now() : _e, _f = _d.cooldown, cooldown = _f === void 0 ? getTimeFromDelay(dcooldown) : _f, _g = _d.expiration, expiration = _g === void 0 ? getTimeFromDelay(dexpiration) : _g;
                         if (signal.aborted)
                             throw new AbortError(signal);
-                        state = {};
+                        return [4 /*yield*/, this.core.get(skey, params)];
+                    case 5:
+                        current = _h.sent();
                         if (data !== undefined)
                             state.data = data;
                         state.error = error;
-                        return [4 /*yield*/, this.core.mutate(skey, __assign({ count: count, time: time, cooldown: cooldown, expiration: expiration }, state), params)];
-                    case 5: return [2 /*return*/, _h.sent()];
-                    case 6:
+                        return [4 /*yield*/, this.core.apply(skey, current, __assign({ time: time, cooldown: cooldown, expiration: expiration }, state), params, aborter)];
+                    case 6: return [2 /*return*/, _h.sent()];
+                    case 7:
                         error_1 = _h.sent();
-                        return [4 /*yield*/, this.core.mutate(skey, { count: count, error: error_1 }, params)];
-                    case 7: return [2 /*return*/, _h.sent()];
-                    case 8:
+                        return [4 /*yield*/, this.core.mutate(skey, { error: error_1 }, params, aborter)];
+                    case 8: return [2 /*return*/, _h.sent()];
+                    case 9:
                         clearTimeout(timeout);
                         return [7 /*endfinally*/];
-                    case 9: return [2 /*return*/];
+                    case 10: return [2 /*return*/];
                 }
             });
         });
@@ -658,7 +683,7 @@ var SingleHelper = /** @class */ (function () {
         if (aborter === void 0) { aborter = new AbortController(); }
         if (params === void 0) { params = {}; }
         return __awaiter(this, void 0, void 0, function () {
-            var _a, dcooldown, _b, dexpiration, _c, dtimeout, current, updated, count, timeout, signal, data_1, error_3, time_2, optimistic, _d, data, error, _e, time, _f, cooldown, _g, expiration, time_3, data_2, state, error_2, time, data;
+            var _a, dcooldown, _b, dexpiration, _c, dtimeout, current, updated, timeout, signal, data_1, error_3, time_1, optimistic, _d, data, error, _e, time, _f, cooldown, _g, expiration, time_2, data_2, state, error_2, time, data;
             return __generator(this, function (_h) {
                 switch (_h.label) {
                     case 0:
@@ -675,7 +700,6 @@ var SingleHelper = /** @class */ (function () {
                         if (current === null || current === void 0 ? void 0 : current.aborter)
                             current.aborter.abort("Replaced");
                         updated = updater(current === null || current === void 0 ? void 0 : current.data);
-                        count = Date.now();
                         timeout = setTimeout(function () {
                             aborter.abort("Timed out");
                         }, dtimeout);
@@ -685,9 +709,9 @@ var SingleHelper = /** @class */ (function () {
                         signal = aborter.signal;
                         data_1 = updated;
                         error_3 = current === null || current === void 0 ? void 0 : current.error;
-                        time_2 = current === null || current === void 0 ? void 0 : current.time;
+                        time_1 = current === null || current === void 0 ? void 0 : current.time;
                         optimistic = true;
-                        return [4 /*yield*/, this.core.apply(skey, current, { count: count, time: time_2, data: data_1, error: error_3, aborter: aborter, optimistic: optimistic }, params)];
+                        return [4 /*yield*/, this.core.apply(skey, current, { time: time_1, data: data_1, error: error_3, aborter: aborter, optimistic: optimistic }, params)];
                     case 3:
                         _h.sent();
                         return [4 /*yield*/, poster(key, { data: updated, signal: signal })];
@@ -696,22 +720,22 @@ var SingleHelper = /** @class */ (function () {
                         if (signal.aborted)
                             throw new AbortError(signal);
                         if (!(error !== undefined)) return [3 /*break*/, 6];
-                        time_3 = current === null || current === void 0 ? void 0 : current.time;
+                        time_2 = current === null || current === void 0 ? void 0 : current.time;
                         data_2 = current === null || current === void 0 ? void 0 : current.data;
-                        return [4 /*yield*/, this.core.mutate(skey, { count: count, time: time_3, data: data_2, error: error, cooldown: cooldown, expiration: expiration }, params)];
+                        return [4 /*yield*/, this.core.mutate(skey, { time: time_2, cooldown: cooldown, expiration: expiration, data: data_2, error: error }, params, aborter)];
                     case 5: return [2 /*return*/, _h.sent()];
                     case 6:
                         state = {};
                         if (data !== undefined)
                             state.data = data;
-                        state.error = undefined;
-                        return [4 /*yield*/, this.core.mutate(skey, __assign({ count: count, time: time, cooldown: cooldown, expiration: expiration }, state), params)];
+                        state.error = error;
+                        return [4 /*yield*/, this.core.mutate(skey, __assign({ time: time, cooldown: cooldown, expiration: expiration }, state), params, aborter)];
                     case 7: return [2 /*return*/, _h.sent()];
                     case 8:
                         error_2 = _h.sent();
                         time = current === null || current === void 0 ? void 0 : current.time;
                         data = current === null || current === void 0 ? void 0 : current.data;
-                        return [4 /*yield*/, this.core.mutate(skey, { count: count, time: time, data: data, error: error_2 }, params)];
+                        return [4 /*yield*/, this.core.mutate(skey, { time: time, data: data, error: error_2 }, params, aborter)];
                     case 9: return [2 /*return*/, _h.sent()];
                     case 10:
                         clearTimeout(timeout);
@@ -1016,52 +1040,49 @@ var Core = /** @class */ (function (_super) {
             });
         });
     };
-    Core.prototype.apply = function (key, current, state, params) {
-        var _a, _b;
+    Core.prototype.apply = function (skey, current, state, params, aborterToBeDeleted) {
+        var _a;
         if (params === void 0) { params = {}; }
         return __awaiter(this, void 0, void 0, function () {
-            var next, count, time, _c, equals;
-            return __generator(this, function (_d) {
-                switch (_d.label) {
+            var next, _b, equals;
+            return __generator(this, function (_c) {
+                switch (_c.label) {
                     case 0:
-                        if (!key)
+                        if (skey === undefined)
                             return [2 /*return*/];
                         if (!!state) return [3 /*break*/, 2];
-                        return [4 /*yield*/, this.delete(key, params)];
+                        return [4 /*yield*/, this.delete(skey, params)];
                     case 1:
-                        _d.sent();
+                        _c.sent();
                         return [2 /*return*/];
                     case 2:
-                        next = __assign({ count: Date.now(), time: Date.now(), data: current === null || current === void 0 ? void 0 : current.data, error: current === null || current === void 0 ? void 0 : current.error, cooldown: current === null || current === void 0 ? void 0 : current.cooldown, expiration: current === null || current === void 0 ? void 0 : current.expiration }, state);
-                        count = (_a = current === null || current === void 0 ? void 0 : current.count) !== null && _a !== void 0 ? _a : 0;
-                        time = (_b = current === null || current === void 0 ? void 0 : current.time) !== null && _b !== void 0 ? _b : 0;
-                        // If this is a previous request, ignore
-                        if (next.count !== undefined && next.count < count)
-                            return [2 /*return*/, current
-                                // If time is before current time ...
-                            ];
-                        // If time is before current time ...
-                        if (next.time !== undefined && next.time < time) {
-                            // ... keep current data and error
-                            next.count = current === null || current === void 0 ? void 0 : current.count;
+                        next = __assign({ time: Date.now(), data: current === null || current === void 0 ? void 0 : current.data, error: current === null || current === void 0 ? void 0 : current.error, cooldown: current === null || current === void 0 ? void 0 : current.cooldown, expiration: current === null || current === void 0 ? void 0 : current.expiration, aborter: current === null || current === void 0 ? void 0 : current.aborter }, state);
+                        // Hack to delete aborter only if it's the same
+                        if (aborterToBeDeleted) {
+                            if (aborterToBeDeleted === (current === null || current === void 0 ? void 0 : current.aborter))
+                                next.aborter = state === null || state === void 0 ? void 0 : state.aborter;
+                            else
+                                next.error = undefined;
+                        }
+                        if (next.time !== undefined && next.time < ((_a = current === null || current === void 0 ? void 0 : current.time) !== null && _a !== void 0 ? _a : 0)) {
                             next.time = current === null || current === void 0 ? void 0 : current.time;
                             next.data = current === null || current === void 0 ? void 0 : current.data;
                             next.error = current === null || current === void 0 ? void 0 : current.error;
                         }
-                        _c = params.equals, equals = _c === void 0 ? DEFAULT_EQUALS : _c;
+                        _b = params.equals, equals = _b === void 0 ? DEFAULT_EQUALS : _b;
                         if (equals(next.data, current === null || current === void 0 ? void 0 : current.data))
                             next.data = current === null || current === void 0 ? void 0 : current.data;
-                        if (equals(next, current))
+                        if (shallowEquals(next, current))
                             return [2 /*return*/, current];
-                        return [4 /*yield*/, this.set(key, next, params)];
+                        return [4 /*yield*/, this.set(skey, next, params)];
                     case 3:
-                        _d.sent();
+                        _c.sent();
                         return [2 /*return*/, next];
                 }
             });
         });
     };
-    Core.prototype.mutate = function (key, state, params) {
+    Core.prototype.mutate = function (key, state, params, aborter) {
         if (params === void 0) { params = {}; }
         return __awaiter(this, void 0, void 0, function () {
             var current;
@@ -1073,7 +1094,7 @@ var Core = /** @class */ (function (_super) {
                         return [4 /*yield*/, this.get(key, params)];
                     case 1:
                         current = _a.sent();
-                        return [4 /*yield*/, this.apply(key, current, state, params)];
+                        return [4 /*yield*/, this.apply(key, current, state, params, aborter)];
                     case 2: return [2 /*return*/, _a.sent()];
                 }
             });
@@ -1862,8 +1883,9 @@ var index = {
     DEFAULT_COOLDOWN: DEFAULT_COOLDOWN,
     DEFAULT_EXPIRATION: DEFAULT_EXPIRATION,
     DEFAULT_TIMEOUT: DEFAULT_TIMEOUT,
-    jseq: jseq,
-    jsoneq: jsoneq
+    refEquals: refEquals,
+    jsonEquals: jsonEquals,
+    shallowEquals: shallowEquals
 };
 
 exports.XSWR = index;
