@@ -29,7 +29,7 @@ export declare class Core extends Ortho<string, State | undefined> {
      * @returns
      */
     delete<D = any, E = any>(skey: string | undefined, params?: Params<D, E>): Promise<void>;
-    apply<D = any, E = any>(skey: string | undefined, current?: State<D, E>, state?: State<D, E>, params?: Params<D, E>, aborterToBeDeleted?: AbortController): Promise<State<D, E> | undefined>;
+    apply<D = any, E = any>(skey: string | undefined, current?: State<D, E>, state?: State<D, E>, params?: Params<D, E>, aborter?: AbortController): Promise<State<D, E> | undefined>;
     mutate<D = any, E = any>(key: string | undefined, state?: State<D, E>, params?: Params<D, E>, aborter?: AbortController): Promise<State<D, E> | undefined>;
     /**
      * True if we should cooldown this resource

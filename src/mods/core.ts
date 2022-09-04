@@ -111,7 +111,7 @@ export class Core extends Ortho<string, State | undefined> {
     current?: State<D, E>,
     state?: State<D, E>,
     params: Params<D, E> = {},
-    aborterToBeDeleted?: AbortController
+    aborter?: AbortController
   ): Promise<State<D, E> | undefined> {
     if (skey === undefined) return
 
@@ -130,13 +130,10 @@ export class Core extends Ortho<string, State | undefined> {
       ...state
     }
 
-    // Hack to delete aborter only if it's the same
-    if (aborterToBeDeleted) {
-      if (aborterToBeDeleted === current?.aborter)
-        next.aborter = state?.aborter
-      else
-        next.error = undefined
-    }
+    if (aborter)
+      next.aborter = aborter === current?.aborter
+        ? state.aborter
+        : current?.aborter
 
     if (next.time !== undefined && next.time < (current?.time ?? 0)) {
       next.time = current?.time

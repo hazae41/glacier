@@ -18,7 +18,7 @@ async function postAsJson<T extends HelloData>(url: string, more: XSWR.PosterMor
   }
 
   const data = await res.json() as T
-  const time = Date.now() - 1000
+  const time = Date.now()
   return { data, time, cooldown, expiration }
 }
 

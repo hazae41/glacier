@@ -1034,7 +1034,7 @@ var Core = /** @class */ (function (_super) {
             });
         });
     };
-    Core.prototype.apply = function (skey, current, state, params, aborterToBeDeleted) {
+    Core.prototype.apply = function (skey, current, state, params, aborter) {
         var _a;
         if (params === void 0) { params = {}; }
         return __awaiter(this, void 0, void 0, function () {
@@ -1051,13 +1051,10 @@ var Core = /** @class */ (function (_super) {
                         return [2 /*return*/];
                     case 2:
                         next = __assign({ time: Date.now(), data: current === null || current === void 0 ? void 0 : current.data, error: current === null || current === void 0 ? void 0 : current.error, cooldown: current === null || current === void 0 ? void 0 : current.cooldown, expiration: current === null || current === void 0 ? void 0 : current.expiration, aborter: current === null || current === void 0 ? void 0 : current.aborter }, state);
-                        // Hack to delete aborter only if it's the same
-                        if (aborterToBeDeleted) {
-                            if (aborterToBeDeleted === (current === null || current === void 0 ? void 0 : current.aborter))
-                                next.aborter = state === null || state === void 0 ? void 0 : state.aborter;
-                            else
-                                next.error = undefined;
-                        }
+                        if (aborter)
+                            next.aborter = aborter === (current === null || current === void 0 ? void 0 : current.aborter)
+                                ? state.aborter
+                                : current === null || current === void 0 ? void 0 : current.aborter;
                         if (next.time !== undefined && next.time < ((_a = current === null || current === void 0 ? void 0 : current.time) !== null && _a !== void 0 ? _a : 0)) {
                             next.time = current === null || current === void 0 ? void 0 : current.time;
                             next.data = current === null || current === void 0 ? void 0 : current.data;
