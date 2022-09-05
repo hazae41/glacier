@@ -6,15 +6,18 @@ import { ScrollHandle, useScroll } from "./scroll";
 import { SingleHandle, useSingle } from "./single";
 
 export function use<D = any, E = any, K = any, L extends DependencyList = []>(
-  factory: (...params: L) => SingleSchema<D, E, K>, deps: L
+  factory: (...params: L) => SingleSchema<D, E, K>,
+  deps: L
 ): SingleHandle<D, E, K>
 
 export function use<D = any, E = any, K = any, L extends DependencyList = []>(
-  factory: (...params: L) => ScrollSchema<D, E, K>, deps: L
+  factory: (...params: L) => ScrollSchema<D, E, K>,
+  deps: L
 ): ScrollHandle<D, E, K>
 
 export function use<D = any, E = any, K = any, L extends DependencyList = []>(
-  factory: (...params: L) => Schema<D, E, K>, deps: L
+  factory: (...params: L) => Schema<D, E, K>,
+  deps: L
 ) {
   const schema = useMemo(() => {
     return factory(...deps)

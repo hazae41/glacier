@@ -12,16 +12,16 @@ export function single<D = any, E = any, K = any>(
   return new SingleSchema(key, poster, params)
 }
 
-export class SingleSchema<D = any, E = any, K = any> extends Schema<D, E, K>  {
+export class SingleSchema<D = any, E = any, K = any> implements Schema<D, E, K>  {
   constructor(
     readonly key: K | undefined,
     readonly poster: Poster<D, E, K>,
     readonly params: Params<D, E, K> = {},
-  ) { super() }
+  ) { }
 
-  make(core: Core, pparams: Params = {}) {
+  make(core: Core, pparams: Params = {}, initialize?: boolean) {
     const { key, poster, params } = this
 
-    return new SingleObject<D, E, K>(core, key, poster, params, pparams)
+    return new SingleObject<D, E, K>(core, key, poster, params, pparams, initialize)
   }
 }

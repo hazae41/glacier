@@ -439,26 +439,40 @@ function getScrollStorageKey(key, params) {
  * Non-React version of ScrollHandle
  */
 var ScrollObject = /** @class */ (function () {
-    function ScrollObject(core, scroller, fetcher, params, pparams) {
+    function ScrollObject(core, scroller, fetcher, params, pparams, initialize) {
         if (params === void 0) { params = {}; }
         if (pparams === void 0) { pparams = {}; }
+        if (initialize === void 0) { initialize = true; }
         var _this = this;
         this.core = core;
         this.scroller = scroller;
         this.fetcher = fetcher;
         this.params = params;
         this.pparams = pparams;
+        this.initialize = initialize;
         this.mparams = __assign(__assign({}, pparams), params);
         this.key = scroller();
         this.skey = (function () {
             var _a = _this, key = _a.key, mparams = _a.mparams;
             return getScrollStorageKey(key, mparams);
         })();
-        this._state = (function () {
-            var _a = _this, core = _a.core, skey = _a.skey, mparams = _a.mparams;
-            return core.getSync(skey, mparams);
-        })();
-        (function () { return __awaiter(_this, void 0, void 0, function () {
+        if (initialize) {
+            this.loadSync();
+            this.loadAsync();
+            this.subscribe();
+        }
+    }
+    Object.defineProperty(ScrollObject.prototype, "state", {
+        get: function () { return this._state; },
+        enumerable: false,
+        configurable: true
+    });
+    ScrollObject.prototype.loadSync = function () {
+        var _a = this, core = _a.core, skey = _a.skey, mparams = _a.mparams;
+        this._state = core.getSync(skey, mparams);
+    };
+    ScrollObject.prototype.loadAsync = function () {
+        return __awaiter(this, void 0, void 0, function () {
             var _a, core, skey, mparams, _b;
             return __generator(this, function (_c) {
                 switch (_c.label) {
@@ -473,23 +487,19 @@ var ScrollObject = /** @class */ (function () {
                         return [2 /*return*/];
                 }
             });
-        }); })();
-        {
-            var _a = this, core_1 = _a.core, skey_1 = _a.skey;
-            var setter_1 = function (state) {
-                return _this._state = state;
-            };
-            core_1.subscribe(this.skey, setter_1);
-            new FinalizationRegistry(function () {
-                core_1.unsubscribe(skey_1, setter_1);
-            }).register(this, undefined);
-        }
-    }
-    Object.defineProperty(ScrollObject.prototype, "state", {
-        get: function () { return this._state; },
-        enumerable: false,
-        configurable: true
-    });
+        });
+    };
+    ScrollObject.prototype.subscribe = function () {
+        var _this = this;
+        var _a = this, core = _a.core, skey = _a.skey;
+        var setter = function (state) {
+            return _this._state = state;
+        };
+        core.subscribe(skey, setter);
+        new FinalizationRegistry(function () {
+            core.unsubscribe(skey, setter);
+        }).register(this, undefined);
+    };
     ScrollObject.prototype.mutate = function (state) {
         return __awaiter(this, void 0, void 0, function () {
             var _a, core, skey, mparams, _b;
@@ -565,33 +575,24 @@ var ScrollObject = /** @class */ (function () {
     return ScrollObject;
 }());
 
-var Schema = /** @class */ (function () {
-    function Schema() {
-    }
-    return Schema;
-}());
-
 function scroll(scroller, fetcher, params) {
     if (params === void 0) { params = {}; }
     return new ScrollSchema(scroller, fetcher, params);
 }
-var ScrollSchema = /** @class */ (function (_super) {
-    __extends(ScrollSchema, _super);
+var ScrollSchema = /** @class */ (function () {
     function ScrollSchema(scroller, fetcher, params) {
         if (params === void 0) { params = {}; }
-        var _this = _super.call(this) || this;
-        _this.scroller = scroller;
-        _this.fetcher = fetcher;
-        _this.params = params;
-        return _this;
+        this.scroller = scroller;
+        this.fetcher = fetcher;
+        this.params = params;
     }
-    ScrollSchema.prototype.make = function (core, pparams) {
+    ScrollSchema.prototype.make = function (core, pparams, initialize) {
         if (pparams === void 0) { pparams = {}; }
         var _a = this, scroller = _a.scroller, fetcher = _a.fetcher, params = _a.params;
-        return new ScrollObject(core, scroller, fetcher, params, pparams);
+        return new ScrollObject(core, scroller, fetcher, params, pparams, initialize);
     };
     return ScrollSchema;
-}(Schema));
+}());
 
 var SingleHelper = /** @class */ (function () {
     function SingleHelper(core) {
@@ -759,25 +760,39 @@ function getSingleStorageKey(key, params) {
  * Non-React version of SingleHandle
  */
 var SingleObject = /** @class */ (function () {
-    function SingleObject(core, key, poster, params, pparams) {
+    function SingleObject(core, key, poster, params, pparams, initialize) {
         if (params === void 0) { params = {}; }
         if (pparams === void 0) { pparams = {}; }
+        if (initialize === void 0) { initialize = true; }
         var _this = this;
         this.core = core;
         this.key = key;
         this.poster = poster;
         this.params = params;
         this.pparams = pparams;
+        this.initialize = initialize;
         this.mparams = __assign(__assign({}, pparams), params);
         this.skey = (function () {
             var mparams = _this.mparams;
             return getSingleStorageKey(key, mparams);
         })();
-        this._state = (function () {
-            var _a = _this, core = _a.core, skey = _a.skey, mparams = _a.mparams;
-            return core.getSync(skey, mparams);
-        })();
-        (function () { return __awaiter(_this, void 0, void 0, function () {
+        if (this.initialize) {
+            this.loadSync();
+            this.loadAsync();
+            this.subscribe();
+        }
+    }
+    Object.defineProperty(SingleObject.prototype, "state", {
+        get: function () { return this._state; },
+        enumerable: false,
+        configurable: true
+    });
+    SingleObject.prototype.loadSync = function () {
+        var _a = this, core = _a.core, skey = _a.skey, mparams = _a.mparams;
+        this._state = core.getSync(skey, mparams);
+    };
+    SingleObject.prototype.loadAsync = function () {
+        return __awaiter(this, void 0, void 0, function () {
             var _a, core, skey, mparams, _b;
             return __generator(this, function (_c) {
                 switch (_c.label) {
@@ -792,23 +807,19 @@ var SingleObject = /** @class */ (function () {
                         return [2 /*return*/];
                 }
             });
-        }); })();
-        {
-            var _a = this, core_1 = _a.core, skey_1 = _a.skey;
-            var setter_1 = function (state) {
-                return _this._state = state;
-            };
-            core_1.subscribe(this.skey, setter_1);
-            new FinalizationRegistry(function () {
-                core_1.unsubscribe(skey_1, setter_1);
-            }).register(this, undefined);
-        }
-    }
-    Object.defineProperty(SingleObject.prototype, "state", {
-        get: function () { return this._state; },
-        enumerable: false,
-        configurable: true
-    });
+        });
+    };
+    SingleObject.prototype.subscribe = function () {
+        var _this = this;
+        var _a = this, core = _a.core, skey = _a.skey;
+        var setter = function (state) {
+            return _this._state = state;
+        };
+        core.subscribe(this.skey, setter);
+        new FinalizationRegistry(function () {
+            core.unsubscribe(skey, setter);
+        }).register(this, undefined);
+    };
     SingleObject.prototype.mutate = function (state) {
         return __awaiter(this, void 0, void 0, function () {
             var _a, core, skey, mparams, _b;
@@ -888,23 +899,20 @@ function single(key, poster, params) {
     if (params === void 0) { params = {}; }
     return new SingleSchema(key, poster, params);
 }
-var SingleSchema = /** @class */ (function (_super) {
-    __extends(SingleSchema, _super);
+var SingleSchema = /** @class */ (function () {
     function SingleSchema(key, poster, params) {
         if (params === void 0) { params = {}; }
-        var _this = _super.call(this) || this;
-        _this.key = key;
-        _this.poster = poster;
-        _this.params = params;
-        return _this;
+        this.key = key;
+        this.poster = poster;
+        this.params = params;
     }
-    SingleSchema.prototype.make = function (core, pparams) {
+    SingleSchema.prototype.make = function (core, pparams, initialize) {
         if (pparams === void 0) { pparams = {}; }
         var _a = this, key = _a.key, poster = _a.poster, params = _a.params;
-        return new SingleObject(core, key, poster, params, pparams);
+        return new SingleObject(core, key, poster, params, pparams, initialize);
     };
     return SingleSchema;
-}(Schema));
+}());
 
 function isAsyncStorage(storage) {
     return Boolean(storage.async);
@@ -1056,18 +1064,22 @@ var Core = /** @class */ (function (_super) {
                         _c.sent();
                         return [2 /*return*/];
                     case 2:
-                        next = __assign({ time: Date.now(), data: current === null || current === void 0 ? void 0 : current.data, error: current === null || current === void 0 ? void 0 : current.error, cooldown: current === null || current === void 0 ? void 0 : current.cooldown, expiration: current === null || current === void 0 ? void 0 : current.expiration, aborter: current === null || current === void 0 ? void 0 : current.aborter }, state);
-                        // Force prevent requests from mutating the aborter if it's not their own
-                        if (aborter)
-                            next.aborter = aborter === (current === null || current === void 0 ? void 0 : current.aborter)
-                                ? state.aborter
-                                : current === null || current === void 0 ? void 0 : current.aborter;
+                        next = __assign({ time: Date.now(), data: current === null || current === void 0 ? void 0 : current.data, error: current === null || current === void 0 ? void 0 : current.error, cooldown: current === null || current === void 0 ? void 0 : current.cooldown, expiration: current === null || current === void 0 ? void 0 : current.expiration, aborter: current === null || current === void 0 ? void 0 : current.aborter, optimistic: undefined }, state);
                         // Keep the current state if the new state is older
                         if (next.time !== undefined && next.time < ((_a = current === null || current === void 0 ? void 0 : current.time) !== null && _a !== void 0 ? _a : 0)) {
                             next.time = current === null || current === void 0 ? void 0 : current.time;
                             next.data = current === null || current === void 0 ? void 0 : current.data;
                             next.error = current === null || current === void 0 ? void 0 : current.error;
+                            next.cooldown = current === null || current === void 0 ? void 0 : current.cooldown;
+                            next.expiration = current === null || current === void 0 ? void 0 : current.expiration;
+                            next.optimistic = current === null || current === void 0 ? void 0 : current.optimistic;
+                            next.aborter = current === null || current === void 0 ? void 0 : current.aborter;
                         }
+                        // Force prevent requests from mutating the aborter if it's not their own
+                        if (aborter)
+                            next.aborter = aborter === (current === null || current === void 0 ? void 0 : current.aborter)
+                                ? state.aborter
+                                : current === null || current === void 0 ? void 0 : current.aborter;
                         _b = params.equals, equals = _b === void 0 ? DEFAULT_EQUALS : _b;
                         // Prevent some renders if the data is the same
                         if (equals(next.data, current === null || current === void 0 ? void 0 : current.data))
@@ -1559,8 +1571,8 @@ function use(factory, deps) {
 function useXSWR() {
     var core = useCore();
     var params = useParams();
-    var make = React.useCallback(function (desc) {
-        return desc.make(core, params);
+    var make = React.useCallback(function (schema, init) {
+        return schema.make(core, params, init);
     }, [core, params]);
     return { core: core, params: params, make: make };
 }
@@ -2086,7 +2098,6 @@ var index = {
     AsyncLocalStorage: AsyncLocalStorage,
     useSyncLocalStorage: useSyncLocalStorage,
     SyncLocalStorage: SyncLocalStorage,
-    Schema: Schema,
     isAsyncStorage: isAsyncStorage,
     DEFAULT_EQUALS: DEFAULT_EQUALS,
     DEFAULT_SERIALIZER: DEFAULT_SERIALIZER,

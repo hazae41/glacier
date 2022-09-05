@@ -4,6 +4,7 @@ import { Params } from "mods/types/params";
 import { Scroller } from "mods/types/scroller";
 import { State } from "mods/types/state";
 import { DEFAULT_SERIALIZER } from "mods/utils/defaults";
+import { Object } from "../types/schema";
 
 export function getScrollStorageKey<K = any>(key: K, params: Params) {
   if (key === undefined)
@@ -21,7 +22,7 @@ export function getScrollStorageKey<K = any>(key: K, params: Params) {
 /**
  * Non-React version of ScrollHandle
  */
-export class ScrollObject<D = any, E = any, K = any> {
+export class ScrollObject<D = any, E = any, K = any> implements Object<D[], E, K> {
   readonly key: K | undefined
   readonly skey: string | undefined
 
@@ -35,6 +36,7 @@ export class ScrollObject<D = any, E = any, K = any> {
     readonly fetcher: Fetcher<D, E, K>,
     readonly params: Params<D[], E, K> = {},
     readonly pparams: Params<D[], E, K> = {},
+    readonly initialize = true
   ) {
     this.mparams = { ...pparams, ...params }
 
@@ -46,35 +48,41 @@ export class ScrollObject<D = any, E = any, K = any> {
       return getScrollStorageKey(key, mparams)
     })();
 
-    this._state = (() => {
-      const { core, skey, mparams } = this
-
-      return core.getSync<D[], E>(skey, mparams)
-    })();
-
-    (async () => {
-      if (this._state !== null) return
-
-      const { core, skey, mparams } = this
-
-      this._state = await core.get<D[], E>(skey, mparams)
-    })();
-
-    {
-      const { core, skey } = this
-
-      const setter = (state?: State<D[], E>) =>
-        this._state = state
-
-      core.subscribe(this.skey, setter)
-
-      new FinalizationRegistry(() => {
-        core.unsubscribe(skey, setter)
-      }).register(this, undefined)
+    if (initialize) {
+      this.loadSync()
+      this.loadAsync()
+      this.subscribe()
     }
   }
 
   get state() { return this._state }
+
+  private loadSync() {
+    const { core, skey, mparams } = this
+
+    this._state = core.getSync<D[], E>(skey, mparams)
+  }
+
+  private async loadAsync() {
+    if (this._state !== null) return
+
+    const { core, skey, mparams } = this
+
+    this._state = await core.get<D[], E>(skey, mparams)
+  }
+
+  private subscribe() {
+    const { core, skey } = this
+
+    const setter = (state?: State<D[], E>) =>
+      this._state = state
+
+    core.subscribe(skey, setter)
+
+    new FinalizationRegistry(() => {
+      core.unsubscribe(skey, setter)
+    }).register(this, undefined)
+  }
 
   async mutate(state?: State<D[], E>) {
     const { core, skey, mparams } = this

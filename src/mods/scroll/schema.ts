@@ -13,16 +13,16 @@ export function scroll<D = any, E = any, K = any>(
   return new ScrollSchema(scroller, fetcher, params)
 }
 
-export class ScrollSchema<D = any, E = any, K = any> extends Schema<D, E, K> {
+export class ScrollSchema<D = any, E = any, K = any> implements Schema<D[], E, K> {
   constructor(
     readonly scroller: Scroller<D, K>,
     readonly fetcher: Fetcher<D, E, K>,
     readonly params: Params<D[], E, K> = {},
-  ) { super() }
+  ) { }
 
-  make(core: Core, pparams: Params = {}) {
+  make(core: Core, pparams: Params = {}, initialize?: boolean) {
     const { scroller, fetcher, params } = this
 
-    return new ScrollObject<D, E, K>(core, scroller, fetcher, params, pparams)
+    return new ScrollObject<D, E, K>(core, scroller, fetcher, params, pparams, initialize)
   }
 }

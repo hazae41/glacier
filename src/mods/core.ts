@@ -128,21 +128,26 @@ export class Core extends Ortho<string, State | undefined> {
       cooldown: current?.cooldown,
       expiration: current?.expiration,
       aborter: current?.aborter,
+      optimistic: undefined,
       ...state
     }
-
-    // Force prevent requests from mutating the aborter if it's not their own
-    if (aborter)
-      next.aborter = aborter === current?.aborter
-        ? state.aborter
-        : current?.aborter
 
     // Keep the current state if the new state is older
     if (next.time !== undefined && next.time < (current?.time ?? 0)) {
       next.time = current?.time
       next.data = current?.data
       next.error = current?.error
+      next.cooldown = current?.cooldown
+      next.expiration = current?.expiration
+      next.optimistic = current?.optimistic
+      next.aborter = current?.aborter
     }
+
+    // Force unset or ignore aborter
+    if (aborter)
+      next.aborter = aborter === current?.aborter
+        ? state.aborter
+        : current?.aborter
 
     const { equals = DEFAULT_EQUALS } = params
 

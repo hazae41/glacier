@@ -1,10 +1,7 @@
-import { Core } from "../../core";
-import { Params } from "../../types/params";
-export declare type Maker = <T>(x: {
-    make(core: Core, params: Params): T;
-}) => T;
+import { Object, Schema } from "../../types/schema";
+export declare type Maker = <T>(schema: Schema<T>, init?: boolean) => Object<T>;
 export declare function useXSWR(): {
-    core: Core;
-    params: Params<any, any, any>;
+    core: import("../../core").Core;
+    params: import("../../index").Params<any, any, any>;
     make: Maker;
 };
