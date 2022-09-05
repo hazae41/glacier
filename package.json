@@ -10,7 +10,7 @@
   "types": "./dist/index.d.ts",
   "sideEffects": false,
   "scripts": {
-    "build": "rimraf dist && bunchee ./src/index.ts --no-sourcemap && ttsc"
+    "build": "rimraf dist && bunchee ./src/index.ts --no-sourcemap && ttsc && rimraf dist/libs"
   },
   "devDependencies": {
     "@types/react": "^18.0.17",
