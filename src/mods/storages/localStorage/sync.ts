@@ -1,6 +1,7 @@
 import { Serializer } from "mods/types/serializer"
+import { State } from "mods/types/state"
 import { SyncStorage } from "mods/types/storage"
-import { useRef } from "react"
+import { useEffect, useRef } from "react"
 
 /**
  * Synchronous local storage
@@ -12,11 +13,15 @@ import { useRef } from "react"
  * 
  * @see AsyncLocalStorage
  */
-export function useSyncLocalStorage(serializer?: Serializer) {
+export function useSyncLocalStorage(prefix?: string, serializer?: Serializer) {
   const storage = useRef<SyncLocalStorage>()
 
   if (!storage.current)
-    storage.current = new SyncLocalStorage(serializer)
+    storage.current = new SyncLocalStorage(prefix, serializer)
+
+  useEffect(() => () => {
+    storage.current!.unmount()
+  }, [])
 
   return storage.current
 }
@@ -33,28 +38,60 @@ export function useSyncLocalStorage(serializer?: Serializer) {
  */
 export class SyncLocalStorage implements SyncStorage {
   readonly async = false
+  readonly keys = new Set<string>()
+  readonly onunload?: () => void
 
   constructor(
+    readonly prefix = "xswr:",
     readonly serializer: Serializer = JSON
-  ) { }
-
-  get<T = any>(key: string) {
+  ) {
     if (typeof Storage === "undefined")
       return
-    const item = localStorage.getItem(key)
+    this.onunload = () => this.collect()
+    addEventListener("beforeunload", this.onunload)
+  }
+
+  unmount() {
+    if (typeof Storage === "undefined")
+      return
+    removeEventListener("beforeunload", this.onunload!);
+    (async () => this.collect())().catch(console.error)
+  }
+
+  collect() {
+    if (typeof Storage === "undefined")
+      return
+    for (const key of this.keys) {
+      const state = this.get<State>(key, true)
+      if (state?.expiration === undefined) continue
+      if (state.expiration > Date.now()) continue
+      this.delete(key, false)
+    }
+  }
+
+  get<T = any>(key: string, ignore = false) {
+    if (typeof Storage === "undefined")
+      return
+    if (!ignore && !this.keys.has(key))
+      this.keys.add(key)
+    const item = localStorage.getItem(this.prefix + key)
     if (item) return this.serializer.parse(item) as T
   }
 
-  set<T = any>(key: string, value: T) {
+  set<T = any>(key: string, value: T, ignore = false) {
     if (typeof Storage === "undefined")
       return
+    if (!ignore && !this.keys.has(key))
+      this.keys.add(key)
     const item = this.serializer.stringify(value)
-    localStorage.setItem(key, item)
+    localStorage.setItem(this.prefix + key, item)
   }
 
-  delete(key: string) {
+  delete(key: string, ignore = false) {
     if (typeof Storage === "undefined")
       return
-    localStorage.removeItem(key)
+    if (!ignore && this.keys.has(key))
+      this.keys.delete(key)
+    localStorage.removeItem(this.prefix + key)
   }
 }

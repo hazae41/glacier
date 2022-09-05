@@ -10,7 +10,7 @@ import { SyncStorage } from "../../types/storage";
  *
  * @see AsyncLocalStorage
  */
-export declare function useSyncLocalStorage(serializer?: Serializer): SyncLocalStorage;
+export declare function useSyncLocalStorage(prefix?: string, serializer?: Serializer): SyncLocalStorage;
 /**
  * Synchronous local storage
  *
@@ -22,10 +22,15 @@ export declare function useSyncLocalStorage(serializer?: Serializer): SyncLocalS
  * @see AsyncLocalStorage
  */
 export declare class SyncLocalStorage implements SyncStorage {
+    readonly prefix: string;
     readonly serializer: Serializer;
     readonly async = false;
-    constructor(serializer?: Serializer);
-    get<T = any>(key: string): T | undefined;
-    set<T = any>(key: string, value: T): void;
-    delete(key: string): void;
+    readonly keys: Set<string>;
+    readonly onunload?: () => void;
+    constructor(prefix?: string, serializer?: Serializer);
+    unmount(): void;
+    collect(): void;
+    get<T = any>(key: string, ignore?: boolean): T | undefined;
+    set<T = any>(key: string, value: T, ignore?: boolean): void;
+    delete(key: string, ignore?: boolean): void;
 }

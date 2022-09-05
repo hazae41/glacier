@@ -49,7 +49,8 @@ export class Core extends Ortho<string, State | undefined> {
 
   async get<D = any, E = any>(
     skey: string | undefined,
-    params: Params<D, E> = {}
+    params: Params<D, E> = {},
+    ignore = false
   ): Promise<State<D, E> | undefined> {
     if (skey === undefined) return
 
@@ -59,7 +60,7 @@ export class Core extends Ortho<string, State | undefined> {
     const { storage } = params
     if (!storage) return
 
-    const state = await storage.get(skey)
+    const state = await storage.get(skey, ignore)
     this.cache.set(skey, state)
     return state
   }
@@ -222,7 +223,7 @@ export class Core extends Ortho<string, State | undefined> {
 
     this.counts.delete(key)
 
-    const current = await this.get(key, params)
+    const current = await this.get(key, params, true)
     if (current?.expiration === undefined) return
     if (current?.expiration === -1) return
 

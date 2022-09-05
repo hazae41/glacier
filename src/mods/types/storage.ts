@@ -5,17 +5,23 @@ export type Storage =
 export interface SyncStorage {
   async?: false
 
-  get<T = any>(key: string): T | undefined
-  set<T = any>(key: string, value: T): void
-  delete(key: string): void
+  unmount(): void
+  collect(): void
+
+  get<T = any>(key: string, ignore?: boolean): T | undefined
+  set<T = any>(key: string, value: T, ignore?: boolean): void
+  delete(key: string, ignore?: boolean): void
 }
 
 export interface AsyncStorage {
   async: true
 
-  get<T = any>(key: string): Promise<T | undefined>
-  set<T = any>(key: string, value: T): Promise<void>
-  delete(key: string): Promise<void>
+  unmount(): void
+  collect(): void
+
+  get<T = any>(key: string, ignore?: boolean): Promise<T | undefined>
+  set<T = any>(key: string, value: T, ignore?: boolean): Promise<void>
+  delete(key: string, ignore?: boolean): Promise<void>
 }
 
 export function isAsyncStorage(storage: Storage): storage is AsyncStorage {

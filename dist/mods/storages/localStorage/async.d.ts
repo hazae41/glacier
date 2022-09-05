@@ -13,7 +13,7 @@ import { AsyncStorage } from "../../types/storage";
  * @see SyncLocalStorage
  * @see useFallback
  */
-export declare function useAsyncLocalStorage(serializer?: Serializer): AsyncLocalStorage;
+export declare function useAsyncLocalStorage(prefix?: string, serializer?: Serializer): AsyncLocalStorage;
 /**
  * Asynchronous local storage
  *
@@ -28,10 +28,16 @@ export declare function useAsyncLocalStorage(serializer?: Serializer): AsyncLoca
  * @see useFallback
  */
 export declare class AsyncLocalStorage implements AsyncStorage {
+    readonly prefix: string;
     readonly serializer: Serializer;
     readonly async = true;
-    constructor(serializer?: Serializer);
-    get<T = any>(key: string): Promise<T | undefined>;
-    set<T = any>(key: string, value: T): Promise<void>;
-    delete(key: string): Promise<void>;
+    readonly keys: Set<string>;
+    readonly onunload?: () => void;
+    constructor(prefix?: string, serializer?: Serializer);
+    unmount(): void;
+    collect(): void;
+    getSync<T = any>(key: string, ignore?: boolean): T | undefined;
+    get<T = any>(key: string, ignore?: boolean): Promise<T | undefined>;
+    set<T = any>(key: string, value: T, ignore?: boolean): Promise<void>;
+    delete(key: string, ignore?: boolean): Promise<void>;
 }

@@ -959,8 +959,9 @@ var Core = /** @class */ (function (_super) {
         this.cache.set(skey, state);
         return state;
     };
-    Core.prototype.get = function (skey, params) {
+    Core.prototype.get = function (skey, params, ignore) {
         if (params === void 0) { params = {}; }
+        if (ignore === void 0) { ignore = false; }
         return __awaiter(this, void 0, void 0, function () {
             var storage, state;
             return __generator(this, function (_a) {
@@ -973,7 +974,7 @@ var Core = /** @class */ (function (_super) {
                         storage = params.storage;
                         if (!storage)
                             return [2 /*return*/];
-                        return [4 /*yield*/, storage.get(skey)];
+                        return [4 /*yield*/, storage.get(skey, ignore)];
                     case 1:
                         state = _a.sent();
                         this.cache.set(skey, state);
@@ -1142,7 +1143,7 @@ var Core = /** @class */ (function (_super) {
                             return [2 /*return*/];
                         }
                         this.counts.delete(key);
-                        return [4 /*yield*/, this.get(key, params)];
+                        return [4 /*yield*/, this.get(key, params, true)];
                     case 1:
                         current = _a.sent();
                         if ((current === null || current === void 0 ? void 0 : current.expiration) === undefined)
@@ -1565,25 +1566,34 @@ function useXSWR() {
 }
 
 function useIDBStorage(name) {
-    var ref = React.useRef();
-    if (!ref.current)
-        ref.current = new IDBStorage(name);
-    return ref.current;
+    var storage = React.useRef();
+    if (!storage.current)
+        storage.current = new IDBStorage(name);
+    React.useEffect(function () { return function () {
+        storage.current.unmount();
+    }; }, []);
+    return storage.current;
 }
 var IDBStorage = /** @class */ (function () {
     function IDBStorage(name) {
+        var _this = this;
         this.name = name;
         this.async = true;
-        this.initialization = this.initialize();
+        this.keys = new Set();
+        if (typeof indexedDB === "undefined")
+            return;
+        this.initialization = this.load();
+        this.onunload = function () { return _this.unload(); };
+        addEventListener("beforeunload", this.onunload);
     }
     Object.defineProperty(IDBStorage.prototype, "database", {
         get: function () { return this._database; },
         enumerable: false,
         configurable: true
     });
-    IDBStorage.prototype.initialize = function () {
+    IDBStorage.prototype.load = function () {
         return __awaiter(this, void 0, void 0, function () {
-            var _a;
+            var _a, item, keys;
             var _this = this;
             return __generator(this, function (_b) {
                 switch (_b.label) {
@@ -1602,7 +1612,75 @@ var IDBStorage = /** @class */ (function () {
                             })];
                     case 1:
                         _a._database = _b.sent();
+                        if (typeof Storage === "undefined")
+                            return [2 /*return*/];
+                        item = localStorage.getItem("idb.".concat(this.name, ".keys"));
+                        if (!item)
+                            return [2 /*return*/];
+                        keys = JSON.parse(item);
+                        keys.forEach(function (key) { return _this.keys.add(key); });
+                        localStorage.removeItem("idb.".concat(this.name, ".keys"));
+                        return [4 /*yield*/, this.collect().catch(console.error)];
+                    case 2:
+                        _b.sent();
                         return [2 /*return*/];
+                }
+            });
+        });
+    };
+    IDBStorage.prototype.unmount = function () {
+        if (typeof indexedDB === "undefined")
+            return;
+        removeEventListener("beforeunload", this.onunload);
+        this.collect().catch(console.error);
+    };
+    IDBStorage.prototype.unload = function () {
+        if (typeof Storage === "undefined")
+            return;
+        var item = JSON.stringify(__spreadArray([], __read(this.keys), false));
+        localStorage.setItem("idb.".concat(this.name, ".keys"), item);
+    };
+    IDBStorage.prototype.collect = function () {
+        return __awaiter(this, void 0, void 0, function () {
+            var _a, _b, key, state, e_1_1;
+            var e_1, _c;
+            return __generator(this, function (_d) {
+                switch (_d.label) {
+                    case 0:
+                        if (typeof indexedDB === "undefined")
+                            return [2 /*return*/];
+                        _d.label = 1;
+                    case 1:
+                        _d.trys.push([1, 6, 7, 8]);
+                        _a = __values(this.keys), _b = _a.next();
+                        _d.label = 2;
+                    case 2:
+                        if (!!_b.done) return [3 /*break*/, 5];
+                        key = _b.value;
+                        return [4 /*yield*/, this.get(key, true)];
+                    case 3:
+                        state = _d.sent();
+                        if ((state === null || state === void 0 ? void 0 : state.expiration) === undefined)
+                            return [3 /*break*/, 4];
+                        if (state.expiration > Date.now())
+                            return [3 /*break*/, 4];
+                        this.delete(key, false);
+                        _d.label = 4;
+                    case 4:
+                        _b = _a.next();
+                        return [3 /*break*/, 2];
+                    case 5: return [3 /*break*/, 8];
+                    case 6:
+                        e_1_1 = _d.sent();
+                        e_1 = { error: e_1_1 };
+                        return [3 /*break*/, 8];
+                    case 7:
+                        try {
+                            if (_b && !_b.done && (_c = _a.return)) _c.call(_a);
+                        }
+                        finally { if (e_1) throw e_1.error; }
+                        return [7 /*endfinally*/];
+                    case 8: return [2 /*return*/];
                 }
             });
         });
@@ -1635,67 +1713,85 @@ var IDBStorage = /** @class */ (function () {
             });
         });
     };
-    IDBStorage.prototype.get = function (key) {
+    IDBStorage.prototype.get = function (key, ignore) {
+        if (ignore === void 0) { ignore = false; }
         return __awaiter(this, void 0, void 0, function () {
             var _this = this;
             return __generator(this, function (_a) {
                 switch (_a.label) {
-                    case 0: return [4 /*yield*/, this.transact(function (store) { return __awaiter(_this, void 0, void 0, function () {
-                            return __generator(this, function (_a) {
-                                switch (_a.label) {
-                                    case 0: return [4 /*yield*/, new Promise(function (ok, err) {
-                                            var req = store.get(key);
-                                            req.onerror = function () { return err(req.error); };
-                                            req.onsuccess = function () { return ok(req.result); };
-                                        })];
-                                    case 1: return [2 /*return*/, _a.sent()];
-                                }
-                            });
-                        }); }, "readonly")];
+                    case 0:
+                        if (typeof indexedDB === "undefined")
+                            return [2 /*return*/];
+                        if (!ignore && !this.keys.has(key))
+                            this.keys.add(key);
+                        return [4 /*yield*/, this.transact(function (store) { return __awaiter(_this, void 0, void 0, function () {
+                                return __generator(this, function (_a) {
+                                    switch (_a.label) {
+                                        case 0: return [4 /*yield*/, new Promise(function (ok, err) {
+                                                var req = store.get(key);
+                                                req.onerror = function () { return err(req.error); };
+                                                req.onsuccess = function () { return ok(req.result); };
+                                            })];
+                                        case 1: return [2 /*return*/, _a.sent()];
+                                    }
+                                });
+                            }); }, "readonly")];
                     case 1: return [2 /*return*/, _a.sent()];
                 }
             });
         });
     };
-    IDBStorage.prototype.set = function (key, value) {
+    IDBStorage.prototype.set = function (key, value, ignore) {
+        if (ignore === void 0) { ignore = false; }
         return __awaiter(this, void 0, void 0, function () {
             var _this = this;
             return __generator(this, function (_a) {
                 switch (_a.label) {
-                    case 0: return [4 /*yield*/, this.transact(function (store) { return __awaiter(_this, void 0, void 0, function () {
-                            return __generator(this, function (_a) {
-                                switch (_a.label) {
-                                    case 0: return [4 /*yield*/, new Promise(function (ok, err) {
-                                            var req = store.put(value, key);
-                                            req.onerror = function () { return err(req.error); };
-                                            req.onsuccess = function () { return ok(); };
-                                        })];
-                                    case 1: return [2 /*return*/, _a.sent()];
-                                }
-                            });
-                        }); }, "readwrite")];
+                    case 0:
+                        if (typeof indexedDB === "undefined")
+                            return [2 /*return*/];
+                        if (!ignore && !this.keys.has(key))
+                            this.keys.add(key);
+                        return [4 /*yield*/, this.transact(function (store) { return __awaiter(_this, void 0, void 0, function () {
+                                return __generator(this, function (_a) {
+                                    switch (_a.label) {
+                                        case 0: return [4 /*yield*/, new Promise(function (ok, err) {
+                                                var req = store.put(value, key);
+                                                req.onerror = function () { return err(req.error); };
+                                                req.onsuccess = function () { return ok(); };
+                                            })];
+                                        case 1: return [2 /*return*/, _a.sent()];
+                                    }
+                                });
+                            }); }, "readwrite")];
                     case 1: return [2 /*return*/, _a.sent()];
                 }
             });
         });
     };
-    IDBStorage.prototype.delete = function (key) {
+    IDBStorage.prototype.delete = function (key, ignore) {
+        if (ignore === void 0) { ignore = false; }
         return __awaiter(this, void 0, void 0, function () {
             var _this = this;
             return __generator(this, function (_a) {
                 switch (_a.label) {
-                    case 0: return [4 /*yield*/, this.transact(function (store) { return __awaiter(_this, void 0, void 0, function () {
-                            return __generator(this, function (_a) {
-                                switch (_a.label) {
-                                    case 0: return [4 /*yield*/, new Promise(function (ok, err) {
-                                            var req = store.delete(key);
-                                            req.onerror = function () { return err(req.error); };
-                                            req.onsuccess = function () { return ok(); };
-                                        })];
-                                    case 1: return [2 /*return*/, _a.sent()];
-                                }
-                            });
-                        }); }, "readwrite")];
+                    case 0:
+                        if (typeof indexedDB === "undefined")
+                            return [2 /*return*/];
+                        if (!ignore && this.keys.has(key))
+                            this.keys.delete(key);
+                        return [4 /*yield*/, this.transact(function (store) { return __awaiter(_this, void 0, void 0, function () {
+                                return __generator(this, function (_a) {
+                                    switch (_a.label) {
+                                        case 0: return [4 /*yield*/, new Promise(function (ok, err) {
+                                                var req = store.delete(key);
+                                                req.onerror = function () { return err(req.error); };
+                                                req.onsuccess = function () { return ok(); };
+                                            })];
+                                        case 1: return [2 /*return*/, _a.sent()];
+                                    }
+                                });
+                            }); }, "readwrite")];
                     case 1: return [2 /*return*/, _a.sent()];
                 }
             });
@@ -1717,10 +1813,13 @@ var IDBStorage = /** @class */ (function () {
  * @see SyncLocalStorage
  * @see useFallback
  */
-function useAsyncLocalStorage(serializer) {
+function useAsyncLocalStorage(prefix, serializer) {
     var storage = React.useRef();
     if (!storage.current)
-        storage.current = new AsyncLocalStorage(serializer);
+        storage.current = new AsyncLocalStorage(prefix, serializer);
+    React.useEffect(function () { return function () {
+        storage.current.unmount();
+    }; }, []);
     return storage.current;
 }
 /**
@@ -1737,42 +1836,101 @@ function useAsyncLocalStorage(serializer) {
  * @see useFallback
  */
 var AsyncLocalStorage = /** @class */ (function () {
-    function AsyncLocalStorage(serializer) {
+    function AsyncLocalStorage(prefix, serializer) {
+        if (prefix === void 0) { prefix = "xswr:"; }
         if (serializer === void 0) { serializer = JSON; }
+        var _this = this;
+        this.prefix = prefix;
         this.serializer = serializer;
         this.async = true;
+        this.keys = new Set();
+        if (typeof Storage === "undefined")
+            return;
+        this.onunload = function () { return _this.collect(); };
+        addEventListener("beforeunload", this.onunload);
     }
-    AsyncLocalStorage.prototype.get = function (key) {
+    AsyncLocalStorage.prototype.unmount = function () {
+        var _this = this;
+        if (typeof Storage === "undefined")
+            return;
+        removeEventListener("beforeunload", this.onunload);
+        (function () { return __awaiter(_this, void 0, void 0, function () { return __generator(this, function (_a) {
+            return [2 /*return*/, this.collect()];
+        }); }); })().catch(console.error);
+    };
+    AsyncLocalStorage.prototype.collect = function () {
+        var e_1, _a;
+        if (typeof Storage === "undefined")
+            return;
+        try {
+            for (var _b = __values(this.keys), _c = _b.next(); !_c.done; _c = _b.next()) {
+                var key = _c.value;
+                var state = this.getSync(key, true);
+                if ((state === null || state === void 0 ? void 0 : state.expiration) === undefined)
+                    continue;
+                if (state.expiration > Date.now())
+                    continue;
+                this.delete(key, false);
+            }
+        }
+        catch (e_1_1) { e_1 = { error: e_1_1 }; }
+        finally {
+            try {
+                if (_c && !_c.done && (_a = _b.return)) _a.call(_b);
+            }
+            finally { if (e_1) throw e_1.error; }
+        }
+    };
+    AsyncLocalStorage.prototype.getSync = function (key, ignore) {
+        if (ignore === void 0) { ignore = false; }
+        if (typeof Storage === "undefined")
+            return;
+        if (!ignore && !this.keys.has(key))
+            this.keys.add(key);
+        var item = localStorage.getItem(this.prefix + key);
+        if (item)
+            return this.serializer.parse(item);
+    };
+    AsyncLocalStorage.prototype.get = function (key, ignore) {
+        if (ignore === void 0) { ignore = false; }
         return __awaiter(this, void 0, void 0, function () {
             var item;
             return __generator(this, function (_a) {
                 if (typeof Storage === "undefined")
                     return [2 /*return*/];
-                item = localStorage.getItem(key);
+                if (!ignore && !this.keys.has(key))
+                    this.keys.add(key);
+                item = localStorage.getItem(this.prefix + key);
                 if (item)
                     return [2 /*return*/, this.serializer.parse(item)];
                 return [2 /*return*/];
             });
         });
     };
-    AsyncLocalStorage.prototype.set = function (key, value) {
+    AsyncLocalStorage.prototype.set = function (key, value, ignore) {
+        if (ignore === void 0) { ignore = false; }
         return __awaiter(this, void 0, void 0, function () {
             var item;
             return __generator(this, function (_a) {
                 if (typeof Storage === "undefined")
                     return [2 /*return*/];
+                if (!ignore && !this.keys.has(key))
+                    this.keys.add(key);
                 item = this.serializer.stringify(value);
-                localStorage.setItem(key, item);
+                localStorage.setItem(this.prefix + key, item);
                 return [2 /*return*/];
             });
         });
     };
-    AsyncLocalStorage.prototype.delete = function (key) {
+    AsyncLocalStorage.prototype.delete = function (key, ignore) {
+        if (ignore === void 0) { ignore = false; }
         return __awaiter(this, void 0, void 0, function () {
             return __generator(this, function (_a) {
                 if (typeof Storage === "undefined")
                     return [2 /*return*/];
-                localStorage.removeItem(key);
+                if (!ignore && this.keys.has(key))
+                    this.keys.delete(key);
+                localStorage.removeItem(this.prefix + key);
                 return [2 /*return*/];
             });
         });
@@ -1790,10 +1948,13 @@ var AsyncLocalStorage = /** @class */ (function () {
  *
  * @see AsyncLocalStorage
  */
-function useSyncLocalStorage(serializer) {
+function useSyncLocalStorage(prefix, serializer) {
     var storage = React.useRef();
     if (!storage.current)
-        storage.current = new SyncLocalStorage(serializer);
+        storage.current = new SyncLocalStorage(prefix, serializer);
+    React.useEffect(function () { return function () {
+        storage.current.unmount();
+    }; }, []);
     return storage.current;
 }
 /**
@@ -1807,28 +1968,77 @@ function useSyncLocalStorage(serializer) {
  * @see AsyncLocalStorage
  */
 var SyncLocalStorage = /** @class */ (function () {
-    function SyncLocalStorage(serializer) {
+    function SyncLocalStorage(prefix, serializer) {
+        if (prefix === void 0) { prefix = "xswr:"; }
         if (serializer === void 0) { serializer = JSON; }
+        var _this = this;
+        this.prefix = prefix;
         this.serializer = serializer;
         this.async = false;
-    }
-    SyncLocalStorage.prototype.get = function (key) {
+        this.keys = new Set();
         if (typeof Storage === "undefined")
             return;
-        var item = localStorage.getItem(key);
+        this.onunload = function () { return _this.collect(); };
+        addEventListener("beforeunload", this.onunload);
+    }
+    SyncLocalStorage.prototype.unmount = function () {
+        var _this = this;
+        if (typeof Storage === "undefined")
+            return;
+        removeEventListener("beforeunload", this.onunload);
+        (function () { return __awaiter(_this, void 0, void 0, function () { return __generator(this, function (_a) {
+            return [2 /*return*/, this.collect()];
+        }); }); })().catch(console.error);
+    };
+    SyncLocalStorage.prototype.collect = function () {
+        var e_1, _a;
+        if (typeof Storage === "undefined")
+            return;
+        try {
+            for (var _b = __values(this.keys), _c = _b.next(); !_c.done; _c = _b.next()) {
+                var key = _c.value;
+                var state = this.get(key, true);
+                if ((state === null || state === void 0 ? void 0 : state.expiration) === undefined)
+                    continue;
+                if (state.expiration > Date.now())
+                    continue;
+                this.delete(key, false);
+            }
+        }
+        catch (e_1_1) { e_1 = { error: e_1_1 }; }
+        finally {
+            try {
+                if (_c && !_c.done && (_a = _b.return)) _a.call(_b);
+            }
+            finally { if (e_1) throw e_1.error; }
+        }
+    };
+    SyncLocalStorage.prototype.get = function (key, ignore) {
+        if (ignore === void 0) { ignore = false; }
+        if (typeof Storage === "undefined")
+            return;
+        if (!ignore && !this.keys.has(key))
+            this.keys.add(key);
+        var item = localStorage.getItem(this.prefix + key);
         if (item)
             return this.serializer.parse(item);
     };
-    SyncLocalStorage.prototype.set = function (key, value) {
+    SyncLocalStorage.prototype.set = function (key, value, ignore) {
+        if (ignore === void 0) { ignore = false; }
         if (typeof Storage === "undefined")
             return;
+        if (!ignore && !this.keys.has(key))
+            this.keys.add(key);
         var item = this.serializer.stringify(value);
-        localStorage.setItem(key, item);
+        localStorage.setItem(this.prefix + key, item);
     };
-    SyncLocalStorage.prototype.delete = function (key) {
+    SyncLocalStorage.prototype.delete = function (key, ignore) {
+        if (ignore === void 0) { ignore = false; }
         if (typeof Storage === "undefined")
             return;
-        localStorage.removeItem(key);
+        if (!ignore && this.keys.has(key))
+            this.keys.delete(key);
+        localStorage.removeItem(this.prefix + key);
     };
     return SyncLocalStorage;
 }());

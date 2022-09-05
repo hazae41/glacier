@@ -43,7 +43,7 @@ function getHelloSchema(storage?: XSWR.Storage) {
 }
 
 function useStoredHello() {
-  const storage = XSWR.useIDBStorage("cache")
+  const storage = XSWR.useAsyncLocalStorage("cache")
   const handle = XSWR.use(getHelloSchema, [storage])
 
   XSWR.useDebug(handle, "hello")
