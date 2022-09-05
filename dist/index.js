@@ -683,7 +683,7 @@ var SingleHelper = /** @class */ (function () {
         if (aborter === void 0) { aborter = new AbortController(); }
         if (params === void 0) { params = {}; }
         return __awaiter(this, void 0, void 0, function () {
-            var _a, dcooldown, _b, dexpiration, _c, dtimeout, current, updated, timeout, signal, data_1, error_3, time_1, optimistic, _d, data, error, _e, time, _f, cooldown, _g, expiration, time_2, data_2, state, error_2, time, data;
+            var _a, dcooldown, _b, dexpiration, _c, dtimeout, current, updated, timeout, signal, data_1, time_1, optimistic, _d, data, error, _e, time, _f, cooldown, _g, expiration, time_2, data_2, state, error_2, time, data;
             return __generator(this, function (_h) {
                 switch (_h.label) {
                     case 0:
@@ -708,10 +708,9 @@ var SingleHelper = /** @class */ (function () {
                         _h.trys.push([2, 8, 10, 11]);
                         signal = aborter.signal;
                         data_1 = updated;
-                        error_3 = current === null || current === void 0 ? void 0 : current.error;
                         time_1 = current === null || current === void 0 ? void 0 : current.time;
                         optimistic = true;
-                        return [4 /*yield*/, this.core.apply(skey, current, { time: time_1, data: data_1, error: error_3, aborter: aborter, optimistic: optimistic }, params)];
+                        return [4 /*yield*/, this.core.apply(skey, current, { time: time_1, data: data_1, aborter: aborter, optimistic: optimistic }, params)];
                     case 3:
                         _h.sent();
                         return [4 /*yield*/, poster(key, { data: updated, signal: signal })];

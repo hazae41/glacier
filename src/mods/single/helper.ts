@@ -131,11 +131,10 @@ export class SingleHelper {
 
       {
         const data = updated
-        const error = current?.error
         const time = current?.time
         const optimistic = true
 
-        await this.core.apply(skey, current, { time, data, error, aborter, optimistic }, params)
+        await this.core.apply(skey, current, { time, data, aborter, optimistic }, params)
       }
 
       const {
