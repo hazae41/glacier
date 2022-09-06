@@ -2145,6 +2145,7 @@ var index = {
     AsyncLocalStorage: AsyncLocalStorage,
     useSyncLocalStorage: useSyncLocalStorage,
     SyncLocalStorage: SyncLocalStorage,
+    Normal: Normal,
     isAsyncStorage: isAsyncStorage,
     DEFAULT_EQUALS: DEFAULT_EQUALS,
     DEFAULT_SERIALIZER: DEFAULT_SERIALIZER,

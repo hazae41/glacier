@@ -1,4 +1,6 @@
 export * from "./fetcher"
+export * from "./normal"
+export * from "./object"
 export * from "./params"
 export * from "./poster"
 export * from "./result"
@@ -8,3 +10,4 @@ export * from "./serializer"
 export * from "./state"
 export * from "./storage"
 export * from "./updater"
+
