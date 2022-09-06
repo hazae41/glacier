@@ -1089,7 +1089,7 @@ var Core = /** @class */ (function (_super) {
                         if (!(normalizer !== undefined && next.data !== undefined && next.data !== (current === null || current === void 0 ? void 0 : current.data))) return [3 /*break*/, 4];
                         transformed = normalizer(next.data);
                         _c = next;
-                        return [4 /*yield*/, this.normalize(transformed)];
+                        return [4 /*yield*/, this.normalize(transformed, next)];
                     case 3:
                         _c.data = _d.sent();
                         _d.label = 4;
@@ -1101,12 +1101,13 @@ var Core = /** @class */ (function (_super) {
             });
         });
     };
-    Core.prototype.normalize = function (transformed) {
+    Core.prototype.normalize = function (transformed, state) {
         return __awaiter(this, void 0, void 0, function () {
-            var _a, _b, _i, key, item, object, _c, _d;
+            var time, cooldown, expiration, optimistic, _a, _b, _i, key, item, object, _c, _d;
             return __generator(this, function (_e) {
                 switch (_e.label) {
                     case 0:
+                        time = state.time, cooldown = state.cooldown, expiration = state.expiration, optimistic = state.optimistic;
                         if (typeof transformed !== "object")
                             return [2 /*return*/, transformed];
                         if (transformed === null)
@@ -1121,8 +1122,8 @@ var Core = /** @class */ (function (_super) {
                         key = _a[_i];
                         item = transformed[key];
                         if (!(item instanceof Normal)) return [3 /*break*/, 3];
-                        object = item.schema.make(this);
-                        return [4 /*yield*/, object.mutate({ data: item.data })];
+                        object = item.schema.make(this, undefined, false);
+                        return [4 /*yield*/, object.mutate({ data: item.data, time: time, cooldown: cooldown, expiration: expiration, optimistic: optimistic })];
                     case 2:
                         _e.sent();
                         transformed[key] = item.result;
@@ -1130,7 +1131,7 @@ var Core = /** @class */ (function (_super) {
                     case 3:
                         _c = transformed;
                         _d = key;
-                        return [4 /*yield*/, this.normalize(item)];
+                        return [4 /*yield*/, this.normalize(item, state)];
                     case 4:
                         _c[_d] = _e.sent();
                         _e.label = 5;

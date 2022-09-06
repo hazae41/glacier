@@ -22,15 +22,19 @@ interface Data {
   name: string
 }
 
-function getAllDataNormal(data: Data[]) {
-  return data.map(item => new XSWR.Normal(item, getDataSchema(item.id), item.id))
+function getDataNormal(data: Data) {
+  return new XSWR.Normal(data, getDataSchema(data.id), data.id)
 }
 
 function getAllDataSchema() {
+  function normalizer(data: Data[]) {
+    return data.map(getDataNormal)
+  }
+
   return XSWR.single<Data[], Error, string[]>(
     `/api/data/all`,
     fetchAsJson,
-    { normalizer: getAllDataNormal })
+    { normalizer })
 }
 
 function useAllData() {
@@ -48,7 +52,6 @@ function useData(id: string) {
   XSWR.useFetch(handle)
   return handle
 }
-
 
 function Element(props: { id: string }) {
   const { data, mutate } = useData(props.id)
@@ -68,7 +71,7 @@ function Element(props: { id: string }) {
 }
 
 export default function Page() {
-  const { data, refetch, mutate } = useAllData()
+  const { data, refetch } = useAllData()
 
   const onRefetchClick = useCallback(() => {
     refetch()
