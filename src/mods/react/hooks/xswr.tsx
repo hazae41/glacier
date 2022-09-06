@@ -1,6 +1,7 @@
 import { useCore } from "mods/react/contexts/core"
 import { useParams } from "mods/react/contexts/params"
-import { Object, Schema } from "mods/types/schema"
+import { Object } from "mods/types/object"
+import { Schema } from "mods/types/schema"
 import { useCallback } from "react"
 
 export type Maker = <T>(schema: Schema<T>, init?: boolean) => Object<T>

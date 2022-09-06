@@ -1055,7 +1055,7 @@ var Core = /** @class */ (function (_super) {
         var _a;
         if (params === void 0) { params = {}; }
         return __awaiter(this, void 0, void 0, function () {
-            var next, _b, equals, normalizer, _c;
+            var next, _b, equals, normalizer, transformed, _c;
             return __generator(this, function (_d) {
                 switch (_d.label) {
                     case 0:
@@ -1087,8 +1087,9 @@ var Core = /** @class */ (function (_super) {
                         if (shallowEquals(next, current)) // Shallow comparison because aborter is not serializable
                             return [2 /*return*/, current];
                         if (!(normalizer !== undefined && next.data !== undefined && next.data !== (current === null || current === void 0 ? void 0 : current.data))) return [3 /*break*/, 4];
+                        transformed = normalizer(next.data);
                         _c = next;
-                        return [4 /*yield*/, this.normalize(normalizer(next.data))];
+                        return [4 /*yield*/, this.normalize(transformed)];
                     case 3:
                         _c.data = _d.sent();
                         _d.label = 4;
@@ -1100,34 +1101,34 @@ var Core = /** @class */ (function (_super) {
             });
         });
     };
-    Core.prototype.normalize = function (normalized) {
+    Core.prototype.normalize = function (transformed) {
         return __awaiter(this, void 0, void 0, function () {
             var _a, _b, _i, key, item, object, _c, _d;
             return __generator(this, function (_e) {
                 switch (_e.label) {
                     case 0:
-                        if (typeof normalized !== "object")
-                            return [2 /*return*/, normalized];
-                        if (normalized === null)
-                            return [2 /*return*/, normalized];
+                        if (typeof transformed !== "object")
+                            return [2 /*return*/, transformed];
+                        if (transformed === null)
+                            return [2 /*return*/, transformed];
                         _a = [];
-                        for (_b in normalized)
+                        for (_b in transformed)
                             _a.push(_b);
                         _i = 0;
                         _e.label = 1;
                     case 1:
                         if (!(_i < _a.length)) return [3 /*break*/, 6];
                         key = _a[_i];
-                        item = normalized[key];
+                        item = transformed[key];
                         if (!(item instanceof Normal)) return [3 /*break*/, 3];
                         object = item.schema.make(this);
                         return [4 /*yield*/, object.mutate({ data: item.data })];
                     case 2:
                         _e.sent();
-                        normalized[key] = item.result;
+                        transformed[key] = item.result;
                         return [3 /*break*/, 5];
                     case 3:
-                        _c = normalized;
+                        _c = transformed;
                         _d = key;
                         return [4 /*yield*/, this.normalize(item)];
                     case 4:
@@ -1136,7 +1137,7 @@ var Core = /** @class */ (function (_super) {
                     case 5:
                         _i++;
                         return [3 /*break*/, 1];
-                    case 6: return [2 /*return*/, normalized];
+                    case 6: return [2 /*return*/, transformed];
                 }
             });
         });
@@ -2144,7 +2145,6 @@ var index = {
     AsyncLocalStorage: AsyncLocalStorage,
     useSyncLocalStorage: useSyncLocalStorage,
     SyncLocalStorage: SyncLocalStorage,
-    Normal: Normal,
     isAsyncStorage: isAsyncStorage,
     DEFAULT_EQUALS: DEFAULT_EQUALS,
     DEFAULT_SERIALIZER: DEFAULT_SERIALIZER,

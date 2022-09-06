@@ -1,7 +1,7 @@
 import { Core } from "mods/core";
+import { Object } from "mods/types/object";
 import { Params } from "mods/types/params";
 import { Poster } from "mods/types/poster";
-import { Object } from "mods/types/schema";
 import { State } from "mods/types/state";
 import { Updater } from "mods/types/updater";
 import { DEFAULT_SERIALIZER } from "mods/utils/defaults";

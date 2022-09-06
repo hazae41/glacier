@@ -1,10 +1,10 @@
 import { Core } from "mods/core";
 import { Fetcher } from "mods/index";
+import { Object } from "mods/types/object";
 import { Params } from "mods/types/params";
 import { Scroller } from "mods/types/scroller";
 import { State } from "mods/types/state";
 import { DEFAULT_SERIALIZER } from "mods/utils/defaults";
-import { Object } from "../types/schema";
 
 export function getScrollStorageKey<D = any, E = any, N = D, K = any>(key: K, params: Params) {
   if (key === undefined)

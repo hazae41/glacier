@@ -68,7 +68,7 @@ function Element(props: { id: string }) {
 }
 
 export default function Page() {
-  const { data, refetch } = useAllData()
+  const { data, refetch, mutate } = useAllData()
 
   const onRefetchClick = useCallback(() => {
     refetch()

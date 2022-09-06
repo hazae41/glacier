@@ -1,7 +1,7 @@
 import { Core } from "../core";
+import { Object } from "../types/object";
 import { Params } from "../types/params";
 import { Poster } from "../types/poster";
-import { Object } from "../types/schema";
 import { State } from "../types/state";
 import { Updater } from "../types/updater";
 export declare function getSingleStorageKey<D = any, E = any, N = D, K = any>(key: K, params: Params): string | undefined;

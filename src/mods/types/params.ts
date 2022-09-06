@@ -9,5 +9,5 @@ export interface Params<D = any, E = any, N = D, K = any> {
   cooldown?: number
   expiration?: number
   timeout?: number,
-  normalizer?: (data: D) => any
+  normalizer?: (data: D) => unknown
 }

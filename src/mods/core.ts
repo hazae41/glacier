@@ -1,8 +1,8 @@
 import { Ortho } from "libs/ortho"
 import { ScrollHelper } from "mods/scroll"
 import { SingleHelper } from "mods/single"
+import { Normal } from "mods/types/normal"
 import { Params } from "mods/types/params"
-import { Normal } from "mods/types/schema"
 import { State } from "mods/types/state"
 import { isAsyncStorage } from "mods/types/storage"
 import { DEFAULT_EQUALS } from "mods/utils/defaults"
@@ -122,9 +122,9 @@ export class Core extends Ortho<string, State | undefined> {
       return
     }
 
-    const next: State<D, E, D, K> = {
+    const next: State<D, E, D | N, K> = {
       time: Date.now(),
-      data: current?.data as D,
+      data: current?.data,
       error: current?.error,
       cooldown: current?.cooldown,
       expiration: current?.expiration,
@@ -135,7 +135,7 @@ export class Core extends Ortho<string, State | undefined> {
 
     if (next.time !== undefined && next.time < (current?.time ?? 0)) { // Keep the current state if the new state is older
       next.time = current?.time
-      next.data = current?.data as D
+      next.data = current?.data
       next.error = current?.error
       next.cooldown = current?.cooldown
       next.expiration = current?.expiration
@@ -158,31 +158,33 @@ export class Core extends Ortho<string, State | undefined> {
     if (shallowEquals(next, current)) // Shallow comparison because aborter is not serializable
       return current
 
-    if (normalizer !== undefined && next.data !== undefined && next.data !== current?.data)
-      next.data = await this.normalize(normalizer(next.data))
+    if (normalizer !== undefined && next.data !== undefined && next.data !== current?.data) {
+      const transformed = normalizer(next.data as D)
+      next.data = await this.normalize(transformed)
+    }
 
-    await this.set(skey, next as any as State<D, E, N, K>, params)
-    return next as any as State<D, E, N, K>
+    await this.set(skey, next, params)
+    return next as State<D, E, N, K>
   }
 
-  async normalize<D = any, E = any, N = D, K = any>(
-    normalized: D
-  ) {
-    if (typeof normalized !== "object")
-      return normalized as any as N
-    if (normalized === null)
-      return normalized as N
-    for (const key in normalized) {
-      const item = normalized[key]
+  async normalize<T = any, N = any>(
+    transformed: T
+  ): Promise<N> {
+    if (typeof transformed !== "object")
+      return transformed as any as N
+    if (transformed === null)
+      return transformed as N
+    for (const key in transformed) {
+      const item = transformed[key]
       if (item instanceof Normal) {
         const object = item.schema.make(this)
         await object.mutate({ data: item.data })
-        normalized[key] = item.result
+        transformed[key] = item.result
       } else {
-        normalized[key] = await this.normalize(item)
+        transformed[key] = await this.normalize(item)
       }
     }
-    return normalized as N
+    return transformed as N
   }
 
   async mutate<D = any, E = any, N = D, K = any>(
