@@ -40,11 +40,11 @@ XSWR uses two new approaches compared to other data fetching libraries like swr 
 - Automatic garbage collection
 - Per-query persistent storage
 - Out of the box IndexedDB and LocalStorage
+- Out of the box store normalization
 
 ### Upcoming features
 
 - Transport agnostic streaming (ethers.js, WebSockets, Socket.io)
-- Store normalization
 - Bidirectional scrolling
 - React suspense
 
