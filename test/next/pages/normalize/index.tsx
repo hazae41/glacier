@@ -22,6 +22,10 @@ interface Data {
   name: string
 }
 
+function getDataSchema(id: string) {
+  return XSWR.single<Data>(`/api/data?id=${id}`, fetchAsJson)
+}
+
 function getDataNormal(data: Data) {
   return new XSWR.Normal(data, getDataSchema(data.id), data.id)
 }
@@ -41,10 +45,6 @@ function useAllData() {
   const handle = XSWR.use(getAllDataSchema, [])
   XSWR.useFetch(handle)
   return handle
-}
-
-function getDataSchema(id: string) {
-  return XSWR.single<Data>(`/api/data?id=${id}`, fetchAsJson)
 }
 
 function useData(id: string) {
