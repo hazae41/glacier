@@ -914,6 +914,15 @@ var SingleSchema = /** @class */ (function () {
     return SingleSchema;
 }());
 
+var Normal = /** @class */ (function () {
+    function Normal(data, schema, result) {
+        this.data = data;
+        this.schema = schema;
+        this.result = result;
+    }
+    return Normal;
+}());
+
 function isAsyncStorage(storage) {
     return Boolean(storage.async);
 }
@@ -1052,21 +1061,20 @@ var Core = /** @class */ (function (_super) {
         var _a;
         if (params === void 0) { params = {}; }
         return __awaiter(this, void 0, void 0, function () {
-            var next, _b, equals;
-            return __generator(this, function (_c) {
-                switch (_c.label) {
+            var next, _b, equals, normalizer, _c;
+            return __generator(this, function (_d) {
+                switch (_d.label) {
                     case 0:
                         if (skey === undefined)
                             return [2 /*return*/];
                         if (!!state) return [3 /*break*/, 2];
                         return [4 /*yield*/, this.delete(skey, params)];
                     case 1:
-                        _c.sent();
+                        _d.sent();
                         return [2 /*return*/];
                     case 2:
                         next = __assign({ time: Date.now(), data: current === null || current === void 0 ? void 0 : current.data, error: current === null || current === void 0 ? void 0 : current.error, cooldown: current === null || current === void 0 ? void 0 : current.cooldown, expiration: current === null || current === void 0 ? void 0 : current.expiration, aborter: current === null || current === void 0 ? void 0 : current.aborter, optimistic: undefined }, state);
-                        // Keep the current state if the new state is older
-                        if (next.time !== undefined && next.time < ((_a = current === null || current === void 0 ? void 0 : current.time) !== null && _a !== void 0 ? _a : 0)) {
+                        if (next.time !== undefined && next.time < ((_a = current === null || current === void 0 ? void 0 : current.time) !== null && _a !== void 0 ? _a : 0)) { // Keep the current state if the new state is older
                             next.time = current === null || current === void 0 ? void 0 : current.time;
                             next.data = current === null || current === void 0 ? void 0 : current.data;
                             next.error = current === null || current === void 0 ? void 0 : current.error;
@@ -1075,22 +1083,66 @@ var Core = /** @class */ (function (_super) {
                             next.optimistic = current === null || current === void 0 ? void 0 : current.optimistic;
                             next.aborter = current === null || current === void 0 ? void 0 : current.aborter;
                         }
-                        // Force prevent requests from mutating the aborter if it's not their own
-                        if (aborter)
+                        if (aborter) // Force unset or ignore aborter
                             next.aborter = aborter === (current === null || current === void 0 ? void 0 : current.aborter)
                                 ? state.aborter
                                 : current === null || current === void 0 ? void 0 : current.aborter;
-                        _b = params.equals, equals = _b === void 0 ? DEFAULT_EQUALS : _b;
-                        // Prevent some renders if the data is the same
-                        if (equals(next.data, current === null || current === void 0 ? void 0 : current.data))
+                        _b = params.equals, equals = _b === void 0 ? DEFAULT_EQUALS : _b, normalizer = params.normalizer;
+                        if (equals(next.data, current === null || current === void 0 ? void 0 : current.data)) // Prevent some renders if the data is the same
                             next.data = current === null || current === void 0 ? void 0 : current.data;
-                        // Shallow comparison because aborter is not serializable
-                        if (shallowEquals(next, current))
+                        if (shallowEquals(next, current)) // Shallow comparison because aborter is not serializable
                             return [2 /*return*/, current];
-                        return [4 /*yield*/, this.set(skey, next, params)];
+                        if (!(normalizer !== undefined && next.data !== undefined && next.data !== (current === null || current === void 0 ? void 0 : current.data))) return [3 /*break*/, 4];
+                        _c = next;
+                        return [4 /*yield*/, this.normalize(normalizer(next.data))];
                     case 3:
-                        _c.sent();
+                        _c.data = _d.sent();
+                        _d.label = 4;
+                    case 4: return [4 /*yield*/, this.set(skey, next, params)];
+                    case 5:
+                        _d.sent();
                         return [2 /*return*/, next];
+                }
+            });
+        });
+    };
+    Core.prototype.normalize = function (normalized) {
+        return __awaiter(this, void 0, void 0, function () {
+            var _a, _b, _i, key, item, object, _c, _d;
+            return __generator(this, function (_e) {
+                switch (_e.label) {
+                    case 0:
+                        if (typeof normalized !== "object")
+                            return [2 /*return*/, normalized];
+                        if (normalized === null)
+                            return [2 /*return*/, normalized];
+                        _a = [];
+                        for (_b in normalized)
+                            _a.push(_b);
+                        _i = 0;
+                        _e.label = 1;
+                    case 1:
+                        if (!(_i < _a.length)) return [3 /*break*/, 6];
+                        key = _a[_i];
+                        item = normalized[key];
+                        if (!(item instanceof Normal)) return [3 /*break*/, 3];
+                        object = item.schema.make(this);
+                        return [4 /*yield*/, object.mutate({ data: item.data })];
+                    case 2:
+                        _e.sent();
+                        normalized[key] = item.result;
+                        return [3 /*break*/, 5];
+                    case 3:
+                        _c = normalized;
+                        _d = key;
+                        return [4 /*yield*/, this.normalize(item)];
+                    case 4:
+                        _c[_d] = _e.sent();
+                        _e.label = 5;
+                    case 5:
+                        _i++;
+                        return [3 /*break*/, 1];
+                    case 6: return [2 /*return*/, normalized];
                 }
             });
         });
@@ -1125,7 +1177,7 @@ var Core = /** @class */ (function (_super) {
             return true;
         return false;
     };
-    Core.prototype.subscribe = function (key, listener, _) {
+    Core.prototype.subscribe = function (key, listener, params) {
         var _a;
         if (!key)
             return;
@@ -2098,6 +2150,7 @@ var index = {
     AsyncLocalStorage: AsyncLocalStorage,
     useSyncLocalStorage: useSyncLocalStorage,
     SyncLocalStorage: SyncLocalStorage,
+    Normal: Normal,
     isAsyncStorage: isAsyncStorage,
     DEFAULT_EQUALS: DEFAULT_EQUALS,
     DEFAULT_SERIALIZER: DEFAULT_SERIALIZER,

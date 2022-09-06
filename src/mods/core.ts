@@ -2,13 +2,14 @@ import { Ortho } from "libs/ortho"
 import { ScrollHelper } from "mods/scroll"
 import { SingleHelper } from "mods/single"
 import { Params } from "mods/types/params"
+import { Normal } from "mods/types/schema"
 import { State } from "mods/types/state"
 import { isAsyncStorage } from "mods/types/storage"
 import { DEFAULT_EQUALS } from "mods/utils/defaults"
 import { shallowEquals } from "mods/utils/equals"
 
-export type Listener<D = any, E = any> =
-  (x?: State<D, E>) => void
+export type Listener<D = any, E = any, N = D, K = any> =
+  (x?: State<D, E, N, K>) => void
 
 export class Core extends Ortho<string, State | undefined> {
   readonly single = new SingleHelper(this)
@@ -28,10 +29,10 @@ export class Core extends Ortho<string, State | undefined> {
     this._mounted = false
   }
 
-  getSync<D = any, E = any>(
+  getSync<D = any, E = any, N = D, K = any>(
     skey: string | undefined,
-    params: Params<D, E> = {}
-  ): State<D, E> | undefined | null {
+    params: Params<D, E, N, K> = {}
+  ): State<D, E, N, K> | undefined | null {
     if (skey === undefined) return
 
     if (this.cache.has(skey))
@@ -47,11 +48,11 @@ export class Core extends Ortho<string, State | undefined> {
     return state
   }
 
-  async get<D = any, E = any>(
+  async get<D = any, E = any, N = D, K = any>(
     skey: string | undefined,
-    params: Params<D, E> = {},
+    params: Params<D, E, N, K> = {},
     ignore = false
-  ): Promise<State<D, E> | undefined> {
+  ): Promise<State<D, E, N, K> | undefined> {
     if (skey === undefined) return
 
     if (this.cache.has(skey))
@@ -72,10 +73,10 @@ export class Core extends Ortho<string, State | undefined> {
    * @param state New state
    * @returns 
    */
-  async set<D = any, E = any>(
+  async set<D = any, E = any, N = D, K = any>(
     skey: string | undefined,
-    state: State<D, E>,
-    params: Params<D, E> = {}
+    state: State<D, E, N, K>,
+    params: Params<D, E, N, K> = {}
   ) {
     if (skey === undefined) return
 
@@ -93,9 +94,9 @@ export class Core extends Ortho<string, State | undefined> {
    * @param skey 
    * @returns 
    */
-  async delete<D = any, E = any>(
+  async delete<D = any, E = any, N = D, K = any>(
     skey: string | undefined,
-    params: Params<D, E> = {}
+    params: Params<D, E, N, K> = {}
   ) {
     if (!skey) return
 
@@ -107,13 +108,13 @@ export class Core extends Ortho<string, State | undefined> {
     await storage.delete(skey)
   }
 
-  async apply<D = any, E = any>(
+  async apply<D = any, E = any, N = D, K = any>(
     skey: string | undefined,
-    current?: State<D, E>,
-    state?: State<D, E>,
-    params: Params<D, E> = {},
+    current?: State<D, E, N, K>,
+    state?: State<D, E, D, K>,
+    params: Params<D, E, N, K> = {},
     aborter?: AbortController
-  ): Promise<State<D, E> | undefined> {
+  ): Promise<State<D, E, N, K> | undefined> {
     if (skey === undefined) return
 
     if (!state) {
@@ -121,9 +122,9 @@ export class Core extends Ortho<string, State | undefined> {
       return
     }
 
-    const next: State<D, E> = {
+    const next: State<D, E, D, K> = {
       time: Date.now(),
-      data: current?.data,
+      data: current?.data as D,
       error: current?.error,
       cooldown: current?.cooldown,
       expiration: current?.expiration,
@@ -132,10 +133,9 @@ export class Core extends Ortho<string, State | undefined> {
       ...state
     }
 
-    // Keep the current state if the new state is older
-    if (next.time !== undefined && next.time < (current?.time ?? 0)) {
+    if (next.time !== undefined && next.time < (current?.time ?? 0)) { // Keep the current state if the new state is older
       next.time = current?.time
-      next.data = current?.data
+      next.data = current?.data as D
       next.error = current?.error
       next.cooldown = current?.cooldown
       next.expiration = current?.expiration
@@ -143,42 +143,67 @@ export class Core extends Ortho<string, State | undefined> {
       next.aborter = current?.aborter
     }
 
-    // Force unset or ignore aborter
-    if (aborter)
+    if (aborter) // Force unset or ignore aborter
       next.aborter = aborter === current?.aborter
         ? state.aborter
         : current?.aborter
 
-    const { equals = DEFAULT_EQUALS } = params
+    const {
+      equals = DEFAULT_EQUALS,
+      normalizer
+    } = params
 
-    // Prevent some renders if the data is the same
-    if (equals(next.data, current?.data))
-      next.data = current?.data
-
-    // Shallow comparison because aborter is not serializable
-    if (shallowEquals(next, current))
+    if (equals(next.data, current?.data)) // Prevent some renders if the data is the same
+      next.data = current?.data as D
+    if (shallowEquals(next, current)) // Shallow comparison because aborter is not serializable
       return current
 
-    await this.set<D, E>(skey, next, params)
-    return next
+    if (normalizer !== undefined && next.data !== undefined && next.data !== current?.data)
+      next.data = await this.normalize(normalizer(next.data))
+
+    await this.set(skey, next as any as State<D, E, N, K>, params)
+    return next as any as State<D, E, N, K>
   }
 
-  async mutate<D = any, E = any>(
+  async normalize<D = any, E = any, N = D, K = any>(
+    normalized: D
+  ) {
+    if (typeof normalized !== "object")
+      return normalized as any as N
+    if (normalized === null)
+      return normalized as N
+    for (const key in normalized) {
+      const item = normalized[key]
+      if (item instanceof Normal) {
+        const object = item.schema.make(this)
+        await object.mutate({ data: item.data })
+        normalized[key] = item.result
+      } else {
+        normalized[key] = await this.normalize(item)
+      }
+    }
+    return normalized as N
+  }
+
+  async mutate<D = any, E = any, N = D, K = any>(
     key: string | undefined,
-    state?: State<D, E>,
-    params: Params<D, E> = {},
+    state?: State<D, E, D, K>,
+    params: Params<D, E, N, K> = {},
     aborter?: AbortController
-  ): Promise<State<D, E> | undefined> {
+  ): Promise<State<D, E, N, K> | undefined> {
     if (!key) return
 
-    const current = await this.get<D, E>(key, params)
-    return await this.apply<D, E>(key, current, state, params, aborter)
+    const current = await this.get(key, params)
+    return await this.apply(key, current, state, params, aborter)
   }
 
   /**
    * True if we should cooldown this resource
    */
-  shouldCooldown<D = any, E = any>(current?: State<D, E>, force?: boolean) {
+  shouldCooldown<D = any, E = any, N = D, K = any>(
+    current?: State<D, E, N, K>,
+    force?: boolean
+  ) {
     if (force)
       return false
     if (current?.cooldown === undefined)
@@ -191,10 +216,10 @@ export class Core extends Ortho<string, State | undefined> {
   counts = new Map<string, number>()
   timeouts = new Map<string, NodeJS.Timeout>()
 
-  subscribe<D = any, E = any>(
+  subscribe<D = any, E = any, N = D, K = any>(
     key: string | undefined,
-    listener: Listener<D, E>,
-    _: Params<D, E> = {}
+    listener: Listener<D, E, N, K>,
+    params: Params<D, E, N, K> = {}
   ) {
     if (!key) return
 
@@ -210,10 +235,10 @@ export class Core extends Ortho<string, State | undefined> {
     this.timeouts.delete(key)
   }
 
-  async unsubscribe<D = any, E = any>(
+  async unsubscribe<D = any, E = any, N = D, K = any>(
     key: string | undefined,
-    listener: Listener<D, E>,
-    params: Params<D, E> = {}
+    listener: Listener<D, E, N, K>,
+    params: Params<D, E, N, K> = {}
   ) {
     if (!key) return
 

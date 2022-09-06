@@ -10,11 +10,11 @@ import { Handle } from "./handle";
 /**
  * Handle for a scrolling resource
  */
-export interface ScrollHandle<D = any, E = any, K = any> extends Handle<D[], E, K> {
+export interface ScrollHandle<D = any, E = any, N = D, K = any> extends Handle<D[], E, N[], K> {
   /**
    * Fetch the next page
    */
-  scroll(): Promise<State<D[], E> | undefined>
+  scroll(): Promise<State<D[], E, N[], K> | undefined>
 }
 
 /**
@@ -24,11 +24,11 @@ export interface ScrollHandle<D = any, E = any, K = any> extends Handle<D[], E, 
  * @param params Parameters (static)
  * @returns Scrolling handle
  */
-export function useScroll<D = any, E = any, K = any>(
-  scroller: Scroller<D, K>,
-  fetcher: Fetcher<D, E, K>,
-  params: Params<D[], E> = {},
-): ScrollHandle<D, E, K> {
+export function useScroll<D = any, E = any, N = D, K = any>(
+  scroller: Scroller<D, E, N, K>,
+  fetcher: Fetcher<D, E, N, K>,
+  params: Params<D[], E, N[], K> = {},
+): ScrollHandle<D, E, N, K> {
   const core = useCore()
   const pparams = useParams()
 
@@ -43,12 +43,12 @@ export function useScroll<D = any, E = any, K = any>(
   }, [key])
 
   const [state, setState] = useState(() =>
-    core.getSync<D[], E>(skey, mparams))
+    core.getSync<D[], E, N[], K>(skey, mparams))
   const first = useRef(true)
 
   useEffect(() => {
     if (state === null || !first.current)
-      core.get<D[], E>(skey, mparams).then(setState)
+      core.get<D[], E, N[], K>(skey, mparams).then(setState)
     first.current = false
   }, [core, skey])
 
@@ -59,20 +59,20 @@ export function useScroll<D = any, E = any, K = any>(
     return () => void core.unsubscribe(skey, setState, mparams)
   }, [core, skey])
 
-  const mutate = useCallback(async (state?: State<D[], E>) => {
-    return await core.mutate<D[], E>(skey, state, mparams)
+  const mutate = useCallback(async (state?: State<D[], E, D[], K>) => {
+    return await core.mutate<D[], E, N[], K>(skey, state, mparams)
   }, [core, skey])
 
   const fetch = useCallback(async (aborter?: AbortController) => {
-    return await core.scroll.first<D, E, K>(skey, scroller, fetcher, aborter, mparams)
+    return await core.scroll.first(skey, scroller, fetcher, aborter, mparams)
   }, [core, skey, scroller, fetcher])
 
   const refetch = useCallback(async (aborter?: AbortController) => {
-    return await core.scroll.first<D, E, K>(skey, scroller, fetcher, aborter, mparams, true)
+    return await core.scroll.first(skey, scroller, fetcher, aborter, mparams, true)
   }, [core, skey, scroller, fetcher])
 
   const scroll = useCallback(async (aborter?: AbortController) => {
-    return await core.scroll.scroll<D, E, K>(skey, scroller, fetcher, aborter, mparams, true)
+    return await core.scroll.scroll(skey, scroller, fetcher, aborter, mparams, true)
   }, [core, skey, scroller, fetcher])
 
   const clear = useCallback(async () => {

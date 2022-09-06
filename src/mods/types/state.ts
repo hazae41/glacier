@@ -1,5 +1,5 @@
-export interface State<D = any, E = any> {
-  data?: D
+export interface State<D = any, E = any, N = D, K = any> {
+  data?: N
   error?: E
   time?: number,
   aborter?: AbortController,

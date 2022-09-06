@@ -4,24 +4,24 @@ import { Poster } from "mods/types/poster";
 import { Schema } from "mods/types/schema";
 import { SingleObject } from "./object";
 
-export function single<D = any, E = any, K = any>(
+export function single<D = any, E = any, N = D, K = any>(
   key: K | undefined,
-  poster: Poster<D, E, K>,
-  params: Params<D, E, K> = {},
+  poster: Poster<D, E, N, K>,
+  params: Params<D, E, N, K> = {},
 ) {
   return new SingleSchema(key, poster, params)
 }
 
-export class SingleSchema<D = any, E = any, K = any> implements Schema<D, E, K>  {
+export class SingleSchema<D = any, E = any, N = D, K = any> implements Schema<D, E, N, K>  {
   constructor(
     readonly key: K | undefined,
-    readonly poster: Poster<D, E, K>,
-    readonly params: Params<D, E, K> = {},
+    readonly poster: Poster<D, E, N, K>,
+    readonly params: Params<D, E, N, K> = {},
   ) { }
 
   make(core: Core, pparams: Params = {}, initialize?: boolean) {
     const { key, poster, params } = this
 
-    return new SingleObject<D, E, K>(core, key, poster, params, pparams, initialize)
+    return new SingleObject(core, key, poster, params, pparams, initialize)
   }
 }

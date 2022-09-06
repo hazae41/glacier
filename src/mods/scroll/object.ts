@@ -6,7 +6,7 @@ import { State } from "mods/types/state";
 import { DEFAULT_SERIALIZER } from "mods/utils/defaults";
 import { Object } from "../types/schema";
 
-export function getScrollStorageKey<K = any>(key: K, params: Params) {
+export function getScrollStorageKey<D = any, E = any, N = D, K = any>(key: K, params: Params) {
   if (key === undefined)
     return undefined
   if (typeof key === "string")
@@ -22,20 +22,20 @@ export function getScrollStorageKey<K = any>(key: K, params: Params) {
 /**
  * Non-React version of ScrollHandle
  */
-export class ScrollObject<D = any, E = any, K = any> implements Object<D[], E, K> {
+export class ScrollObject<D = any, E = any, N = D, K = any> implements Object<D[], E, N[], K> {
   readonly key: K | undefined
   readonly skey: string | undefined
 
-  readonly mparams: Params<D[], E, K>
+  readonly mparams: Params<D[], E, N[], K>
 
-  private _state?: State<D[], E> | null
+  private _state?: State<D[], E, N[], K> | null
 
   constructor(
     readonly core: Core,
-    readonly scroller: Scroller<D, K>,
-    readonly fetcher: Fetcher<D, E, K>,
-    readonly params: Params<D[], E, K> = {},
-    readonly pparams: Params<D[], E, K> = {},
+    readonly scroller: Scroller<D, E, N, K>,
+    readonly fetcher: Fetcher<D, E, N, K>,
+    readonly params: Params<D[], E, N[], K> = {},
+    readonly pparams: Params<D[], E, N[], K> = {},
     readonly initialize = true
   ) {
     this.mparams = { ...pparams, ...params }
@@ -60,7 +60,7 @@ export class ScrollObject<D = any, E = any, K = any> implements Object<D[], E, K
   private loadSync() {
     const { core, skey, mparams } = this
 
-    this._state = core.getSync<D[], E>(skey, mparams)
+    this._state = core.getSync(skey, mparams)
   }
 
   private async loadAsync() {
@@ -68,13 +68,13 @@ export class ScrollObject<D = any, E = any, K = any> implements Object<D[], E, K
 
     const { core, skey, mparams } = this
 
-    this._state = await core.get<D[], E>(skey, mparams)
+    this._state = await core.get(skey, mparams)
   }
 
   private subscribe() {
     const { core, skey } = this
 
-    const setter = (state?: State<D[], E>) =>
+    const setter = (state?: State<D[], E, N[], K>) =>
       this._state = state
 
     core.subscribe(skey, setter)
@@ -84,28 +84,28 @@ export class ScrollObject<D = any, E = any, K = any> implements Object<D[], E, K
     }).register(this, undefined)
   }
 
-  async mutate(state?: State<D[], E>) {
+  async mutate(state?: State<D[], E, D[], K>) {
     const { core, skey, mparams } = this
 
-    return this._state = await core.mutate<D[], E>(skey, state, mparams)
+    return this._state = await core.mutate(skey, state, mparams)
   }
 
   async fetch(aborter?: AbortController) {
     const { core, scroller, skey, fetcher, mparams } = this
 
-    return this._state = await core.scroll.first<D, E, K>(skey, scroller, fetcher, aborter, mparams)
+    return this._state = await core.scroll.first(skey, scroller, fetcher, aborter, mparams)
   }
 
   async refetch(aborter?: AbortController) {
     const { core, scroller, skey, fetcher, mparams } = this
 
-    return this._state = await core.scroll.first<D, E, K>(skey, scroller, fetcher, aborter, mparams, true)
+    return this._state = await core.scroll.first(skey, scroller, fetcher, aborter, mparams, true)
   }
 
   async scroll(aborter?: AbortController) {
     const { core, scroller, skey, fetcher, mparams } = this
 
-    return this._state = await core.scroll.scroll<D, E, K>(skey, scroller, fetcher, aborter, mparams)
+    return this._state = await core.scroll.scroll(skey, scroller, fetcher, aborter, mparams)
   }
 
   async clear() {

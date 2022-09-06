@@ -1,6 +1,6 @@
 import { State } from "mods/types/state"
 
-export interface Handle<D = any, E = any, K = any> {
+export interface Handle<D = any, E = any, N = D, K = any> {
   /**
    * Arbitrary key, must be serializable
    */
@@ -14,7 +14,7 @@ export interface Handle<D = any, E = any, K = any> {
   /**
    * Data, if any
    */
-  data?: D
+  data?: N
 
   /**
    * Error, if any
@@ -61,20 +61,20 @@ export interface Handle<D = any, E = any, K = any> {
    * Fetch with cooldown
    * @example You want to fetch and don't care if it's cooldowned
    */
-  fetch(aborter?: AbortController): Promise<State<D, E> | undefined>
+  fetch(aborter?: AbortController): Promise<State<D, E, N, K> | undefined>
 
   /**
    * Fetch without cooldown
    * @example User clicked on the refresh button
    * @example You just made a POST request and want to get some fresh data
    */
-  refetch(aborter?: AbortController): Promise<State<D, E> | undefined>
+  refetch(aborter?: AbortController): Promise<State<D, E, N, K> | undefined>
 
   /**
    * Mutate the cache
    * @param res 
    */
-  mutate(state?: State<D, E>): Promise<State<D, E> | undefined>
+  mutate(state?: State<D, E, D, K>): Promise<State<D, E, N, K> | undefined>
 
   /**
    * Clear the cache

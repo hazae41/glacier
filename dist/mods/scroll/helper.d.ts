@@ -16,7 +16,7 @@ export declare class ScrollHelper {
      * @param force Should ignore cooldown
      * @returns The new state
      */
-    first<D = any, E = any, K = any>(skey: string | undefined, scroller: Scroller<D, K>, fetcher: Fetcher<D, E, K>, aborter?: AbortController, params?: Params<D[], E>, force?: boolean): Promise<State<D[], E> | undefined>;
+    first<D = any, E = any, N = D, K = any>(skey: string | undefined, scroller: Scroller<D, E, N, K>, fetcher: Fetcher<D, E, N, K>, aborter?: AbortController, params?: Params<D[], E, N[], K>, force?: boolean): Promise<State<D[], E, N[], K> | undefined>;
     /**
      * Scroll to the next page
      * @param skey Storage key
@@ -27,5 +27,5 @@ export declare class ScrollHelper {
      * @param force Should ignore cooldown
      * @returns The new state
      */
-    scroll<D = any, E = any, K = any>(skey: string | undefined, scroller: Scroller<D, K>, fetcher: Fetcher<D, E, K>, aborter?: AbortController, params?: Params<D[], E>, force?: boolean): Promise<State<D[], E> | undefined>;
+    scroll<D = any, E = any, N = D, K = any>(skey: string | undefined, scroller: Scroller<D, E, N, K>, fetcher: Fetcher<D, E, N, K>, aborter?: AbortController, params?: Params<D[], E, N[], K>, force?: boolean): Promise<State<D[], E, N[], K> | undefined>;
 }

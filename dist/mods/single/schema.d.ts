@@ -3,11 +3,11 @@ import { Params } from "../types/params";
 import { Poster } from "../types/poster";
 import { Schema } from "../types/schema";
 import { SingleObject } from "./object";
-export declare function single<D = any, E = any, K = any>(key: K | undefined, poster: Poster<D, E, K>, params?: Params<D, E, K>): SingleSchema<D, E, K>;
-export declare class SingleSchema<D = any, E = any, K = any> implements Schema<D, E, K> {
+export declare function single<D = any, E = any, N = D, K = any>(key: K | undefined, poster: Poster<D, E, N, K>, params?: Params<D, E, N, K>): SingleSchema<D, E, N, K>;
+export declare class SingleSchema<D = any, E = any, N = D, K = any> implements Schema<D, E, N, K> {
     readonly key: K | undefined;
-    readonly poster: Poster<D, E, K>;
-    readonly params: Params<D, E, K>;
-    constructor(key: K | undefined, poster: Poster<D, E, K>, params?: Params<D, E, K>);
-    make(core: Core, pparams?: Params, initialize?: boolean): SingleObject<D, E, K>;
+    readonly poster: Poster<D, E, N, K>;
+    readonly params: Params<D, E, N, K>;
+    constructor(key: K | undefined, poster: Poster<D, E, N, K>, params?: Params<D, E, N, K>);
+    make(core: Core, pparams?: Params, initialize?: boolean): SingleObject<D, any, any, K>;
 }

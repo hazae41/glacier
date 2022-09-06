@@ -21,14 +21,14 @@ export class SingleHelper {
    * @param force Should ignore cooldown
    * @returns The new state
    */
-  async fetch<D = any, E = any, K = any>(
+  async fetch<D = any, E = any, N = D, K = any>(
     key: K | undefined,
     skey: string | undefined,
-    fetcher: Fetcher<D, E, K>,
+    fetcher: Fetcher<D, E, N, K>,
     aborter = new AbortController(),
-    params: Params<D, E> = {},
+    params: Params<D, E, N, K> = {},
     force = false
-  ): Promise<State<D, E> | undefined> {
+  ): Promise<State<D, E, N, K> | undefined> {
     if (key === undefined) return
     if (skey === undefined) return
 
@@ -38,7 +38,7 @@ export class SingleHelper {
       timeout: dtimeout = DEFAULT_TIMEOUT,
     } = params
 
-    let current = await this.core.get<D, E>(skey, params)
+    let current = await this.core.get(skey, params)
 
     if (current?.aborter && !force)
       return current
@@ -53,7 +53,7 @@ export class SingleHelper {
       aborter.abort("Timed out")
     }, dtimeout)
 
-    const state: State<D, E> = {}
+    const state: State<D, E, D, K> = {}
 
     try {
       const { signal } = aborter
@@ -77,9 +77,9 @@ export class SingleHelper {
         state.data = data
       state.error = error
 
-      return await this.core.apply<D, E>(skey, current, { time, cooldown, expiration, ...state }, params, aborter)
+      return await this.core.apply(skey, current, { time, cooldown, expiration, ...state }, params, aborter)
     } catch (error: any) {
-      return await this.core.mutate<D, E>(skey, { error }, params, aborter)
+      return await this.core.mutate(skey, { error }, params, aborter)
     } finally {
       clearTimeout(timeout)
     }
@@ -96,14 +96,14 @@ export class SingleHelper {
    * @returns The new state
    * @throws Error
    */
-  async update<D = any, E = any, K = any>(
+  async update<D = any, E = any, N = D, K = any>(
     key: K | undefined,
     skey: string | undefined,
-    poster: Poster<D, E, K>,
-    updater: Updater<D>,
+    poster: Poster<D, E, N, K>,
+    updater: Updater<D, E, N, K>,
     aborter = new AbortController(),
-    params: Params<D, E> = {},
-  ) {
+    params: Params<D, E, N, K> = {},
+  ): Promise<State<D, E, N, K> | undefined> {
     if (key === undefined) return
     if (skey === undefined) return
 
@@ -113,7 +113,7 @@ export class SingleHelper {
       timeout: dtimeout = DEFAULT_TIMEOUT,
     } = params
 
-    const current = await this.core.get<D, E>(skey, params)
+    const current = await this.core.get(skey, params)
 
     if (current?.aborter && current?.optimistic)
       return current
@@ -150,23 +150,23 @@ export class SingleHelper {
 
       if (error !== undefined) {
         const time = current?.time
-        const data = current?.data
+        const data = current?.data as D
 
-        return await this.core.mutate<D, E>(skey, { time, cooldown, expiration, data, error }, params, aborter)
+        return await this.core.mutate(skey, { time, cooldown, expiration, data, error }, params, aborter)
       }
 
-      const state: State<D, E> = {}
+      const state: State<D, E, D, K> = {}
 
       if (data !== undefined)
         state.data = data
       state.error = error
 
-      return await this.core.mutate<D, E>(skey, { time, cooldown, expiration, ...state }, params, aborter)
+      return await this.core.mutate(skey, { time, cooldown, expiration, ...state }, params, aborter)
     } catch (error: any) {
       const time = current?.time
-      const data = current?.data
+      const data = current?.data as D
 
-      return await this.core.mutate<D, E>(skey, { time, data, error }, params, aborter)
+      return await this.core.mutate(skey, { time, data, error }, params, aborter)
     } finally {
       clearTimeout(timeout)
     }

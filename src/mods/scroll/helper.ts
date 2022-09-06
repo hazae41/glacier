@@ -21,14 +21,14 @@ export class ScrollHelper {
    * @param force Should ignore cooldown
    * @returns The new state
    */
-  async first<D = any, E = any, K = any>(
+  async first<D = any, E = any, N = D, K = any>(
     skey: string | undefined,
-    scroller: Scroller<D, K>,
-    fetcher: Fetcher<D, E, K>,
+    scroller: Scroller<D, E, N, K>,
+    fetcher: Fetcher<D, E, N, K>,
     aborter = new AbortController(),
-    params: Params<D[], E> = {},
+    params: Params<D[], E, N[], K> = {},
     force = false
-  ): Promise<State<D[], E> | undefined> {
+  ): Promise<State<D[], E, N[], K> | undefined> {
     if (skey === undefined) return
 
     const {
@@ -38,7 +38,7 @@ export class ScrollHelper {
       timeout: dtimeout = DEFAULT_TIMEOUT,
     } = params
 
-    let current = await this.core.get<D[], E>(skey, params)
+    let current = await this.core.get(skey, params)
 
     if (current?.aborter && !force)
       return current
@@ -74,15 +74,15 @@ export class ScrollHelper {
 
       current = await this.core.get(skey, params)
 
-      const state: State<D[], E> = {}
+      const state: State<D[], E, D[], K> = {}
 
       if (data !== undefined && !equals(data, current?.data?.[0]))
         state.data = [data]
       state.error = error
 
-      return await this.core.apply<D[], E>(skey, current, { time, cooldown, expiration, ...state }, params, aborter)
+      return await this.core.apply(skey, current, { time, cooldown, expiration, ...state }, params, aborter)
     } catch (error: any) {
-      return await this.core.mutate<D[], E>(skey, { error }, params, aborter)
+      return await this.core.mutate(skey, { error }, params, aborter)
     } finally {
       clearTimeout(timeout)
     }
@@ -98,14 +98,14 @@ export class ScrollHelper {
    * @param force Should ignore cooldown
    * @returns The new state
    */
-  async scroll<D = any, E = any, K = any>(
+  async scroll<D = any, E = any, N = D, K = any>(
     skey: string | undefined,
-    scroller: Scroller<D, K>,
-    fetcher: Fetcher<D, E, K>,
+    scroller: Scroller<D, E, N, K>,
+    fetcher: Fetcher<D, E, N, K>,
     aborter = new AbortController(),
-    params: Params<D[], E> = {},
+    params: Params<D[], E, N[], K> = {},
     force = false
-  ): Promise<State<D[], E> | undefined> {
+  ): Promise<State<D[], E, N[], K> | undefined> {
     if (skey === undefined) return
 
     const {
@@ -114,7 +114,7 @@ export class ScrollHelper {
       timeout: dtimeout = DEFAULT_TIMEOUT,
     } = params
 
-    let current = await this.core.get<D[], E>(skey, params)
+    let current = await this.core.get(skey, params)
 
     if (current?.aborter && !force)
       return current
@@ -154,15 +154,15 @@ export class ScrollHelper {
 
       current = await this.core.get(skey, params)
 
-      const state: State<D[], E> = {}
+      const state: State<D[], E, D[], K> = {}
 
       if (data !== undefined)
-        state.data = [...(current?.data ?? []), data]
+        state.data = [...(current?.data ?? []), data] as D[]
       state.error = error
 
-      return await this.core.apply<D[], E>(skey, current, { time, cooldown, expiration, ...state }, params, aborter)
+      return await this.core.apply(skey, current, { time, cooldown, expiration, ...state }, params, aborter)
     } catch (error: any) {
-      return await this.core.mutate<D[], E>(skey, { error }, params, aborter)
+      return await this.core.mutate(skey, { error }, params, aborter)
     } finally {
       clearTimeout(timeout)
     }

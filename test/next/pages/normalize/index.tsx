@@ -22,6 +22,23 @@ interface Data {
   name: string
 }
 
+function getAllDataNormal(data: Data[]) {
+  return data.map(item => new XSWR.Normal(item, getDataSchema(item.id), item.id))
+}
+
+function getAllDataSchema() {
+  return XSWR.single<Data[], Error, string[]>(
+    `/api/data/all`,
+    fetchAsJson,
+    { normalizer: getAllDataNormal })
+}
+
+function useAllData() {
+  const handle = XSWR.use(getAllDataSchema, [])
+  XSWR.useFetch(handle)
+  return handle
+}
+
 function getDataSchema(id: string) {
   return XSWR.single<Data>(`/api/data?id=${id}`, fetchAsJson)
 }
@@ -32,15 +49,6 @@ function useData(id: string) {
   return handle
 }
 
-function getAllDataSchema() {
-  return XSWR.single<Data[]>(`/api/data/all`, fetchAsJson)
-}
-
-function useAllData() {
-  const handle = XSWR.use(getAllDataSchema, [])
-  XSWR.useFetch(handle)
-  return handle
-}
 
 function Element(props: { id: string }) {
   const { data, mutate } = useData(props.id)
@@ -48,6 +56,8 @@ function Element(props: { id: string }) {
   const onMutateClick = useCallback(() => {
     mutate({ data: { id: props.id, name: "Unde Fined" } })
   }, [mutate, props.id])
+
+  console.log(props.id, data)
 
   return <div>
     {JSON.stringify(data) ?? "undefined"}
@@ -64,10 +74,12 @@ export default function Page() {
     refetch()
   }, [refetch])
 
+  console.log("all", data)
+
   if (!data) return <>Loading...</>
 
   return <>
-    {data?.map(e => <Element key={e.id} id={e.id} />)}
+    {data?.map(id => <Element key={id} id={id} />)}
     <button onClick={onRefetchClick}>
       Refetch
     </button>

@@ -1,2 +1,2 @@
-export type Scroller<D = any, K = any> =
-  (previous?: D) => K | undefined
+export type Scroller<D = any, E = any, N = D, K = any> =
+  (previous?: N) => K | undefined
