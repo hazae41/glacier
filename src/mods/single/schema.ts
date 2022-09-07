@@ -12,7 +12,7 @@ export function single<D = any, E = any, N = D, K = any>(
   return new SingleSchema(key, poster, params)
 }
 
-export class SingleSchema<D = any, E = any, N = D, K = any> implements Schema<D, E, N, K>  {
+export class SingleSchema<D = any, E = any, N = D, K = any> implements Schema<D, E, N, K, SingleObject<D, E, N, K>>  {
   constructor(
     readonly key: K | undefined,
     readonly poster: Poster<D, E, N, K>,

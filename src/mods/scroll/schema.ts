@@ -13,7 +13,7 @@ export function scroll<D = any, E = any, N = D, K = any>(
   return new ScrollSchema(scroller, fetcher, params)
 }
 
-export class ScrollSchema<D = any, E = any, N = D, K = any> implements Schema<D[], E, N[], K> {
+export class ScrollSchema<D = any, E = any, N = D, K = any> implements Schema<D[], E, N[], K, ScrollObject<D, E, N, K>> {
   constructor(
     readonly scroller: Scroller<D, E, N, K>,
     readonly fetcher: Fetcher<D, E, N, K>,

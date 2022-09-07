@@ -4,7 +4,9 @@ import { Object } from "mods/types/object"
 import { Schema } from "mods/types/schema"
 import { useCallback } from "react"
 
-export type Maker = <T>(schema: Schema<T>, init?: boolean) => Object<T>
+export type Maker = <D = any, E = any, N = D, K = any, O extends Object<D, E, N, K> = Object<D, E, N, K>>(
+  schema: Schema<D, E, N, K, O>, init?: boolean
+) => O
 
 export function useXSWR() {
   const core = useCore()

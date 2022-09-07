@@ -301,9 +301,9 @@ var ScrollHelper = /** @class */ (function () {
                         return [4 /*yield*/, this.core.get(skey, params)];
                     case 1:
                         current = _k.sent();
-                        if ((current === null || current === void 0 ? void 0 : current.aborter) && !force)
+                        if (current === null || current === void 0 ? void 0 : current.optimistic)
                             return [2 /*return*/, current];
-                        if ((current === null || current === void 0 ? void 0 : current.aborter) && (current === null || current === void 0 ? void 0 : current.optimistic))
+                        if ((current === null || current === void 0 ? void 0 : current.aborter) && !force)
                             return [2 /*return*/, current];
                         if (current === null || current === void 0 ? void 0 : current.aborter)
                             current.aborter.abort("Replaced");
@@ -374,9 +374,9 @@ var ScrollHelper = /** @class */ (function () {
                         return [4 /*yield*/, this.core.get(skey, params)];
                     case 1:
                         current = _k.sent();
-                        if ((current === null || current === void 0 ? void 0 : current.aborter) && !force)
+                        if (current === null || current === void 0 ? void 0 : current.optimistic)
                             return [2 /*return*/, current];
-                        if ((current === null || current === void 0 ? void 0 : current.aborter) && (current === null || current === void 0 ? void 0 : current.optimistic))
+                        if ((current === null || current === void 0 ? void 0 : current.aborter) && !force)
                             return [2 /*return*/, current];
                         if (current === null || current === void 0 ? void 0 : current.aborter)
                             current.aborter.abort("Replaced");
@@ -625,9 +625,9 @@ var SingleHelper = /** @class */ (function () {
                         return [4 /*yield*/, this.core.get(skey, params)];
                     case 1:
                         current = _h.sent();
-                        if ((current === null || current === void 0 ? void 0 : current.aborter) && !force)
+                        if (current === null || current === void 0 ? void 0 : current.optimistic)
                             return [2 /*return*/, current];
-                        if ((current === null || current === void 0 ? void 0 : current.aborter) && (current === null || current === void 0 ? void 0 : current.optimistic))
+                        if ((current === null || current === void 0 ? void 0 : current.aborter) && !force)
                             return [2 /*return*/, current];
                         if (current === null || current === void 0 ? void 0 : current.aborter)
                             current.aborter.abort("Replaced");
@@ -696,7 +696,7 @@ var SingleHelper = /** @class */ (function () {
                         return [4 /*yield*/, this.core.get(skey, params)];
                     case 1:
                         current = _h.sent();
-                        if ((current === null || current === void 0 ? void 0 : current.aborter) && (current === null || current === void 0 ? void 0 : current.optimistic))
+                        if (current === null || current === void 0 ? void 0 : current.optimistic)
                             return [2 /*return*/, current];
                         if (current === null || current === void 0 ? void 0 : current.aborter)
                             current.aborter.abort("Replaced");
