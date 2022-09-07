@@ -42,7 +42,7 @@ function Writer() {
 
   const write = useCallback(async () => {
     const key = make(getKeySchema("123"))
-    await key.mutate({ data: { hello: "world" } })
+    await key.mutate(() => ({ data: { hello: "world" } }))
     await key.refetch()
   }, [make])
 

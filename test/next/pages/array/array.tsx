@@ -76,8 +76,8 @@ function Element(props: { id: string }) {
   const { data, mutate } = useData(props.id)
 
   const onMutateClick = useCallback(() => {
-    mutate({ data: { id: props.id, name: "Unde Fined" } })
-  }, [mutate, props.id])
+    mutate(c => c && ({ data: c.data && { ...c.data, name: "Unde Fined" } }))
+  }, [mutate])
 
   console.log(props.id, data)
 

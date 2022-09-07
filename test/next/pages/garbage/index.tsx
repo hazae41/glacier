@@ -1,6 +1,5 @@
 import { XSWR } from "@hazae41/xswr"
 import { useCallback, useEffect, useState } from "react"
-import { HelloData } from "../../types/hello"
 
 async function fetchAsJson<T>(url: string, more: XSWR.PosterMore<T>) {
   const { signal } = more
@@ -19,7 +18,7 @@ async function fetchAsJson<T>(url: string, more: XSWR.PosterMore<T>) {
 }
 
 function getHelloSchema() {
-  return XSWR.single<HelloData>("/api/hello", fetchAsJson)
+  return XSWR.single("/api/hello", fetchAsJson)
 }
 
 function useHello() {

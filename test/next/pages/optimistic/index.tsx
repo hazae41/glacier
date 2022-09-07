@@ -1,6 +1,5 @@
 import { XSWR } from "@hazae41/xswr"
 import { useCallback } from "react"
-import { HelloData } from "../../types/hello"
 
 async function postAsJson<T extends HelloData>(url: string, more: XSWR.PosterMore<T>) {
   const { signal } = more
@@ -20,6 +19,10 @@ async function postAsJson<T extends HelloData>(url: string, more: XSWR.PosterMor
   const data = await res.json() as T
   const time = Date.now()
   return { data, time, cooldown, expiration }
+}
+
+interface HelloData {
+  name: string
 }
 
 function getHelloSchema() {
@@ -44,7 +47,7 @@ export default function Page() {
   }, [refetch])
 
   const onMutateClick = useCallback(() => {
-    mutate({ data: { name: "Hello World" } })
+    mutate(() => ({ data: { name: "Hello World" } }))
   }, [mutate])
 
   const onUpdateClick = useCallback(async () => {
@@ -67,7 +70,7 @@ export default function Page() {
       {JSON.stringify(data) ?? "undefined"}
     </div>
     <div>
-      time: {~~(time / 1000) ?? 0}
+      time: {time && ~~(time / 1000)}
     </div>
     <div style={{ color: "red" }}>
       {error instanceof Error

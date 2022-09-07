@@ -46,7 +46,7 @@ export function Comment(props: { id: string }) {
     const John69 = make(getProfileSchema("1518516160"))
     const author = John69.state!.data
 
-    comment.mutate({ data: { ...comment.data!, author } })
+    comment.mutate(c => c && ({ data: c.data && { ...c.data, author } }))
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [comment.data, comment.mutate])
 
