@@ -6,15 +6,17 @@ import { useEffect, useRef } from "react"
  * @param handle 
  */
 export function useOnline(handle: Handle) {
-  const { fetch } = handle
+  const { ready, fetch } = handle
 
   const fetchRef = useRef(fetch)
   fetchRef.current = fetch
 
   useEffect(() => {
+    if (!ready) return
+
     const f = () => fetchRef.current()
 
     addEventListener("online", f)
     return () => removeEventListener("online", f)
-  }, [])
+  }, [ready])
 }

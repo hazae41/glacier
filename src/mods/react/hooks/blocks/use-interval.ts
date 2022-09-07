@@ -8,12 +8,13 @@ import { useEffect, useRef } from "react"
  * @param options 
  */
 export function useInterval(handle: Handle, interval: number) {
-  const { fetch, skey } = handle
+  const { ready, fetch, skey } = handle
 
   const fetchRef = useRef(fetch)
   fetchRef.current = fetch
 
   useEffect(() => {
+    if (!ready) return
     if (!interval) return
 
     const i = setInterval(() => {
@@ -21,5 +22,5 @@ export function useInterval(handle: Handle, interval: number) {
     }, interval)
 
     return () => clearInterval(i)
-  }, [skey, interval])
+  }, [ready, skey, interval])
 }

@@ -8,9 +8,11 @@ import { useEffect } from "react"
  * @param handle 
  */
 export function useMount(handle: Handle) {
-  const { fetch } = handle
+  const { ready, fetch } = handle
 
   useEffect(() => {
+    if (!ready) return
+
     fetch()
-  }, [])
+  }, [ready])
 }

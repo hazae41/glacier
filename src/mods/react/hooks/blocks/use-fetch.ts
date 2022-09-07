@@ -8,9 +8,11 @@ import { useEffect } from "react"
  * @param handle 
  */
 export function useFetch(handle: Handle) {
-  const { fetch, skey } = handle
+  const { ready, fetch, skey } = handle
 
   useEffect(() => {
+    if (!ready) return
+
     fetch()
-  }, [skey])
+  }, [ready, skey])
 }

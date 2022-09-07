@@ -6,15 +6,17 @@ import { useEffect, useRef } from "react"
  * @param handle 
  */
 export function useVisible(handle: Handle) {
-  const { fetch } = handle
+  const { ready, fetch } = handle
 
   const fetchRef = useRef(fetch)
   fetchRef.current = fetch
 
   useEffect(() => {
+    if (!ready) return
+
     const f = () => !document.hidden && fetchRef.current()
 
     document.addEventListener("visibilitychange", f)
     return () => document.removeEventListener("visibilitychange", f)
-  }, [])
+  }, [ready])
 }
