@@ -40,9 +40,9 @@ export class ScrollHelper {
 
     let current = await this.core.get(skey, params)
 
-    if (current?.aborter && !force)
+    if (current?.optimistic)
       return current
-    if (current?.aborter && current?.optimistic)
+    if (current?.aborter && !force)
       return current
     if (current?.aborter)
       current.aborter.abort("Replaced")
@@ -116,9 +116,9 @@ export class ScrollHelper {
 
     let current = await this.core.get(skey, params)
 
-    if (current?.aborter && !force)
+    if (current?.optimistic)
       return current
-    if (current?.aborter && current?.optimistic)
+    if (current?.aborter && !force)
       return current
     if (current?.aborter)
       current.aborter.abort("Replaced")

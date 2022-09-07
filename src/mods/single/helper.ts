@@ -40,9 +40,9 @@ export class SingleHelper {
 
     let current = await this.core.get(skey, params)
 
-    if (current?.aborter && !force)
+    if (current?.optimistic)
       return current
-    if (current?.aborter && current?.optimistic)
+    if (current?.aborter && !force)
       return current
     if (current?.aborter)
       current.aborter.abort("Replaced")
@@ -115,7 +115,7 @@ export class SingleHelper {
 
     const current = await this.core.get(skey, params)
 
-    if (current?.aborter && current?.optimistic)
+    if (current?.optimistic)
       return current
     if (current?.aborter)
       current.aborter.abort("Replaced")
