@@ -9,7 +9,7 @@ export function useDebug<D = any, E = any>(
   handle: Handle<D, E>,
   label: string
 ) {
-  const { data, error, time } = handle
+  const { data, error, time, } = handle
 
   useEffect(() => {
     console.debug(label, handle)

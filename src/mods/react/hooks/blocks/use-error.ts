@@ -16,5 +16,5 @@ export function useError<D = any, E = any>(
     if (!ready) return
 
     if (error !== undefined) callback(error)
-  }, [ready, error, callback])
+  }, [ready, error])
 }

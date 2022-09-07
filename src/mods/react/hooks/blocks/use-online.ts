@@ -1,5 +1,5 @@
 import { Handle } from "mods/react/hooks/handles"
-import { useEffect } from "react"
+import { useEffect, useRef } from "react"
 
 /**
  * Do a request when the browser is online
@@ -8,9 +8,13 @@ import { useEffect } from "react"
 export function useOnline(handle: Handle) {
   const { fetch } = handle
 
+  const fetchRef = useRef(fetch)
+  fetchRef.current = fetch
+
   useEffect(() => {
-    const f = () => fetch()
+    const f = () => fetchRef.current()
+
     addEventListener("online", f)
     return () => removeEventListener("online", f)
-  }, [fetch])
+  }, [])
 }

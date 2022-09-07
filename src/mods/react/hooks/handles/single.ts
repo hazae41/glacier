@@ -41,8 +41,8 @@ export function useSingle<D = any, E = any, N = D, K = any>(
     return getSingleStorageKey(key, mparams)
   }, [key])
 
-  const [state, setState] = useState(() =>
-    core.getSync<D, E, N, K>(skey, mparams))
+  const [state, setState] = useState(
+    () => core.getSync<D, E, N, K>(skey, mparams))
   const first = useRef(true)
 
   useEffect(() => {
@@ -63,20 +63,20 @@ export function useSingle<D = any, E = any, N = D, K = any>(
   }, [core, skey, state])
 
   const fetch = useCallback(async (aborter?: AbortController) => {
-    return await core.single.fetch(key, skey, poster, aborter, mparams)
-  }, [core, skey, poster])
+    if (state !== null) return await core.single.fetch(key, skey, state, poster, aborter, mparams)
+  }, [core, skey, state, poster])
 
   const refetch = useCallback(async (aborter?: AbortController) => {
-    return await core.single.fetch(key, skey, poster, aborter, mparams, true)
-  }, [core, skey, poster])
+    if (state !== null) return await core.single.fetch(key, skey, state, poster, aborter, mparams, true)
+  }, [core, skey, state, poster])
 
   const update = useCallback(async (updater: Updater<D, E, N, K>, aborter?: AbortController) => {
-    return await core.single.update(key, skey, poster, updater, aborter, mparams)
-  }, [core, skey, poster])
+    if (state !== null) return await core.single.update(key, skey, state, poster, updater, aborter, mparams)
+  }, [core, skey, state, poster])
 
   const clear = useCallback(async () => {
-    await core.delete(skey, mparams)
-  }, [core, skey])
+    if (state !== null) await core.delete(skey, mparams)
+  }, [core, skey, state])
 
   const { data, error, time, cooldown, expiration, aborter, optimistic } = state ?? {}
 

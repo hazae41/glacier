@@ -90,7 +90,7 @@ export class ScrollObject<D = any, E = any, N = D, K = any> implements Object<D[
 
     if (!this.ready)
       await this.initialization
-    return this._state = await core.scroll.first(skey, scroller, fetcher, aborter, mparams)
+    return this._state = await core.scroll.first(skey, this._state!, scroller, fetcher, aborter, mparams)
   }
 
   async refetch(aborter?: AbortController) {
@@ -98,7 +98,7 @@ export class ScrollObject<D = any, E = any, N = D, K = any> implements Object<D[
 
     if (!this.ready)
       await this.initialization
-    return this._state = await core.scroll.first(skey, scroller, fetcher, aborter, mparams, true)
+    return this._state = await core.scroll.first(skey, this._state!, scroller, fetcher, aborter, mparams, true)
   }
 
   async scroll(aborter?: AbortController) {
@@ -106,7 +106,7 @@ export class ScrollObject<D = any, E = any, N = D, K = any> implements Object<D[
 
     if (!this.ready)
       await this.initialization
-    return this._state = await core.scroll.scroll(skey, scroller, fetcher, aborter, mparams)
+    return this._state = await core.scroll.scroll(skey, this._state!, scroller, fetcher, aborter, mparams)
   }
 
   async clear() {

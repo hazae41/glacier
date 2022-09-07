@@ -88,7 +88,7 @@ export class SingleObject<D = any, E = any, N = D, K = any> implements Object<D,
 
     if (!this.ready)
       await this.initialization
-    return this._state = await core.single.fetch(key, skey, poster, aborter, mparams)
+    return this._state = await core.single.fetch(key, skey, this._state!, poster, aborter, mparams)
   }
 
   async refetch(aborter?: AbortController) {
@@ -96,7 +96,7 @@ export class SingleObject<D = any, E = any, N = D, K = any> implements Object<D,
 
     if (!this.ready)
       await this.initialization
-    return this._state = await core.single.fetch(key, skey, poster, aborter, mparams, true)
+    return this._state = await core.single.fetch(key, skey, this._state!, poster, aborter, mparams, true)
   }
 
   async update(updater: Updater<D, E, N, K>, aborter?: AbortController) {
@@ -104,7 +104,7 @@ export class SingleObject<D = any, E = any, N = D, K = any> implements Object<D,
 
     if (!this.ready)
       await this.initialization
-    return this._state = await core.single.update(key, skey, poster, updater, aborter, mparams)
+    return this._state = await core.single.update(key, skey, this._state!, poster, updater, aborter, mparams)
   }
 
   async clear() {

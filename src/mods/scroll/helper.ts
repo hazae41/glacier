@@ -23,6 +23,7 @@ export class ScrollHelper {
    */
   async first<D = any, E = any, N = D, K = any>(
     skey: string | undefined,
+    current: State<D[], E, N[], K> | undefined,
     scroller: Scroller<D, E, N, K>,
     fetcher: Fetcher<D, E, N, K>,
     aborter = new AbortController(),
@@ -37,8 +38,6 @@ export class ScrollHelper {
       expiration: dexpiration = DEFAULT_EXPIRATION,
       timeout: dtimeout = DEFAULT_TIMEOUT,
     } = params
-
-    let current = await this.core.get(skey, params)
 
     if (current?.optimistic)
       return current
@@ -108,6 +107,7 @@ export class ScrollHelper {
    */
   async scroll<D = any, E = any, N = D, K = any>(
     skey: string | undefined,
+    current: State<D[], E, N[], K> | undefined,
     scroller: Scroller<D, E, N, K>,
     fetcher: Fetcher<D, E, N, K>,
     aborter = new AbortController(),
@@ -121,8 +121,6 @@ export class ScrollHelper {
       expiration: dexpiration = DEFAULT_EXPIRATION,
       timeout: dtimeout = DEFAULT_TIMEOUT,
     } = params
-
-    let current = await this.core.get(skey, params)
 
     if (current?.optimistic)
       return current

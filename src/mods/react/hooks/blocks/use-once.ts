@@ -8,11 +8,11 @@ import { useEffect } from "react"
  * @example You want to get some data once and share it in multiple components
  */
 export function useOnce(handle: Handle) {
-  const { ready, data, fetch } = handle
+  const { ready, data, fetch, skey } = handle
 
   useEffect(() => {
     if (!ready) return
 
-    if (data === undefined) fetch()
-  }, [ready, data, fetch])
+    if (data !== undefined) fetch()
+  }, [ready, data, skey])
 }

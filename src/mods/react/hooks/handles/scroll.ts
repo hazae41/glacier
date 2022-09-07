@@ -43,8 +43,8 @@ export function useScroll<D = any, E = any, N = D, K = any>(
     return getScrollStorageKey(key, mparams)
   }, [key])
 
-  const [state, setState] = useState(() =>
-    core.getSync<D[], E, N[], K>(skey, mparams))
+  const [state, setState] = useState(
+    () => core.getSync<D[], E, N[], K>(skey, mparams))
   const first = useRef(true)
 
   useEffect(() => {
@@ -65,20 +65,20 @@ export function useScroll<D = any, E = any, N = D, K = any>(
   }, [core, skey, state])
 
   const fetch = useCallback(async (aborter?: AbortController) => {
-    return await core.scroll.first(skey, scroller, fetcher, aborter, mparams)
-  }, [core, skey, scroller, fetcher])
+    if (state !== null) return await core.scroll.first(skey, state, scroller, fetcher, aborter, mparams)
+  }, [core, skey, state, scroller, fetcher])
 
   const refetch = useCallback(async (aborter?: AbortController) => {
-    return await core.scroll.first(skey, scroller, fetcher, aborter, mparams, true)
-  }, [core, skey, scroller, fetcher])
+    if (state !== null) return await core.scroll.first(skey, state, scroller, fetcher, aborter, mparams, true)
+  }, [core, skey, state, scroller, fetcher])
 
   const scroll = useCallback(async (aborter?: AbortController) => {
-    return await core.scroll.scroll(skey, scroller, fetcher, aborter, mparams, true)
-  }, [core, skey, scroller, fetcher])
+    if (state !== null) return await core.scroll.scroll(skey, state, scroller, fetcher, aborter, mparams, true)
+  }, [core, skey, state, scroller, fetcher])
 
   const clear = useCallback(async () => {
-    await core.delete(skey, mparams)
-  }, [core, skey])
+    if (state !== null) await core.delete(skey, mparams)
+  }, [core, skey, state])
 
   const { data, error, time, cooldown, expiration, aborter, optimistic } = state ?? {}
 

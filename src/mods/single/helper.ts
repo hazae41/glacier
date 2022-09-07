@@ -24,6 +24,7 @@ export class SingleHelper {
   async fetch<D = any, E = any, N = D, K = any>(
     key: K | undefined,
     skey: string | undefined,
+    current: State<D, E, N, K> | undefined,
     fetcher: Fetcher<D, E, N, K>,
     aborter = new AbortController(),
     params: Params<D, E, N, K> = {},
@@ -37,8 +38,6 @@ export class SingleHelper {
       expiration: dexpiration = DEFAULT_EXPIRATION,
       timeout: dtimeout = DEFAULT_TIMEOUT,
     } = params
-
-    let current = await this.core.get(skey, params)
 
     if (current?.optimistic)
       return current
@@ -107,6 +106,7 @@ export class SingleHelper {
   async update<D = any, E = any, N = D, K = any>(
     key: K | undefined,
     skey: string | undefined,
+    current: State<D, E, N, K> | undefined,
     poster: Poster<D, E, N, K>,
     updater: Updater<D, E, N, K>,
     aborter = new AbortController(),
@@ -120,8 +120,6 @@ export class SingleHelper {
       expiration: dexpiration = DEFAULT_EXPIRATION,
       timeout: dtimeout = DEFAULT_TIMEOUT,
     } = params
-
-    let current = await this.core.get(skey, params)
 
     if (current?.optimistic)
       return current
