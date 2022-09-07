@@ -1,7 +1,13 @@
 import Link from "next/link";
 
 export default function Page() {
-  return <div className="flex flex-col">
+  return <div className="flex flex-col font-sans gap-4">
+    <Link href="/theytube" passHref shallow>
+      <a>Theytube: a complex store normalization example</a>
+    </Link>
+    <Link href="/theytube" passHref shallow>
+      <a>Array: a simple store normalization example</a>
+    </Link>
     <Link href="/garbage" passHref shallow>
       <a>Garbage collection</a>
     </Link>

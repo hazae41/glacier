@@ -23,7 +23,7 @@ interface Data {
 }
 
 function getDataSchema(id: string) {
-  return XSWR.single<Data>(`/api/data?id=${id}`, fetchAsJson)
+  return XSWR.single<Data>(`/api/normalize/array?id=${id}`, fetchAsJson)
 }
 
 function getDataNormal(data: Data) {
@@ -36,7 +36,7 @@ function getAllDataSchema() {
   }
 
   return XSWR.single<Data[], Error, string[]>(
-    `/api/data/all`,
+    `/api/normalize/array/all`,
     fetchAsJson,
     { normalizer })
 }
@@ -51,23 +51,6 @@ function useData(id: string) {
   const handle = XSWR.use(getDataSchema, [id])
   XSWR.useFetch(handle)
   return handle
-}
-
-function Element(props: { id: string }) {
-  const { data, mutate } = useData(props.id)
-
-  const onMutateClick = useCallback(() => {
-    mutate({ data: { id: props.id, name: "Unde Fined" } })
-  }, [mutate, props.id])
-
-  console.log(props.id, data)
-
-  return <div>
-    {JSON.stringify(data) ?? "undefined"}
-    <button onClick={onMutateClick}>
-      Mutate
-    </button>
-  </div>
 }
 
 export default function Page() {
@@ -87,4 +70,21 @@ export default function Page() {
       Refetch
     </button>
   </>
+}
+
+function Element(props: { id: string }) {
+  const { data, mutate } = useData(props.id)
+
+  const onMutateClick = useCallback(() => {
+    mutate({ data: { id: props.id, name: "Unde Fined" } })
+  }, [mutate, props.id])
+
+  console.log(props.id, data)
+
+  return <div>
+    {JSON.stringify(data) ?? "undefined"}
+    <button onClick={onMutateClick}>
+      Mutate
+    </button>
+  </div>
 }
