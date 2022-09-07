@@ -285,7 +285,7 @@ var ScrollHelper = /** @class */ (function () {
         if (params === void 0) { params = {}; }
         if (force === void 0) { force = false; }
         return __awaiter(this, void 0, void 0, function () {
-            var _b, equals, _c, dcooldown, _d, dexpiration, _e, dtimeout, current, first, timeout, signal, _f, data, error, _g, time, _h, cooldown, _j, expiration, state, error_1;
+            var _b, equals, _c, dcooldown, _d, dexpiration, _e, dtimeout, current, first, timeout, signal, _f, data, error, _g, time_1, _h, cooldown_1, _j, expiration_1, state_1, error_1;
             return __generator(this, function (_k) {
                 switch (_k.label) {
                     case 0:
@@ -311,33 +311,36 @@ var ScrollHelper = /** @class */ (function () {
                         }, dtimeout);
                         _k.label = 2;
                     case 2:
-                        _k.trys.push([2, 7, 9, 10]);
+                        _k.trys.push([2, 7, 10, 11]);
                         signal = aborter.signal;
-                        return [4 /*yield*/, this.core.apply(skey, current, { time: current === null || current === void 0 ? void 0 : current.time, aborter: aborter }, params)];
+                        return [4 /*yield*/, this.core.mutate(skey, current, function (c) { return ({ time: c === null || c === void 0 ? void 0 : c.time, aborter: aborter }); }, params)];
                     case 3:
                         current = _k.sent();
                         return [4 /*yield*/, fetcher(first, { signal: signal })];
                     case 4:
-                        _f = _k.sent(), data = _f.data, error = _f.error, _g = _f.time, time = _g === void 0 ? Date.now() : _g, _h = _f.cooldown, cooldown = _h === void 0 ? getTimeFromDelay(dcooldown) : _h, _j = _f.expiration, expiration = _j === void 0 ? getTimeFromDelay(dexpiration) : _j;
+                        _f = _k.sent(), data = _f.data, error = _f.error, _g = _f.time, time_1 = _g === void 0 ? Date.now() : _g, _h = _f.cooldown, cooldown_1 = _h === void 0 ? getTimeFromDelay(dcooldown) : _h, _j = _f.expiration, expiration_1 = _j === void 0 ? getTimeFromDelay(dexpiration) : _j;
                         if (signal.aborted)
                             throw new AbortError(signal);
                         return [4 /*yield*/, this.core.get(skey, params)];
                     case 5:
                         current = _k.sent();
-                        state = {};
+                        state_1 = {};
                         if (data !== undefined && !equals(data, (_a = current === null || current === void 0 ? void 0 : current.data) === null || _a === void 0 ? void 0 : _a[0]))
-                            state.data = [data];
-                        state.error = error;
-                        return [4 /*yield*/, this.core.apply(skey, current, __assign({ time: time, cooldown: cooldown, expiration: expiration }, state), params, aborter)];
+                            state_1.data = [data];
+                        state_1.error = error;
+                        return [4 /*yield*/, this.core.mutate(skey, current, function () { return (__assign({ time: time_1, cooldown: cooldown_1, expiration: expiration_1 }, state_1)); }, params, aborter)];
                     case 6: return [2 /*return*/, _k.sent()];
                     case 7:
                         error_1 = _k.sent();
-                        return [4 /*yield*/, this.core.mutate(skey, { error: error_1 }, params, aborter)];
-                    case 8: return [2 /*return*/, _k.sent()];
-                    case 9:
+                        return [4 /*yield*/, this.core.get(skey, params)];
+                    case 8:
+                        current = _k.sent();
+                        return [4 /*yield*/, this.core.mutate(skey, current, function () { return ({ error: error_1 }); }, params, aborter)];
+                    case 9: return [2 /*return*/, _k.sent()];
+                    case 10:
                         clearTimeout(timeout);
                         return [7 /*endfinally*/];
-                    case 10: return [2 /*return*/];
+                    case 11: return [2 /*return*/];
                 }
             });
         });
@@ -358,7 +361,7 @@ var ScrollHelper = /** @class */ (function () {
         if (params === void 0) { params = {}; }
         if (force === void 0) { force = false; }
         return __awaiter(this, void 0, void 0, function () {
-            var _c, dcooldown, _d, dexpiration, _e, dtimeout, current, pages, last, timeout, signal, _f, data, error, _g, time, _h, cooldown, _j, expiration, state, error_2;
+            var _c, dcooldown, _d, dexpiration, _e, dtimeout, current, pages, last, timeout, signal, _f, data, error, _g, time_2, _h, cooldown_2, _j, expiration_2, state_2, error_2;
             return __generator(this, function (_k) {
                 switch (_k.label) {
                     case 0:
@@ -385,35 +388,38 @@ var ScrollHelper = /** @class */ (function () {
                         }, dtimeout);
                         _k.label = 2;
                     case 2:
-                        _k.trys.push([2, 7, 9, 10]);
+                        _k.trys.push([2, 7, 10, 11]);
                         signal = aborter.signal;
-                        return [4 /*yield*/, this.core.apply(skey, current, { time: current === null || current === void 0 ? void 0 : current.time, aborter: aborter }, params)];
+                        return [4 /*yield*/, this.core.mutate(skey, current, function (c) { return ({ time: c === null || c === void 0 ? void 0 : c.time, aborter: aborter }); }, params)];
                     case 3:
                         current = _k.sent();
                         return [4 /*yield*/, fetcher(last, { signal: signal })];
                     case 4:
-                        _f = _k.sent(), data = _f.data, error = _f.error, _g = _f.time, time = _g === void 0 ? Date.now() : _g, _h = _f.cooldown, cooldown = _h === void 0 ? getTimeFromDelay(dcooldown) : _h, _j = _f.expiration, expiration = _j === void 0 ? getTimeFromDelay(dexpiration) : _j;
+                        _f = _k.sent(), data = _f.data, error = _f.error, _g = _f.time, time_2 = _g === void 0 ? Date.now() : _g, _h = _f.cooldown, cooldown_2 = _h === void 0 ? getTimeFromDelay(dcooldown) : _h, _j = _f.expiration, expiration_2 = _j === void 0 ? getTimeFromDelay(dexpiration) : _j;
                         if (signal.aborted)
                             throw new AbortError(signal);
-                        if (expiration !== undefined && (current === null || current === void 0 ? void 0 : current.expiration) !== undefined)
-                            expiration = Math.min(expiration, current === null || current === void 0 ? void 0 : current.expiration);
+                        if (expiration_2 !== undefined && (current === null || current === void 0 ? void 0 : current.expiration) !== undefined)
+                            expiration_2 = Math.min(expiration_2, current === null || current === void 0 ? void 0 : current.expiration);
                         return [4 /*yield*/, this.core.get(skey, params)];
                     case 5:
                         current = _k.sent();
-                        state = {};
+                        state_2 = {};
                         if (data !== undefined)
-                            state.data = __spreadArray(__spreadArray([], __read(((_b = current === null || current === void 0 ? void 0 : current.data) !== null && _b !== void 0 ? _b : [])), false), [data], false);
-                        state.error = error;
-                        return [4 /*yield*/, this.core.apply(skey, current, __assign({ time: time, cooldown: cooldown, expiration: expiration }, state), params, aborter)];
+                            state_2.data = __spreadArray(__spreadArray([], __read(((_b = current === null || current === void 0 ? void 0 : current.data) !== null && _b !== void 0 ? _b : [])), false), [data], false);
+                        state_2.error = error;
+                        return [4 /*yield*/, this.core.mutate(skey, current, function () { return (__assign({ time: time_2, cooldown: cooldown_2, expiration: expiration_2 }, state_2)); }, params, aborter)];
                     case 6: return [2 /*return*/, _k.sent()];
                     case 7:
                         error_2 = _k.sent();
-                        return [4 /*yield*/, this.core.mutate(skey, { error: error_2 }, params, aborter)];
-                    case 8: return [2 /*return*/, _k.sent()];
-                    case 9:
+                        return [4 /*yield*/, this.core.get(skey, params)];
+                    case 8:
+                        current = _k.sent();
+                        return [4 /*yield*/, this.core.mutate(skey, current, function () { return ({ error: error_2 }); }, params, aborter)];
+                    case 9: return [2 /*return*/, _k.sent()];
+                    case 10:
                         clearTimeout(timeout);
                         return [7 /*endfinally*/];
-                    case 10: return [2 /*return*/];
+                    case 11: return [2 /*return*/];
                 }
             });
         });
@@ -433,31 +439,27 @@ function getScrollStorageKey(key, params) {
  * Non-React version of ScrollHandle
  */
 var ScrollObject = /** @class */ (function () {
-    function ScrollObject(core, scroller, fetcher, params, pparams, initialize) {
+    function ScrollObject(core, scroller, fetcher, params, pparams) {
         if (params === void 0) { params = {}; }
         if (pparams === void 0) { pparams = {}; }
-        if (initialize === void 0) { initialize = true; }
-        var _this = this;
         this.core = core;
         this.scroller = scroller;
         this.fetcher = fetcher;
-        this.params = params;
-        this.pparams = pparams;
-        this.initialize = initialize;
+        this._state = null;
         this.mparams = __assign(__assign({}, pparams), params);
         this.key = scroller();
-        this.skey = (function () {
-            var _a = _this, key = _a.key, mparams = _a.mparams;
-            return getScrollStorageKey(key, mparams);
-        })();
-        if (initialize) {
-            this.loadSync();
-            this.loadAsync();
-            this.subscribe();
-        }
+        this.skey = getScrollStorageKey(this.key, this.mparams);
+        this.loadSync();
+        this.subscribe();
+        this.initialization = this.loadAsync();
     }
     Object.defineProperty(ScrollObject.prototype, "state", {
         get: function () { return this._state; },
+        enumerable: false,
+        configurable: true
+    });
+    Object.defineProperty(ScrollObject.prototype, "ready", {
+        get: function () { return this._state !== null; },
         enumerable: false,
         configurable: true
     });
@@ -471,7 +473,7 @@ var ScrollObject = /** @class */ (function () {
             return __generator(this, function (_c) {
                 switch (_c.label) {
                     case 0:
-                        if (this._state !== null)
+                        if (this.ready)
                             return [2 /*return*/];
                         _a = this, core = _a.core, skey = _a.skey, mparams = _a.mparams;
                         _b = this;
@@ -494,16 +496,22 @@ var ScrollObject = /** @class */ (function () {
             core.unsubscribe(skey, setter);
         }).register(this, undefined);
     };
-    ScrollObject.prototype.mutate = function (state) {
+    ScrollObject.prototype.mutate = function (mutator) {
         return __awaiter(this, void 0, void 0, function () {
             var _a, core, skey, mparams, _b;
             return __generator(this, function (_c) {
                 switch (_c.label) {
                     case 0:
                         _a = this, core = _a.core, skey = _a.skey, mparams = _a.mparams;
+                        if (!!this.ready) return [3 /*break*/, 2];
+                        return [4 /*yield*/, this.initialization];
+                    case 1:
+                        _c.sent();
+                        _c.label = 2;
+                    case 2:
                         _b = this;
-                        return [4 /*yield*/, core.mutate(skey, state, mparams)];
-                    case 1: return [2 /*return*/, _b._state = _c.sent()];
+                        return [4 /*yield*/, core.mutate(skey, this._state, mutator, mparams)];
+                    case 3: return [2 /*return*/, _b._state = _c.sent()];
                 }
             });
         });
@@ -515,9 +523,15 @@ var ScrollObject = /** @class */ (function () {
                 switch (_c.label) {
                     case 0:
                         _a = this, core = _a.core, scroller = _a.scroller, skey = _a.skey, fetcher = _a.fetcher, mparams = _a.mparams;
+                        if (!!this.ready) return [3 /*break*/, 2];
+                        return [4 /*yield*/, this.initialization];
+                    case 1:
+                        _c.sent();
+                        _c.label = 2;
+                    case 2:
                         _b = this;
                         return [4 /*yield*/, core.scroll.first(skey, scroller, fetcher, aborter, mparams)];
-                    case 1: return [2 /*return*/, _b._state = _c.sent()];
+                    case 3: return [2 /*return*/, _b._state = _c.sent()];
                 }
             });
         });
@@ -529,9 +543,15 @@ var ScrollObject = /** @class */ (function () {
                 switch (_c.label) {
                     case 0:
                         _a = this, core = _a.core, scroller = _a.scroller, skey = _a.skey, fetcher = _a.fetcher, mparams = _a.mparams;
+                        if (!!this.ready) return [3 /*break*/, 2];
+                        return [4 /*yield*/, this.initialization];
+                    case 1:
+                        _c.sent();
+                        _c.label = 2;
+                    case 2:
                         _b = this;
                         return [4 /*yield*/, core.scroll.first(skey, scroller, fetcher, aborter, mparams, true)];
-                    case 1: return [2 /*return*/, _b._state = _c.sent()];
+                    case 3: return [2 /*return*/, _b._state = _c.sent()];
                 }
             });
         });
@@ -543,9 +563,15 @@ var ScrollObject = /** @class */ (function () {
                 switch (_c.label) {
                     case 0:
                         _a = this, core = _a.core, scroller = _a.scroller, skey = _a.skey, fetcher = _a.fetcher, mparams = _a.mparams;
+                        if (!!this.ready) return [3 /*break*/, 2];
+                        return [4 /*yield*/, this.initialization];
+                    case 1:
+                        _c.sent();
+                        _c.label = 2;
+                    case 2:
                         _b = this;
                         return [4 /*yield*/, core.scroll.scroll(skey, scroller, fetcher, aborter, mparams)];
-                    case 1: return [2 /*return*/, _b._state = _c.sent()];
+                    case 3: return [2 /*return*/, _b._state = _c.sent()];
                 }
             });
         });
@@ -557,8 +583,13 @@ var ScrollObject = /** @class */ (function () {
                 switch (_b.label) {
                     case 0:
                         _a = this, core = _a.core, skey = _a.skey, mparams = _a.mparams;
-                        return [4 /*yield*/, core.delete(skey, mparams)];
+                        if (!!this.ready) return [3 /*break*/, 2];
+                        return [4 /*yield*/, this.initialization];
                     case 1:
+                        _b.sent();
+                        _b.label = 2;
+                    case 2: return [4 /*yield*/, core.delete(skey, mparams)];
+                    case 3:
                         _b.sent();
                         delete this._state;
                         return [2 /*return*/];
@@ -580,10 +611,10 @@ var ScrollSchema = /** @class */ (function () {
         this.fetcher = fetcher;
         this.params = params;
     }
-    ScrollSchema.prototype.make = function (core, pparams, initialize) {
+    ScrollSchema.prototype.make = function (core, pparams) {
         if (pparams === void 0) { pparams = {}; }
         var _a = this, scroller = _a.scroller, fetcher = _a.fetcher, params = _a.params;
-        return new ScrollObject(core, scroller, fetcher, params, pparams, initialize);
+        return new ScrollObject(core, scroller, fetcher, params, pparams);
     };
     return ScrollSchema;
 }());
@@ -607,7 +638,7 @@ var SingleHelper = /** @class */ (function () {
         if (params === void 0) { params = {}; }
         if (force === void 0) { force = false; }
         return __awaiter(this, void 0, void 0, function () {
-            var _a, dcooldown, _b, dexpiration, _c, dtimeout, current, timeout, state, signal, _d, data, error, _e, time, _f, cooldown, _g, expiration, error_1;
+            var _a, dcooldown, _b, dexpiration, _c, dtimeout, current, timeout, state, signal, _d, data, error, _e, time_1, _f, cooldown_1, _g, expiration_1, error_1;
             return __generator(this, function (_h) {
                 switch (_h.label) {
                     case 0:
@@ -633,14 +664,14 @@ var SingleHelper = /** @class */ (function () {
                         state = {};
                         _h.label = 2;
                     case 2:
-                        _h.trys.push([2, 7, 9, 10]);
+                        _h.trys.push([2, 7, 10, 11]);
                         signal = aborter.signal;
-                        return [4 /*yield*/, this.core.apply(skey, current, { time: current === null || current === void 0 ? void 0 : current.time, aborter: aborter }, params)];
+                        return [4 /*yield*/, this.core.mutate(skey, current, function (c) { return ({ time: c === null || c === void 0 ? void 0 : c.time, aborter: aborter }); }, params)];
                     case 3:
                         current = _h.sent();
                         return [4 /*yield*/, fetcher(key, { signal: signal })];
                     case 4:
-                        _d = _h.sent(), data = _d.data, error = _d.error, _e = _d.time, time = _e === void 0 ? Date.now() : _e, _f = _d.cooldown, cooldown = _f === void 0 ? getTimeFromDelay(dcooldown) : _f, _g = _d.expiration, expiration = _g === void 0 ? getTimeFromDelay(dexpiration) : _g;
+                        _d = _h.sent(), data = _d.data, error = _d.error, _e = _d.time, time_1 = _e === void 0 ? Date.now() : _e, _f = _d.cooldown, cooldown_1 = _f === void 0 ? getTimeFromDelay(dcooldown) : _f, _g = _d.expiration, expiration_1 = _g === void 0 ? getTimeFromDelay(dexpiration) : _g;
                         if (signal.aborted)
                             throw new AbortError(signal);
                         return [4 /*yield*/, this.core.get(skey, params)];
@@ -649,16 +680,19 @@ var SingleHelper = /** @class */ (function () {
                         if (data !== undefined)
                             state.data = data;
                         state.error = error;
-                        return [4 /*yield*/, this.core.apply(skey, current, __assign({ time: time, cooldown: cooldown, expiration: expiration }, state), params, aborter)];
+                        return [4 /*yield*/, this.core.mutate(skey, current, function () { return (__assign({ time: time_1, cooldown: cooldown_1, expiration: expiration_1 }, state)); }, params, aborter)];
                     case 6: return [2 /*return*/, _h.sent()];
                     case 7:
                         error_1 = _h.sent();
-                        return [4 /*yield*/, this.core.mutate(skey, { error: error_1 }, params, aborter)];
-                    case 8: return [2 /*return*/, _h.sent()];
-                    case 9:
+                        return [4 /*yield*/, this.core.get(skey, params)];
+                    case 8:
+                        current = _h.sent();
+                        return [4 /*yield*/, this.core.mutate(skey, current, function () { return ({ error: error_1 }); }, params, aborter)];
+                    case 9: return [2 /*return*/, _h.sent()];
+                    case 10:
                         clearTimeout(timeout);
                         return [7 /*endfinally*/];
-                    case 10: return [2 /*return*/];
+                    case 11: return [2 /*return*/];
                 }
             });
         });
@@ -678,7 +712,7 @@ var SingleHelper = /** @class */ (function () {
         if (aborter === void 0) { aborter = new AbortController(); }
         if (params === void 0) { params = {}; }
         return __awaiter(this, void 0, void 0, function () {
-            var _a, dcooldown, _b, dexpiration, _c, dtimeout, current, updated, timeout, signal, data_1, time_1, optimistic, _d, data, error, _e, time, _f, cooldown, _g, expiration, time_2, data_2, state, error_2, time, data;
+            var _a, dcooldown, _b, dexpiration, _c, dtimeout, current, updated, timeout, signal, _d, data, error_3, _e, time_2, _f, cooldown_2, _g, expiration_2, state_1, error_2;
             return __generator(this, function (_h) {
                 switch (_h.label) {
                     case 0:
@@ -700,41 +734,40 @@ var SingleHelper = /** @class */ (function () {
                         }, dtimeout);
                         _h.label = 2;
                     case 2:
-                        _h.trys.push([2, 8, 10, 11]);
+                        _h.trys.push([2, 9, 12, 13]);
                         signal = aborter.signal;
-                        data_1 = updated;
-                        time_1 = current === null || current === void 0 ? void 0 : current.time;
-                        optimistic = true;
-                        return [4 /*yield*/, this.core.apply(skey, current, { time: time_1, data: data_1, aborter: aborter, optimistic: optimistic }, params)];
+                        return [4 /*yield*/, this.core.mutate(skey, current, function (c) { return ({ time: c === null || c === void 0 ? void 0 : c.time, aborter: aborter, data: updated, optimistic: true }); }, params)];
                     case 3:
                         _h.sent();
                         return [4 /*yield*/, poster(key, { data: updated, signal: signal })];
                     case 4:
-                        _d = _h.sent(), data = _d.data, error = _d.error, _e = _d.time, time = _e === void 0 ? Date.now() : _e, _f = _d.cooldown, cooldown = _f === void 0 ? getTimeFromDelay(dcooldown) : _f, _g = _d.expiration, expiration = _g === void 0 ? getTimeFromDelay(dexpiration) : _g;
+                        _d = _h.sent(), data = _d.data, error_3 = _d.error, _e = _d.time, time_2 = _e === void 0 ? Date.now() : _e, _f = _d.cooldown, cooldown_2 = _f === void 0 ? getTimeFromDelay(dcooldown) : _f, _g = _d.expiration, expiration_2 = _g === void 0 ? getTimeFromDelay(dexpiration) : _g;
                         if (signal.aborted)
                             throw new AbortError(signal);
-                        if (!(error !== undefined)) return [3 /*break*/, 6];
-                        time_2 = current === null || current === void 0 ? void 0 : current.time;
-                        data_2 = current === null || current === void 0 ? void 0 : current.data;
-                        return [4 /*yield*/, this.core.mutate(skey, { time: time_2, cooldown: cooldown, expiration: expiration, data: data_2, error: error }, params, aborter)];
-                    case 5: return [2 /*return*/, _h.sent()];
-                    case 6:
-                        state = {};
+                        return [4 /*yield*/, this.core.get(skey, params)];
+                    case 5:
+                        current = _h.sent();
+                        if (!(error_3 !== undefined)) return [3 /*break*/, 7];
+                        return [4 /*yield*/, this.core.mutate(skey, current, function (c) { return ({ time: c === null || c === void 0 ? void 0 : c.time, data: c === null || c === void 0 ? void 0 : c.data, error: error_3, cooldown: cooldown_2, expiration: expiration_2 }); }, params, aborter)];
+                    case 6: return [2 /*return*/, _h.sent()];
+                    case 7:
+                        state_1 = {};
                         if (data !== undefined)
-                            state.data = data;
-                        state.error = error;
-                        return [4 /*yield*/, this.core.mutate(skey, __assign({ time: time, cooldown: cooldown, expiration: expiration }, state), params, aborter)];
-                    case 7: return [2 /*return*/, _h.sent()];
-                    case 8:
+                            state_1.data = data;
+                        state_1.error = error_3;
+                        return [4 /*yield*/, this.core.mutate(skey, current, function () { return (__assign({ time: time_2, cooldown: cooldown_2, expiration: expiration_2 }, state_1)); }, params, aborter)];
+                    case 8: return [2 /*return*/, _h.sent()];
+                    case 9:
                         error_2 = _h.sent();
-                        time = current === null || current === void 0 ? void 0 : current.time;
-                        data = current === null || current === void 0 ? void 0 : current.data;
-                        return [4 /*yield*/, this.core.mutate(skey, { time: time, data: data, error: error_2 }, params, aborter)];
-                    case 9: return [2 /*return*/, _h.sent()];
+                        return [4 /*yield*/, this.core.get(skey, params)];
                     case 10:
+                        current = _h.sent();
+                        return [4 /*yield*/, this.core.mutate(skey, current, function (c) { return ({ time: c === null || c === void 0 ? void 0 : c.time, data: c === null || c === void 0 ? void 0 : c.data, error: error_2 }); }, params, aborter)];
+                    case 11: return [2 /*return*/, _h.sent()];
+                    case 12:
                         clearTimeout(timeout);
                         return [7 /*endfinally*/];
-                    case 11: return [2 /*return*/];
+                    case 13: return [2 /*return*/];
                 }
             });
         });
@@ -754,30 +787,25 @@ function getSingleStorageKey(key, params) {
  * Non-React version of SingleHandle
  */
 var SingleObject = /** @class */ (function () {
-    function SingleObject(core, key, poster, params, pparams, initialize) {
+    function SingleObject(core, key, poster, params, pparams) {
         if (params === void 0) { params = {}; }
         if (pparams === void 0) { pparams = {}; }
-        if (initialize === void 0) { initialize = true; }
-        var _this = this;
         this.core = core;
         this.key = key;
         this.poster = poster;
-        this.params = params;
-        this.pparams = pparams;
-        this.initialize = initialize;
         this.mparams = __assign(__assign({}, pparams), params);
-        this.skey = (function () {
-            var mparams = _this.mparams;
-            return getSingleStorageKey(key, mparams);
-        })();
-        if (this.initialize) {
-            this.loadSync();
-            this.loadAsync();
-            this.subscribe();
-        }
+        this.skey = getSingleStorageKey(key, this.mparams);
+        this.loadSync();
+        this.subscribe();
+        this.initialization = this.loadAsync();
     }
     Object.defineProperty(SingleObject.prototype, "state", {
         get: function () { return this._state; },
+        enumerable: false,
+        configurable: true
+    });
+    Object.defineProperty(SingleObject.prototype, "ready", {
+        get: function () { return this._state !== null; },
         enumerable: false,
         configurable: true
     });
@@ -791,7 +819,7 @@ var SingleObject = /** @class */ (function () {
             return __generator(this, function (_c) {
                 switch (_c.label) {
                     case 0:
-                        if (this._state !== null)
+                        if (this.ready)
                             return [2 /*return*/];
                         _a = this, core = _a.core, skey = _a.skey, mparams = _a.mparams;
                         _b = this;
@@ -814,16 +842,22 @@ var SingleObject = /** @class */ (function () {
             core.unsubscribe(skey, setter);
         }).register(this, undefined);
     };
-    SingleObject.prototype.mutate = function (state) {
+    SingleObject.prototype.mutate = function (mutator) {
         return __awaiter(this, void 0, void 0, function () {
             var _a, core, skey, mparams, _b;
             return __generator(this, function (_c) {
                 switch (_c.label) {
                     case 0:
                         _a = this, core = _a.core, skey = _a.skey, mparams = _a.mparams;
+                        if (!!this.ready) return [3 /*break*/, 2];
+                        return [4 /*yield*/, this.initialization];
+                    case 1:
+                        _c.sent();
+                        _c.label = 2;
+                    case 2:
                         _b = this;
-                        return [4 /*yield*/, core.mutate(skey, state, mparams)];
-                    case 1: return [2 /*return*/, _b._state = _c.sent()];
+                        return [4 /*yield*/, core.mutate(skey, this._state, mutator, mparams)];
+                    case 3: return [2 /*return*/, _b._state = _c.sent()];
                 }
             });
         });
@@ -835,9 +869,15 @@ var SingleObject = /** @class */ (function () {
                 switch (_c.label) {
                     case 0:
                         _a = this, core = _a.core, key = _a.key, skey = _a.skey, poster = _a.poster, mparams = _a.mparams;
+                        if (!!this.ready) return [3 /*break*/, 2];
+                        return [4 /*yield*/, this.initialization];
+                    case 1:
+                        _c.sent();
+                        _c.label = 2;
+                    case 2:
                         _b = this;
                         return [4 /*yield*/, core.single.fetch(key, skey, poster, aborter, mparams)];
-                    case 1: return [2 /*return*/, _b._state = _c.sent()];
+                    case 3: return [2 /*return*/, _b._state = _c.sent()];
                 }
             });
         });
@@ -849,9 +889,15 @@ var SingleObject = /** @class */ (function () {
                 switch (_c.label) {
                     case 0:
                         _a = this, core = _a.core, key = _a.key, skey = _a.skey, poster = _a.poster, mparams = _a.mparams;
+                        if (!!this.ready) return [3 /*break*/, 2];
+                        return [4 /*yield*/, this.initialization];
+                    case 1:
+                        _c.sent();
+                        _c.label = 2;
+                    case 2:
                         _b = this;
                         return [4 /*yield*/, core.single.fetch(key, skey, poster, aborter, mparams, true)];
-                    case 1: return [2 /*return*/, _b._state = _c.sent()];
+                    case 3: return [2 /*return*/, _b._state = _c.sent()];
                 }
             });
         });
@@ -863,9 +909,15 @@ var SingleObject = /** @class */ (function () {
                 switch (_c.label) {
                     case 0:
                         _a = this, core = _a.core, key = _a.key, skey = _a.skey, poster = _a.poster, mparams = _a.mparams;
+                        if (!!this.ready) return [3 /*break*/, 2];
+                        return [4 /*yield*/, this.initialization];
+                    case 1:
+                        _c.sent();
+                        _c.label = 2;
+                    case 2:
                         _b = this;
                         return [4 /*yield*/, core.single.update(key, skey, poster, updater, aborter, mparams)];
-                    case 1: return [2 /*return*/, _b._state = _c.sent()];
+                    case 3: return [2 /*return*/, _b._state = _c.sent()];
                 }
             });
         });
@@ -877,8 +929,13 @@ var SingleObject = /** @class */ (function () {
                 switch (_b.label) {
                     case 0:
                         _a = this, core = _a.core, skey = _a.skey, mparams = _a.mparams;
-                        return [4 /*yield*/, core.delete(skey, mparams)];
+                        if (!!this.ready) return [3 /*break*/, 2];
+                        return [4 /*yield*/, this.initialization];
                     case 1:
+                        _b.sent();
+                        _b.label = 2;
+                    case 2: return [4 /*yield*/, core.delete(skey, mparams)];
+                    case 3:
                         _b.sent();
                         delete this._state;
                         return [2 /*return*/];
@@ -900,10 +957,10 @@ var SingleSchema = /** @class */ (function () {
         this.poster = poster;
         this.params = params;
     }
-    SingleSchema.prototype.make = function (core, pparams, initialize) {
+    SingleSchema.prototype.make = function (core, pparams) {
         if (pparams === void 0) { pparams = {}; }
         var _a = this, key = _a.key, poster = _a.poster, params = _a.params;
-        return new SingleObject(core, key, poster, params, pparams, initialize);
+        return new SingleObject(core, key, poster, params, pparams);
     };
     return SingleSchema;
 }());
@@ -1051,16 +1108,17 @@ var Core = /** @class */ (function (_super) {
             });
         });
     };
-    Core.prototype.apply = function (skey, current, state, params, aborter) {
+    Core.prototype.mutate = function (skey, current, mutator, params, aborter) {
         var _a;
         if (params === void 0) { params = {}; }
         return __awaiter(this, void 0, void 0, function () {
-            var next, _b, equals, normalizer, transformed, _c;
+            var state, next, _b, equals, normalizer, transformed, _c;
             return __generator(this, function (_d) {
                 switch (_d.label) {
                     case 0:
                         if (skey === undefined)
                             return [2 /*return*/];
+                        state = mutator(current);
                         if (!!state) return [3 /*break*/, 2];
                         return [4 /*yield*/, this.delete(skey, params)];
                     case 1:
@@ -1103,60 +1161,56 @@ var Core = /** @class */ (function (_super) {
     };
     Core.prototype.normalize = function (transformed, state) {
         return __awaiter(this, void 0, void 0, function () {
-            var time, cooldown, expiration, optimistic, _a, _b, _i, key, item, object, _c, _d;
-            return __generator(this, function (_e) {
-                switch (_e.label) {
+            var time, cooldown, expiration, optimistic, _loop_1, this_1, _a, _b, _i, key;
+            return __generator(this, function (_c) {
+                switch (_c.label) {
                     case 0:
                         time = state.time, cooldown = state.cooldown, expiration = state.expiration, optimistic = state.optimistic;
                         if (typeof transformed !== "object")
                             return [2 /*return*/, transformed];
                         if (transformed === null)
                             return [2 /*return*/, transformed];
+                        _loop_1 = function (key) {
+                            var item, object, _d, _e;
+                            return __generator(this, function (_f) {
+                                switch (_f.label) {
+                                    case 0:
+                                        item = transformed[key];
+                                        if (!(item instanceof Normal)) return [3 /*break*/, 2];
+                                        object = item.schema.make(this_1, undefined);
+                                        return [4 /*yield*/, object.mutate(function () { return ({ data: item.data, time: time, cooldown: cooldown, expiration: expiration, optimistic: optimistic }); })];
+                                    case 1:
+                                        _f.sent();
+                                        transformed[key] = item.result;
+                                        return [3 /*break*/, 4];
+                                    case 2:
+                                        _d = transformed;
+                                        _e = key;
+                                        return [4 /*yield*/, this_1.normalize(item, state)];
+                                    case 3:
+                                        _d[_e] = _f.sent();
+                                        _f.label = 4;
+                                    case 4: return [2 /*return*/];
+                                }
+                            });
+                        };
+                        this_1 = this;
                         _a = [];
                         for (_b in transformed)
                             _a.push(_b);
                         _i = 0;
-                        _e.label = 1;
+                        _c.label = 1;
                     case 1:
-                        if (!(_i < _a.length)) return [3 /*break*/, 6];
+                        if (!(_i < _a.length)) return [3 /*break*/, 4];
                         key = _a[_i];
-                        item = transformed[key];
-                        if (!(item instanceof Normal)) return [3 /*break*/, 3];
-                        object = item.schema.make(this, undefined, false);
-                        return [4 /*yield*/, object.mutate({ data: item.data, time: time, cooldown: cooldown, expiration: expiration, optimistic: optimistic })];
+                        return [5 /*yield**/, _loop_1(key)];
                     case 2:
-                        _e.sent();
-                        transformed[key] = item.result;
-                        return [3 /*break*/, 5];
+                        _c.sent();
+                        _c.label = 3;
                     case 3:
-                        _c = transformed;
-                        _d = key;
-                        return [4 /*yield*/, this.normalize(item, state)];
-                    case 4:
-                        _c[_d] = _e.sent();
-                        _e.label = 5;
-                    case 5:
                         _i++;
                         return [3 /*break*/, 1];
-                    case 6: return [2 /*return*/, transformed];
-                }
-            });
-        });
-    };
-    Core.prototype.mutate = function (key, state, params, aborter) {
-        if (params === void 0) { params = {}; }
-        return __awaiter(this, void 0, void 0, function () {
-            var current;
-            return __generator(this, function (_a) {
-                switch (_a.label) {
-                    case 0:
-                        if (!key)
-                            return [2 /*return*/];
-                        return [4 /*yield*/, this.get(key, params)];
-                    case 1:
-                        current = _a.sent();
-                        return [4 /*yield*/, this.apply(key, current, state, params, aborter)];
-                    case 2: return [2 /*return*/, _a.sent()];
+                    case 4: return [2 /*return*/, transformed];
                 }
             });
         });
@@ -1409,7 +1463,7 @@ function useOnline(handle) {
  */
 function useRetry(handle, options) {
     if (options === void 0) { options = {}; }
-    var ready = handle.ready, refetch = handle.refetch, error = handle.error, time = handle.time;
+    var ready = handle.ready, refetch = handle.refetch, error = handle.error;
     var _a = options.init, init = _a === void 0 ? 1000 : _a, _b = options.base, base = _b === void 0 ? 2 : _b, _c = options.max, max = _c === void 0 ? 3 : _c;
     var count = useRef(0);
     useEffect(function () {
@@ -1428,7 +1482,7 @@ function useRetry(handle, options) {
         var f = function () { count.current++; refetch(); };
         var t = setTimeout(f, init * ratio);
         return function () { return clearTimeout(t); };
-    }, [ready, error, time, refetch]);
+    }, [ready, error, refetch]);
 }
 
 /**
@@ -1478,14 +1532,17 @@ function useScroll(scroller, fetcher, params) {
         core.subscribe(skey, setState, mparams);
         return function () { return void core.unsubscribe(skey, setState, mparams); };
     }, [core, skey]);
-    var mutate = useCallback(function (state) { return __awaiter(_this, void 0, void 0, function () {
+    var mutate = useCallback(function (mutator) { return __awaiter(_this, void 0, void 0, function () {
         return __generator(this, function (_a) {
             switch (_a.label) {
-                case 0: return [4 /*yield*/, core.mutate(skey, state, mparams)];
+                case 0:
+                    if (!(state !== null)) return [3 /*break*/, 2];
+                    return [4 /*yield*/, core.mutate(skey, state, mutator, mparams)];
                 case 1: return [2 /*return*/, _a.sent()];
+                case 2: return [2 /*return*/];
             }
         });
-    }); }, [core, skey]);
+    }); }, [core, skey, state]);
     var fetch = useCallback(function (aborter) { return __awaiter(_this, void 0, void 0, function () {
         return __generator(this, function (_a) {
             switch (_a.label) {
@@ -1557,14 +1614,17 @@ function useSingle(key, poster, params) {
         core.subscribe(skey, setState, mparams);
         return function () { return void core.unsubscribe(skey, setState, mparams); };
     }, [core, skey]);
-    var mutate = useCallback(function (state) { return __awaiter(_this, void 0, void 0, function () {
+    var mutate = useCallback(function (mutator) { return __awaiter(_this, void 0, void 0, function () {
         return __generator(this, function (_a) {
             switch (_a.label) {
-                case 0: return [4 /*yield*/, core.mutate(skey, state, mparams)];
+                case 0:
+                    if (!(state !== null)) return [3 /*break*/, 2];
+                    return [4 /*yield*/, core.mutate(skey, state, mutator, mparams)];
                 case 1: return [2 /*return*/, _a.sent()];
+                case 2: return [2 /*return*/];
             }
         });
-    }); }, [core, skey]);
+    }); }, [core, skey, state]);
     var fetch = useCallback(function (aborter) { return __awaiter(_this, void 0, void 0, function () {
         return __generator(this, function (_a) {
             switch (_a.label) {
@@ -1619,8 +1679,8 @@ function use(factory, deps) {
 function useXSWR() {
     var core = useCore();
     var params = useParams();
-    var make = useCallback(function (schema, init) {
-        return schema.make(core, params, init);
+    var make = useCallback(function (schema) {
+        return schema.make(core, params);
     }, [core, params]);
     return { core: core, params: params, make: make };
 }

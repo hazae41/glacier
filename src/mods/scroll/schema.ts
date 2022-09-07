@@ -20,9 +20,9 @@ export class ScrollSchema<D = any, E = any, N = D, K = any> implements Schema<D[
     readonly params: Params<D[], E, N[], K> = {},
   ) { }
 
-  make(core: Core, pparams: Params = {}, initialize?: boolean) {
+  make(core: Core, pparams: Params = {}) {
     const { scroller, fetcher, params } = this
 
-    return new ScrollObject(core, scroller, fetcher, params, pparams, initialize)
+    return new ScrollObject(core, scroller, fetcher, params, pparams)
   }
 }

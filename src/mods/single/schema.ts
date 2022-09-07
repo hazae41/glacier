@@ -19,9 +19,9 @@ export class SingleSchema<D = any, E = any, N = D, K = any> implements Schema<D,
     readonly params: Params<D, E, N, K> = {},
   ) { }
 
-  make(core: Core, pparams: Params = {}, initialize?: boolean) {
+  make(core: Core, pparams: Params = {}) {
     const { key, poster, params } = this
 
-    return new SingleObject(core, key, poster, params, pparams, initialize)
+    return new SingleObject(core, key, poster, params, pparams)
   }
 }

@@ -1,6 +1,7 @@
 import { useCore, useParams } from "mods/react/contexts";
 import { getScrollStorageKey } from "mods/scroll/object";
 import { Fetcher } from "mods/types/fetcher";
+import { Mutator } from "mods/types/mutator";
 import { Params } from "mods/types/params";
 import { Scroller } from "mods/types/scroller";
 import { State } from "mods/types/state";
@@ -59,9 +60,9 @@ export function useScroll<D = any, E = any, N = D, K = any>(
     return () => void core.unsubscribe(skey, setState, mparams)
   }, [core, skey])
 
-  const mutate = useCallback(async (state?: State<D[], E, D[], K>) => {
-    return await core.mutate<D[], E, N[], K>(skey, state, mparams)
-  }, [core, skey])
+  const mutate = useCallback(async (mutator: Mutator<D[], E, N[], K>) => {
+    if (state !== null) return await core.mutate(skey, state, mutator, mparams)
+  }, [core, skey, state])
 
   const fetch = useCallback(async (aborter?: AbortController) => {
     return await core.scroll.first(skey, scroller, fetcher, aborter, mparams)

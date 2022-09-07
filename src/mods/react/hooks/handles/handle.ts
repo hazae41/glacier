@@ -1,3 +1,4 @@
+import { Mutator } from "mods/types/mutator"
 import { State } from "mods/types/state"
 
 export interface Handle<D = any, E = any, N = D, K = any> {
@@ -74,7 +75,7 @@ export interface Handle<D = any, E = any, N = D, K = any> {
    * Mutate the cache
    * @param res 
    */
-  mutate(state?: State<D, E, D, K>): Promise<State<D, E, N, K> | undefined>
+  mutate(mutator: Mutator<D, E, N, K>): Promise<State<D, E, N, K> | undefined>
 
   /**
    * Clear the cache

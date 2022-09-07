@@ -1,6 +1,7 @@
 import { Ortho } from "libs/ortho"
 import { ScrollHelper } from "mods/scroll"
 import { SingleHelper } from "mods/single"
+import { Mutator } from "mods/types/mutator"
 import { Normal } from "mods/types/normal"
 import { Params } from "mods/types/params"
 import { State } from "mods/types/state"
@@ -108,14 +109,15 @@ export class Core extends Ortho<string, State | undefined> {
     await storage.delete(skey)
   }
 
-  async apply<D = any, E = any, N = D, K = any>(
+  async mutate<D = any, E = any, N = D, K = any>(
     skey: string | undefined,
-    current?: State<D, E, N, K>,
-    state?: State<D, E, D, K>,
+    current: State<D, E, N, K> | undefined,
+    mutator: Mutator<D, E, N, K>,
     params: Params<D, E, N, K> = {},
     aborter?: AbortController
   ): Promise<State<D, E, N, K> | undefined> {
     if (skey === undefined) return
+    const state = mutator(current)
 
     if (!state) {
       await this.delete(skey, params)
@@ -154,7 +156,7 @@ export class Core extends Ortho<string, State | undefined> {
     } = params
 
     if (equals(next.data, current?.data)) // Prevent some renders if the data is the same
-      next.data = current?.data as D
+      next.data = current?.data
     if (shallowEquals(next, current)) // Shallow comparison because aborter is not serializable
       return current
 
@@ -181,8 +183,8 @@ export class Core extends Ortho<string, State | undefined> {
     for (const key in transformed) {
       const item = transformed[key]
       if (item instanceof Normal) {
-        const object = item.schema.make(this, undefined, false)
-        await object.mutate({ data: item.data, time, cooldown, expiration, optimistic })
+        const object = item.schema.make(this, undefined)
+        await object.mutate(() => ({ data: item.data, time, cooldown, expiration, optimistic }))
         transformed[key] = item.result
       } else {
         transformed[key] = await this.normalize(item, state)
@@ -190,18 +192,6 @@ export class Core extends Ortho<string, State | undefined> {
     }
 
     return transformed as N
-  }
-
-  async mutate<D = any, E = any, N = D, K = any>(
-    key: string | undefined,
-    state?: State<D, E, D, K>,
-    params: Params<D, E, N, K> = {},
-    aborter?: AbortController
-  ): Promise<State<D, E, N, K> | undefined> {
-    if (!key) return
-
-    const current = await this.get(key, params)
-    return await this.apply(key, current, state, params, aborter)
   }
 
   /**

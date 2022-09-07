@@ -1,4 +1,5 @@
 import { Core } from "mods/core";
+import { Mutator } from "mods/types/mutator";
 import { Object } from "mods/types/object";
 import { Params } from "mods/types/params";
 import { Poster } from "mods/types/poster";
@@ -24,8 +25,8 @@ export function getSingleStorageKey<D = any, E = any, N = D, K = any>(key: K, pa
  */
 export class SingleObject<D = any, E = any, N = D, K = any> implements Object<D, E, N, K>{
   readonly skey: string | undefined
-
   readonly mparams: Params<D, E, N, K>
+  readonly initialization: Promise<void>
 
   private _state?: State<D, E, N, K> | null
 
@@ -33,26 +34,19 @@ export class SingleObject<D = any, E = any, N = D, K = any> implements Object<D,
     readonly core: Core,
     readonly key: K | undefined,
     readonly poster: Poster<D, E, N, K>,
-    readonly params: Params<D, E, N, K> = {},
-    readonly pparams: Params<D, E, N, K> = {},
-    readonly initialize = true
+    params: Params<D, E, N, K> = {},
+    pparams: Params<D, E, N, K> = {},
   ) {
     this.mparams = { ...pparams, ...params }
+    this.skey = getSingleStorageKey(key, this.mparams)
 
-    this.skey = (() => {
-      const { mparams } = this
-
-      return getSingleStorageKey(key, mparams)
-    })();
-
-    if (this.initialize) {
-      this.loadSync()
-      this.loadAsync()
-      this.subscribe()
-    }
+    this.loadSync()
+    this.subscribe()
+    this.initialization = this.loadAsync()
   }
 
   get state() { return this._state }
+  get ready() { return this._state !== null }
 
   private loadSync() {
     const { core, skey, mparams } = this
@@ -61,7 +55,7 @@ export class SingleObject<D = any, E = any, N = D, K = any> implements Object<D,
   }
 
   private async loadAsync() {
-    if (this._state !== null) return
+    if (this.ready) return
 
     const { core, skey, mparams } = this
 
@@ -81,33 +75,43 @@ export class SingleObject<D = any, E = any, N = D, K = any> implements Object<D,
     }).register(this, undefined)
   }
 
-  async mutate(state?: State<D, E, D, K>) {
+  async mutate(mutator: Mutator<D, E, N, K>) {
     const { core, skey, mparams } = this
 
-    return this._state = await core.mutate(skey, state, mparams)
+    if (!this.ready)
+      await this.initialization
+    return this._state = await core.mutate(skey, this._state!, mutator, mparams)
   }
 
   async fetch(aborter?: AbortController) {
     const { core, key, skey, poster, mparams } = this
 
+    if (!this.ready)
+      await this.initialization
     return this._state = await core.single.fetch(key, skey, poster, aborter, mparams)
   }
 
   async refetch(aborter?: AbortController) {
     const { core, key, skey, poster, mparams } = this
 
+    if (!this.ready)
+      await this.initialization
     return this._state = await core.single.fetch(key, skey, poster, aborter, mparams, true)
   }
 
   async update(updater: Updater<D, E, N, K>, aborter?: AbortController) {
     const { core, key, skey, poster, mparams } = this
 
+    if (!this.ready)
+      await this.initialization
     return this._state = await core.single.update(key, skey, poster, updater, aborter, mparams)
   }
 
   async clear() {
     const { core, skey, mparams } = this
 
+    if (!this.ready)
+      await this.initialization
     await core.delete(skey, mparams)
     delete this._state
   }

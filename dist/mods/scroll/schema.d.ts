@@ -10,5 +10,5 @@ export declare class ScrollSchema<D = any, E = any, N = D, K = any> implements S
     readonly fetcher: Fetcher<D, E, N, K>;
     readonly params: Params<D[], E, N[], K>;
     constructor(scroller: Scroller<D, E, N, K>, fetcher: Fetcher<D, E, N, K>, params?: Params<D[], E, N[], K>);
-    make(core: Core, pparams?: Params, initialize?: boolean): ScrollObject<D, any, N, K>;
+    make(core: Core, pparams?: Params): ScrollObject<D, any, N, K>;
 }

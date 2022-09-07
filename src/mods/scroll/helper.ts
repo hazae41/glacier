@@ -59,7 +59,9 @@ export class ScrollHelper {
     try {
       const { signal } = aborter
 
-      current = await this.core.apply(skey, current, { time: current?.time, aborter }, params)
+      current = await this.core.mutate(skey, current,
+        c => ({ time: c?.time, aborter }),
+        params)
 
       const {
         data,
@@ -80,9 +82,15 @@ export class ScrollHelper {
         state.data = [data]
       state.error = error
 
-      return await this.core.apply(skey, current, { time, cooldown, expiration, ...state }, params, aborter)
+      return await this.core.mutate(skey, current,
+        () => ({ time, cooldown, expiration, ...state }),
+        params, aborter)
     } catch (error: any) {
-      return await this.core.mutate(skey, { error }, params, aborter)
+      current = await this.core.get(skey, params)
+
+      return await this.core.mutate(skey, current,
+        () => ({ error }),
+        params, aborter)
     } finally {
       clearTimeout(timeout)
     }
@@ -136,7 +144,9 @@ export class ScrollHelper {
     try {
       const { signal } = aborter
 
-      current = await this.core.apply(skey, current, { time: current?.time, aborter }, params)
+      current = await this.core.mutate(skey, current,
+        c => ({ time: c?.time, aborter }),
+        params)
 
       let {
         data,
@@ -160,9 +170,15 @@ export class ScrollHelper {
         state.data = [...(current?.data ?? []), data] as D[]
       state.error = error
 
-      return await this.core.apply(skey, current, { time, cooldown, expiration, ...state }, params, aborter)
+      return await this.core.mutate(skey, current,
+        () => ({ time, cooldown, expiration, ...state }),
+        params, aborter)
     } catch (error: any) {
-      return await this.core.mutate(skey, { error }, params, aborter)
+      current = await this.core.get(skey, params)
+
+      return await this.core.mutate(skey, current,
+        () => ({ error }),
+        params, aborter)
     } finally {
       clearTimeout(timeout)
     }

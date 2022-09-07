@@ -2,6 +2,7 @@
 import { Ortho } from "../libs/ortho";
 import { ScrollHelper } from "./scroll";
 import { SingleHelper } from "./single";
+import { Mutator } from "./types/mutator";
 import { Params } from "./types/params";
 import { State } from "./types/state";
 export declare type Listener<D = any, E = any, N = D, K = any> = (x?: State<D, E, N, K>) => void;
@@ -29,9 +30,8 @@ export declare class Core extends Ortho<string, State | undefined> {
      * @returns
      */
     delete<D = any, E = any, N = D, K = any>(skey: string | undefined, params?: Params<D, E, N, K>): Promise<void>;
-    apply<D = any, E = any, N = D, K = any>(skey: string | undefined, current?: State<D, E, N, K>, state?: State<D, E, D, K>, params?: Params<D, E, N, K>, aborter?: AbortController): Promise<State<D, E, N, K> | undefined>;
+    mutate<D = any, E = any, N = D, K = any>(skey: string | undefined, current: State<D, E, N, K> | undefined, mutator: Mutator<D, E, N, K>, params?: Params<D, E, N, K>, aborter?: AbortController): Promise<State<D, E, N, K> | undefined>;
     normalize<T = any, N = any>(transformed: T, state: State): Promise<N>;
-    mutate<D = any, E = any, N = D, K = any>(key: string | undefined, state?: State<D, E, D, K>, params?: Params<D, E, N, K>, aborter?: AbortController): Promise<State<D, E, N, K> | undefined>;
     /**
      * True if we should cooldown this resource
      */
