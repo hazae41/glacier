@@ -6,7 +6,9 @@ The simplest React data (re)fetching library ever made
 npm i @hazae41/xswr
 ```
 
-## [Go to the docs](https://xswr.hazae41.me)
+## [Go to the docs 📚](https://xswr.hazae41.me)
+
+## [Try it right now 🚀](https://test.xswr.hazae41.me)
 
 ## Philosophy
 
@@ -14,7 +16,7 @@ XSWR uses two new approaches compared to other data fetching libraries like swr 
 1) Encapsulating key+fetcher+params in a single abstraction called schema.
 2) Composing features with very simple hooks instead of having bloated configuration and unexpected behaviours.
 
-### [Comparison with swr and react-query](https://xswr.hazae41.me/faq/comparison)
+### [Comparison with swr and react-query 💩](https://xswr.hazae41.me/faq/comparison)
 
 ## Features
 
