@@ -38,7 +38,7 @@ async function fetchAsJson<T>(url: string, more: XSWR.PosterMore<T>) {
 }
 
 function getHelloSchema(storage?: XSWR.Storage) {
-  return XSWR.single("/api/hello", fetchAsJson, { storage })
+  return XSWR.single("/api/hello?stored", fetchAsJson, { storage })
 }
 
 function useStoredHello() {
