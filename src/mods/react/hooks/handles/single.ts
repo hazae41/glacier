@@ -30,7 +30,7 @@ export interface SingleHandle<D = any, E = any, N = D, K = any> extends Handle<D
  */
 export function useSingle<D = any, E = any, N = D, K = any>(
   key: K | undefined,
-  poster: Poster<D, E, N, K>,
+  poster: Poster<D, E, N, K> | undefined,
   cparams: Params<D, E, N, K> = {},
 ): SingleHandle<D, E, N, K> {
   const core = useCore()
@@ -91,6 +91,8 @@ export function useSingle<D = any, E = any, N = D, K = any>(
       await initRef.current
     if (stateRef.current === null)
       throw new Error("Null state after init")
+    if (posterRef.current === undefined)
+      return stateRef.current
 
     const state = stateRef.current
     const key = keyRef.current
@@ -105,6 +107,8 @@ export function useSingle<D = any, E = any, N = D, K = any>(
       await initRef.current
     if (stateRef.current === null)
       throw new Error("Null state after init")
+    if (posterRef.current === undefined)
+      return stateRef.current
 
     const state = stateRef.current
     const key = keyRef.current
@@ -119,6 +123,8 @@ export function useSingle<D = any, E = any, N = D, K = any>(
       await initRef.current
     if (stateRef.current === null)
       throw new Error("Null state after init")
+    if (posterRef.current === undefined)
+      return stateRef.current
 
     const state = stateRef.current
     const key = keyRef.current

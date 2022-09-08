@@ -28,7 +28,7 @@ export interface ScrollHandle<D = any, E = any, N = D, K = any> extends Handle<D
  */
 export function useScroll<D = any, E = any, N = D, K = any>(
   scroller: Scroller<D, E, N, K>,
-  fetcher: Fetcher<D, E, N, K>,
+  fetcher: Fetcher<D, E, N, K> | undefined,
   cparams: Params<D[], E, N[], K> = {},
 ): ScrollHandle<D, E, N, K> {
   const core = useCore()
@@ -86,7 +86,12 @@ export function useScroll<D = any, E = any, N = D, K = any>(
   }, [core, skey])
 
   const fetch = useCallback(async (aborter?: AbortController) => {
-    if (stateRef.current === null) return
+    if (stateRef.current === null)
+      await initRef.current
+    if (stateRef.current === null)
+      throw new Error("Null state after init")
+    if (fetcherRef.current === undefined)
+      return stateRef.current
 
     const state = stateRef.current
     const scroller = scrollerRef.current
@@ -97,7 +102,12 @@ export function useScroll<D = any, E = any, N = D, K = any>(
   }, [core, skey])
 
   const refetch = useCallback(async (aborter?: AbortController) => {
-    if (stateRef.current === null) return
+    if (stateRef.current === null)
+      await initRef.current
+    if (stateRef.current === null)
+      throw new Error("Null state after init")
+    if (fetcherRef.current === undefined)
+      return stateRef.current
 
     const state = stateRef.current
     const scroller = scrollerRef.current
@@ -108,7 +118,12 @@ export function useScroll<D = any, E = any, N = D, K = any>(
   }, [core, skey])
 
   const scroll = useCallback(async (aborter?: AbortController) => {
-    if (stateRef.current === null) return
+    if (stateRef.current === null)
+      await initRef.current
+    if (stateRef.current === null)
+      throw new Error("Null state after init")
+    if (fetcherRef.current === undefined)
+      return stateRef.current
 
     const state = stateRef.current
     const scroller = scrollerRef.current
