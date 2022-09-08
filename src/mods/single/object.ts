@@ -25,41 +25,41 @@ export function getSingleStorageKey<D = any, E = any, N = D, K = any>(key: K, pa
  */
 export class SingleObject<D = any, E = any, N = D, K = any> implements Object<D, E, N, K>{
   readonly skey: string | undefined
-  readonly mparams: Params<D, E, N, K>
-  readonly init: Promise<void>
+  readonly params: Params<D, E, N, K>
 
-  private _state?: State<D, E, N, K> | null
+  private _init: Promise<void> | undefined
+  private _state: State<D, E, N, K> | undefined | null
 
   constructor(
     readonly core: Core,
     readonly key: K | undefined,
     readonly poster: Poster<D, E, N, K> | undefined,
-    params: Params<D, E, N, K> = {},
+    cparams: Params<D, E, N, K> = {},
     pparams: Params<D, E, N, K> = {},
   ) {
-    this.mparams = { ...pparams, ...params }
-    this.skey = getSingleStorageKey(key, this.mparams)
+    this.params = { ...pparams, ...cparams }
+    this.skey = getSingleStorageKey(key, this.params)
 
     this.loadSync()
     this.subscribe()
-    this.init = this.loadAsync()
   }
 
+  get init() { return this._init }
   get state() { return this._state }
   get ready() { return this._state !== null }
 
   private loadSync() {
-    const { core, skey, mparams } = this
+    const { core, skey, params } = this
 
-    this._state = core.getSync(skey, mparams)
+    this._state = core.getSync(skey, params)
   }
 
   private async loadAsync() {
     if (this.ready) return
 
-    const { core, skey, mparams } = this
+    const { core, skey, params } = this
 
-    this._state = await core.get(skey, mparams)
+    this._state = await core.get(skey, params)
   }
 
   private subscribe() {
@@ -76,64 +76,59 @@ export class SingleObject<D = any, E = any, N = D, K = any> implements Object<D,
   }
 
   async mutate(mutator: Mutator<D, E, N, K>) {
-    const { core, skey, mparams } = this
+    const { core, skey, params } = this
 
     if (this._state === null)
-      await this.init
+      await (this._init ??= this.loadAsync())
     if (this._state === null)
       throw new Error("Null state after init")
 
-    return this._state = await core.mutate(skey, this._state, mutator, mparams)
+    return this._state = await core.mutate(skey, this._state, mutator, params)
   }
 
   async fetch(aborter?: AbortController) {
-    const { core, key, skey, poster, mparams } = this
+    const { core, key, skey, poster, params } = this
 
     if (this._state === null)
-      await this.init
+      await (this._init ??= this.loadAsync())
     if (this._state === null)
       throw new Error("Null state after init")
     if (poster === undefined)
       return this._state
 
-    return this._state = await core.single.fetch(key, skey, this._state, poster, aborter, mparams)
+    return this._state = await core.single.fetch(key, skey, this._state, poster, aborter, params)
   }
 
   async refetch(aborter?: AbortController) {
-    const { core, key, skey, poster, mparams } = this
+    const { core, key, skey, poster, params } = this
 
     if (this._state === null)
-      await this.init
+      await (this._init ??= this.loadAsync())
     if (this._state === null)
       throw new Error("Null state after init")
     if (poster === undefined)
       return this._state
 
-    return this._state = await core.single.fetch(key, skey, this._state, poster, aborter, mparams, true)
+    return this._state = await core.single.fetch(key, skey, this._state, poster, aborter, params, true)
   }
 
   async update(updater: Updater<D, E, N, K>, aborter?: AbortController) {
-    const { core, key, skey, poster, mparams } = this
+    const { core, key, skey, poster, params } = this
 
     if (this._state === null)
-      await this.init
+      await (this._init ??= this.loadAsync())
     if (this._state === null)
       throw new Error("Null state after init")
     if (poster === undefined)
       return this._state
 
-    return this._state = await core.single.update(key, skey, this._state, poster, updater, aborter, mparams)
+    return this._state = await core.single.update(key, skey, this._state, poster, updater, aborter, params)
   }
 
   async clear() {
-    const { core, skey, mparams } = this
+    const { core, skey, params } = this
 
-    if (this._state === null)
-      await this.init
-    if (this._state === null)
-      throw new Error("Null state after init")
-
-    await core.delete(skey, mparams)
+    await core.delete(skey, params)
     delete this._state
   }
 }

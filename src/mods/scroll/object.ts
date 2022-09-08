@@ -26,42 +26,42 @@ export function getScrollStorageKey<D = any, E = any, N = D, K = any>(key: K, pa
 export class ScrollObject<D = any, E = any, N = D, K = any> implements Object<D[], E, N[], K> {
   readonly key: K | undefined
   readonly skey: string | undefined
-  readonly mparams: Params<D[], E, N[], K>
-  readonly init: Promise<void>
+  readonly params: Params<D[], E, N[], K>
 
-  private _state: State<D[], E, N[], K> | undefined | null = null
+  private _init: Promise<void> | undefined
+  private _state: State<D[], E, N[], K> | undefined | null
 
   constructor(
     readonly core: Core,
     readonly scroller: Scroller<D, E, N, K>,
     readonly fetcher: Fetcher<D, E, N, K> | undefined,
-    params: Params<D[], E, N[], K> = {},
+    cparams: Params<D[], E, N[], K> = {},
     pparams: Params<D[], E, N[], K> = {}
   ) {
-    this.mparams = { ...pparams, ...params }
+    this.params = { ...pparams, ...cparams }
     this.key = scroller()
-    this.skey = getScrollStorageKey(this.key, this.mparams)
+    this.skey = getScrollStorageKey(this.key, this.params)
 
     this.loadSync()
     this.subscribe()
-    this.init = this.loadAsync()
   }
 
+  get init() { return this._init }
   get state() { return this._state }
   get ready() { return this._state !== null }
 
   private loadSync() {
-    const { core, skey, mparams } = this
+    const { core, skey, params } = this
 
-    this._state = core.getSync(skey, mparams)
+    this._state = core.getSync(skey, params)
   }
 
   private async loadAsync() {
     if (this.ready) return
 
-    const { core, skey, mparams } = this
+    const { core, skey, params } = this
 
-    this._state = await core.get(skey, mparams)
+    this._state = await core.get(skey, params)
   }
 
   private subscribe() {
@@ -78,64 +78,59 @@ export class ScrollObject<D = any, E = any, N = D, K = any> implements Object<D[
   }
 
   async mutate(mutator: Mutator<D[], E, N[], K>) {
-    const { core, skey, mparams } = this
+    const { core, skey, params } = this
 
     if (this._state === null)
-      await this.init
+      await (this._init ??= this.loadAsync())
     if (this._state === null)
       throw new Error("Null state after init")
 
-    return this._state = await core.mutate(skey, this._state, mutator, mparams)
+    return this._state = await core.mutate(skey, this._state, mutator, params)
   }
 
   async fetch(aborter?: AbortController) {
-    const { core, scroller, skey, fetcher, mparams } = this
+    const { core, scroller, skey, fetcher, params } = this
 
     if (this._state === null)
-      await this.init
+      await (this._init ??= this.loadAsync())
     if (this._state === null)
       throw new Error("Null state after init")
     if (fetcher === undefined)
       return this._state
 
-    return this._state = await core.scroll.first(skey, this._state, scroller, fetcher, aborter, mparams)
+    return this._state = await core.scroll.first(skey, this._state, scroller, fetcher, aborter, params)
   }
 
   async refetch(aborter?: AbortController) {
-    const { core, scroller, skey, fetcher, mparams } = this
+    const { core, scroller, skey, fetcher, params } = this
 
     if (this._state === null)
-      await this.init
+      await (this._init ??= this.loadAsync())
     if (this._state === null)
       throw new Error("Null state after init")
     if (fetcher === undefined)
       return this._state
 
-    return this._state = await core.scroll.first(skey, this._state, scroller, fetcher, aborter, mparams, true)
+    return this._state = await core.scroll.first(skey, this._state, scroller, fetcher, aborter, params, true)
   }
 
   async scroll(aborter?: AbortController) {
-    const { core, scroller, skey, fetcher, mparams } = this
+    const { core, scroller, skey, fetcher, params } = this
 
     if (this._state === null)
-      await this.init
+      await (this._init ??= this.loadAsync())
     if (this._state === null)
       throw new Error("Null state after init")
     if (fetcher === undefined)
       return this._state
 
-    return this._state = await core.scroll.scroll(skey, this._state, scroller, fetcher, aborter, mparams)
+    return this._state = await core.scroll.scroll(skey, this._state, scroller, fetcher, aborter, params)
   }
 
   async clear() {
-    const { core, skey, mparams } = this
+    const { core, skey, params } = this
 
-    if (this._state === null)
-      await this.init
-    if (this._state === null)
-      throw new Error("Null state after init")
-
-    await core.delete(skey, mparams)
+    await core.delete(skey, params)
     delete this._state
   }
 }

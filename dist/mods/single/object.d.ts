@@ -14,10 +14,11 @@ export declare class SingleObject<D = any, E = any, N = D, K = any> implements O
     readonly key: K | undefined;
     readonly poster: Poster<D, E, N, K> | undefined;
     readonly skey: string | undefined;
-    readonly mparams: Params<D, E, N, K>;
-    readonly init: Promise<void>;
-    private _state?;
-    constructor(core: Core, key: K | undefined, poster: Poster<D, E, N, K> | undefined, params?: Params<D, E, N, K>, pparams?: Params<D, E, N, K>);
+    readonly params: Params<D, E, N, K>;
+    private _init;
+    private _state;
+    constructor(core: Core, key: K | undefined, poster: Poster<D, E, N, K> | undefined, cparams?: Params<D, E, N, K>, pparams?: Params<D, E, N, K>);
+    get init(): Promise<void> | undefined;
     get state(): State<D, E, N, K> | null | undefined;
     get ready(): boolean;
     private loadSync;

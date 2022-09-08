@@ -433,20 +433,23 @@ function getScrollStorageKey(key, params) {
  * Non-React version of ScrollHandle
  */
 var ScrollObject = /** @class */ (function () {
-    function ScrollObject(core, scroller, fetcher, params, pparams) {
-        if (params === void 0) { params = {}; }
+    function ScrollObject(core, scroller, fetcher, cparams, pparams) {
+        if (cparams === void 0) { cparams = {}; }
         if (pparams === void 0) { pparams = {}; }
         this.core = core;
         this.scroller = scroller;
         this.fetcher = fetcher;
-        this._state = null;
-        this.mparams = __assign(__assign({}, pparams), params);
+        this.params = __assign(__assign({}, pparams), cparams);
         this.key = scroller();
-        this.skey = getScrollStorageKey(this.key, this.mparams);
+        this.skey = getScrollStorageKey(this.key, this.params);
         this.loadSync();
         this.subscribe();
-        this.init = this.loadAsync();
     }
+    Object.defineProperty(ScrollObject.prototype, "init", {
+        get: function () { return this._init; },
+        enumerable: false,
+        configurable: true
+    });
     Object.defineProperty(ScrollObject.prototype, "state", {
         get: function () { return this._state; },
         enumerable: false,
@@ -458,20 +461,20 @@ var ScrollObject = /** @class */ (function () {
         configurable: true
     });
     ScrollObject.prototype.loadSync = function () {
-        var _a = this, core = _a.core, skey = _a.skey, mparams = _a.mparams;
-        this._state = core.getSync(skey, mparams);
+        var _a = this, core = _a.core, skey = _a.skey, params = _a.params;
+        this._state = core.getSync(skey, params);
     };
     ScrollObject.prototype.loadAsync = function () {
         return __awaiter(this, void 0, void 0, function () {
-            var _a, core, skey, mparams, _b;
+            var _a, core, skey, params, _b;
             return __generator(this, function (_c) {
                 switch (_c.label) {
                     case 0:
                         if (this.ready)
                             return [2 /*return*/];
-                        _a = this, core = _a.core, skey = _a.skey, mparams = _a.mparams;
+                        _a = this, core = _a.core, skey = _a.skey, params = _a.params;
                         _b = this;
-                        return [4 /*yield*/, core.get(skey, mparams)];
+                        return [4 /*yield*/, core.get(skey, params)];
                     case 1:
                         _b._state = _c.sent();
                         return [2 /*return*/];
@@ -491,116 +494,112 @@ var ScrollObject = /** @class */ (function () {
         }).register(this, undefined);
     };
     ScrollObject.prototype.mutate = function (mutator) {
+        var _a;
         return __awaiter(this, void 0, void 0, function () {
-            var _a, core, skey, mparams, _b;
-            return __generator(this, function (_c) {
-                switch (_c.label) {
+            var _b, core, skey, params, _c;
+            return __generator(this, function (_d) {
+                switch (_d.label) {
                     case 0:
-                        _a = this, core = _a.core, skey = _a.skey, mparams = _a.mparams;
+                        _b = this, core = _b.core, skey = _b.skey, params = _b.params;
                         if (!(this._state === null)) return [3 /*break*/, 2];
-                        return [4 /*yield*/, this.init];
+                        return [4 /*yield*/, ((_a = this._init) !== null && _a !== void 0 ? _a : (this._init = this.loadAsync()))];
                     case 1:
-                        _c.sent();
-                        _c.label = 2;
+                        _d.sent();
+                        _d.label = 2;
                     case 2:
                         if (this._state === null)
                             throw new Error("Null state after init");
-                        _b = this;
-                        return [4 /*yield*/, core.mutate(skey, this._state, mutator, mparams)];
-                    case 3: return [2 /*return*/, _b._state = _c.sent()];
+                        _c = this;
+                        return [4 /*yield*/, core.mutate(skey, this._state, mutator, params)];
+                    case 3: return [2 /*return*/, _c._state = _d.sent()];
                 }
             });
         });
     };
     ScrollObject.prototype.fetch = function (aborter) {
+        var _a;
         return __awaiter(this, void 0, void 0, function () {
-            var _a, core, scroller, skey, fetcher, mparams, _b;
-            return __generator(this, function (_c) {
-                switch (_c.label) {
+            var _b, core, scroller, skey, fetcher, params, _c;
+            return __generator(this, function (_d) {
+                switch (_d.label) {
                     case 0:
-                        _a = this, core = _a.core, scroller = _a.scroller, skey = _a.skey, fetcher = _a.fetcher, mparams = _a.mparams;
+                        _b = this, core = _b.core, scroller = _b.scroller, skey = _b.skey, fetcher = _b.fetcher, params = _b.params;
                         if (!(this._state === null)) return [3 /*break*/, 2];
-                        return [4 /*yield*/, this.init];
+                        return [4 /*yield*/, ((_a = this._init) !== null && _a !== void 0 ? _a : (this._init = this.loadAsync()))];
                     case 1:
-                        _c.sent();
-                        _c.label = 2;
+                        _d.sent();
+                        _d.label = 2;
                     case 2:
                         if (this._state === null)
                             throw new Error("Null state after init");
                         if (fetcher === undefined)
                             return [2 /*return*/, this._state];
-                        _b = this;
-                        return [4 /*yield*/, core.scroll.first(skey, this._state, scroller, fetcher, aborter, mparams)];
-                    case 3: return [2 /*return*/, _b._state = _c.sent()];
+                        _c = this;
+                        return [4 /*yield*/, core.scroll.first(skey, this._state, scroller, fetcher, aborter, params)];
+                    case 3: return [2 /*return*/, _c._state = _d.sent()];
                 }
             });
         });
     };
     ScrollObject.prototype.refetch = function (aborter) {
+        var _a;
         return __awaiter(this, void 0, void 0, function () {
-            var _a, core, scroller, skey, fetcher, mparams, _b;
-            return __generator(this, function (_c) {
-                switch (_c.label) {
+            var _b, core, scroller, skey, fetcher, params, _c;
+            return __generator(this, function (_d) {
+                switch (_d.label) {
                     case 0:
-                        _a = this, core = _a.core, scroller = _a.scroller, skey = _a.skey, fetcher = _a.fetcher, mparams = _a.mparams;
+                        _b = this, core = _b.core, scroller = _b.scroller, skey = _b.skey, fetcher = _b.fetcher, params = _b.params;
                         if (!(this._state === null)) return [3 /*break*/, 2];
-                        return [4 /*yield*/, this.init];
+                        return [4 /*yield*/, ((_a = this._init) !== null && _a !== void 0 ? _a : (this._init = this.loadAsync()))];
                     case 1:
-                        _c.sent();
-                        _c.label = 2;
+                        _d.sent();
+                        _d.label = 2;
                     case 2:
                         if (this._state === null)
                             throw new Error("Null state after init");
                         if (fetcher === undefined)
                             return [2 /*return*/, this._state];
-                        _b = this;
-                        return [4 /*yield*/, core.scroll.first(skey, this._state, scroller, fetcher, aborter, mparams, true)];
-                    case 3: return [2 /*return*/, _b._state = _c.sent()];
+                        _c = this;
+                        return [4 /*yield*/, core.scroll.first(skey, this._state, scroller, fetcher, aborter, params, true)];
+                    case 3: return [2 /*return*/, _c._state = _d.sent()];
                 }
             });
         });
     };
     ScrollObject.prototype.scroll = function (aborter) {
+        var _a;
         return __awaiter(this, void 0, void 0, function () {
-            var _a, core, scroller, skey, fetcher, mparams, _b;
-            return __generator(this, function (_c) {
-                switch (_c.label) {
+            var _b, core, scroller, skey, fetcher, params, _c;
+            return __generator(this, function (_d) {
+                switch (_d.label) {
                     case 0:
-                        _a = this, core = _a.core, scroller = _a.scroller, skey = _a.skey, fetcher = _a.fetcher, mparams = _a.mparams;
+                        _b = this, core = _b.core, scroller = _b.scroller, skey = _b.skey, fetcher = _b.fetcher, params = _b.params;
                         if (!(this._state === null)) return [3 /*break*/, 2];
-                        return [4 /*yield*/, this.init];
+                        return [4 /*yield*/, ((_a = this._init) !== null && _a !== void 0 ? _a : (this._init = this.loadAsync()))];
                     case 1:
-                        _c.sent();
-                        _c.label = 2;
+                        _d.sent();
+                        _d.label = 2;
                     case 2:
                         if (this._state === null)
                             throw new Error("Null state after init");
                         if (fetcher === undefined)
                             return [2 /*return*/, this._state];
-                        _b = this;
-                        return [4 /*yield*/, core.scroll.scroll(skey, this._state, scroller, fetcher, aborter, mparams)];
-                    case 3: return [2 /*return*/, _b._state = _c.sent()];
+                        _c = this;
+                        return [4 /*yield*/, core.scroll.scroll(skey, this._state, scroller, fetcher, aborter, params)];
+                    case 3: return [2 /*return*/, _c._state = _d.sent()];
                 }
             });
         });
     };
     ScrollObject.prototype.clear = function () {
         return __awaiter(this, void 0, void 0, function () {
-            var _a, core, skey, mparams;
+            var _a, core, skey, params;
             return __generator(this, function (_b) {
                 switch (_b.label) {
                     case 0:
-                        _a = this, core = _a.core, skey = _a.skey, mparams = _a.mparams;
-                        if (!(this._state === null)) return [3 /*break*/, 2];
-                        return [4 /*yield*/, this.init];
+                        _a = this, core = _a.core, skey = _a.skey, params = _a.params;
+                        return [4 /*yield*/, core.delete(skey, params)];
                     case 1:
-                        _b.sent();
-                        _b.label = 2;
-                    case 2:
-                        if (this._state === null)
-                            throw new Error("Null state after init");
-                        return [4 /*yield*/, core.delete(skey, mparams)];
-                    case 3:
                         _b.sent();
                         delete this._state;
                         return [2 /*return*/];
@@ -792,18 +791,22 @@ function getSingleStorageKey(key, params) {
  * Non-React version of SingleHandle
  */
 var SingleObject = /** @class */ (function () {
-    function SingleObject(core, key, poster, params, pparams) {
-        if (params === void 0) { params = {}; }
+    function SingleObject(core, key, poster, cparams, pparams) {
+        if (cparams === void 0) { cparams = {}; }
         if (pparams === void 0) { pparams = {}; }
         this.core = core;
         this.key = key;
         this.poster = poster;
-        this.mparams = __assign(__assign({}, pparams), params);
-        this.skey = getSingleStorageKey(key, this.mparams);
+        this.params = __assign(__assign({}, pparams), cparams);
+        this.skey = getSingleStorageKey(key, this.params);
         this.loadSync();
         this.subscribe();
-        this.init = this.loadAsync();
     }
+    Object.defineProperty(SingleObject.prototype, "init", {
+        get: function () { return this._init; },
+        enumerable: false,
+        configurable: true
+    });
     Object.defineProperty(SingleObject.prototype, "state", {
         get: function () { return this._state; },
         enumerable: false,
@@ -815,20 +818,20 @@ var SingleObject = /** @class */ (function () {
         configurable: true
     });
     SingleObject.prototype.loadSync = function () {
-        var _a = this, core = _a.core, skey = _a.skey, mparams = _a.mparams;
-        this._state = core.getSync(skey, mparams);
+        var _a = this, core = _a.core, skey = _a.skey, params = _a.params;
+        this._state = core.getSync(skey, params);
     };
     SingleObject.prototype.loadAsync = function () {
         return __awaiter(this, void 0, void 0, function () {
-            var _a, core, skey, mparams, _b;
+            var _a, core, skey, params, _b;
             return __generator(this, function (_c) {
                 switch (_c.label) {
                     case 0:
                         if (this.ready)
                             return [2 /*return*/];
-                        _a = this, core = _a.core, skey = _a.skey, mparams = _a.mparams;
+                        _a = this, core = _a.core, skey = _a.skey, params = _a.params;
                         _b = this;
-                        return [4 /*yield*/, core.get(skey, mparams)];
+                        return [4 /*yield*/, core.get(skey, params)];
                     case 1:
                         _b._state = _c.sent();
                         return [2 /*return*/];
@@ -848,116 +851,112 @@ var SingleObject = /** @class */ (function () {
         }).register(this, undefined);
     };
     SingleObject.prototype.mutate = function (mutator) {
+        var _a;
         return __awaiter(this, void 0, void 0, function () {
-            var _a, core, skey, mparams, _b;
-            return __generator(this, function (_c) {
-                switch (_c.label) {
+            var _b, core, skey, params, _c;
+            return __generator(this, function (_d) {
+                switch (_d.label) {
                     case 0:
-                        _a = this, core = _a.core, skey = _a.skey, mparams = _a.mparams;
+                        _b = this, core = _b.core, skey = _b.skey, params = _b.params;
                         if (!(this._state === null)) return [3 /*break*/, 2];
-                        return [4 /*yield*/, this.init];
+                        return [4 /*yield*/, ((_a = this._init) !== null && _a !== void 0 ? _a : (this._init = this.loadAsync()))];
                     case 1:
-                        _c.sent();
-                        _c.label = 2;
+                        _d.sent();
+                        _d.label = 2;
                     case 2:
                         if (this._state === null)
                             throw new Error("Null state after init");
-                        _b = this;
-                        return [4 /*yield*/, core.mutate(skey, this._state, mutator, mparams)];
-                    case 3: return [2 /*return*/, _b._state = _c.sent()];
+                        _c = this;
+                        return [4 /*yield*/, core.mutate(skey, this._state, mutator, params)];
+                    case 3: return [2 /*return*/, _c._state = _d.sent()];
                 }
             });
         });
     };
     SingleObject.prototype.fetch = function (aborter) {
+        var _a;
         return __awaiter(this, void 0, void 0, function () {
-            var _a, core, key, skey, poster, mparams, _b;
-            return __generator(this, function (_c) {
-                switch (_c.label) {
+            var _b, core, key, skey, poster, params, _c;
+            return __generator(this, function (_d) {
+                switch (_d.label) {
                     case 0:
-                        _a = this, core = _a.core, key = _a.key, skey = _a.skey, poster = _a.poster, mparams = _a.mparams;
+                        _b = this, core = _b.core, key = _b.key, skey = _b.skey, poster = _b.poster, params = _b.params;
                         if (!(this._state === null)) return [3 /*break*/, 2];
-                        return [4 /*yield*/, this.init];
+                        return [4 /*yield*/, ((_a = this._init) !== null && _a !== void 0 ? _a : (this._init = this.loadAsync()))];
                     case 1:
-                        _c.sent();
-                        _c.label = 2;
+                        _d.sent();
+                        _d.label = 2;
                     case 2:
                         if (this._state === null)
                             throw new Error("Null state after init");
                         if (poster === undefined)
                             return [2 /*return*/, this._state];
-                        _b = this;
-                        return [4 /*yield*/, core.single.fetch(key, skey, this._state, poster, aborter, mparams)];
-                    case 3: return [2 /*return*/, _b._state = _c.sent()];
+                        _c = this;
+                        return [4 /*yield*/, core.single.fetch(key, skey, this._state, poster, aborter, params)];
+                    case 3: return [2 /*return*/, _c._state = _d.sent()];
                 }
             });
         });
     };
     SingleObject.prototype.refetch = function (aborter) {
+        var _a;
         return __awaiter(this, void 0, void 0, function () {
-            var _a, core, key, skey, poster, mparams, _b;
-            return __generator(this, function (_c) {
-                switch (_c.label) {
+            var _b, core, key, skey, poster, params, _c;
+            return __generator(this, function (_d) {
+                switch (_d.label) {
                     case 0:
-                        _a = this, core = _a.core, key = _a.key, skey = _a.skey, poster = _a.poster, mparams = _a.mparams;
+                        _b = this, core = _b.core, key = _b.key, skey = _b.skey, poster = _b.poster, params = _b.params;
                         if (!(this._state === null)) return [3 /*break*/, 2];
-                        return [4 /*yield*/, this.init];
+                        return [4 /*yield*/, ((_a = this._init) !== null && _a !== void 0 ? _a : (this._init = this.loadAsync()))];
                     case 1:
-                        _c.sent();
-                        _c.label = 2;
+                        _d.sent();
+                        _d.label = 2;
                     case 2:
                         if (this._state === null)
                             throw new Error("Null state after init");
                         if (poster === undefined)
                             return [2 /*return*/, this._state];
-                        _b = this;
-                        return [4 /*yield*/, core.single.fetch(key, skey, this._state, poster, aborter, mparams, true)];
-                    case 3: return [2 /*return*/, _b._state = _c.sent()];
+                        _c = this;
+                        return [4 /*yield*/, core.single.fetch(key, skey, this._state, poster, aborter, params, true)];
+                    case 3: return [2 /*return*/, _c._state = _d.sent()];
                 }
             });
         });
     };
     SingleObject.prototype.update = function (updater, aborter) {
+        var _a;
         return __awaiter(this, void 0, void 0, function () {
-            var _a, core, key, skey, poster, mparams, _b;
-            return __generator(this, function (_c) {
-                switch (_c.label) {
+            var _b, core, key, skey, poster, params, _c;
+            return __generator(this, function (_d) {
+                switch (_d.label) {
                     case 0:
-                        _a = this, core = _a.core, key = _a.key, skey = _a.skey, poster = _a.poster, mparams = _a.mparams;
+                        _b = this, core = _b.core, key = _b.key, skey = _b.skey, poster = _b.poster, params = _b.params;
                         if (!(this._state === null)) return [3 /*break*/, 2];
-                        return [4 /*yield*/, this.init];
+                        return [4 /*yield*/, ((_a = this._init) !== null && _a !== void 0 ? _a : (this._init = this.loadAsync()))];
                     case 1:
-                        _c.sent();
-                        _c.label = 2;
+                        _d.sent();
+                        _d.label = 2;
                     case 2:
                         if (this._state === null)
                             throw new Error("Null state after init");
                         if (poster === undefined)
                             return [2 /*return*/, this._state];
-                        _b = this;
-                        return [4 /*yield*/, core.single.update(key, skey, this._state, poster, updater, aborter, mparams)];
-                    case 3: return [2 /*return*/, _b._state = _c.sent()];
+                        _c = this;
+                        return [4 /*yield*/, core.single.update(key, skey, this._state, poster, updater, aborter, params)];
+                    case 3: return [2 /*return*/, _c._state = _d.sent()];
                 }
             });
         });
     };
     SingleObject.prototype.clear = function () {
         return __awaiter(this, void 0, void 0, function () {
-            var _a, core, skey, mparams;
+            var _a, core, skey, params;
             return __generator(this, function (_b) {
                 switch (_b.label) {
                     case 0:
-                        _a = this, core = _a.core, skey = _a.skey, mparams = _a.mparams;
-                        if (!(this._state === null)) return [3 /*break*/, 2];
-                        return [4 /*yield*/, this.init];
+                        _a = this, core = _a.core, skey = _a.skey, params = _a.params;
+                        return [4 /*yield*/, core.delete(skey, params)];
                     case 1:
-                        _b.sent();
-                        _b.label = 2;
-                    case 2:
-                        if (this._state === null)
-                            throw new Error("Null state after init");
-                        return [4 /*yield*/, core.delete(skey, mparams)];
-                    case 3:
                         _b.sent();
                         delete this._state;
                         return [2 /*return*/];

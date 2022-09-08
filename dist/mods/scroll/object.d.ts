@@ -15,10 +15,11 @@ export declare class ScrollObject<D = any, E = any, N = D, K = any> implements O
     readonly fetcher: Fetcher<D, E, N, K> | undefined;
     readonly key: K | undefined;
     readonly skey: string | undefined;
-    readonly mparams: Params<D[], E, N[], K>;
-    readonly init: Promise<void>;
+    readonly params: Params<D[], E, N[], K>;
+    private _init;
     private _state;
-    constructor(core: Core, scroller: Scroller<D, E, N, K>, fetcher: Fetcher<D, E, N, K> | undefined, params?: Params<D[], E, N[], K>, pparams?: Params<D[], E, N[], K>);
+    constructor(core: Core, scroller: Scroller<D, E, N, K>, fetcher: Fetcher<D, E, N, K> | undefined, cparams?: Params<D[], E, N[], K>, pparams?: Params<D[], E, N[], K>);
+    get init(): Promise<void> | undefined;
     get state(): State<D[], E, N[], K> | null | undefined;
     get ready(): boolean;
     private loadSync;
