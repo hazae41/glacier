@@ -1,22 +1,9 @@
 import { XSWR } from "@hazae41/xswr"
 import { useCallback } from "react"
-
-async function fetchAsJson<T>([url, id]: any) {
-  const res = await fetch(`${url}?id=${id}`, {})
-  const cooldown = Date.now() + (5 * 1000)
-  const expiration = Date.now() + (10 * 1000)
-
-  if (!res.ok) {
-    const error = new Error(await res.text())
-    return { error, cooldown, expiration }
-  }
-
-  const data = await res.json() as T
-  return { data, cooldown, expiration }
-}
+import { fetchAsJson } from "../../libs/fetcher"
 
 function getKeySchema(id: string) {
-  return XSWR.single<unknown>(["/api/query", id], fetchAsJson)
+  return XSWR.single(`/api/query?id=${id}`, fetchAsJson)
 }
 
 function useAutoFetchMixture(handle: XSWR.Handle) {

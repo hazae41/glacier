@@ -1,7 +1,7 @@
 import { XSWR } from "@hazae41/xswr"
 import { useCallback } from "react"
 
-async function postAsJson<T extends HelloData>(url: string, more: XSWR.PosterMore<T>) {
+async function postAsJson<T>(url: string, more: XSWR.PosterMore<T>) {
   const { signal } = more
 
   const method = more.data ? "POST" : "GET"

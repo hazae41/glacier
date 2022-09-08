@@ -1,24 +1,9 @@
 import { XSWR } from "@hazae41/xswr"
 import { useState } from "react"
-
-async function fetchAsJson<T>([url, id]: any[], more: XSWR.PosterMore<T>) {
-  const { signal } = more
-
-  const res = await fetch(`${url}?id=${id}`, { signal })
-  const cooldown = Date.now() + (5 * 1000)
-  const expiration = Date.now() + (10 * 1000)
-
-  if (!res.ok) {
-    const error = new Error(await res.text())
-    return { error, cooldown, expiration }
-  }
-
-  const data = await res.json() as T
-  return { data, cooldown, expiration }
-}
+import { fetchAsJson } from "../../libs/fetcher"
 
 function getKeySchema(id: number) {
-  return XSWR.single<unknown>(["/api/query", id], fetchAsJson)
+  return XSWR.single<unknown>(`/api/query?id=${id}`, fetchAsJson)
 }
 
 function useKey(id: number) {
