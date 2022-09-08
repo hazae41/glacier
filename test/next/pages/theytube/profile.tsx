@@ -1,6 +1,6 @@
 import { XSWR } from "@hazae41/xswr";
 import { useCallback } from "react";
-import { fetchAsJson } from "./fetcher";
+import { fetchAsJson } from "../../libs/fetcher";
 
 export interface ProfileData {
   id: string
@@ -40,4 +40,8 @@ export function Profile(props: { id: string }) {
       Rename
     </button>
   </div>
-} 
+}
+
+export default function Page() {
+  return null
+}

@@ -1,6 +1,6 @@
 import { XSWR } from "@hazae41/xswr";
 import { useCallback } from "react";
-import { fetchAsJson } from "./fetcher";
+import { fetchAsJson } from "../../libs/fetcher";
 import { getProfileNormal, getProfileSchema, Profile, ProfileData } from "./profile";
 
 export interface CommentData {
@@ -61,4 +61,8 @@ export function Comment(props: { id: string }) {
       Change author
     </button>
   </div>
+}
+
+export default function Page() {
+  return null
 }

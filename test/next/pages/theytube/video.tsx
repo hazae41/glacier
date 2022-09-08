@@ -1,6 +1,6 @@
 import { XSWR } from "@hazae41/xswr";
+import { fetchAsJson } from "../../libs/fetcher";
 import { Comment, CommentData, getCommentNormal } from "./comment";
-import { fetchAsJson } from "./fetcher";
 import { getProfileNormal, Profile, ProfileData } from "./profile";
 
 export interface VideoData {
@@ -58,4 +58,8 @@ export function Video(props: { id: string }) {
     {video.data.comments.map(id =>
       <Comment key={id} id={id} />)}
   </div>
+}
+
+export default function Page() {
+  return null
 }
