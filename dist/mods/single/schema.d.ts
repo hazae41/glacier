@@ -9,5 +9,5 @@ export declare class SingleSchema<D = any, E = any, N = D, K = any> implements S
     readonly poster: Poster<D, E, N, K> | undefined;
     readonly params: Params<D, E, N, K>;
     constructor(key: K | undefined, poster: Poster<D, E, N, K> | undefined, params?: Params<D, E, N, K>);
-    make(core: Core, pparams?: Params): SingleObject<D, any, any, K>;
+    make(core: Core, pparams?: Params): SingleObject<D, E, N, K>;
 }
