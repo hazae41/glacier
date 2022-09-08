@@ -23,6 +23,6 @@ export class ScrollSchema<D = any, E = any, N = D, K = any> implements Schema<D[
   make(core: Core, pparams: Params = {}) {
     const { scroller, fetcher, params } = this
 
-    return new ScrollObject(core, scroller, fetcher, params, pparams)
+    return new ScrollObject<D, E, N, K>(core, scroller, fetcher, params, pparams)
   }
 }

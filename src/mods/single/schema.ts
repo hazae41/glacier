@@ -22,6 +22,6 @@ export class SingleSchema<D = any, E = any, N = D, K = any> implements Schema<D,
   make(core: Core, pparams: Params = {}) {
     const { key, poster, params } = this
 
-    return new SingleObject(core, key, poster, params, pparams)
+    return new SingleObject<D, E, N, K>(core, key, poster, params, pparams)
   }
 }
