@@ -28,6 +28,7 @@ export function Profile(props: { id: string }) {
 
   const onRenameClick = useCallback(() => {
     if (!profile.data) return
+
     profile.mutate(c => c && ({ data: c.data && { ...c.data, nickname: "John Doe" } }))
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [profile.data, profile.mutate])

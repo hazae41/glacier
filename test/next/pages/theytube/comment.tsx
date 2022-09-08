@@ -43,8 +43,11 @@ export function Comment(props: { id: string }) {
 
   const onChangeAuthorClick = useCallback(() => {
     if (!comment.data) return
+
     const John69 = make(getProfileSchema("1518516160"))
-    const author = John69.state!.data
+    if (!John69.state) return
+
+    const author = John69.state.data
 
     comment.mutate(c => c && ({ data: c.data && { ...c.data, author } as CommentData }))
     // eslint-disable-next-line react-hooks/exhaustive-deps
