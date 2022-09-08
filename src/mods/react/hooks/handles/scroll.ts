@@ -1,3 +1,4 @@
+import { useAutoRef } from "libs/react";
 import { useCore, useParams } from "mods/react/contexts";
 import { getScrollStorageKey } from "mods/scroll/object";
 import { Fetcher } from "mods/types/fetcher";
@@ -20,65 +21,113 @@ export interface ScrollHandle<D = any, E = any, N = D, K = any> extends Handle<D
 
 /**
  * Scrolling resource handle factory
- * @param scroller Key scroller (memoized)
- * @param fetcher Resource fetcher (memoized)
- * @param params Parameters (static)
+ * @param scroller Key scroller
+ * @param fetcher Resource fetcher
+ * @param cparams Parameters
  * @returns Scrolling handle
  */
 export function useScroll<D = any, E = any, N = D, K = any>(
   scroller: Scroller<D, E, N, K>,
   fetcher: Fetcher<D, E, N, K>,
-  params: Params<D[], E, N[], K> = {},
+  cparams: Params<D[], E, N[], K> = {},
 ): ScrollHandle<D, E, N, K> {
   const core = useCore()
   const pparams = useParams()
 
-  const mparams = { ...pparams, ...params }
+  const params = { ...pparams, ...cparams }
+
+  const scrollerRef = useAutoRef(scroller)
+  const fetcherRef = useAutoRef(fetcher)
+  const paramsRef = useAutoRef(params)
 
   const key = useMemo(() => {
     return scroller()
   }, [scroller])
 
   const skey = useMemo(() => {
-    return getScrollStorageKey(key, mparams)
+    return getScrollStorageKey(key, paramsRef.current)
   }, [key])
 
-  const [state, setState] = useState(
-    () => core.getSync<D[], E, N[], K>(skey, mparams))
-  const first = useRef(true)
+  const [, setCounter] = useState(0)
+
+  const stateRef = useRef<State<D[], E, N[], K> | null>()
+
+  useMemo(() => {
+    stateRef.current = core.getSync<D[], E, N[], K>(skey, paramsRef.current)
+  }, [core, skey])
+
+  const setState = useCallback((state?: State<D[], E, N[], K>) => {
+    stateRef.current = state
+    setCounter(c => c + 1)
+  }, [])
+
+  const initRef = useRef<Promise<void>>()
 
   useEffect(() => {
-    if (state === null || !first.current)
-      core.get<D[], E, N[], K>(skey, mparams).then(setState)
-    first.current = false
+    if (stateRef.current !== null) return
+
+    initRef.current = core.get<D[], E, N[], K>(skey, paramsRef.current).then(setState)
   }, [core, skey])
 
   useEffect(() => {
     if (!skey) return
 
-    core.subscribe(skey, setState, mparams)
-    return () => void core.unsubscribe(skey, setState, mparams)
+    core.subscribe(skey, setState, paramsRef.current)
+    return () => void core.unsubscribe(skey, setState, paramsRef.current)
   }, [core, skey])
 
   const mutate = useCallback(async (mutator: Mutator<D[], E, N[], K>) => {
-    if (state !== null) return await core.mutate(skey, state, mutator, mparams)
-  }, [core, skey, state])
+    if (stateRef.current === null) return
+
+    const state = stateRef.current
+    const params = paramsRef.current
+
+    return await core.mutate(skey, state, mutator, params)
+  }, [core, skey])
 
   const fetch = useCallback(async (aborter?: AbortController) => {
-    if (state !== null) return await core.scroll.first(skey, state, scroller, fetcher, aborter, mparams)
-  }, [core, skey, state, scroller, fetcher])
+    if (stateRef.current === null) return
+
+    const state = stateRef.current
+    const scroller = scrollerRef.current
+    const fetcher = fetcherRef.current
+    const params = paramsRef.current
+
+    return await core.scroll.first(skey, state, scroller, fetcher, aborter, params)
+  }, [core, skey])
 
   const refetch = useCallback(async (aborter?: AbortController) => {
-    if (state !== null) return await core.scroll.first(skey, state, scroller, fetcher, aborter, mparams, true)
-  }, [core, skey, state, scroller, fetcher])
+    if (stateRef.current === null) return
+
+    const state = stateRef.current
+    const scroller = scrollerRef.current
+    const fetcher = fetcherRef.current
+    const params = paramsRef.current
+
+    return await core.scroll.first(skey, state, scroller, fetcher, aborter, params, true)
+  }, [core, skey])
 
   const scroll = useCallback(async (aborter?: AbortController) => {
-    if (state !== null) return await core.scroll.scroll(skey, state, scroller, fetcher, aborter, mparams, true)
-  }, [core, skey, state, scroller, fetcher])
+    if (stateRef.current === null) return
+
+    const state = stateRef.current
+    const scroller = scrollerRef.current
+    const fetcher = fetcherRef.current
+    const params = paramsRef.current
+
+    return await core.scroll.scroll(skey, state, scroller, fetcher, aborter, params, true)
+  }, [core, skey])
 
   const clear = useCallback(async () => {
-    if (state !== null) await core.delete(skey, mparams)
-  }, [core, skey, state])
+    if (stateRef.current === null)
+      await initRef.current
+    if (stateRef.current === null)
+      throw new Error("Null state after init")
+
+    await core.delete(skey, paramsRef.current)
+  }, [core, skey])
+
+  const state = stateRef.current
 
   const { data, error, time, cooldown, expiration, aborter, optimistic } = state ?? {}
 

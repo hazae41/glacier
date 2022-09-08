@@ -331,14 +331,14 @@ var ScrollHelper = /** @class */ (function () {
                         if (data !== undefined && !equals(data, (_a = current === null || current === void 0 ? void 0 : current.data) === null || _a === void 0 ? void 0 : _a[0]))
                             state_1.data = [data];
                         state_1.error = error;
-                        return [4 /*yield*/, this.core.mutate(skey, current, function () { return (__assign({ time: time_1, cooldown: cooldown_1, expiration: expiration_1 }, state_1)); }, params, aborter)];
+                        return [4 /*yield*/, this.core.mutate(skey, current, function () { return (__assign({ time: time_1, cooldown: cooldown_1, expiration: expiration_1, aborter: undefined }, state_1)); }, params, aborter)];
                     case 5: return [2 /*return*/, _k.sent()];
                     case 6:
                         error_1 = _k.sent();
                         return [4 /*yield*/, this.core.get(skey, params)];
                     case 7:
                         current = _k.sent();
-                        return [4 /*yield*/, this.core.mutate(skey, current, function () { return ({ error: error_1 }); }, params, aborter)];
+                        return [4 /*yield*/, this.core.mutate(skey, current, function () { return ({ aborter: undefined, error: error_1 }); }, params, aborter)];
                     case 8: return [2 /*return*/, _k.sent()];
                     case 9:
                         clearTimeout(timeout);
@@ -407,14 +407,14 @@ var ScrollHelper = /** @class */ (function () {
                         if (data !== undefined)
                             state_2.data = __spreadArray(__spreadArray([], __read(((_b = current === null || current === void 0 ? void 0 : current.data) !== null && _b !== void 0 ? _b : [])), false), [data], false);
                         state_2.error = error;
-                        return [4 /*yield*/, this.core.mutate(skey, current, function () { return (__assign({ time: time_2, cooldown: cooldown_2, expiration: expiration_2 }, state_2)); }, params, aborter)];
+                        return [4 /*yield*/, this.core.mutate(skey, current, function () { return (__assign({ time: time_2, cooldown: cooldown_2, expiration: expiration_2, aborter: undefined }, state_2)); }, params, aborter)];
                     case 5: return [2 /*return*/, _k.sent()];
                     case 6:
                         error_2 = _k.sent();
                         return [4 /*yield*/, this.core.get(skey, params)];
                     case 7:
                         current = _k.sent();
-                        return [4 /*yield*/, this.core.mutate(skey, current, function () { return ({ error: error_2 }); }, params, aborter)];
+                        return [4 /*yield*/, this.core.mutate(skey, current, function () { return ({ aborter: undefined, error: error_2 }); }, params, aborter)];
                     case 8: return [2 /*return*/, _k.sent()];
                     case 9:
                         clearTimeout(timeout);
@@ -451,7 +451,7 @@ var ScrollObject = /** @class */ (function () {
         this.skey = getScrollStorageKey(this.key, this.mparams);
         this.loadSync();
         this.subscribe();
-        this.initialization = this.loadAsync();
+        this.init = this.loadAsync();
     }
     Object.defineProperty(ScrollObject.prototype, "state", {
         get: function () { return this._state; },
@@ -503,12 +503,14 @@ var ScrollObject = /** @class */ (function () {
                 switch (_c.label) {
                     case 0:
                         _a = this, core = _a.core, skey = _a.skey, mparams = _a.mparams;
-                        if (!!this.ready) return [3 /*break*/, 2];
-                        return [4 /*yield*/, this.initialization];
+                        if (!(this._state === null)) return [3 /*break*/, 2];
+                        return [4 /*yield*/, this.init];
                     case 1:
                         _c.sent();
                         _c.label = 2;
                     case 2:
+                        if (this._state === null)
+                            throw new Error("Null state after init");
                         _b = this;
                         return [4 /*yield*/, core.mutate(skey, this._state, mutator, mparams)];
                     case 3: return [2 /*return*/, _b._state = _c.sent()];
@@ -523,12 +525,14 @@ var ScrollObject = /** @class */ (function () {
                 switch (_c.label) {
                     case 0:
                         _a = this, core = _a.core, scroller = _a.scroller, skey = _a.skey, fetcher = _a.fetcher, mparams = _a.mparams;
-                        if (!!this.ready) return [3 /*break*/, 2];
-                        return [4 /*yield*/, this.initialization];
+                        if (!(this._state === null)) return [3 /*break*/, 2];
+                        return [4 /*yield*/, this.init];
                     case 1:
                         _c.sent();
                         _c.label = 2;
                     case 2:
+                        if (this._state === null)
+                            throw new Error("Null state after init");
                         _b = this;
                         return [4 /*yield*/, core.scroll.first(skey, this._state, scroller, fetcher, aborter, mparams)];
                     case 3: return [2 /*return*/, _b._state = _c.sent()];
@@ -543,12 +547,14 @@ var ScrollObject = /** @class */ (function () {
                 switch (_c.label) {
                     case 0:
                         _a = this, core = _a.core, scroller = _a.scroller, skey = _a.skey, fetcher = _a.fetcher, mparams = _a.mparams;
-                        if (!!this.ready) return [3 /*break*/, 2];
-                        return [4 /*yield*/, this.initialization];
+                        if (!(this._state === null)) return [3 /*break*/, 2];
+                        return [4 /*yield*/, this.init];
                     case 1:
                         _c.sent();
                         _c.label = 2;
                     case 2:
+                        if (this._state === null)
+                            throw new Error("Null state after init");
                         _b = this;
                         return [4 /*yield*/, core.scroll.first(skey, this._state, scroller, fetcher, aborter, mparams, true)];
                     case 3: return [2 /*return*/, _b._state = _c.sent()];
@@ -563,12 +569,14 @@ var ScrollObject = /** @class */ (function () {
                 switch (_c.label) {
                     case 0:
                         _a = this, core = _a.core, scroller = _a.scroller, skey = _a.skey, fetcher = _a.fetcher, mparams = _a.mparams;
-                        if (!!this.ready) return [3 /*break*/, 2];
-                        return [4 /*yield*/, this.initialization];
+                        if (!(this._state === null)) return [3 /*break*/, 2];
+                        return [4 /*yield*/, this.init];
                     case 1:
                         _c.sent();
                         _c.label = 2;
                     case 2:
+                        if (this._state === null)
+                            throw new Error("Null state after init");
                         _b = this;
                         return [4 /*yield*/, core.scroll.scroll(skey, this._state, scroller, fetcher, aborter, mparams)];
                     case 3: return [2 /*return*/, _b._state = _c.sent()];
@@ -583,12 +591,15 @@ var ScrollObject = /** @class */ (function () {
                 switch (_b.label) {
                     case 0:
                         _a = this, core = _a.core, skey = _a.skey, mparams = _a.mparams;
-                        if (!!this.ready) return [3 /*break*/, 2];
-                        return [4 /*yield*/, this.initialization];
+                        if (!(this._state === null)) return [3 /*break*/, 2];
+                        return [4 /*yield*/, this.init];
                     case 1:
                         _b.sent();
                         _b.label = 2;
-                    case 2: return [4 /*yield*/, core.delete(skey, mparams)];
+                    case 2:
+                        if (this._state === null)
+                            throw new Error("Null state after init");
+                        return [4 /*yield*/, core.delete(skey, mparams)];
                     case 3:
                         _b.sent();
                         delete this._state;
@@ -677,14 +688,14 @@ var SingleHelper = /** @class */ (function () {
                         if (data !== undefined)
                             state.data = data;
                         state.error = error;
-                        return [4 /*yield*/, this.core.mutate(skey, current, function () { return (__assign({ time: time_1, cooldown: cooldown_1, expiration: expiration_1 }, state)); }, params, aborter)];
+                        return [4 /*yield*/, this.core.mutate(skey, current, function () { return (__assign({ time: time_1, cooldown: cooldown_1, expiration: expiration_1, aborter: undefined }, state)); }, params, aborter)];
                     case 5: return [2 /*return*/, _h.sent()];
                     case 6:
                         error_1 = _h.sent();
                         return [4 /*yield*/, this.core.get(skey, params)];
                     case 7:
                         current = _h.sent();
-                        return [4 /*yield*/, this.core.mutate(skey, current, function () { return ({ error: error_1 }); }, params, aborter)];
+                        return [4 /*yield*/, this.core.mutate(skey, current, function () { return ({ aborter: undefined, error: error_1 }); }, params, aborter)];
                     case 8: return [2 /*return*/, _h.sent()];
                     case 9:
                         clearTimeout(timeout);
@@ -730,7 +741,7 @@ var SingleHelper = /** @class */ (function () {
                     case 1:
                         _h.trys.push([1, 8, 11, 12]);
                         signal = aborter.signal;
-                        return [4 /*yield*/, this.core.mutate(skey, current, function (c) { return ({ time: c === null || c === void 0 ? void 0 : c.time, aborter: aborter, data: updated, optimistic: true }); }, params)];
+                        return [4 /*yield*/, this.core.mutate(skey, current, function (c) { return ({ time: c === null || c === void 0 ? void 0 : c.time, aborter: aborter, optimistic: true, data: updated }); }, params)];
                     case 2:
                         _h.sent();
                         return [4 /*yield*/, poster(key, { data: updated, signal: signal })];
@@ -742,21 +753,21 @@ var SingleHelper = /** @class */ (function () {
                     case 4:
                         current = _h.sent();
                         if (!(error_3 !== undefined)) return [3 /*break*/, 6];
-                        return [4 /*yield*/, this.core.mutate(skey, current, function (c) { return ({ time: c === null || c === void 0 ? void 0 : c.time, data: c === null || c === void 0 ? void 0 : c.data, error: error_3, cooldown: cooldown_2, expiration: expiration_2 }); }, params, aborter)];
+                        return [4 /*yield*/, this.core.mutate(skey, current, function (c) { return ({ time: c === null || c === void 0 ? void 0 : c.time, cooldown: cooldown_2, expiration: expiration_2, aborter: undefined, data: c === null || c === void 0 ? void 0 : c.data, error: error_3 }); }, params, aborter)];
                     case 5: return [2 /*return*/, _h.sent()];
                     case 6:
                         state_1 = {};
                         if (data !== undefined)
                             state_1.data = data;
                         state_1.error = error_3;
-                        return [4 /*yield*/, this.core.mutate(skey, current, function () { return (__assign({ time: time_2, cooldown: cooldown_2, expiration: expiration_2 }, state_1)); }, params, aborter)];
+                        return [4 /*yield*/, this.core.mutate(skey, current, function () { return (__assign({ time: time_2, cooldown: cooldown_2, expiration: expiration_2, aborter: undefined }, state_1)); }, params, aborter)];
                     case 7: return [2 /*return*/, _h.sent()];
                     case 8:
                         error_2 = _h.sent();
                         return [4 /*yield*/, this.core.get(skey, params)];
                     case 9:
                         current = _h.sent();
-                        return [4 /*yield*/, this.core.mutate(skey, current, function (c) { return ({ time: c === null || c === void 0 ? void 0 : c.time, data: c === null || c === void 0 ? void 0 : c.data, error: error_2 }); }, params, aborter)];
+                        return [4 /*yield*/, this.core.mutate(skey, current, function (c) { return ({ time: c === null || c === void 0 ? void 0 : c.time, aborter: undefined, data: c === null || c === void 0 ? void 0 : c.data, error: error_2 }); }, params, aborter)];
                     case 10: return [2 /*return*/, _h.sent()];
                     case 11:
                         clearTimeout(timeout);
@@ -791,7 +802,7 @@ var SingleObject = /** @class */ (function () {
         this.skey = getSingleStorageKey(key, this.mparams);
         this.loadSync();
         this.subscribe();
-        this.initialization = this.loadAsync();
+        this.init = this.loadAsync();
     }
     Object.defineProperty(SingleObject.prototype, "state", {
         get: function () { return this._state; },
@@ -843,12 +854,14 @@ var SingleObject = /** @class */ (function () {
                 switch (_c.label) {
                     case 0:
                         _a = this, core = _a.core, skey = _a.skey, mparams = _a.mparams;
-                        if (!!this.ready) return [3 /*break*/, 2];
-                        return [4 /*yield*/, this.initialization];
+                        if (!(this._state === null)) return [3 /*break*/, 2];
+                        return [4 /*yield*/, this.init];
                     case 1:
                         _c.sent();
                         _c.label = 2;
                     case 2:
+                        if (this._state === null)
+                            throw new Error("Null state after init");
                         _b = this;
                         return [4 /*yield*/, core.mutate(skey, this._state, mutator, mparams)];
                     case 3: return [2 /*return*/, _b._state = _c.sent()];
@@ -863,12 +876,14 @@ var SingleObject = /** @class */ (function () {
                 switch (_c.label) {
                     case 0:
                         _a = this, core = _a.core, key = _a.key, skey = _a.skey, poster = _a.poster, mparams = _a.mparams;
-                        if (!!this.ready) return [3 /*break*/, 2];
-                        return [4 /*yield*/, this.initialization];
+                        if (!(this._state === null)) return [3 /*break*/, 2];
+                        return [4 /*yield*/, this.init];
                     case 1:
                         _c.sent();
                         _c.label = 2;
                     case 2:
+                        if (this._state === null)
+                            throw new Error("Null state after init");
                         _b = this;
                         return [4 /*yield*/, core.single.fetch(key, skey, this._state, poster, aborter, mparams)];
                     case 3: return [2 /*return*/, _b._state = _c.sent()];
@@ -883,12 +898,14 @@ var SingleObject = /** @class */ (function () {
                 switch (_c.label) {
                     case 0:
                         _a = this, core = _a.core, key = _a.key, skey = _a.skey, poster = _a.poster, mparams = _a.mparams;
-                        if (!!this.ready) return [3 /*break*/, 2];
-                        return [4 /*yield*/, this.initialization];
+                        if (!(this._state === null)) return [3 /*break*/, 2];
+                        return [4 /*yield*/, this.init];
                     case 1:
                         _c.sent();
                         _c.label = 2;
                     case 2:
+                        if (this._state === null)
+                            throw new Error("Null state after init");
                         _b = this;
                         return [4 /*yield*/, core.single.fetch(key, skey, this._state, poster, aborter, mparams, true)];
                     case 3: return [2 /*return*/, _b._state = _c.sent()];
@@ -903,12 +920,14 @@ var SingleObject = /** @class */ (function () {
                 switch (_c.label) {
                     case 0:
                         _a = this, core = _a.core, key = _a.key, skey = _a.skey, poster = _a.poster, mparams = _a.mparams;
-                        if (!!this.ready) return [3 /*break*/, 2];
-                        return [4 /*yield*/, this.initialization];
+                        if (!(this._state === null)) return [3 /*break*/, 2];
+                        return [4 /*yield*/, this.init];
                     case 1:
                         _c.sent();
                         _c.label = 2;
                     case 2:
+                        if (this._state === null)
+                            throw new Error("Null state after init");
                         _b = this;
                         return [4 /*yield*/, core.single.update(key, skey, this._state, poster, updater, aborter, mparams)];
                     case 3: return [2 /*return*/, _b._state = _c.sent()];
@@ -923,12 +942,15 @@ var SingleObject = /** @class */ (function () {
                 switch (_b.label) {
                     case 0:
                         _a = this, core = _a.core, skey = _a.skey, mparams = _a.mparams;
-                        if (!!this.ready) return [3 /*break*/, 2];
-                        return [4 /*yield*/, this.initialization];
+                        if (!(this._state === null)) return [3 /*break*/, 2];
+                        return [4 /*yield*/, this.init];
                     case 1:
                         _b.sent();
                         _b.label = 2;
-                    case 2: return [4 /*yield*/, core.delete(skey, mparams)];
+                    case 2:
+                        if (this._state === null)
+                            throw new Error("Null state after init");
+                        return [4 /*yield*/, core.delete(skey, mparams)];
                     case 3:
                         _b.sent();
                         delete this._state;
@@ -1119,20 +1141,11 @@ var Core = /** @class */ (function (_super) {
                         _d.sent();
                         return [2 /*return*/];
                     case 2:
+                        if (state.time !== undefined && state.time < ((_a = current === null || current === void 0 ? void 0 : current.time) !== null && _a !== void 0 ? _a : 0))
+                            return [2 /*return*/, current];
+                        if (aborter && aborter !== (current === null || current === void 0 ? void 0 : current.aborter))
+                            return [2 /*return*/, current];
                         next = __assign({ time: Date.now(), data: current === null || current === void 0 ? void 0 : current.data, error: current === null || current === void 0 ? void 0 : current.error, cooldown: current === null || current === void 0 ? void 0 : current.cooldown, expiration: current === null || current === void 0 ? void 0 : current.expiration, aborter: current === null || current === void 0 ? void 0 : current.aborter, optimistic: undefined }, state);
-                        if (next.time !== undefined && next.time < ((_a = current === null || current === void 0 ? void 0 : current.time) !== null && _a !== void 0 ? _a : 0)) { // Keep the current state if the new state is older
-                            next.time = current === null || current === void 0 ? void 0 : current.time;
-                            next.data = current === null || current === void 0 ? void 0 : current.data;
-                            next.error = current === null || current === void 0 ? void 0 : current.error;
-                            next.cooldown = current === null || current === void 0 ? void 0 : current.cooldown;
-                            next.expiration = current === null || current === void 0 ? void 0 : current.expiration;
-                            next.optimistic = current === null || current === void 0 ? void 0 : current.optimistic;
-                            next.aborter = current === null || current === void 0 ? void 0 : current.aborter;
-                        }
-                        if (aborter) // Force unset or ignore aborter
-                            next.aborter = aborter === (current === null || current === void 0 ? void 0 : current.aborter)
-                                ? state.aborter
-                                : current === null || current === void 0 ? void 0 : current.aborter;
                         _b = params.equals, equals = _b === void 0 ? DEFAULT_EQUALS : _b, normalizer = params.normalizer;
                         if (equals(next.data, current === null || current === void 0 ? void 0 : current.data)) // Prevent some renders if the data is the same
                             next.data = current === null || current === void 0 ? void 0 : current.data;
@@ -1348,13 +1361,11 @@ function useDebug(handle, label) {
  * @param callback
  */
 function useError(handle, callback) {
-    var ready = handle.ready, error = handle.error;
+    var error = handle.error;
     React.useEffect(function () {
-        if (!ready)
-            return;
         if (error !== undefined)
             callback(error);
-    }, [ready, error]);
+    }, [error]);
 }
 
 /**
@@ -1380,10 +1391,10 @@ function useFallback(handle, state) {
  * @param handle
  */
 function useFetch(handle) {
-    var fetch = handle.fetch, skey = handle.skey;
+    var fetch = handle.fetch;
     React.useEffect(function () {
         fetch();
-    }, [skey]);
+    }, [fetch]);
 }
 
 /**
@@ -1393,17 +1404,15 @@ function useFetch(handle) {
  * @param options
  */
 function useInterval(handle, interval) {
-    var fetch = handle.fetch, skey = handle.skey;
-    var fetchRef = React.useRef(fetch);
-    fetchRef.current = fetch;
+    var ready = handle.ready, fetch = handle.fetch;
     React.useEffect(function () {
+        if (!ready)
+            return;
         if (!interval)
             return;
-        var i = setInterval(function () {
-            fetchRef.current();
-        }, interval);
+        var i = setInterval(fetch, interval);
         return function () { return clearInterval(i); };
-    }, [skey, interval]);
+    }, [fetch, interval]);
 }
 
 /**
@@ -1426,13 +1435,17 @@ function useMount(handle) {
  * @example You want to get some data once and share it in multiple components
  */
 function useOnce(handle) {
-    var ready = handle.ready, data = handle.data, fetch = handle.fetch, skey = handle.skey;
+    var data = handle.data, fetch = handle.fetch;
     React.useEffect(function () {
-        if (!ready)
-            return;
         if (data !== undefined)
             fetch();
-    }, [ready, data, skey]);
+    }, [data, fetch]);
+}
+
+function useAutoRef(current) {
+    var ref = React.useRef(current);
+    ref.current = current;
+    return ref;
 }
 
 /**
@@ -1440,14 +1453,15 @@ function useOnce(handle) {
  * @param handle
  */
 function useOnline(handle) {
-    var fetch = handle.fetch;
-    var fetchRef = React.useRef(fetch);
-    fetchRef.current = fetch;
+    var ready = handle.ready, fetch = handle.fetch;
+    var fetchRef = useAutoRef(fetch);
     React.useEffect(function () {
+        if (!ready)
+            return;
         var f = function () { return fetchRef.current(); };
         addEventListener("online", f);
         return function () { return removeEventListener("online", f); };
-    }, []);
+    }, [ready]);
 }
 
 /**
@@ -1469,8 +1483,7 @@ function useRetry(handle, options) {
     React.useEffect(function () {
         count.current = 0;
     }, [skey]);
-    var refetchRef = React.useRef(refetch);
-    refetchRef.current = refetch;
+    var refetchRef = useAutoRef(refetch);
     React.useEffect(function () {
         if (!ready)
             return;
@@ -1495,105 +1508,142 @@ function useRetry(handle, options) {
  * @param handle
  */
 function useVisible(handle) {
-    var fetch = handle.fetch;
-    var fetchRef = React.useRef(fetch);
-    fetchRef.current = fetch;
+    var ready = handle.ready, fetch = handle.fetch;
+    var fetchRef = useAutoRef(fetch);
     React.useEffect(function () {
+        if (!ready)
+            return;
         var f = function () { return !document.hidden && fetchRef.current(); };
         document.addEventListener("visibilitychange", f);
         return function () { return document.removeEventListener("visibilitychange", f); };
-    }, []);
+    }, [ready]);
 }
 
 /**
  * Scrolling resource handle factory
- * @param scroller Key scroller (memoized)
- * @param fetcher Resource fetcher (memoized)
- * @param params Parameters (static)
+ * @param scroller Key scroller
+ * @param fetcher Resource fetcher
+ * @param cparams Parameters
  * @returns Scrolling handle
  */
-function useScroll(scroller, fetcher, params) {
+function useScroll(scroller, fetcher, cparams) {
     var _this = this;
-    if (params === void 0) { params = {}; }
+    if (cparams === void 0) { cparams = {}; }
     var core = useCore();
     var pparams = useParams();
-    var mparams = __assign(__assign({}, pparams), params);
+    var params = __assign(__assign({}, pparams), cparams);
+    var scrollerRef = useAutoRef(scroller);
+    var fetcherRef = useAutoRef(fetcher);
+    var paramsRef = useAutoRef(params);
     var key = React.useMemo(function () {
         return scroller();
     }, [scroller]);
     var skey = React.useMemo(function () {
-        return getScrollStorageKey(key, mparams);
+        return getScrollStorageKey(key, paramsRef.current);
     }, [key]);
-    var _a = __read(React.useState(function () { return core.getSync(skey, mparams); }), 2), state = _a[0], setState = _a[1];
-    var first = React.useRef(true);
+    var _a = __read(React.useState(0), 2), setCounter = _a[1];
+    var stateRef = React.useRef();
+    React.useMemo(function () {
+        stateRef.current = core.getSync(skey, paramsRef.current);
+    }, [core, skey]);
+    var setState = React.useCallback(function (state) {
+        stateRef.current = state;
+        setCounter(function (c) { return c + 1; });
+    }, []);
+    var initRef = React.useRef();
     React.useEffect(function () {
-        if (state === null || !first.current)
-            core.get(skey, mparams).then(setState);
-        first.current = false;
+        if (stateRef.current !== null)
+            return;
+        initRef.current = core.get(skey, paramsRef.current).then(setState);
     }, [core, skey]);
     React.useEffect(function () {
         if (!skey)
             return;
-        core.subscribe(skey, setState, mparams);
-        return function () { return void core.unsubscribe(skey, setState, mparams); };
+        core.subscribe(skey, setState, paramsRef.current);
+        return function () { return void core.unsubscribe(skey, setState, paramsRef.current); };
     }, [core, skey]);
     var mutate = React.useCallback(function (mutator) { return __awaiter(_this, void 0, void 0, function () {
+        var state, params;
         return __generator(this, function (_a) {
             switch (_a.label) {
                 case 0:
-                    if (!(state !== null)) return [3 /*break*/, 2];
-                    return [4 /*yield*/, core.mutate(skey, state, mutator, mparams)];
+                    if (stateRef.current === null)
+                        return [2 /*return*/];
+                    state = stateRef.current;
+                    params = paramsRef.current;
+                    return [4 /*yield*/, core.mutate(skey, state, mutator, params)];
                 case 1: return [2 /*return*/, _a.sent()];
-                case 2: return [2 /*return*/];
             }
         });
-    }); }, [core, skey, state]);
+    }); }, [core, skey]);
     var fetch = React.useCallback(function (aborter) { return __awaiter(_this, void 0, void 0, function () {
+        var state, scroller, fetcher, params;
         return __generator(this, function (_a) {
             switch (_a.label) {
                 case 0:
-                    if (!(state !== null)) return [3 /*break*/, 2];
-                    return [4 /*yield*/, core.scroll.first(skey, state, scroller, fetcher, aborter, mparams)];
+                    if (stateRef.current === null)
+                        return [2 /*return*/];
+                    state = stateRef.current;
+                    scroller = scrollerRef.current;
+                    fetcher = fetcherRef.current;
+                    params = paramsRef.current;
+                    return [4 /*yield*/, core.scroll.first(skey, state, scroller, fetcher, aborter, params)];
                 case 1: return [2 /*return*/, _a.sent()];
-                case 2: return [2 /*return*/];
             }
         });
-    }); }, [core, skey, state, scroller, fetcher]);
+    }); }, [core, skey]);
     var refetch = React.useCallback(function (aborter) { return __awaiter(_this, void 0, void 0, function () {
+        var state, scroller, fetcher, params;
         return __generator(this, function (_a) {
             switch (_a.label) {
                 case 0:
-                    if (!(state !== null)) return [3 /*break*/, 2];
-                    return [4 /*yield*/, core.scroll.first(skey, state, scroller, fetcher, aborter, mparams, true)];
+                    if (stateRef.current === null)
+                        return [2 /*return*/];
+                    state = stateRef.current;
+                    scroller = scrollerRef.current;
+                    fetcher = fetcherRef.current;
+                    params = paramsRef.current;
+                    return [4 /*yield*/, core.scroll.first(skey, state, scroller, fetcher, aborter, params, true)];
                 case 1: return [2 /*return*/, _a.sent()];
-                case 2: return [2 /*return*/];
             }
         });
-    }); }, [core, skey, state, scroller, fetcher]);
+    }); }, [core, skey]);
     var scroll = React.useCallback(function (aborter) { return __awaiter(_this, void 0, void 0, function () {
+        var state, scroller, fetcher, params;
         return __generator(this, function (_a) {
             switch (_a.label) {
                 case 0:
-                    if (!(state !== null)) return [3 /*break*/, 2];
-                    return [4 /*yield*/, core.scroll.scroll(skey, state, scroller, fetcher, aborter, mparams, true)];
+                    if (stateRef.current === null)
+                        return [2 /*return*/];
+                    state = stateRef.current;
+                    scroller = scrollerRef.current;
+                    fetcher = fetcherRef.current;
+                    params = paramsRef.current;
+                    return [4 /*yield*/, core.scroll.scroll(skey, state, scroller, fetcher, aborter, params, true)];
                 case 1: return [2 /*return*/, _a.sent()];
-                case 2: return [2 /*return*/];
             }
         });
-    }); }, [core, skey, state, scroller, fetcher]);
+    }); }, [core, skey]);
     var clear = React.useCallback(function () { return __awaiter(_this, void 0, void 0, function () {
         return __generator(this, function (_a) {
             switch (_a.label) {
                 case 0:
-                    if (!(state !== null)) return [3 /*break*/, 2];
-                    return [4 /*yield*/, core.delete(skey, mparams)];
+                    if (!(stateRef.current === null)) return [3 /*break*/, 2];
+                    return [4 /*yield*/, initRef.current];
                 case 1:
                     _a.sent();
                     _a.label = 2;
-                case 2: return [2 /*return*/];
+                case 2:
+                    if (stateRef.current === null)
+                        throw new Error("Null state after init");
+                    return [4 /*yield*/, core.delete(skey, paramsRef.current)];
+                case 3:
+                    _a.sent();
+                    return [2 /*return*/];
             }
         });
-    }); }, [core, skey, state]);
+    }); }, [core, skey]);
+    var state = stateRef.current;
     var _b = state !== null && state !== void 0 ? state : {}, data = _b.data, error = _b.error, time = _b.time, cooldown = _b.cooldown, expiration = _b.expiration, aborter = _b.aborter, optimistic = _b.optimistic;
     var ready = state !== null;
     var loading = Boolean(aborter);
@@ -1603,89 +1653,149 @@ function useScroll(scroller, fetcher, params) {
 /**
  * Single resource handle factory
  * @param key Key (memoized)
- * @param poster Resource poster or fetcher (memoized)
- * @param params Parameters (static)
+ * @param poster Resource poster or fetcher (unmemoized)
+ * @param cparams Parameters (unmemoized)
  * @returns Single handle
  */
-function useSingle(key, poster, params) {
+function useSingle(key, poster, cparams) {
     var _this = this;
-    if (params === void 0) { params = {}; }
+    if (cparams === void 0) { cparams = {}; }
     var core = useCore();
     var pparams = useParams();
-    var mparams = __assign(__assign({}, pparams), params);
+    var params = __assign(__assign({}, pparams), cparams);
+    var keyRef = useAutoRef(key);
+    var posterRef = useAutoRef(poster);
+    var paramsRef = useAutoRef(params);
     var skey = React.useMemo(function () {
-        return getSingleStorageKey(key, mparams);
+        return getSingleStorageKey(key, paramsRef.current);
     }, [key]);
-    var _a = __read(React.useState(function () { return core.getSync(skey, mparams); }), 2), state = _a[0], setState = _a[1];
-    var first = React.useRef(true);
+    var _a = __read(React.useState(0), 2), setCounter = _a[1];
+    var stateRef = React.useRef();
+    React.useMemo(function () {
+        stateRef.current = core.getSync(skey, paramsRef.current);
+    }, [core, skey]);
+    var setState = React.useCallback(function (state) {
+        stateRef.current = state;
+        setCounter(function (c) { return c + 1; });
+    }, []);
+    var initRef = React.useRef();
     React.useEffect(function () {
-        if (state === null || !first.current)
-            core.get(skey, mparams).then(setState);
-        first.current = false;
+        if (stateRef.current !== null)
+            return;
+        initRef.current = core.get(skey, paramsRef.current).then(setState);
     }, [core, skey]);
     React.useEffect(function () {
         if (!skey)
             return;
-        core.subscribe(skey, setState, mparams);
-        return function () { return void core.unsubscribe(skey, setState, mparams); };
+        core.subscribe(skey, setState, paramsRef.current);
+        return function () { return void core.unsubscribe(skey, setState, paramsRef.current); };
     }, [core, skey]);
     var mutate = React.useCallback(function (mutator) { return __awaiter(_this, void 0, void 0, function () {
+        var state, params;
         return __generator(this, function (_a) {
             switch (_a.label) {
                 case 0:
-                    if (!(state !== null)) return [3 /*break*/, 2];
-                    return [4 /*yield*/, core.mutate(skey, state, mutator, mparams)];
-                case 1: return [2 /*return*/, _a.sent()];
-                case 2: return [2 /*return*/];
+                    if (!(stateRef.current === null)) return [3 /*break*/, 2];
+                    return [4 /*yield*/, initRef.current];
+                case 1:
+                    _a.sent();
+                    _a.label = 2;
+                case 2:
+                    if (stateRef.current === null)
+                        throw new Error("Null state after init");
+                    state = stateRef.current;
+                    params = paramsRef.current;
+                    return [4 /*yield*/, core.mutate(skey, state, mutator, params)];
+                case 3: return [2 /*return*/, _a.sent()];
             }
         });
-    }); }, [core, skey, state]);
+    }); }, [core, skey]);
     var fetch = React.useCallback(function (aborter) { return __awaiter(_this, void 0, void 0, function () {
+        var state, key, poster, params;
         return __generator(this, function (_a) {
             switch (_a.label) {
                 case 0:
-                    if (!(state !== null)) return [3 /*break*/, 2];
-                    return [4 /*yield*/, core.single.fetch(key, skey, state, poster, aborter, mparams)];
-                case 1: return [2 /*return*/, _a.sent()];
-                case 2: return [2 /*return*/];
+                    if (!(stateRef.current === null)) return [3 /*break*/, 2];
+                    return [4 /*yield*/, initRef.current];
+                case 1:
+                    _a.sent();
+                    _a.label = 2;
+                case 2:
+                    if (stateRef.current === null)
+                        throw new Error("Null state after init");
+                    state = stateRef.current;
+                    key = keyRef.current;
+                    poster = posterRef.current;
+                    params = paramsRef.current;
+                    return [4 /*yield*/, core.single.fetch(key, skey, state, poster, aborter, params)];
+                case 3: return [2 /*return*/, _a.sent()];
             }
         });
-    }); }, [core, skey, state, poster]);
+    }); }, [core, skey]);
     var refetch = React.useCallback(function (aborter) { return __awaiter(_this, void 0, void 0, function () {
+        var state, key, poster, params;
         return __generator(this, function (_a) {
             switch (_a.label) {
                 case 0:
-                    if (!(state !== null)) return [3 /*break*/, 2];
-                    return [4 /*yield*/, core.single.fetch(key, skey, state, poster, aborter, mparams, true)];
-                case 1: return [2 /*return*/, _a.sent()];
-                case 2: return [2 /*return*/];
+                    if (!(stateRef.current === null)) return [3 /*break*/, 2];
+                    return [4 /*yield*/, initRef.current];
+                case 1:
+                    _a.sent();
+                    _a.label = 2;
+                case 2:
+                    if (stateRef.current === null)
+                        throw new Error("Null state after init");
+                    state = stateRef.current;
+                    key = keyRef.current;
+                    poster = posterRef.current;
+                    params = paramsRef.current;
+                    return [4 /*yield*/, core.single.fetch(key, skey, state, poster, aborter, params, true)];
+                case 3: return [2 /*return*/, _a.sent()];
             }
         });
-    }); }, [core, skey, state, poster]);
+    }); }, [core, skey]);
     var update = React.useCallback(function (updater, aborter) { return __awaiter(_this, void 0, void 0, function () {
+        var state, key, poster, params;
         return __generator(this, function (_a) {
             switch (_a.label) {
                 case 0:
-                    if (!(state !== null)) return [3 /*break*/, 2];
-                    return [4 /*yield*/, core.single.update(key, skey, state, poster, updater, aborter, mparams)];
-                case 1: return [2 /*return*/, _a.sent()];
-                case 2: return [2 /*return*/];
+                    if (!(stateRef.current === null)) return [3 /*break*/, 2];
+                    return [4 /*yield*/, initRef.current];
+                case 1:
+                    _a.sent();
+                    _a.label = 2;
+                case 2:
+                    if (stateRef.current === null)
+                        throw new Error("Null state after init");
+                    state = stateRef.current;
+                    key = keyRef.current;
+                    poster = posterRef.current;
+                    params = paramsRef.current;
+                    return [4 /*yield*/, core.single.update(key, skey, state, poster, updater, aborter, params)];
+                case 3: return [2 /*return*/, _a.sent()];
             }
         });
-    }); }, [core, skey, state, poster]);
+    }); }, [core, skey]);
     var clear = React.useCallback(function () { return __awaiter(_this, void 0, void 0, function () {
         return __generator(this, function (_a) {
             switch (_a.label) {
                 case 0:
-                    if (!(state !== null)) return [3 /*break*/, 2];
-                    return [4 /*yield*/, core.delete(skey, mparams)];
+                    if (!(stateRef.current === null)) return [3 /*break*/, 2];
+                    return [4 /*yield*/, initRef.current];
                 case 1:
                     _a.sent();
                     _a.label = 2;
-                case 2: return [2 /*return*/];
+                case 2:
+                    if (stateRef.current === null)
+                        throw new Error("Null state after init");
+                    return [4 /*yield*/, core.delete(skey, paramsRef.current)];
+                case 3:
+                    _a.sent();
+                    return [2 /*return*/];
             }
         });
-    }); }, [core, skey, state]);
+    }); }, [core, skey]);
+    var state = stateRef.current;
     var _b = state !== null && state !== void 0 ? state : {}, data = _b.data, error = _b.error, time = _b.time, cooldown = _b.cooldown, expiration = _b.expiration, aborter = _b.aborter, optimistic = _b.optimistic;
     var ready = state !== null;
     var loading = Boolean(aborter);

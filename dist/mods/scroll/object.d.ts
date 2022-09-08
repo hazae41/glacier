@@ -16,7 +16,7 @@ export declare class ScrollObject<D = any, E = any, N = D, K = any> implements O
     readonly key: K | undefined;
     readonly skey: string | undefined;
     readonly mparams: Params<D[], E, N[], K>;
-    readonly initialization: Promise<void>;
+    readonly init: Promise<void>;
     private _state;
     constructor(core: Core, scroller: Scroller<D, E, N, K>, fetcher: Fetcher<D, E, N, K>, params?: Params<D[], E, N[], K>, pparams?: Params<D[], E, N[], K>);
     get state(): State<D[], E, N[], K> | null | undefined;

@@ -1,3 +1,4 @@
+import { useAutoRef } from "libs/react";
 import { useCore, useParams } from "mods/react/contexts";
 import { getSingleStorageKey } from "mods/single/object";
 import { Mutator } from "mods/types/mutator";
@@ -23,60 +24,120 @@ export interface SingleHandle<D = any, E = any, N = D, K = any> extends Handle<D
 /**
  * Single resource handle factory
  * @param key Key (memoized)
- * @param poster Resource poster or fetcher (memoized)
- * @param params Parameters (static)
+ * @param poster Resource poster or fetcher (unmemoized)
+ * @param cparams Parameters (unmemoized)
  * @returns Single handle
  */
 export function useSingle<D = any, E = any, N = D, K = any>(
   key: K | undefined,
   poster: Poster<D, E, N, K>,
-  params: Params<D, E, N, K> = {},
+  cparams: Params<D, E, N, K> = {},
 ): SingleHandle<D, E, N, K> {
   const core = useCore()
   const pparams = useParams()
 
-  const mparams = { ...pparams, ...params }
+  const params = { ...pparams, ...cparams }
+
+  const keyRef = useAutoRef(key)
+  const posterRef = useAutoRef(poster)
+  const paramsRef = useAutoRef(params)
 
   const skey = useMemo(() => {
-    return getSingleStorageKey(key, mparams)
+    return getSingleStorageKey(key, paramsRef.current)
   }, [key])
 
-  const [state, setState] = useState(
-    () => core.getSync<D, E, N, K>(skey, mparams))
-  const first = useRef(true)
+  const [, setCounter] = useState(0)
+
+  const stateRef = useRef<State<D, E, N, K> | null>()
+
+  useMemo(() => {
+    stateRef.current = core.getSync<D, E, N, K>(skey, paramsRef.current)
+  }, [core, skey])
+
+  const setState = useCallback((state?: State<D, E, N, K>) => {
+    stateRef.current = state
+    setCounter(c => c + 1)
+  }, [])
+
+  const initRef = useRef<Promise<void>>()
 
   useEffect(() => {
-    if (state === null || !first.current)
-      core.get<D, E, N, K>(skey, mparams).then(setState)
-    first.current = false
+    if (stateRef.current !== null) return
+
+    initRef.current = core.get<D, E, N, K>(skey, paramsRef.current).then(setState)
   }, [core, skey])
 
   useEffect(() => {
     if (!skey) return
 
-    core.subscribe(skey, setState, mparams)
-    return () => void core.unsubscribe(skey, setState, mparams)
+    core.subscribe(skey, setState, paramsRef.current)
+    return () => void core.unsubscribe(skey, setState, paramsRef.current)
   }, [core, skey])
 
   const mutate = useCallback(async (mutator: Mutator<D, E, N, K>) => {
-    if (state !== null) return await core.mutate(skey, state, mutator, mparams)
-  }, [core, skey, state])
+    if (stateRef.current === null)
+      await initRef.current
+    if (stateRef.current === null)
+      throw new Error("Null state after init")
+
+    const state = stateRef.current
+    const params = paramsRef.current
+
+    return await core.mutate(skey, state, mutator, params)
+  }, [core, skey])
 
   const fetch = useCallback(async (aborter?: AbortController) => {
-    if (state !== null) return await core.single.fetch(key, skey, state, poster, aborter, mparams)
-  }, [core, skey, state, poster])
+    if (stateRef.current === null)
+      await initRef.current
+    if (stateRef.current === null)
+      throw new Error("Null state after init")
+
+    const state = stateRef.current
+    const key = keyRef.current
+    const poster = posterRef.current
+    const params = paramsRef.current
+
+    return await core.single.fetch(key, skey, state, poster, aborter, params)
+  }, [core, skey])
 
   const refetch = useCallback(async (aborter?: AbortController) => {
-    if (state !== null) return await core.single.fetch(key, skey, state, poster, aborter, mparams, true)
-  }, [core, skey, state, poster])
+    if (stateRef.current === null)
+      await initRef.current
+    if (stateRef.current === null)
+      throw new Error("Null state after init")
+
+    const state = stateRef.current
+    const key = keyRef.current
+    const poster = posterRef.current
+    const params = paramsRef.current
+
+    return await core.single.fetch(key, skey, state, poster, aborter, params, true)
+  }, [core, skey])
 
   const update = useCallback(async (updater: Updater<D, E, N, K>, aborter?: AbortController) => {
-    if (state !== null) return await core.single.update(key, skey, state, poster, updater, aborter, mparams)
-  }, [core, skey, state, poster])
+    if (stateRef.current === null)
+      await initRef.current
+    if (stateRef.current === null)
+      throw new Error("Null state after init")
+
+    const state = stateRef.current
+    const key = keyRef.current
+    const poster = posterRef.current
+    const params = paramsRef.current
+
+    return await core.single.update(key, skey, state, poster, updater, aborter, params)
+  }, [core, skey])
 
   const clear = useCallback(async () => {
-    if (state !== null) await core.delete(skey, mparams)
-  }, [core, skey, state])
+    if (stateRef.current === null)
+      await initRef.current
+    if (stateRef.current === null)
+      throw new Error("Null state after init")
+
+    await core.delete(skey, paramsRef.current)
+  }, [core, skey])
+
+  const state = stateRef.current
 
   const { data, error, time, cooldown, expiration, aborter, optimistic } = state ?? {}
 

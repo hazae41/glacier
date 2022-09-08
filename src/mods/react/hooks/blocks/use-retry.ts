@@ -1,3 +1,4 @@
+import { useAutoRef } from "libs/react"
 import { Handle } from "mods/react/hooks/handles"
 import { useEffect, useRef } from "react"
 
@@ -28,8 +29,7 @@ export function useRetry(handle: Handle, options: RetryOptions = {}) {
     count.current = 0
   }, [skey])
 
-  const refetchRef = useRef(refetch)
-  refetchRef.current = refetch
+  const refetchRef = useAutoRef(refetch)
 
   useEffect(() => {
     if (!ready) return

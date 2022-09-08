@@ -79,13 +79,13 @@ export class SingleHelper {
       state.error = error
 
       return await this.core.mutate(skey, current,
-        () => ({ time, cooldown, expiration, ...state }),
+        () => ({ time, cooldown, expiration, aborter: undefined, ...state }),
         params, aborter)
     } catch (error: any) {
       current = await this.core.get(skey, params)
 
       return await this.core.mutate(skey, current,
-        () => ({ error }),
+        () => ({ aborter: undefined, error }),
         params, aborter)
     } finally {
       clearTimeout(timeout)
@@ -136,7 +136,7 @@ export class SingleHelper {
       const { signal } = aborter
 
       await this.core.mutate(skey, current,
-        c => ({ time: c?.time, aborter, data: updated, optimistic: true }),
+        c => ({ time: c?.time, aborter, optimistic: true, data: updated }),
         params)
 
       const {
@@ -154,7 +154,7 @@ export class SingleHelper {
 
       if (error !== undefined)
         return await this.core.mutate(skey, current,
-          c => ({ time: c?.time, data: c?.data, error, cooldown, expiration }),
+          c => ({ time: c?.time, cooldown, expiration, aborter: undefined, data: c?.data, error }),
           params, aborter)
 
       const state: State<D, E, D, K> = {}
@@ -164,13 +164,13 @@ export class SingleHelper {
       state.error = error
 
       return await this.core.mutate(skey, current,
-        () => ({ time, cooldown, expiration, ...state }),
+        () => ({ time, cooldown, expiration, aborter: undefined, ...state }),
         params, aborter)
     } catch (error: any) {
       current = await this.core.get(skey, params)
 
       return await this.core.mutate(skey, current,
-        c => ({ time: c?.time, data: c?.data, error }),
+        c => ({ time: c?.time, aborter: undefined, data: c?.data, error }),
         params, aborter)
     } finally {
       clearTimeout(timeout)

@@ -82,13 +82,13 @@ export class ScrollHelper {
       state.error = error
 
       return await this.core.mutate(skey, current,
-        () => ({ time, cooldown, expiration, ...state }),
+        () => ({ time, cooldown, expiration, aborter: undefined, ...state }),
         params, aborter)
     } catch (error: any) {
       current = await this.core.get(skey, params)
 
       return await this.core.mutate(skey, current,
-        () => ({ error }),
+        () => ({ aborter: undefined, error }),
         params, aborter)
     } finally {
       clearTimeout(timeout)
@@ -169,13 +169,13 @@ export class ScrollHelper {
       state.error = error
 
       return await this.core.mutate(skey, current,
-        () => ({ time, cooldown, expiration, ...state }),
+        () => ({ time, cooldown, expiration, aborter: undefined, ...state }),
         params, aborter)
     } catch (error: any) {
       current = await this.core.get(skey, params)
 
       return await this.core.mutate(skey, current,
-        () => ({ error }),
+        () => ({ aborter: undefined, error }),
         params, aborter)
     } finally {
       clearTimeout(timeout)

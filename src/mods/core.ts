@@ -124,6 +124,11 @@ export class Core extends Ortho<string, State | undefined> {
       return
     }
 
+    if (state.time !== undefined && state.time < (current?.time ?? 0)) // If older
+      return current
+    if (aborter && aborter !== current?.aborter) // If replaced
+      return current
+
     const next: State<D, E, D | N, K> = {
       time: Date.now(),
       data: current?.data,
@@ -134,21 +139,6 @@ export class Core extends Ortho<string, State | undefined> {
       optimistic: undefined,
       ...state
     }
-
-    if (next.time !== undefined && next.time < (current?.time ?? 0)) { // Keep the current state if the new state is older
-      next.time = current?.time
-      next.data = current?.data
-      next.error = current?.error
-      next.cooldown = current?.cooldown
-      next.expiration = current?.expiration
-      next.optimistic = current?.optimistic
-      next.aborter = current?.aborter
-    }
-
-    if (aborter) // Force unset or ignore aborter
-      next.aborter = aborter === current?.aborter
-        ? state.aborter
-        : current?.aborter
 
     const {
       equals = DEFAULT_EQUALS,

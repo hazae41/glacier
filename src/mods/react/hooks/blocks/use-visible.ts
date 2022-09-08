@@ -1,5 +1,6 @@
+import { useAutoRef } from "libs/react"
 import { Handle } from "mods/react/hooks/handles"
-import { useEffect, useRef } from "react"
+import { useEffect } from "react"
 
 /**
  * Do a request when the tab is visible
@@ -8,8 +9,7 @@ import { useEffect, useRef } from "react"
 export function useVisible(handle: Handle) {
   const { ready, fetch } = handle
 
-  const fetchRef = useRef(fetch)
-  fetchRef.current = fetch
+  const fetchRef = useAutoRef(fetch)
 
   useEffect(() => {
     if (!ready) return

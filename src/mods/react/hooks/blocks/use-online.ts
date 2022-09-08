@@ -1,5 +1,6 @@
+import { useAutoRef } from "libs/react"
 import { Handle } from "mods/react/hooks/handles"
-import { useEffect, useRef } from "react"
+import { useEffect } from "react"
 
 /**
  * Do a request when the browser is online
@@ -8,8 +9,7 @@ import { useEffect, useRef } from "react"
 export function useOnline(handle: Handle) {
   const { ready, fetch } = handle
 
-  const fetchRef = useRef(fetch)
-  fetchRef.current = fetch
+  const fetchRef = useAutoRef(fetch)
 
   useEffect(() => {
     if (!ready) return

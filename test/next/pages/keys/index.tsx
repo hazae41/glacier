@@ -38,6 +38,8 @@ export default function Page() {
 
   const keyTime = useKey(time)
 
+  console.log(keyTime)
+
   return <>
     <div>
       {JSON.stringify(key0.data) ?? "undefined"}

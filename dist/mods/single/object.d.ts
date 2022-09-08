@@ -15,7 +15,7 @@ export declare class SingleObject<D = any, E = any, N = D, K = any> implements O
     readonly poster: Poster<D, E, N, K>;
     readonly skey: string | undefined;
     readonly mparams: Params<D, E, N, K>;
-    readonly initialization: Promise<void>;
+    readonly init: Promise<void>;
     private _state?;
     constructor(core: Core, key: K | undefined, poster: Poster<D, E, N, K>, params?: Params<D, E, N, K>, pparams?: Params<D, E, N, K>);
     get state(): State<D, E, N, K> | null | undefined;

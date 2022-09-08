@@ -54,7 +54,7 @@ export default function Page() {
   }, [core])
 
   return <>
-    {[...Array(count)].map(i =>
+    {[...Array(count)].map((_, i) =>
       <Consumer key={i} />)}
     <div>
       <button onClick={increase}>

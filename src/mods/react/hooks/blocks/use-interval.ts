@@ -1,5 +1,5 @@
 import { Handle } from "mods/react/hooks/handles"
-import { useEffect, useRef } from "react"
+import { useEffect } from "react"
 
 /**
  * Do a request on interval
@@ -8,19 +8,13 @@ import { useEffect, useRef } from "react"
  * @param options 
  */
 export function useInterval(handle: Handle, interval: number) {
-  const { ready, fetch, skey } = handle
-
-  const fetchRef = useRef(fetch)
-  fetchRef.current = fetch
+  const { ready, fetch } = handle
 
   useEffect(() => {
     if (!ready) return
     if (!interval) return
 
-    const i = setInterval(() => {
-      fetchRef.current()
-    }, interval)
-
+    const i = setInterval(fetch, interval)
     return () => clearInterval(i)
-  }, [ready, skey, interval])
+  }, [fetch, interval])
 }
