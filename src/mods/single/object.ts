@@ -33,7 +33,7 @@ export class SingleObject<D = any, E = any, N = D, K = any> implements Object<D,
   constructor(
     readonly core: Core,
     readonly key: K | undefined,
-    readonly poster: Poster<D, E, N, K>,
+    readonly poster: Poster<D, E, N, K> | undefined,
     params: Params<D, E, N, K> = {},
     pparams: Params<D, E, N, K> = {},
   ) {
@@ -82,6 +82,7 @@ export class SingleObject<D = any, E = any, N = D, K = any> implements Object<D,
       await this.init
     if (this._state === null)
       throw new Error("Null state after init")
+
     return this._state = await core.mutate(skey, this._state, mutator, mparams)
   }
 
@@ -92,6 +93,8 @@ export class SingleObject<D = any, E = any, N = D, K = any> implements Object<D,
       await this.init
     if (this._state === null)
       throw new Error("Null state after init")
+    if (poster === undefined)
+      return this._state
 
     return this._state = await core.single.fetch(key, skey, this._state, poster, aborter, mparams)
   }
@@ -103,6 +106,8 @@ export class SingleObject<D = any, E = any, N = D, K = any> implements Object<D,
       await this.init
     if (this._state === null)
       throw new Error("Null state after init")
+    if (poster === undefined)
+      return this._state
 
     return this._state = await core.single.fetch(key, skey, this._state, poster, aborter, mparams, true)
   }
@@ -114,6 +119,8 @@ export class SingleObject<D = any, E = any, N = D, K = any> implements Object<D,
       await this.init
     if (this._state === null)
       throw new Error("Null state after init")
+    if (poster === undefined)
+      return this._state
 
     return this._state = await core.single.update(key, skey, this._state, poster, updater, aborter, mparams)
   }

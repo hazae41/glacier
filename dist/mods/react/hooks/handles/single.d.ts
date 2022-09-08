@@ -21,4 +21,4 @@ export interface SingleHandle<D = any, E = any, N = D, K = any> extends Handle<D
  * @param cparams Parameters (unmemoized)
  * @returns Single handle
  */
-export declare function useSingle<D = any, E = any, N = D, K = any>(key: K | undefined, poster: Poster<D, E, N, K>, cparams?: Params<D, E, N, K>): SingleHandle<D, E, N, K>;
+export declare function useSingle<D = any, E = any, N = D, K = any>(key: K | undefined, poster: Poster<D, E, N, K> | undefined, cparams?: Params<D, E, N, K>): SingleHandle<D, E, N, K>;

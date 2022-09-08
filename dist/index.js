@@ -533,6 +533,8 @@ var ScrollObject = /** @class */ (function () {
                     case 2:
                         if (this._state === null)
                             throw new Error("Null state after init");
+                        if (fetcher === undefined)
+                            return [2 /*return*/, this._state];
                         _b = this;
                         return [4 /*yield*/, core.scroll.first(skey, this._state, scroller, fetcher, aborter, mparams)];
                     case 3: return [2 /*return*/, _b._state = _c.sent()];
@@ -555,6 +557,8 @@ var ScrollObject = /** @class */ (function () {
                     case 2:
                         if (this._state === null)
                             throw new Error("Null state after init");
+                        if (fetcher === undefined)
+                            return [2 /*return*/, this._state];
                         _b = this;
                         return [4 /*yield*/, core.scroll.first(skey, this._state, scroller, fetcher, aborter, mparams, true)];
                     case 3: return [2 /*return*/, _b._state = _c.sent()];
@@ -577,6 +581,8 @@ var ScrollObject = /** @class */ (function () {
                     case 2:
                         if (this._state === null)
                             throw new Error("Null state after init");
+                        if (fetcher === undefined)
+                            return [2 /*return*/, this._state];
                         _b = this;
                         return [4 /*yield*/, core.scroll.scroll(skey, this._state, scroller, fetcher, aborter, mparams)];
                     case 3: return [2 /*return*/, _b._state = _c.sent()];
@@ -884,6 +890,8 @@ var SingleObject = /** @class */ (function () {
                     case 2:
                         if (this._state === null)
                             throw new Error("Null state after init");
+                        if (poster === undefined)
+                            return [2 /*return*/, this._state];
                         _b = this;
                         return [4 /*yield*/, core.single.fetch(key, skey, this._state, poster, aborter, mparams)];
                     case 3: return [2 /*return*/, _b._state = _c.sent()];
@@ -906,6 +914,8 @@ var SingleObject = /** @class */ (function () {
                     case 2:
                         if (this._state === null)
                             throw new Error("Null state after init");
+                        if (poster === undefined)
+                            return [2 /*return*/, this._state];
                         _b = this;
                         return [4 /*yield*/, core.single.fetch(key, skey, this._state, poster, aborter, mparams, true)];
                     case 3: return [2 /*return*/, _b._state = _c.sent()];
@@ -928,6 +938,8 @@ var SingleObject = /** @class */ (function () {
                     case 2:
                         if (this._state === null)
                             throw new Error("Null state after init");
+                        if (poster === undefined)
+                            return [2 /*return*/, this._state];
                         _b = this;
                         return [4 /*yield*/, core.single.update(key, skey, this._state, poster, updater, aborter, mparams)];
                     case 3: return [2 /*return*/, _b._state = _c.sent()];
@@ -1141,9 +1153,9 @@ var Core = /** @class */ (function (_super) {
                         _d.sent();
                         return [2 /*return*/];
                     case 2:
-                        if (state.time !== undefined && state.time < ((_a = current === null || current === void 0 ? void 0 : current.time) !== null && _a !== void 0 ? _a : 0))
+                        if (state.time !== undefined && state.time < ((_a = current === null || current === void 0 ? void 0 : current.time) !== null && _a !== void 0 ? _a : 0)) // If older
                             return [2 /*return*/, current];
-                        if (aborter && aborter !== (current === null || current === void 0 ? void 0 : current.aborter))
+                        if (aborter && aborter !== (current === null || current === void 0 ? void 0 : current.aborter)) // If replaced
                             return [2 /*return*/, current];
                         next = __assign({ time: Date.now(), data: current === null || current === void 0 ? void 0 : current.data, error: current === null || current === void 0 ? void 0 : current.error, cooldown: current === null || current === void 0 ? void 0 : current.cooldown, expiration: current === null || current === void 0 ? void 0 : current.expiration, aborter: current === null || current === void 0 ? void 0 : current.aborter, optimistic: undefined }, state);
                         _b = params.equals, equals = _b === void 0 ? DEFAULT_EQUALS : _b, normalizer = params.normalizer;
@@ -1521,9 +1533,9 @@ function useVisible(handle) {
 
 /**
  * Scrolling resource handle factory
- * @param scroller Key scroller
- * @param fetcher Resource fetcher
- * @param cparams Parameters
+ * @param scroller Key scroller (memoized)
+ * @param fetcher Resource fetcher (unmemoized)
+ * @param cparams Parameters (unmemoized)
  * @returns Scrolling handle
  */
 function useScroll(scroller, fetcher, cparams) {
@@ -1581,14 +1593,22 @@ function useScroll(scroller, fetcher, cparams) {
         return __generator(this, function (_a) {
             switch (_a.label) {
                 case 0:
+                    if (!(stateRef.current === null)) return [3 /*break*/, 2];
+                    return [4 /*yield*/, initRef.current];
+                case 1:
+                    _a.sent();
+                    _a.label = 2;
+                case 2:
                     if (stateRef.current === null)
-                        return [2 /*return*/];
+                        throw new Error("Null state after init");
+                    if (fetcherRef.current === undefined)
+                        return [2 /*return*/, stateRef.current];
                     state = stateRef.current;
                     scroller = scrollerRef.current;
                     fetcher = fetcherRef.current;
                     params = paramsRef.current;
                     return [4 /*yield*/, core.scroll.first(skey, state, scroller, fetcher, aborter, params)];
-                case 1: return [2 /*return*/, _a.sent()];
+                case 3: return [2 /*return*/, _a.sent()];
             }
         });
     }); }, [core, skey]);
@@ -1597,14 +1617,22 @@ function useScroll(scroller, fetcher, cparams) {
         return __generator(this, function (_a) {
             switch (_a.label) {
                 case 0:
+                    if (!(stateRef.current === null)) return [3 /*break*/, 2];
+                    return [4 /*yield*/, initRef.current];
+                case 1:
+                    _a.sent();
+                    _a.label = 2;
+                case 2:
                     if (stateRef.current === null)
-                        return [2 /*return*/];
+                        throw new Error("Null state after init");
+                    if (fetcherRef.current === undefined)
+                        return [2 /*return*/, stateRef.current];
                     state = stateRef.current;
                     scroller = scrollerRef.current;
                     fetcher = fetcherRef.current;
                     params = paramsRef.current;
                     return [4 /*yield*/, core.scroll.first(skey, state, scroller, fetcher, aborter, params, true)];
-                case 1: return [2 /*return*/, _a.sent()];
+                case 3: return [2 /*return*/, _a.sent()];
             }
         });
     }); }, [core, skey]);
@@ -1613,14 +1641,22 @@ function useScroll(scroller, fetcher, cparams) {
         return __generator(this, function (_a) {
             switch (_a.label) {
                 case 0:
+                    if (!(stateRef.current === null)) return [3 /*break*/, 2];
+                    return [4 /*yield*/, initRef.current];
+                case 1:
+                    _a.sent();
+                    _a.label = 2;
+                case 2:
                     if (stateRef.current === null)
-                        return [2 /*return*/];
+                        throw new Error("Null state after init");
+                    if (fetcherRef.current === undefined)
+                        return [2 /*return*/, stateRef.current];
                     state = stateRef.current;
                     scroller = scrollerRef.current;
                     fetcher = fetcherRef.current;
                     params = paramsRef.current;
                     return [4 /*yield*/, core.scroll.scroll(skey, state, scroller, fetcher, aborter, params, true)];
-                case 1: return [2 /*return*/, _a.sent()];
+                case 3: return [2 /*return*/, _a.sent()];
             }
         });
     }); }, [core, skey]);
@@ -1723,6 +1759,8 @@ function useSingle(key, poster, cparams) {
                 case 2:
                     if (stateRef.current === null)
                         throw new Error("Null state after init");
+                    if (posterRef.current === undefined)
+                        return [2 /*return*/, stateRef.current];
                     state = stateRef.current;
                     key = keyRef.current;
                     poster = posterRef.current;
@@ -1745,6 +1783,8 @@ function useSingle(key, poster, cparams) {
                 case 2:
                     if (stateRef.current === null)
                         throw new Error("Null state after init");
+                    if (posterRef.current === undefined)
+                        return [2 /*return*/, stateRef.current];
                     state = stateRef.current;
                     key = keyRef.current;
                     poster = posterRef.current;
@@ -1767,6 +1807,8 @@ function useSingle(key, poster, cparams) {
                 case 2:
                     if (stateRef.current === null)
                         throw new Error("Null state after init");
+                    if (posterRef.current === undefined)
+                        return [2 /*return*/, stateRef.current];
                     state = stateRef.current;
                     key = keyRef.current;
                     poster = posterRef.current;

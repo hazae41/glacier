@@ -34,7 +34,7 @@ export class ScrollObject<D = any, E = any, N = D, K = any> implements Object<D[
   constructor(
     readonly core: Core,
     readonly scroller: Scroller<D, E, N, K>,
-    readonly fetcher: Fetcher<D, E, N, K>,
+    readonly fetcher: Fetcher<D, E, N, K> | undefined,
     params: Params<D[], E, N[], K> = {},
     pparams: Params<D[], E, N[], K> = {}
   ) {
@@ -95,6 +95,8 @@ export class ScrollObject<D = any, E = any, N = D, K = any> implements Object<D[
       await this.init
     if (this._state === null)
       throw new Error("Null state after init")
+    if (fetcher === undefined)
+      return this._state
 
     return this._state = await core.scroll.first(skey, this._state, scroller, fetcher, aborter, mparams)
   }
@@ -106,6 +108,8 @@ export class ScrollObject<D = any, E = any, N = D, K = any> implements Object<D[
       await this.init
     if (this._state === null)
       throw new Error("Null state after init")
+    if (fetcher === undefined)
+      return this._state
 
     return this._state = await core.scroll.first(skey, this._state, scroller, fetcher, aborter, mparams, true)
   }
@@ -117,6 +121,8 @@ export class ScrollObject<D = any, E = any, N = D, K = any> implements Object<D[
       await this.init
     if (this._state === null)
       throw new Error("Null state after init")
+    if (fetcher === undefined)
+      return this._state
 
     return this._state = await core.scroll.scroll(skey, this._state, scroller, fetcher, aborter, mparams)
   }

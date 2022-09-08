@@ -21,9 +21,9 @@ export interface ScrollHandle<D = any, E = any, N = D, K = any> extends Handle<D
 
 /**
  * Scrolling resource handle factory
- * @param scroller Key scroller
- * @param fetcher Resource fetcher
- * @param cparams Parameters
+ * @param scroller Key scroller (memoized)
+ * @param fetcher Resource fetcher (unmemoized)
+ * @param cparams Parameters (unmemoized)
  * @returns Scrolling handle
  */
 export function useScroll<D = any, E = any, N = D, K = any>(

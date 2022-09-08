@@ -6,7 +6,7 @@ import { SingleObject } from "./object";
 
 export function single<D = any, E = any, N = D, K = any>(
   key: K | undefined,
-  poster: Poster<D, E, N, K>,
+  poster: Poster<D, E, N, K> | undefined,
   params: Params<D, E, N, K> = {},
 ) {
   return new SingleSchema(key, poster, params)
@@ -15,7 +15,7 @@ export function single<D = any, E = any, N = D, K = any>(
 export class SingleSchema<D = any, E = any, N = D, K = any> implements Schema<D, E, N, K, SingleObject<D, E, N, K>>  {
   constructor(
     readonly key: K | undefined,
-    readonly poster: Poster<D, E, N, K>,
+    readonly poster: Poster<D, E, N, K> | undefined,
     readonly params: Params<D, E, N, K> = {},
   ) { }
 

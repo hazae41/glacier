@@ -12,12 +12,12 @@ export declare function getSingleStorageKey<D = any, E = any, N = D, K = any>(ke
 export declare class SingleObject<D = any, E = any, N = D, K = any> implements Object<D, E, N, K> {
     readonly core: Core;
     readonly key: K | undefined;
-    readonly poster: Poster<D, E, N, K>;
+    readonly poster: Poster<D, E, N, K> | undefined;
     readonly skey: string | undefined;
     readonly mparams: Params<D, E, N, K>;
     readonly init: Promise<void>;
     private _state?;
-    constructor(core: Core, key: K | undefined, poster: Poster<D, E, N, K>, params?: Params<D, E, N, K>, pparams?: Params<D, E, N, K>);
+    constructor(core: Core, key: K | undefined, poster: Poster<D, E, N, K> | undefined, params?: Params<D, E, N, K>, pparams?: Params<D, E, N, K>);
     get state(): State<D, E, N, K> | null | undefined;
     get ready(): boolean;
     private loadSync;
