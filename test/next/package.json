@@ -9,7 +9,7 @@
     "lint": "next lint"
   },
   "dependencies": {
-    "@hazae41/xswr": "^1.0.64",
+    "@hazae41/xswr": "^1.0.65",
     "next": "12.2.5",
     "react": "18.2.0",
     "react-dom": "18.2.0"
