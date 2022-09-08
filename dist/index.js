@@ -1449,7 +1449,7 @@ function useMount(handle) {
 function useOnce(handle) {
     var data = handle.data, fetch = handle.fetch;
     React.useEffect(function () {
-        if (data !== undefined)
+        if (data === undefined)
             fetch();
     }, [data, fetch]);
 }
