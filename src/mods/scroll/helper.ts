@@ -105,7 +105,7 @@ export class ScrollHelper {
    * @param force Should ignore cooldown
    * @returns The new state
    */
-  async scroll<D = any, E = any, N = D, K = any>(
+  async scroll<D = any, E = any, N extends D = D, K = any>(
     skey: string | undefined,
     current: State<D[], E, N[], K> | undefined,
     scroller: Scroller<D, E, N, K>,
@@ -165,7 +165,7 @@ export class ScrollHelper {
       const state: State<D[], E, D[], K> = {}
 
       if (data !== undefined)
-        state.data = [...(current?.data ?? []), data] as D[]
+        state.data = [...(current?.data ?? []), data]
       state.error = error
 
       return await this.core.mutate(skey, current,

@@ -52,7 +52,7 @@ export class SingleHelper {
       aborter.abort("Timed out")
     }, dtimeout)
 
-    const state: State<D, E, D, K> = {}
+    const state: State<D, E, N, K> = {}
 
     try {
       const { signal } = aborter
@@ -75,7 +75,7 @@ export class SingleHelper {
       current = await this.core.get(skey, params)
 
       if (data !== undefined)
-        state.data = data
+        state.data = data as N
       state.error = error
 
       return await this.core.mutate(skey, current,

@@ -27,5 +27,5 @@ export declare class ScrollHelper {
      * @param force Should ignore cooldown
      * @returns The new state
      */
-    scroll<D = any, E = any, N = D, K = any>(skey: string | undefined, current: State<D[], E, N[], K> | undefined, scroller: Scroller<D, E, N, K>, fetcher: Fetcher<D, E, N, K>, aborter?: AbortController, params?: Params<D[], E, N[], K>, force?: boolean): Promise<State<D[], E, N[], K> | undefined>;
+    scroll<D = any, E = any, N extends D = D, K = any>(skey: string | undefined, current: State<D[], E, N[], K> | undefined, scroller: Scroller<D, E, N, K>, fetcher: Fetcher<D, E, N, K>, aborter?: AbortController, params?: Params<D[], E, N[], K>, force?: boolean): Promise<State<D[], E, N[], K> | undefined>;
 }

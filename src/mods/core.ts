@@ -152,23 +152,23 @@ export class Core extends Ortho<string, State | undefined> {
 
     if (normalizer !== undefined && next.data !== undefined && next.data !== current?.data) {
       const transformed = normalizer(next.data as D)
-      next.data = await this.normalize(transformed, next)
+      next.data = await this.normalize(transformed, next) as N
     }
 
     await this.set(skey, next, params)
     return next as State<D, E, N, K>
   }
 
-  async normalize<T = any, N = any>(
+  async normalize<T = any, R = any>(
     transformed: T,
     state: State
-  ): Promise<N> {
+  ) {
     const { time, cooldown, expiration, optimistic } = state
 
     if (typeof transformed !== "object")
-      return transformed as any as N
+      return transformed
     if (transformed === null)
-      return transformed as N
+      return transformed
 
     for (const key in transformed) {
       const item = transformed[key]
@@ -181,7 +181,7 @@ export class Core extends Ortho<string, State | undefined> {
       }
     }
 
-    return transformed as N
+    return transformed as R
   }
 
   /**

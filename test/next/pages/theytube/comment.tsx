@@ -16,12 +16,14 @@ export interface NormalizedCommentData {
 }
 
 export function getCommentSchema(id: string) {
-  function normalizer(comment: CommentData) {
-    const author = getProfileNormal(comment.author)
+  function normalizer(comment: CommentData | NormalizedCommentData) {
+    const author = typeof comment.author !== "string"
+      ? getProfileNormal(comment.author)
+      : comment.author
     return { ...comment, author }
   }
 
-  return XSWR.single<CommentData, Error, NormalizedCommentData>(
+  return XSWR.single<CommentData | NormalizedCommentData, Error, NormalizedCommentData>(
     `/api/theytube/comment?id=${id}`,
     fetchAsJson,
     { normalizer })
@@ -47,9 +49,9 @@ export function Comment(props: { id: string }) {
     const John69 = make(getProfileSchema("1518516160"))
     if (!John69.state) return
 
-    const author = John69.state.data
+    const author = John69.state.data!
 
-    comment.mutate(c => c && ({ data: c.data && { ...c.data, author } as CommentData }))
+    comment.mutate(c => c && ({ data: c.data && ({ ...c.data, author }) }))
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [comment.data, comment.mutate])
 

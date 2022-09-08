@@ -9,7 +9,7 @@ export declare function getScrollStorageKey<D = any, E = any, N = D, K = any>(ke
 /**
  * Non-React version of ScrollHandle
  */
-export declare class ScrollObject<D = any, E = any, N = D, K = any> implements Object<D[], E, N[], K> {
+export declare class ScrollObject<D = any, E = any, N extends D = D, K = any> implements Object<D[], E, N[], K> {
     readonly core: Core;
     readonly scroller: Scroller<D, E, N, K>;
     readonly fetcher: Fetcher<D, E, N, K> | undefined;

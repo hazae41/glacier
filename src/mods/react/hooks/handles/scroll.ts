@@ -26,7 +26,7 @@ export interface ScrollHandle<D = any, E = any, N = D, K = any> extends Handle<D
  * @param cparams Parameters (unmemoized)
  * @returns Scrolling handle
  */
-export function useScroll<D = any, E = any, N = D, K = any>(
+export function useScroll<D = any, E = any, N extends D = D, K = any>(
   scroller: Scroller<D, E, N, K>,
   fetcher: Fetcher<D, E, N, K> | undefined,
   cparams: Params<D[], E, N[], K> = {},

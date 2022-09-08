@@ -10,7 +10,7 @@ export function use<D = any, E = any, N = D, K = any, L extends DependencyList =
   deps: L
 ): SingleHandle<D, E, N, K>
 
-export function use<D = any, E = any, N = D, K = any, L extends DependencyList = []>(
+export function use<D = any, E = any, N extends D = D, K = any, L extends DependencyList = []>(
   factory: (...deps: L) => ScrollSchema<D, E, N, K>,
   deps: L
 ): ScrollHandle<D, E, N, K>
@@ -18,16 +18,16 @@ export function use<D = any, E = any, N = D, K = any, L extends DependencyList =
 export function use<D = any, E = any, N = D, K = any, L extends DependencyList = []>(
   factory: (...deps: L) => Schema<D, E, N, K>,
   deps: L
-): SingleHandle<D, E, N, K> | ScrollHandle<D, E, N, K> {
+) {
   const schema = useMemo(() => {
     return factory(...deps)
   }, deps)
 
   if (schema instanceof SingleSchema)
-    return useSingle<D, E, N, K>(schema.key, schema.poster, schema.params)
+    return useSingle(schema.key, schema.poster, schema.params) as SingleHandle<D, E, N, K>
 
   if (schema instanceof ScrollSchema)
-    return useScroll<D, E, N, K>(schema.scroller, schema.fetcher, schema.params)
+    return useScroll(schema.scroller, schema.fetcher, schema.params) as ScrollHandle<D, E, N, K>
 
   throw new Error("Invalid resource schema")
 }
