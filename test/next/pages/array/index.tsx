@@ -23,7 +23,7 @@ interface Data {
 }
 
 function getDataSchema(id: string) {
-  return XSWR.single<Data>(`/api/normalize/array?id=${id}`, fetchAsJson)
+  return XSWR.single<Data>(`/api/array?id=${id}`, fetchAsJson)
 }
 
 function getDataNormal(data: Data) {
@@ -36,7 +36,7 @@ function getAllDataSchema() {
   }
 
   return XSWR.single<Data[], Error, string[]>(
-    `/api/normalize/array/all`,
+    `/api/array/all`,
     fetchAsJson,
     { normalizer })
 }

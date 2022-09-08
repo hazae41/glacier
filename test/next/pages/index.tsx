@@ -5,7 +5,7 @@ export default function Page() {
     <Link href="/theytube" passHref shallow>
       <a>Theytube: a complex store normalization example</a>
     </Link>
-    <Link href="/theytube" passHref shallow>
+    <Link href="/array" passHref shallow>
       <a>Array: a simple store normalization example</a>
     </Link>
     <Link href="/garbage" passHref shallow>
