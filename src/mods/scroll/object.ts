@@ -70,10 +70,10 @@ export class ScrollObject<D = any, E = any, N extends D = D, K = any> implements
     const setter = (state?: State<D[], E, N[], K>) =>
       this._state = state
 
-    core.subscribe(skey, setter)
+    core.on(skey, setter)
 
     new FinalizationRegistry(() => {
-      core.unsubscribe(skey, setter)
+      core.off(skey, setter)
     }).register(this, undefined)
   }
 

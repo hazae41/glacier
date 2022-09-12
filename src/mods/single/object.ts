@@ -68,10 +68,10 @@ export class SingleObject<D = any, E = any, N = D, K = any> implements Object<D,
     const setter = (state?: State<D, E, N>) =>
       this._state = state
 
-    core.subscribe(this.skey, setter)
+    core.on(this.skey, setter)
 
     new FinalizationRegistry(() => {
-      core.unsubscribe(skey, setter)
+      core.off(skey, setter)
     }).register(this, undefined)
   }
 

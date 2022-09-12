@@ -28,7 +28,8 @@ export class SingleHelper {
     fetcher: Fetcher<D, E, N, K>,
     aborter = new AbortController(),
     params: Params<D, E, N, K> = {},
-    force = false
+    force = false,
+    ignore = false
   ): Promise<State<D, E, N, K> | undefined> {
     if (key === undefined) return
     if (skey === undefined) return
@@ -43,9 +44,10 @@ export class SingleHelper {
       return current
     if (current?.aborter && !force)
       return current
-    if (current?.aborter)
+    if (current?.aborter && force)
       current.aborter.abort("Replaced")
-    if (this.core.shouldCooldown(current, force))
+
+    if (this.core.shouldCooldown(current) && !ignore)
       return current
 
     const timeout = setTimeout(() => {
@@ -80,13 +82,15 @@ export class SingleHelper {
 
       return await this.core.mutate(skey, current,
         () => ({ time, cooldown, expiration, aborter: undefined, ...state }),
-        params, aborter)
+        params)
     } catch (error: any) {
       current = await this.core.get(skey, params)
 
+      if (aborter !== current?.aborter)
+        return current
       return await this.core.mutate(skey, current,
         () => ({ aborter: undefined, error }),
-        params, aborter)
+        params)
     } finally {
       clearTimeout(timeout)
     }
@@ -152,10 +156,13 @@ export class SingleHelper {
 
       current = await this.core.get(skey, params)
 
-      if (error !== undefined)
+      if (error !== undefined) {
+        if (aborter !== current?.aborter)
+          return current
         return await this.core.mutate(skey, current,
           c => ({ time: c?.time, cooldown, expiration, aborter: undefined, data: c?.data, error }),
-          params, aborter)
+          params)
+      }
 
       const state: State<D, E, D, K> = {}
 
@@ -165,13 +172,15 @@ export class SingleHelper {
 
       return await this.core.mutate(skey, current,
         () => ({ time, cooldown, expiration, aborter: undefined, ...state }),
-        params, aborter)
+        params)
     } catch (error: any) {
       current = await this.core.get(skey, params)
 
+      if (aborter !== current?.aborter)
+        return current
       return await this.core.mutate(skey, current,
         c => ({ time: c?.time, aborter: undefined, data: c?.data, error }),
-        params, aborter)
+        params)
     } finally {
       clearTimeout(timeout)
     }

@@ -113,8 +113,7 @@ export class Core extends Ortho<string, State | undefined> {
     skey: string | undefined,
     current: State<D, E, N, K> | undefined,
     mutator: Mutator<D, E, N, K>,
-    params: Params<D, E, N, K> = {},
-    aborter?: AbortController
+    params: Params<D, E, N, K> = {}
   ): Promise<State<D, E, N, K> | undefined> {
     if (skey === undefined) return
     const state = mutator(current)
@@ -124,9 +123,7 @@ export class Core extends Ortho<string, State | undefined> {
       return
     }
 
-    if (state.time !== undefined && state.time < (current?.time ?? 0)) // If older
-      return current
-    if (aborter && aborter !== current?.aborter) // If replaced
+    if (state.time !== undefined && state.time < (current?.time ?? 0))
       return current
 
     const next: State<D, E, D | N, K> = {
@@ -188,29 +185,39 @@ export class Core extends Ortho<string, State | undefined> {
    * True if we should cooldown this resource
    */
   shouldCooldown<D = any, E = any, N = D, K = any>(
-    current?: State<D, E, N, K>,
-    force?: boolean
+    current?: State<D, E, N, K>
   ) {
-    if (force)
-      return false
     if (current?.cooldown === undefined)
       return false
-    if (Date.now() < current.cooldown)
-      return true
-    return false
+    return Date.now() < current.cooldown
   }
 
   counts = new Map<string, number>()
   timeouts = new Map<string, NodeJS.Timeout>()
 
-  subscribe<D = any, E = any, N = D, K = any>(
+  once<D = any, E = any, N = D, K = any>(
     key: string | undefined,
     listener: Listener<D, E, N, K>,
     params: Params<D, E, N, K> = {}
   ) {
     if (!key) return
 
-    super.subscribe(key, listener)
+    const f: Listener<D, E, N, K> = (x) => {
+      this.off(key, f, params)
+      listener(x)
+    }
+
+    this.on(key, f, params)
+  }
+
+  on<D = any, E = any, N = D, K = any>(
+    key: string | undefined,
+    listener: Listener<D, E, N, K>,
+    params: Params<D, E, N, K> = {}
+  ) {
+    if (!key) return
+
+    super.on(key, listener)
 
     const count = this.counts.get(key) ?? 0
     this.counts.set(key, count + 1)
@@ -222,14 +229,14 @@ export class Core extends Ortho<string, State | undefined> {
     this.timeouts.delete(key)
   }
 
-  async unsubscribe<D = any, E = any, N = D, K = any>(
+  async off<D = any, E = any, N = D, K = any>(
     key: string | undefined,
     listener: Listener<D, E, N, K>,
     params: Params<D, E, N, K> = {}
   ) {
     if (!key) return
 
-    super.unsubscribe(key, listener)
+    super.off(key, listener)
 
     const count = this.counts.get(key)!
 

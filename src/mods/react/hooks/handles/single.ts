@@ -70,8 +70,8 @@ export function useSingle<D = any, E = any, N = D, K = any>(
   useEffect(() => {
     if (!skey) return
 
-    core.subscribe(skey, setState, paramsRef.current)
-    return () => void core.unsubscribe(skey, setState, paramsRef.current)
+    core.on(skey, setState, paramsRef.current)
+    return () => void core.off(skey, setState, paramsRef.current)
   }, [core, skey])
 
   const mutate = useCallback(async (mutator: Mutator<D, E, N, K>) => {
@@ -87,6 +87,8 @@ export function useSingle<D = any, E = any, N = D, K = any>(
   }, [core, skey])
 
   const fetch = useCallback(async (aborter?: AbortController) => {
+    if (typeof window === "undefined")
+      throw new Error("Fetch on SSR")
     if (stateRef.current === null)
       await initRef.current
     if (stateRef.current === null)
@@ -103,6 +105,8 @@ export function useSingle<D = any, E = any, N = D, K = any>(
   }, [core, skey])
 
   const refetch = useCallback(async (aborter?: AbortController) => {
+    if (typeof window === "undefined")
+      throw new Error("Refetch on SSR")
     if (stateRef.current === null)
       await initRef.current
     if (stateRef.current === null)
@@ -119,6 +123,8 @@ export function useSingle<D = any, E = any, N = D, K = any>(
   }, [core, skey])
 
   const update = useCallback(async (updater: Updater<D, E, N, K>, aborter?: AbortController) => {
+    if (typeof window === "undefined")
+      throw new Error("Update on SSR")
     if (stateRef.current === null)
       await initRef.current
     if (stateRef.current === null)
@@ -135,12 +141,36 @@ export function useSingle<D = any, E = any, N = D, K = any>(
   }, [core, skey])
 
   const clear = useCallback(async () => {
+    if (typeof window === "undefined")
+      throw new Error("Clear on SSR")
     if (stateRef.current === null)
       await initRef.current
     if (stateRef.current === null)
       throw new Error("Null state after init")
 
     await core.delete(skey, paramsRef.current)
+  }, [core, skey])
+
+  const suspend = useCallback(() => {
+    if (typeof window === "undefined")
+      throw new Error("Suspend on SSR")
+    return (async () => {
+      if (stateRef.current === null)
+        await initRef.current
+      if (stateRef.current === null)
+        throw new Error("Null state after init")
+      if (posterRef.current === undefined)
+        throw new Error("No fetcher")
+
+      const state = stateRef.current
+      const key = keyRef.current
+      const poster = posterRef.current
+      const params = paramsRef.current
+
+      const background = new Promise<void>(ok => core.once(skey, () => ok(), params))
+      await core.single.fetch(key, skey, state, poster, undefined, params, false, true)
+      await background
+    })()
   }, [core, skey])
 
   const state = stateRef.current
@@ -150,5 +180,5 @@ export function useSingle<D = any, E = any, N = D, K = any>(
   const ready = state !== null
   const loading = Boolean(aborter)
 
-  return { key, skey, data, error, time, cooldown, expiration, aborter, optimistic, loading, ready, mutate, fetch, refetch, update, clear }
+  return { key, skey, data, error, time, cooldown, expiration, aborter, optimistic, loading, ready, mutate, fetch, refetch, update, clear, suspend }
 }

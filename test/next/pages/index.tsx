@@ -26,5 +26,8 @@ export default function Page() {
     <Link href="/scroll" passHref shallow>
       <a>Scroll pagination</a>
     </Link>
+    <Link href="/suspense" passHref shallow>
+      <a>React Suspense</a>
+    </Link>
   </div>
 }

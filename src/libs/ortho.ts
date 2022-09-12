@@ -41,11 +41,11 @@ export class Ortho<K = any, S = any> {
       listener(value)
   }
 
-  subscribe(key: K, listener: (x: S) => void) {
+  on(key: K, listener: (x: S) => void) {
     this.listeners.push(key, listener)
   }
 
-  unsubscribe(key: K, listener: (x: S) => void) {
+  off(key: K, listener: (x: S) => void) {
     this.listeners.erase(key, listener)
   }
 }

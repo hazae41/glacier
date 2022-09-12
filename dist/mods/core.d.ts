@@ -30,14 +30,15 @@ export declare class Core extends Ortho<string, State | undefined> {
      * @returns
      */
     delete<D = any, E = any, N = D, K = any>(skey: string | undefined, params?: Params<D, E, N, K>): Promise<void>;
-    mutate<D = any, E = any, N = D, K = any>(skey: string | undefined, current: State<D, E, N, K> | undefined, mutator: Mutator<D, E, N, K>, params?: Params<D, E, N, K>, aborter?: AbortController): Promise<State<D, E, N, K> | undefined>;
-    normalize<T = any, N = any>(transformed: T, state: State): Promise<N>;
+    mutate<D = any, E = any, N = D, K = any>(skey: string | undefined, current: State<D, E, N, K> | undefined, mutator: Mutator<D, E, N, K>, params?: Params<D, E, N, K>): Promise<State<D, E, N, K> | undefined>;
+    normalize<T = any, R = any>(transformed: T, state: State): Promise<T | R>;
     /**
      * True if we should cooldown this resource
      */
-    shouldCooldown<D = any, E = any, N = D, K = any>(current?: State<D, E, N, K>, force?: boolean): boolean;
+    shouldCooldown<D = any, E = any, N = D, K = any>(current?: State<D, E, N, K>): boolean;
     counts: Map<string, number>;
     timeouts: Map<string, NodeJS.Timeout>;
-    subscribe<D = any, E = any, N = D, K = any>(key: string | undefined, listener: Listener<D, E, N, K>, params?: Params<D, E, N, K>): void;
-    unsubscribe<D = any, E = any, N = D, K = any>(key: string | undefined, listener: Listener<D, E, N, K>, params?: Params<D, E, N, K>): Promise<void>;
+    once<D = any, E = any, N = D, K = any>(key: string | undefined, listener: Listener<D, E, N, K>, params?: Params<D, E, N, K>): void;
+    on<D = any, E = any, N = D, K = any>(key: string | undefined, listener: Listener<D, E, N, K>, params?: Params<D, E, N, K>): void;
+    off<D = any, E = any, N = D, K = any>(key: string | undefined, listener: Listener<D, E, N, K>, params?: Params<D, E, N, K>): Promise<void>;
 }

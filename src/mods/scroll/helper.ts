@@ -28,7 +28,8 @@ export class ScrollHelper {
     fetcher: Fetcher<D, E, N, K>,
     aborter = new AbortController(),
     params: Params<D[], E, N[], K> = {},
-    force = false
+    force = false,
+    ignore = false
   ): Promise<State<D[], E, N[], K> | undefined> {
     if (skey === undefined) return
 
@@ -43,9 +44,10 @@ export class ScrollHelper {
       return current
     if (current?.aborter && !force)
       return current
-    if (current?.aborter)
+    if (current?.aborter && force)
       current.aborter.abort("Replaced")
-    if (this.core.shouldCooldown(current, force))
+
+    if (this.core.shouldCooldown(current) && !ignore)
       return current
 
     const first = scroller(undefined)
@@ -83,13 +85,15 @@ export class ScrollHelper {
 
       return await this.core.mutate(skey, current,
         () => ({ time, cooldown, expiration, aborter: undefined, ...state }),
-        params, aborter)
+        params)
     } catch (error: any) {
       current = await this.core.get(skey, params)
 
+      if (aborter !== current?.aborter)
+        return current
       return await this.core.mutate(skey, current,
         () => ({ aborter: undefined, error }),
-        params, aborter)
+        params)
     } finally {
       clearTimeout(timeout)
     }
@@ -112,7 +116,8 @@ export class ScrollHelper {
     fetcher: Fetcher<D, E, N, K>,
     aborter = new AbortController(),
     params: Params<D[], E, N[], K> = {},
-    force = false
+    force = false,
+    ignore = false
   ): Promise<State<D[], E, N[], K> | undefined> {
     if (skey === undefined) return
 
@@ -126,9 +131,10 @@ export class ScrollHelper {
       return current
     if (current?.aborter && !force)
       return current
-    if (current?.aborter)
+    if (current?.aborter && force)
       current.aborter.abort("Replaced")
-    if (this.core.shouldCooldown(current, force))
+
+    if (this.core.shouldCooldown(current) && !ignore)
       return current
 
     const pages = current?.data ?? []
@@ -170,13 +176,15 @@ export class ScrollHelper {
 
       return await this.core.mutate(skey, current,
         () => ({ time, cooldown, expiration, aborter: undefined, ...state }),
-        params, aborter)
+        params)
     } catch (error: any) {
       current = await this.core.get(skey, params)
 
+      if (aborter !== current?.aborter)
+        return current
       return await this.core.mutate(skey, current,
         () => ({ aborter: undefined, error }),
-        params, aborter)
+        params)
     } finally {
       clearTimeout(timeout)
     }

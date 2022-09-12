@@ -81,4 +81,9 @@ export interface Handle<D = any, E = any, N = D, K = any> {
    * Clear the cache
    */
   clear(): void
+
+  /**
+   * Suspend until the next state change, also launches an undeduped fetch
+   */
+  suspend(): Promise<void>
 }
