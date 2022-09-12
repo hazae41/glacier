@@ -1590,12 +1590,37 @@ function useScroll(scroller, fetcher, cparams) {
         return __generator(this, function (_a) {
             switch (_a.label) {
                 case 0:
+                    if (!(stateRef.current === null)) return [3 /*break*/, 2];
+                    return [4 /*yield*/, initRef.current];
+                case 1:
+                    _a.sent();
+                    _a.label = 2;
+                case 2:
                     if (stateRef.current === null)
-                        return [2 /*return*/];
+                        throw new Error("Null state after init");
                     state = stateRef.current;
                     params = paramsRef.current;
                     return [4 /*yield*/, core.mutate(skey, state, mutator, params)];
-                case 1: return [2 /*return*/, _a.sent()];
+                case 3: return [2 /*return*/, _a.sent()];
+            }
+        });
+    }); }, [core, skey]);
+    var clear = useCallback(function () { return __awaiter(_this, void 0, void 0, function () {
+        return __generator(this, function (_a) {
+            switch (_a.label) {
+                case 0:
+                    if (!(stateRef.current === null)) return [3 /*break*/, 2];
+                    return [4 /*yield*/, initRef.current];
+                case 1:
+                    _a.sent();
+                    _a.label = 2;
+                case 2:
+                    if (stateRef.current === null)
+                        throw new Error("Null state after init");
+                    return [4 /*yield*/, core.delete(skey, paramsRef.current)];
+                case 3:
+                    _a.sent();
+                    return [2 /*return*/];
             }
         });
     }); }, [core, skey]);
@@ -1674,27 +1699,6 @@ function useScroll(scroller, fetcher, cparams) {
                     params = paramsRef.current;
                     return [4 /*yield*/, core.scroll.scroll(skey, state, scroller, fetcher, aborter, params, true, true)];
                 case 3: return [2 /*return*/, _a.sent()];
-            }
-        });
-    }); }, [core, skey]);
-    var clear = useCallback(function () { return __awaiter(_this, void 0, void 0, function () {
-        return __generator(this, function (_a) {
-            switch (_a.label) {
-                case 0:
-                    if (typeof window === "undefined")
-                        throw new Error("Clear on SSR");
-                    if (!(stateRef.current === null)) return [3 /*break*/, 2];
-                    return [4 /*yield*/, initRef.current];
-                case 1:
-                    _a.sent();
-                    _a.label = 2;
-                case 2:
-                    if (stateRef.current === null)
-                        throw new Error("Null state after init");
-                    return [4 /*yield*/, core.delete(skey, paramsRef.current)];
-                case 3:
-                    _a.sent();
-                    return [2 /*return*/];
             }
         });
     }); }, [core, skey]);
@@ -1799,6 +1803,25 @@ function useSingle(key, poster, cparams) {
             }
         });
     }); }, [core, skey]);
+    var clear = useCallback(function () { return __awaiter(_this, void 0, void 0, function () {
+        return __generator(this, function (_a) {
+            switch (_a.label) {
+                case 0:
+                    if (!(stateRef.current === null)) return [3 /*break*/, 2];
+                    return [4 /*yield*/, initRef.current];
+                case 1:
+                    _a.sent();
+                    _a.label = 2;
+                case 2:
+                    if (stateRef.current === null)
+                        throw new Error("Null state after init");
+                    return [4 /*yield*/, core.delete(skey, paramsRef.current)];
+                case 3:
+                    _a.sent();
+                    return [2 /*return*/];
+            }
+        });
+    }); }, [core, skey]);
     var fetch = useCallback(function (aborter) { return __awaiter(_this, void 0, void 0, function () {
         var state, key, poster, params;
         return __generator(this, function (_a) {
@@ -1874,27 +1897,6 @@ function useSingle(key, poster, cparams) {
                     params = paramsRef.current;
                     return [4 /*yield*/, core.single.update(key, skey, state, poster, updater, aborter, params)];
                 case 3: return [2 /*return*/, _a.sent()];
-            }
-        });
-    }); }, [core, skey]);
-    var clear = useCallback(function () { return __awaiter(_this, void 0, void 0, function () {
-        return __generator(this, function (_a) {
-            switch (_a.label) {
-                case 0:
-                    if (typeof window === "undefined")
-                        throw new Error("Clear on SSR");
-                    if (!(stateRef.current === null)) return [3 /*break*/, 2];
-                    return [4 /*yield*/, initRef.current];
-                case 1:
-                    _a.sent();
-                    _a.label = 2;
-                case 2:
-                    if (stateRef.current === null)
-                        throw new Error("Null state after init");
-                    return [4 /*yield*/, core.delete(skey, paramsRef.current)];
-                case 3:
-                    _a.sent();
-                    return [2 /*return*/];
             }
         });
     }); }, [core, skey]);
