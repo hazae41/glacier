@@ -1646,7 +1646,7 @@ function useScroll(scroller, fetcher, cparams) {
                     scroller = scrollerRef.current;
                     fetcher = fetcherRef.current;
                     params = paramsRef.current;
-                    return [4 /*yield*/, core.scroll.first(skey, state, scroller, fetcher, aborter, params, true)];
+                    return [4 /*yield*/, core.scroll.first(skey, state, scroller, fetcher, aborter, params, true, true)];
                 case 3: return [2 /*return*/, _a.sent()];
             }
         });
@@ -1846,7 +1846,7 @@ function useSingle(key, poster, cparams) {
                     key = keyRef.current;
                     poster = posterRef.current;
                     params = paramsRef.current;
-                    return [4 /*yield*/, core.single.fetch(key, skey, state, poster, aborter, params, true)];
+                    return [4 /*yield*/, core.single.fetch(key, skey, state, poster, aborter, params, true, true)];
                 case 3: return [2 /*return*/, _a.sent()];
             }
         });

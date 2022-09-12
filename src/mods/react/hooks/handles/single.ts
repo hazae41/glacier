@@ -119,7 +119,7 @@ export function useSingle<D = any, E = any, N = D, K = any>(
     const poster = posterRef.current
     const params = paramsRef.current
 
-    return await core.single.fetch(key, skey, state, poster, aborter, params, true)
+    return await core.single.fetch(key, skey, state, poster, aborter, params, true, true)
   }, [core, skey])
 
   const update = useCallback(async (updater: Updater<D, E, N, K>, aborter?: AbortController) => {
