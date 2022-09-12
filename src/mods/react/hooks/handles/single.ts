@@ -86,6 +86,15 @@ export function useSingle<D = any, E = any, N = D, K = any>(
     return await core.mutate(skey, state, mutator, params)
   }, [core, skey])
 
+  const clear = useCallback(async () => {
+    if (stateRef.current === null)
+      await initRef.current
+    if (stateRef.current === null)
+      throw new Error("Null state after init")
+
+    await core.delete(skey, paramsRef.current)
+  }, [core, skey])
+
   const fetch = useCallback(async (aborter?: AbortController) => {
     if (typeof window === "undefined")
       throw new Error("Fetch on SSR")
@@ -138,17 +147,6 @@ export function useSingle<D = any, E = any, N = D, K = any>(
     const params = paramsRef.current
 
     return await core.single.update(key, skey, state, poster, updater, aborter, params)
-  }, [core, skey])
-
-  const clear = useCallback(async () => {
-    if (typeof window === "undefined")
-      throw new Error("Clear on SSR")
-    if (stateRef.current === null)
-      await initRef.current
-    if (stateRef.current === null)
-      throw new Error("Null state after init")
-
-    await core.delete(skey, paramsRef.current)
   }, [core, skey])
 
   const suspend = useCallback(() => {

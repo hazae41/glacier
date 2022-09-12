@@ -77,12 +77,24 @@ export function useScroll<D = any, E = any, N extends D = D, K = any>(
   }, [core, skey])
 
   const mutate = useCallback(async (mutator: Mutator<D[], E, N[], K>) => {
-    if (stateRef.current === null) return
+    if (stateRef.current === null)
+      await initRef.current
+    if (stateRef.current === null)
+      throw new Error("Null state after init")
 
     const state = stateRef.current
     const params = paramsRef.current
 
     return await core.mutate(skey, state, mutator, params)
+  }, [core, skey])
+
+  const clear = useCallback(async () => {
+    if (stateRef.current === null)
+      await initRef.current
+    if (stateRef.current === null)
+      throw new Error("Null state after init")
+
+    await core.delete(skey, paramsRef.current)
   }, [core, skey])
 
   const fetch = useCallback(async (aborter?: AbortController) => {
@@ -137,17 +149,6 @@ export function useScroll<D = any, E = any, N extends D = D, K = any>(
     const params = paramsRef.current
 
     return await core.scroll.scroll(skey, state, scroller, fetcher, aborter, params, true, true)
-  }, [core, skey])
-
-  const clear = useCallback(async () => {
-    if (typeof window === "undefined")
-      throw new Error("Clear on SSR")
-    if (stateRef.current === null)
-      await initRef.current
-    if (stateRef.current === null)
-      throw new Error("Null state after init")
-
-    await core.delete(skey, paramsRef.current)
   }, [core, skey])
 
   const suspend = useCallback(() => {
