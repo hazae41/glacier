@@ -1672,7 +1672,7 @@ function useScroll(scroller, fetcher, cparams) {
                     scroller = scrollerRef.current;
                     fetcher = fetcherRef.current;
                     params = paramsRef.current;
-                    return [4 /*yield*/, core.scroll.scroll(skey, state, scroller, fetcher, aborter, params, true)];
+                    return [4 /*yield*/, core.scroll.scroll(skey, state, scroller, fetcher, aborter, params, true, true)];
                 case 3: return [2 /*return*/, _a.sent()];
             }
         });

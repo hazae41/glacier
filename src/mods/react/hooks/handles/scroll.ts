@@ -136,7 +136,7 @@ export function useScroll<D = any, E = any, N extends D = D, K = any>(
     const fetcher = fetcherRef.current
     const params = paramsRef.current
 
-    return await core.scroll.scroll(skey, state, scroller, fetcher, aborter, params, true)
+    return await core.scroll.scroll(skey, state, scroller, fetcher, aborter, params, true, true)
   }, [core, skey])
 
   const clear = useCallback(async () => {
