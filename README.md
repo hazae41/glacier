@@ -30,25 +30,25 @@ XSWR uses two new approaches compared to other data fetching libraries like swr 
 - No unexpected behaviour (hello swr)
 - Backend agnostic fetching (REST, GraphQL, WebSocket)
 - Storage agnostic caching (new Map(), LocalStorage, IndexedDB)
-- Request deduplication
-- Exponential backoff retry
-- Cursor-based pagination
 - Automatic refetching
-- Dependent queries
+- Dependent and conditional queries
+- Request deduplication, cooldown, timeout, and expiration
+- Page-based and cursor-based pagination
+- Exponential backoff retry
 - SSR & ISR support
 - Optimistic mutations
 - Cancellable requests
-- Automatic cancellation 
+- Automatic cancellation
 - Automatic garbage collection
 - Per-query persistent storage
 - Out of the box IndexedDB and LocalStorage
 - Out of the box store normalization
+- Super natural React Suspense
 
 ### Upcoming features
 
 - Transport agnostic streaming (ethers.js, WebSockets, Socket.io)
 - Bidirectional scrolling
-- React suspense
 
 # Installation
 
