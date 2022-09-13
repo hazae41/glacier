@@ -1,4 +1,4 @@
-![xswr](https://user-images.githubusercontent.com/4405263/189878707-cc666d6f-2c7f-40b4-a308-b827ccef1a6b.png)
+<img width="887" alt="Image PNG" src="https://user-images.githubusercontent.com/4405263/189957179-97531f9d-789f-4ab4-b76d-04187b8e2f11.png">
 
 ```bash
 npm i @hazae41/xswr
