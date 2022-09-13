@@ -1,4 +1,4 @@
-<img width="887" alt="Image PNG" src="https://user-images.githubusercontent.com/4405263/189957179-97531f9d-789f-4ab4-b76d-04187b8e2f11.png">
+<img width="1000" alt="Image PNG" src="https://user-images.githubusercontent.com/4405263/189959352-a1e5a276-4b71-4576-9758-6ad28f778717.png">
 
 ```bash
 npm i @hazae41/xswr
