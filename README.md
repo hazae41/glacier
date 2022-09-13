@@ -1,6 +1,4 @@
-# hazae41's xswr
-
-The simplest React data (re)fetching library ever made
+![xswr](https://user-images.githubusercontent.com/4405263/189878235-5753ca19-6104-4a87-990a-1324a663898b.png)
 
 ```bash
 npm i @hazae41/xswr
