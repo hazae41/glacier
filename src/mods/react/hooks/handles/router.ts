@@ -23,11 +23,15 @@ export function use<D = any, E = any, N extends D = D, K = any, L extends Depend
     return factory(...deps)
   }, deps)
 
-  if (schema instanceof SingleSchema)
-    return useSingle(schema.key, schema.poster, schema.params) as SingleHandle<D, E, N, K>
+  if (schema instanceof SingleSchema) {
+    const { key, poster, params } = schema
+    return useSingle(key, poster, params)
+  }
 
-  if (schema instanceof ScrollSchema)
-    return useScroll(schema.scroller, schema.fetcher, schema.params) as ScrollHandle<D, E, N, K>
+  if (schema instanceof ScrollSchema) {
+    const { scroller, fetcher, params } = schema
+    return useScroll(scroller, fetcher, params)
+  }
 
   throw new Error("Invalid resource schema")
 }

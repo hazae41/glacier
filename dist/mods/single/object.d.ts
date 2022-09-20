@@ -15,6 +15,7 @@ export declare class SingleObject<D = any, E = any, N extends D = D, K = any> im
     readonly poster: Poster<D, E, N, K> | undefined;
     readonly params: Params<D, E, N, K>;
     readonly skey: string | undefined;
+    readonly mparams: Params<D, E, N, K>;
     private _init;
     private _state;
     constructor(core: Core, key: K | undefined, poster: Poster<D, E, N, K> | undefined, params?: Params<D, E, N, K>);

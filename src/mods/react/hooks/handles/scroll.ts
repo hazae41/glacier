@@ -33,9 +33,11 @@ export function useScroll<D = any, E = any, N extends D = D, K = any>(
 ): ScrollHandle<D, E, N, K> {
   const core = useCore()
 
+  const mparams = { ...core.params, ...params }
+
   const scrollerRef = useAutoRef(scroller)
   const fetcherRef = useAutoRef(fetcher)
-  const paramsRef = useAutoRef(params)
+  const paramsRef = useAutoRef(mparams)
 
   const key = useMemo(() => {
     return scroller()

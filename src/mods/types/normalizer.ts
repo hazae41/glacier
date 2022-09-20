@@ -3,6 +3,7 @@ import { State } from "mods/types/state"
 
 export interface NormalizerMore<D = any, E = any, N extends D = D, K = any> {
   core: Core,
+  shallow: boolean,
   root: State<D, E, N, K>
 }
 

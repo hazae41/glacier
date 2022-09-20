@@ -79,9 +79,14 @@ export class ScrollHelper {
 
       const state: State<D[], E, D[], K> = {}
 
-      if (data !== undefined && !equals(data, current?.data?.[0]))
+      if (data !== undefined)
         state.data = [data]
       state.error = error
+
+      if (data !== undefined) {
+        const norm = await this.core.normalize(true, { data: [data] }, params)
+        if (equals(norm?.[0], current?.data?.[0])) delete state.data
+      }
 
       return await this.core.mutate(skey, current,
         () => ({ time, cooldown, expiration, aborter: undefined, ...state }),
@@ -89,7 +94,7 @@ export class ScrollHelper {
     } catch (error: any) {
       current = await this.core.get(skey, params)
 
-      if (aborter !== current?.aborter)
+      if (current?.aborter !== aborter)
         return current
       return await this.core.mutate(skey, current,
         () => ({ aborter: undefined, error }),
@@ -180,7 +185,7 @@ export class ScrollHelper {
     } catch (error: any) {
       current = await this.core.get(skey, params)
 
-      if (aborter !== current?.aborter)
+      if (current?.aborter !== aborter)
         return current
       return await this.core.mutate(skey, current,
         () => ({ aborter: undefined, error }),

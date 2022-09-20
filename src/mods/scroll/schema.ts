@@ -28,6 +28,7 @@ export class ScrollSchema<D = any, E = any, N extends D = D, K = any> implements
   }
 
   async normalize(data: D[], more: NormalizerMore<D[], E, N[], K>) {
+    if (more.shallow) return
     const { time, cooldown, expiration, optimistic } = more.root
     const state = { data, time, cooldown, expiration, optimistic }
     await this.make(more.core).mutate(() => state)

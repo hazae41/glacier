@@ -35,9 +35,11 @@ export function useSingle<D = any, E = any, N extends D = D, K = any>(
 ): SingleHandle<D, E, N, K> {
   const core = useCore()
 
+  const mparams = { ...core.params, ...params }
+
   const keyRef = useAutoRef(key)
   const posterRef = useAutoRef(poster)
-  const paramsRef = useAutoRef(params)
+  const paramsRef = useAutoRef(mparams)
 
   const skey = useMemo(() => {
     return getSingleStorageKey(key, paramsRef.current)

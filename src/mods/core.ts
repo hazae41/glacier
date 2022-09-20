@@ -19,7 +19,9 @@ export class Core extends Ortho<string, State | undefined> {
 
   private _mounted = true
 
-  constructor() { super() }
+  constructor(
+    readonly params: Params
+  ) { super() }
 
   get mounted() { return this._mounted }
 
@@ -136,6 +138,8 @@ export class Core extends Ortho<string, State | undefined> {
       ...state
     }
 
+    next.data = await this.normalize(false, next, params)
+
     const {
       equals = DEFAULT_EQUALS
     } = params
@@ -145,19 +149,18 @@ export class Core extends Ortho<string, State | undefined> {
     if (shallowEquals(next, current)) // Shallow comparison because aborter is not serializable
       return current
 
-    next.data = await this.normalize(next, params)
-
     await this.set(skey, next, params)
     return next as State<D, E, N, K>
   }
 
   async normalize<D = any, E = any, N extends D = D, K = any>(
+    shallow: boolean,
     root: State<D, E, N, K>,
-    params: Params<D, E, N, K> = {}
+    params: Params<D, E, N, K> = {},
   ) {
     if (root.data === undefined) return
     if (params.normalizer === undefined) return root.data
-    return await params.normalizer(root.data, { core: this, root })
+    return await params.normalizer(root.data, { core: this, shallow, root })
   }
 
   /**

@@ -7,11 +7,12 @@ import { Params } from "./types/params";
 import { State } from "./types/state";
 export declare type Listener<D = any, E = any, N extends D = D, K = any> = (x?: State<D, E, N, K>) => void;
 export declare class Core extends Ortho<string, State | undefined> {
+    readonly params: Params;
     readonly single: SingleHelper;
     readonly scroll: ScrollHelper;
     readonly cache: Map<string, State<any, any, any, any>>;
     private _mounted;
-    constructor();
+    constructor(params: Params);
     get mounted(): boolean;
     unmount(): void;
     getSync<D = any, E = any, N extends D = D, K = any>(skey: string | undefined, params?: Params<D, E, N, K>): State<D, E, N, K> | undefined | null;
@@ -31,7 +32,7 @@ export declare class Core extends Ortho<string, State | undefined> {
      */
     delete<D = any, E = any, N extends D = D, K = any>(skey: string | undefined, params?: Params<D, E, N, K>): Promise<void>;
     mutate<D = any, E = any, N extends D = D, K = any>(skey: string | undefined, current: State<D, E, N, K> | undefined, mutator: Mutator<D, E, N, K>, params?: Params<D, E, N, K>): Promise<State<D, E, N, K> | undefined>;
-    normalize<D = any, E = any, N extends D = D, K = any>(root: State<D, E, N, K>, params?: Params<D, E, N, K>): Promise<D | undefined>;
+    normalize<D = any, E = any, N extends D = D, K = any>(shallow: boolean, root: State<D, E, N, K>, params?: Params<D, E, N, K>): Promise<D | undefined>;
     /**
      * True if we should cooldown this resource
      */

@@ -22,8 +22,13 @@ class GZIP {
   }
 }
 
+const serializer = GZIP
+
 function getHelloSchema(storage?: XSWR.Storage) {
-  return XSWR.single("/api/hello?stored", fetchAsJson, { storage })
+  return XSWR.single(
+    "/api/hello?stored",
+    fetchAsJson,
+    { storage, serializer })
 }
 
 function useStoredHello() {
@@ -34,7 +39,7 @@ function useStoredHello() {
   return handle
 }
 
-function Page() {
+export default function Page() {
   const { data, fetch, clear } = useStoredHello()
 
   return <>
@@ -48,11 +53,4 @@ function Page() {
       Delete
     </button>
   </>
-}
-
-export default function Wrapper() {
-  return <XSWR.ParamsProvider
-    serializer={GZIP}>
-    <Page />
-  </XSWR.ParamsProvider>
 }

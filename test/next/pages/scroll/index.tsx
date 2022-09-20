@@ -2,45 +2,67 @@ import { XSWR } from "@hazae41/xswr"
 import { useCallback } from "react"
 import { fetchAsJson } from "../../libs/fetcher"
 
-export interface RefPage {
-  data: Ref[],
+interface ElementPage {
+  data: (ElementData | ElementRef)[],
   after?: string
 }
 
-export interface DataPage {
-  data: Data[],
-  after?: string
-}
-
-export interface Ref {
+interface ElementRef {
   ref: true,
   id: string
 }
 
-export interface Data {
+interface ElementData {
   id: string,
   value: number
 }
 
-function getScrollsSchema() {
-  return XSWR.scroll<DataPage | RefPage>((previous) => {
+function getElementSchema(id: string) {
+  return XSWR.single(`data:${id}`, undefined)
+}
+
+async function getElementRef(data: ElementData | ElementRef, more: XSWR.NormalizerMore) {
+  if ("ref" in data) return data
+  const schema = getElementSchema(data.id)
+  await schema.normalize(data, more)
+  return { ref: true, id: data.id } as ElementRef
+}
+
+function getElementsSchema() {
+  async function normalizer(pages: ElementPage[], more: XSWR.NormalizerMore) {
+    return await Promise.all(pages.map(async page => {
+      const data = await Promise.all(page.data.map(data => getElementRef(data, more)))
+      return { ...page, data } as ElementPage
+    }))
+  }
+
+  return XSWR.scroll<ElementPage>((previous) => {
     if (!previous)
       return `/api/scroll`
     if (!previous.after)
       return undefined
     return `/api/scroll?after=${previous.after}`
-  }, fetchAsJson)
+  }, fetchAsJson, { normalizer })
 }
 
-function useScrollsData() {
-  const handle = XSWR.use(getScrollsSchema, [])
+function useElement(id: string) {
+  return XSWR.use(getElementSchema, [id])
+}
 
+function useElements() {
+  const handle = XSWR.use(getElementsSchema, [])
   XSWR.useFetch(handle)
   return handle
 }
 
+function Element(props: { id: string }) {
+  const { data } = useElement(props.id)
+
+  return <div>{JSON.stringify(data) ?? "undefined"}</div>
+}
+
 export default function Page() {
-  const scrolls = useScrollsData()
+  const scrolls = useElements()
 
   const { data, error, loading, refetch, scroll, aborter } = scrolls
 
@@ -57,15 +79,13 @@ export default function Page() {
   }, [aborter])
 
   return <>
-    {(() => {
-      if (!data)
-        return <div>Empty</div>
-      return data.map((page, i) => <div key={i}>
-        <div>page {i}</div>
-        {page.data.map(element =>
-          <div key={element.id}>{element.id}</div>)}
-      </div>)
-    })()}
+    {data?.map((page, i) => <div key={i}>
+      <div>page {i}</div>
+      {page.data.map(ref =>
+        <Element
+          key={ref.id}
+          id={ref.id} />)}
+    </div>)}
     <div style={{ color: "red" }}>
       {error instanceof Error
         ? error.message

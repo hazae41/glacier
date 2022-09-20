@@ -16,6 +16,7 @@ export declare class ScrollObject<D = any, E = any, N extends D = D, K = any> im
     readonly params: Params<D[], E, N[], K>;
     readonly key: K | undefined;
     readonly skey: string | undefined;
+    readonly mparams: Params<D[], E, N[], K>;
     private _init;
     private _state;
     constructor(core: Core, scroller: Scroller<D, E, N, K>, fetcher: Fetcher<D, E, N, K> | undefined, params?: Params<D[], E, N[], K>);
