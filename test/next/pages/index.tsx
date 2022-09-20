@@ -6,7 +6,10 @@ export default function Page() {
       <a>Theytube: a complex store normalization example</a>
     </Link>
     <Link href="/array" passHref shallow>
-      <a>Array: a simple store normalization example</a>
+      <a>Normalized array: a simple store normalization example</a>
+    </Link>
+    <Link href="/scroll" passHref shallow>
+      <a>Normalized scroll pagination</a>
     </Link>
     <Link href="/garbage" passHref shallow>
       <a>Garbage collection</a>
@@ -19,12 +22,6 @@ export default function Page() {
     </Link>
     <Link href="/storage" passHref shallow>
       <a>Persistent storage</a>
-    </Link>
-    <Link href="/make" passHref shallow>
-      <a>Schema maker</a>
-    </Link>
-    <Link href="/scroll" passHref shallow>
-      <a>Scroll pagination</a>
     </Link>
     <Link href="/suspense" passHref shallow>
       <a>React Suspense</a>
