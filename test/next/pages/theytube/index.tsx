@@ -8,7 +8,7 @@ function getAllVideosSchema() {
     return videos.map(getVideoNormal)
   }
 
-  return XSWR.single<VideoData[], Error, string[]>(
+  return XSWR.single<VideoData[], Error, { id: string }[]>(
     `/api/theytube`,
     fetchAsJson,
     { normalizer })
@@ -35,8 +35,10 @@ export default function Page() {
       Refetch
     </button>
     <div className="flex flex-col gap-4">
-      {videos.data.map(id =>
-        <Video key={id} id={id} />)}
+      {videos.data.map(ref =>
+        <Video
+          key={ref.id}
+          id={ref.id} />)}
     </div>
   </div>
 }

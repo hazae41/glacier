@@ -21,7 +21,7 @@ export class ScrollHelper {
    * @param force Should ignore cooldown
    * @returns The new state
    */
-  async first<D = any, E = any, N = D, K = any>(
+  async first<D extends N = any, E = any, N = D, K = any>(
     skey: string | undefined,
     current: State<D[], E, N[], K> | undefined,
     scroller: Scroller<D, E, N, K>,
@@ -109,7 +109,7 @@ export class ScrollHelper {
    * @param force Should ignore cooldown
    * @returns The new state
    */
-  async scroll<D = any, E = any, N extends D = D, K = any>(
+  async scroll<D extends N = any, E = any, N = D, K = any>(
     skey: string | undefined,
     current: State<D[], E, N[], K> | undefined,
     scroller: Scroller<D, E, N, K>,
@@ -168,7 +168,7 @@ export class ScrollHelper {
 
       current = await this.core.get(skey, params)
 
-      const state: State<D[], E, D[], K> = {}
+      const state: State<D[], E, N[], K> = {}
 
       if (data !== undefined)
         state.data = [...(current?.data ?? []), data]

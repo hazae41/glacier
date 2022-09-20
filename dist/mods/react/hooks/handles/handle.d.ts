@@ -1,6 +1,6 @@
 import { Mutator } from "../../../types/mutator";
 import { State } from "../../../types/state";
-export interface Handle<D = any, E = any, N = D, K = any> {
+export interface Handle<D extends N = any, E = any, N = D, K = any> {
     /**
      * Arbitrary key, must be serializable
      */

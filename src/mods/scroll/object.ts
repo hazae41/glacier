@@ -7,7 +7,7 @@ import { Scroller } from "mods/types/scroller";
 import { State } from "mods/types/state";
 import { DEFAULT_SERIALIZER } from "mods/utils/defaults";
 
-export function getScrollStorageKey<D = any, E = any, N = D, K = any>(key: K, params: Params) {
+export function getScrollStorageKey<D extends N = any, E = any, N = D, K = any>(key: K, params: Params) {
   if (key === undefined)
     return undefined
   if (typeof key === "string")
@@ -23,7 +23,7 @@ export function getScrollStorageKey<D = any, E = any, N = D, K = any>(key: K, pa
 /**
  * Non-React version of ScrollHandle
  */
-export class ScrollObject<D = any, E = any, N extends D = D, K = any> implements Object<D[], E, N[], K> {
+export class ScrollObject<D extends N = any, E = any, N = D, K = any> implements Object<D[], E, N[], K> {
   readonly key: K | undefined
   readonly skey: string | undefined
   readonly params: Params<D[], E, N[], K>

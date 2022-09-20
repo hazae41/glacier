@@ -5,11 +5,11 @@ import { Params } from "../types/params";
 import { Poster } from "../types/poster";
 import { State } from "../types/state";
 import { Updater } from "../types/updater";
-export declare function getSingleStorageKey<D = any, E = any, N = D, K = any>(key: K, params: Params): string | undefined;
+export declare function getSingleStorageKey<D extends N = any, E = any, N = D, K = any>(key: K, params: Params): string | undefined;
 /**
  * Non-React version of SingleHandle
  */
-export declare class SingleObject<D = any, E = any, N = D, K = any> implements Object<D, E, N, K> {
+export declare class SingleObject<D extends N = any, E = any, N = D, K = any> implements Object<D, E, N, K> {
     readonly core: Core;
     readonly key: K | undefined;
     readonly poster: Poster<D, E, N, K> | undefined;

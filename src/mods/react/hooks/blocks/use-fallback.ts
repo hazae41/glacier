@@ -8,7 +8,7 @@ import { State } from "mods/types/state"
  * @param handle 
  * @param state 
  */
-export function useFallback<D = any, E = any>(
+export function useFallback<D extends N = any, E = any, N = D, K = any>(
   handle: Handle<D, E>,
   state?: State<D, E>
 ) {

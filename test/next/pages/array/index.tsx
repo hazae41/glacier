@@ -20,7 +20,7 @@ function getAllDataSchema() {
     return data.map(getDataNormal)
   }
 
-  return XSWR.single<Data[], Error, string[]>(
+  return XSWR.single<Data[], Error, { id: string }[]>(
     `/api/array/all`,
     fetchAsJson,
     { normalizer })
@@ -50,7 +50,10 @@ export default function Page() {
   if (!data) return <>Loading...</>
 
   return <>
-    {data?.map(id => <Element key={id} id={id} />)}
+    {data?.map(ref =>
+      <Element
+        key={ref.id}
+        id={ref.id} />)}
     <button onClick={onRefetchClick}>
       Refetch
     </button>

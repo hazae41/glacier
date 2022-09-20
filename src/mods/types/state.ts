@@ -1,4 +1,4 @@
-export interface State<D = any, E = any, N = D, K = any> {
+export interface State<D extends N = any, E = any, N = D, K = any> {
   data?: N
   error?: E
   time?: number,

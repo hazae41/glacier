@@ -5,7 +5,7 @@ import { useEffect } from "react"
  * Show handle in console when it changes
  * @param handle 
  */
-export function useDebug<D = any, E = any>(
+export function useDebug<D extends N = any, E = any, N = D, K = any>(
   handle: Handle<D, E>,
   label: string
 ) {

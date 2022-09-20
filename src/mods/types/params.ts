@@ -2,7 +2,7 @@ import { Serializer } from "mods/types/serializer"
 import { Storage } from "mods/types/storage"
 import { Equals } from "mods/utils/equals"
 
-export interface Params<D = any, E = any, N = D, K = any> {
+export interface Params<D extends N = any, E = any, N = D, K = any> {
   storage?: Storage
   serializer?: Serializer<K>,
   equals?: Equals,

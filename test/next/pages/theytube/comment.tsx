@@ -11,19 +11,19 @@ export interface CommentData {
 
 export interface NormalizedCommentData {
   id: string,
-  author: string,
+  author: { id: string },
   text: string
 }
 
 export function getCommentSchema(id: string) {
-  function normalizer(comment: CommentData | NormalizedCommentData) {
+  function normalizer(comment: CommentData) {
     const author = typeof comment.author !== "string"
       ? getProfileNormal(comment.author)
       : comment.author
     return { ...comment, author }
   }
 
-  return XSWR.single<CommentData | NormalizedCommentData, Error, NormalizedCommentData>(
+  return XSWR.single<CommentData, Error, NormalizedCommentData>(
     `/api/theytube/comment?id=${id}`,
     fetchAsJson,
     { normalizer })
@@ -58,7 +58,7 @@ export function Comment(props: { id: string }) {
   if (!comment.data) return null
 
   return <div className="p-4 border border-solid border-gray-500">
-    <Profile id={comment.data.author} />
+    <Profile id={comment.data.author.id} />
     <pre className="whitespace-pre-wrap">
       {comment.data.text}
     </pre>

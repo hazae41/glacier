@@ -21,7 +21,7 @@ export class SingleHelper {
    * @param force Should ignore cooldown
    * @returns The new state
    */
-  async fetch<D = any, E = any, N = D, K = any>(
+  async fetch<D extends N = any, E = any, N = D, K = any>(
     key: K | undefined,
     skey: string | undefined,
     current: State<D, E, N, K> | undefined,
@@ -107,7 +107,7 @@ export class SingleHelper {
    * @returns The new state
    * @throws Error
    */
-  async update<D = any, E = any, N = D, K = any>(
+  async update<D extends N = any, E = any, N = D, K = any>(
     key: K | undefined,
     skey: string | undefined,
     current: State<D, E, N, K> | undefined,

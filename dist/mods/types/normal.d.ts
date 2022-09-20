@@ -1,5 +1,5 @@
 import { Schema } from "./schema";
-export declare class Normal<D = any, E = any, N = D, K = any> {
+export declare class Normal<D extends N = any, E = any, N = D, K = any> {
     readonly data: D;
     readonly schema: Schema<D, E, N, K>;
     readonly result?: N | undefined;

@@ -5,7 +5,7 @@ import { Schema } from "mods/types/schema";
 import { Scroller } from "mods/types/scroller";
 import { ScrollObject } from "./object";
 
-export function scroll<D = any, E = any, N extends D = D, K = any>(
+export function scroll<D extends N = any, E = any, N = D, K = any>(
   scroller: Scroller<D, E, N, K>,
   fetcher: Fetcher<D, E, N, K> | undefined,
   params: Params<D[], E, N[], K> = {},
@@ -13,7 +13,7 @@ export function scroll<D = any, E = any, N extends D = D, K = any>(
   return new ScrollSchema(scroller, fetcher, params)
 }
 
-export class ScrollSchema<D = any, E = any, N extends D = D, K = any> implements Schema<D[], E, N[], K, ScrollObject<D, E, N, K>> {
+export class ScrollSchema<D extends N = any, E = any, N = D, K = any> implements Schema<D[], E, N[], K, ScrollObject<D, E, N, K>> {
   constructor(
     readonly scroller: Scroller<D, E, N, K>,
     readonly fetcher: Fetcher<D, E, N, K> | undefined,

@@ -6,7 +6,7 @@ import { useEffect } from "react"
  * @param handle 
  * @param callback 
  */
-export function useError<D = any, E = any>(
+export function useError<D extends N = any, E = any, N = D, K = any>(
   handle: Handle<D, E>,
   callback: (e: E) => void
 ) {

@@ -7,4 +7,4 @@ import { State } from "../../../types/state";
  * @param handle
  * @param state
  */
-export declare function useFallback<D = any, E = any>(handle: Handle<D, E>, state?: State<D, E>): void;
+export declare function useFallback<D extends N = any, E = any, N = D, K = any>(handle: Handle<D, E>, state?: State<D, E>): void;

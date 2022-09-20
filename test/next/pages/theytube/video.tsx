@@ -13,8 +13,8 @@ export interface VideoData {
 export interface NormalizedVideoData {
   id: string
   title: string
-  author: string
-  comments: string[]
+  author: { id: string }
+  comments: { id: string }[]
 }
 
 export function getVideoSchema(id: string) {
@@ -53,10 +53,12 @@ export function Video(props: { id: string }) {
       <h1 className="text-xl">
         {video.data.title}
       </h1>
-      <Profile id={video.data.author} />
+      <Profile id={video.data.author.id} />
     </div>
-    {video.data.comments.map(id =>
-      <Comment key={id} id={id} />)}
+    {video.data.comments.map(ref =>
+      <Comment
+        key={ref.id}
+        id={ref.id} />)}
   </div>
 }
 

@@ -4,4 +4,4 @@ import { Handle } from "../handles";
  * @param handle
  * @param callback
  */
-export declare function useError<D = any, E = any>(handle: Handle<D, E>, callback: (e: E) => void): void;
+export declare function useError<D extends N = any, E = any, N = D, K = any>(handle: Handle<D, E>, callback: (e: E) => void): void;
