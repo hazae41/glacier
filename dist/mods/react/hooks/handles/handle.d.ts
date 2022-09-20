@@ -12,7 +12,7 @@ export interface Handle<D extends N = any, E = any, N = D, K = any> {
     /**
      * Data, if any
      */
-    data?: N;
+    data?: D | N;
     /**
      * Error, if any
      */

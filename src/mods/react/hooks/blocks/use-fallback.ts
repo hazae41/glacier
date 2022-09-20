@@ -9,8 +9,8 @@ import { State } from "mods/types/state"
  * @param state 
  */
 export function useFallback<D extends N = any, E = any, N = D, K = any>(
-  handle: Handle<D, E>,
-  state?: State<D, E>
+  handle: Handle<D, E, N, K>,
+  state?: State<D, E, N, K>
 ) {
   const { data, error } = handle
 

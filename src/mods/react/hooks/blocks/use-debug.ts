@@ -6,7 +6,7 @@ import { useEffect } from "react"
  * @param handle 
  */
 export function useDebug<D extends N = any, E = any, N = D, K = any>(
-  handle: Handle<D, E>,
+  handle: Handle<D, E, N, K>,
   label: string
 ) {
   const { data, error, time, } = handle
