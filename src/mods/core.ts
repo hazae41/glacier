@@ -2,14 +2,13 @@ import { Ortho } from "libs/ortho"
 import { ScrollHelper } from "mods/scroll"
 import { SingleHelper } from "mods/single"
 import { Mutator } from "mods/types/mutator"
-import { Normal } from "mods/types/normal"
 import { Params } from "mods/types/params"
 import { State } from "mods/types/state"
 import { isAsyncStorage } from "mods/types/storage"
 import { DEFAULT_EQUALS } from "mods/utils/defaults"
 import { shallowEquals } from "mods/utils/equals"
 
-export type Listener<D extends N = any, E = any, N = D, K = any> =
+export type Listener<D = any, E = any, N extends D = D, K = any> =
   (x?: State<D, E, N, K>) => void
 
 export class Core extends Ortho<string, State | undefined> {
@@ -30,7 +29,7 @@ export class Core extends Ortho<string, State | undefined> {
     this._mounted = false
   }
 
-  getSync<D extends N = any, E = any, N = D, K = any>(
+  getSync<D = any, E = any, N extends D = D, K = any>(
     skey: string | undefined,
     params: Params<D, E, N, K> = {}
   ): State<D, E, N, K> | undefined | null {
@@ -49,7 +48,7 @@ export class Core extends Ortho<string, State | undefined> {
     return state
   }
 
-  async get<D extends N = any, E = any, N = D, K = any>(
+  async get<D = any, E = any, N extends D = D, K = any>(
     skey: string | undefined,
     params: Params<D, E, N, K> = {},
     ignore = false
@@ -74,7 +73,7 @@ export class Core extends Ortho<string, State | undefined> {
    * @param state New state
    * @returns 
    */
-  async set<D extends N = any, E = any, N = D, K = any>(
+  async set<D = any, E = any, N extends D = D, K = any>(
     skey: string | undefined,
     state: State<D, E, N, K>,
     params: Params<D, E, N, K> = {}
@@ -95,7 +94,7 @@ export class Core extends Ortho<string, State | undefined> {
    * @param skey 
    * @returns 
    */
-  async delete<D extends N = any, E = any, N = D, K = any>(
+  async delete<D = any, E = any, N extends D = D, K = any>(
     skey: string | undefined,
     params: Params<D, E, N, K> = {}
   ) {
@@ -109,7 +108,7 @@ export class Core extends Ortho<string, State | undefined> {
     await storage.delete(skey)
   }
 
-  async mutate<D extends N = any, E = any, N = D, K = any>(
+  async mutate<D = any, E = any, N extends D = D, K = any>(
     skey: string | undefined,
     current: State<D, E, N, K> | undefined,
     mutator: Mutator<D, E, N, K>,
@@ -126,7 +125,7 @@ export class Core extends Ortho<string, State | undefined> {
     if (state.time !== undefined && state.time < (current?.time ?? 0))
       return current
 
-    const next: State<D, E, D | N, K> = {
+    const next: State<D, E, N, K> = {
       time: Date.now(),
       data: current?.data,
       error: current?.error,
@@ -138,8 +137,7 @@ export class Core extends Ortho<string, State | undefined> {
     }
 
     const {
-      equals = DEFAULT_EQUALS,
-      normalizer
+      equals = DEFAULT_EQUALS
     } = params
 
     if (equals(next.data, current?.data)) // Prevent some renders if the data is the same
@@ -147,44 +145,25 @@ export class Core extends Ortho<string, State | undefined> {
     if (shallowEquals(next, current)) // Shallow comparison because aborter is not serializable
       return current
 
-    if (normalizer !== undefined && next.data !== undefined && next.data !== current?.data) {
-      const transformed = normalizer(next.data as D)
-      next.data = await this.normalize(transformed, next) as N
-    }
+    next.data = await this.normalize(next, params)
 
     await this.set(skey, next, params)
     return next as State<D, E, N, K>
   }
 
-  async normalize<T = any, R = any>(
-    transformed: T,
-    state: State
+  async normalize<D = any, E = any, N extends D = D, K = any>(
+    root: State<D, E, N, K>,
+    params: Params<D, E, N, K> = {}
   ) {
-    const { time, cooldown, expiration, optimistic } = state
-
-    if (typeof transformed !== "object")
-      return transformed
-    if (transformed === null)
-      return transformed
-
-    for (const key in transformed) {
-      const item = transformed[key]
-      if (item instanceof Normal) {
-        const object = item.schema.make(this, undefined)
-        await object.mutate(() => ({ data: item.data, time, cooldown, expiration, optimistic }))
-        transformed[key] = item.result
-      } else {
-        transformed[key] = await this.normalize(item, state)
-      }
-    }
-
-    return transformed as R
+    if (root.data === undefined) return
+    if (params.normalizer === undefined) return root.data
+    return await params.normalizer(root.data, { core: this, root })
   }
 
   /**
    * True if we should cooldown this resource
    */
-  shouldCooldown<D extends N = any, E = any, N = D, K = any>(
+  shouldCooldown<D = any, E = any, N extends D = D, K = any>(
     current?: State<D, E, N, K>
   ) {
     if (current?.cooldown === undefined)
@@ -195,7 +174,7 @@ export class Core extends Ortho<string, State | undefined> {
   counts = new Map<string, number>()
   timeouts = new Map<string, NodeJS.Timeout>()
 
-  once<D extends N = any, E = any, N = D, K = any>(
+  once<D = any, E = any, N extends D = D, K = any>(
     key: string | undefined,
     listener: Listener<D, E, N, K>,
     params: Params<D, E, N, K> = {}
@@ -210,7 +189,7 @@ export class Core extends Ortho<string, State | undefined> {
     this.on(key, f, params)
   }
 
-  on<D extends N = any, E = any, N = D, K = any>(
+  on<D = any, E = any, N extends D = D, K = any>(
     key: string | undefined,
     listener: Listener<D, E, N, K>,
     params: Params<D, E, N, K> = {}
@@ -229,7 +208,7 @@ export class Core extends Ortho<string, State | undefined> {
     this.timeouts.delete(key)
   }
 
-  async off<D extends N = any, E = any, N = D, K = any>(
+  async off<D = any, E = any, N extends D = D, K = any>(
     key: string | undefined,
     listener: Listener<D, E, N, K>,
     params: Params<D, E, N, K> = {}

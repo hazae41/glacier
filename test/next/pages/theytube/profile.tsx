@@ -2,6 +2,11 @@ import { XSWR } from "@hazae41/xswr";
 import { useCallback } from "react";
 import { fetchAsJson } from "../../libs/fetcher";
 
+export interface ProfileRef {
+  ref: boolean
+  id: string
+}
+
 export interface ProfileData {
   id: string
   nickname: string
@@ -13,8 +18,11 @@ export function getProfileSchema(id: string) {
     fetchAsJson)
 }
 
-export function getProfileNormal(profile: ProfileData) {
-  return new XSWR.Normal(profile, getProfileSchema(profile.id), profile.id)
+export async function getProfileRef(profile: ProfileData | ProfileRef, more: XSWR.NormalizerMore) {
+  if ("ref" in profile) return profile
+  const schema = getProfileSchema(profile.id)
+  await schema.normalize(profile, more)
+  return { ref: true, id: profile.id }
 }
 
 export function useProfile(id: string) {

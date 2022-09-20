@@ -1,4 +1,4 @@
-export interface Result<D extends N = any, E = any, N = D, K = any> {
+export interface Result<D = any, E = any, N extends D = D, K = any> {
   data?: D,
   error?: E,
   time?: number,

@@ -1,14 +1,14 @@
 import { XSWR } from "@hazae41/xswr";
 import { useCallback } from "react";
 import { fetchAsJson } from "../../libs/fetcher";
-import { getVideoNormal, Video, VideoData } from "./video";
+import { getVideoRef, Video, VideoData, VideoRef } from "./video";
 
 function getAllVideosSchema() {
-  function normalizer(videos: VideoData[]) {
-    return videos.map(getVideoNormal)
+  async function normalizer(videos: (VideoData | VideoRef)[], more: XSWR.NormalizerMore) {
+    return await Promise.all(videos.map(data => getVideoRef(data, more)))
   }
 
-  return XSWR.single<VideoData[], Error, { id: string }[]>(
+  return XSWR.single<(VideoData | VideoRef)[]>(
     `/api/theytube`,
     fetchAsJson,
     { normalizer })

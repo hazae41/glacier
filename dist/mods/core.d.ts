@@ -5,7 +5,7 @@ import { SingleHelper } from "./single";
 import { Mutator } from "./types/mutator";
 import { Params } from "./types/params";
 import { State } from "./types/state";
-export declare type Listener<D extends N = any, E = any, N = D, K = any> = (x?: State<D, E, N, K>) => void;
+export declare type Listener<D = any, E = any, N extends D = D, K = any> = (x?: State<D, E, N, K>) => void;
 export declare class Core extends Ortho<string, State | undefined> {
     readonly single: SingleHelper;
     readonly scroll: ScrollHelper;
@@ -14,8 +14,8 @@ export declare class Core extends Ortho<string, State | undefined> {
     constructor();
     get mounted(): boolean;
     unmount(): void;
-    getSync<D extends N = any, E = any, N = D, K = any>(skey: string | undefined, params?: Params<D, E, N, K>): State<D, E, N, K> | undefined | null;
-    get<D extends N = any, E = any, N = D, K = any>(skey: string | undefined, params?: Params<D, E, N, K>, ignore?: boolean): Promise<State<D, E, N, K> | undefined>;
+    getSync<D = any, E = any, N extends D = D, K = any>(skey: string | undefined, params?: Params<D, E, N, K>): State<D, E, N, K> | undefined | null;
+    get<D = any, E = any, N extends D = D, K = any>(skey: string | undefined, params?: Params<D, E, N, K>, ignore?: boolean): Promise<State<D, E, N, K> | undefined>;
     /**
      * Force set a key to a state and publish it
      * No check, no merge
@@ -23,22 +23,22 @@ export declare class Core extends Ortho<string, State | undefined> {
      * @param state New state
      * @returns
      */
-    set<D extends N = any, E = any, N = D, K = any>(skey: string | undefined, state: State<D, E, N, K>, params?: Params<D, E, N, K>): Promise<void>;
+    set<D = any, E = any, N extends D = D, K = any>(skey: string | undefined, state: State<D, E, N, K>, params?: Params<D, E, N, K>): Promise<void>;
     /**
      * Delete key and publish undefined
      * @param skey
      * @returns
      */
-    delete<D extends N = any, E = any, N = D, K = any>(skey: string | undefined, params?: Params<D, E, N, K>): Promise<void>;
-    mutate<D extends N = any, E = any, N = D, K = any>(skey: string | undefined, current: State<D, E, N, K> | undefined, mutator: Mutator<D, E, N, K>, params?: Params<D, E, N, K>): Promise<State<D, E, N, K> | undefined>;
-    normalize<T = any, R = any>(transformed: T, state: State): Promise<T | R>;
+    delete<D = any, E = any, N extends D = D, K = any>(skey: string | undefined, params?: Params<D, E, N, K>): Promise<void>;
+    mutate<D = any, E = any, N extends D = D, K = any>(skey: string | undefined, current: State<D, E, N, K> | undefined, mutator: Mutator<D, E, N, K>, params?: Params<D, E, N, K>): Promise<State<D, E, N, K> | undefined>;
+    normalize<D = any, E = any, N extends D = D, K = any>(root: State<D, E, N, K>, params?: Params<D, E, N, K>): Promise<N | (D & ({} | null)) | undefined>;
     /**
      * True if we should cooldown this resource
      */
-    shouldCooldown<D extends N = any, E = any, N = D, K = any>(current?: State<D, E, N, K>): boolean;
+    shouldCooldown<D = any, E = any, N extends D = D, K = any>(current?: State<D, E, N, K>): boolean;
     counts: Map<string, number>;
     timeouts: Map<string, NodeJS.Timeout>;
-    once<D extends N = any, E = any, N = D, K = any>(key: string | undefined, listener: Listener<D, E, N, K>, params?: Params<D, E, N, K>): void;
-    on<D extends N = any, E = any, N = D, K = any>(key: string | undefined, listener: Listener<D, E, N, K>, params?: Params<D, E, N, K>): void;
-    off<D extends N = any, E = any, N = D, K = any>(key: string | undefined, listener: Listener<D, E, N, K>, params?: Params<D, E, N, K>): Promise<void>;
+    once<D = any, E = any, N extends D = D, K = any>(key: string | undefined, listener: Listener<D, E, N, K>, params?: Params<D, E, N, K>): void;
+    on<D = any, E = any, N extends D = D, K = any>(key: string | undefined, listener: Listener<D, E, N, K>, params?: Params<D, E, N, K>): void;
+    off<D = any, E = any, N extends D = D, K = any>(key: string | undefined, listener: Listener<D, E, N, K>, params?: Params<D, E, N, K>): Promise<void>;
 }

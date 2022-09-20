@@ -1,7 +1,12 @@
 import { XSWR } from "@hazae41/xswr";
 import { useCallback } from "react";
 import { fetchAsJson } from "../../libs/fetcher";
-import { getProfileNormal, getProfileSchema, Profile, ProfileData } from "./profile";
+import { getProfileRef, getProfileSchema, Profile, ProfileData, ProfileRef } from "./profile";
+
+export interface CommentRef {
+  ref: boolean
+  id: string
+}
 
 export interface CommentData {
   id: string,
@@ -11,26 +16,27 @@ export interface CommentData {
 
 export interface NormalizedCommentData {
   id: string,
-  author: { id: string },
+  author: ProfileRef,
   text: string
 }
 
 export function getCommentSchema(id: string) {
-  function normalizer(comment: CommentData) {
-    const author = typeof comment.author !== "string"
-      ? getProfileNormal(comment.author)
-      : comment.author
+  async function normalizer(comment: CommentData | NormalizedCommentData, more: XSWR.NormalizerMore) {
+    const author = await getProfileRef(comment.author, more)
     return { ...comment, author }
   }
 
-  return XSWR.single<CommentData, Error, NormalizedCommentData>(
+  return XSWR.single<CommentData | NormalizedCommentData>(
     `/api/theytube/comment?id=${id}`,
     fetchAsJson,
     { normalizer })
 }
 
-export function getCommentNormal(comment: CommentData) {
-  return new XSWR.Normal(comment, getCommentSchema(comment.id), comment.id)
+export async function getCommentRef(comment: CommentData | CommentRef, more: XSWR.NormalizerMore) {
+  if ("ref" in comment) return comment
+  const schema = getCommentSchema(comment.id)
+  await schema.normalize(comment, more)
+  return { ref: true, id: comment.id }
 }
 
 export function useComment(id: string) {

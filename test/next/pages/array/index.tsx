@@ -2,6 +2,11 @@ import { XSWR } from "@hazae41/xswr";
 import { useCallback } from "react";
 import { fetchAsJson } from "../../libs/fetcher";
 
+interface Ref {
+  ref: boolean
+  id: string
+}
+
 interface Data {
   id: string
   name: string
@@ -11,16 +16,19 @@ function getDataSchema(id: string) {
   return XSWR.single<Data>(`/api/array?id=${id}`, fetchAsJson)
 }
 
-function getDataNormal(data: Data) {
-  return new XSWR.Normal(data, getDataSchema(data.id), data.id)
+async function getDataRef(data: Data | Ref, more: XSWR.NormalizerMore) {
+  if ("ref" in data) return data
+  const schema = getDataSchema(data.id)
+  await schema.normalize(data, more)
+  return { ref: true, id: data.id }
 }
 
 function getAllDataSchema() {
-  function normalizer(data: Data[]) {
-    return data.map(getDataNormal)
+  async function normalizer(data: (Data | Ref)[], more: XSWR.NormalizerMore) {
+    return await Promise.all(data.map(data => getDataRef(data, more)))
   }
 
-  return XSWR.single<Data[], Error, { id: string }[]>(
+  return XSWR.single<(Data | Ref)[]>(
     `/api/array/all`,
     fetchAsJson,
     { normalizer })

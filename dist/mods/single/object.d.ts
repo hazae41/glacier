@@ -5,19 +5,19 @@ import { Params } from "../types/params";
 import { Poster } from "../types/poster";
 import { State } from "../types/state";
 import { Updater } from "../types/updater";
-export declare function getSingleStorageKey<D extends N = any, E = any, N = D, K = any>(key: K, params: Params): string | undefined;
+export declare function getSingleStorageKey<D = any, E = any, N extends D = D, K = any>(key: K, params: Params): string | undefined;
 /**
  * Non-React version of SingleHandle
  */
-export declare class SingleObject<D extends N = any, E = any, N = D, K = any> implements Object<D, E, N, K> {
+export declare class SingleObject<D = any, E = any, N extends D = D, K = any> implements Object<D, E, N, K> {
     readonly core: Core;
     readonly key: K | undefined;
     readonly poster: Poster<D, E, N, K> | undefined;
-    readonly skey: string | undefined;
     readonly params: Params<D, E, N, K>;
+    readonly skey: string | undefined;
     private _init;
     private _state;
-    constructor(core: Core, key: K | undefined, poster: Poster<D, E, N, K> | undefined, cparams?: Params<D, E, N, K>, pparams?: Params<D, E, N, K>);
+    constructor(core: Core, key: K | undefined, poster: Poster<D, E, N, K> | undefined, params?: Params<D, E, N, K>);
     get init(): Promise<void> | undefined;
     get state(): State<D, E, N, K> | null | undefined;
     get ready(): boolean;

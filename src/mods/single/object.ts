@@ -7,7 +7,7 @@ import { State } from "mods/types/state";
 import { Updater } from "mods/types/updater";
 import { DEFAULT_SERIALIZER } from "mods/utils/defaults";
 
-export function getSingleStorageKey<D extends N = any, E = any, N = D, K = any>(key: K, params: Params) {
+export function getSingleStorageKey<D = any, E = any, N extends D = D, K = any>(key: K, params: Params) {
   if (key === undefined)
     return undefined
   if (typeof key === "string")
@@ -23,9 +23,8 @@ export function getSingleStorageKey<D extends N = any, E = any, N = D, K = any>(
 /**
  * Non-React version of SingleHandle
  */
-export class SingleObject<D extends N = any, E = any, N = D, K = any> implements Object<D, E, N, K>{
+export class SingleObject<D = any, E = any, N extends D = D, K = any> implements Object<D, E, N, K>{
   readonly skey: string | undefined
-  readonly params: Params<D, E, N, K>
 
   private _init: Promise<void> | undefined
   private _state: State<D, E, N, K> | undefined | null
@@ -34,10 +33,8 @@ export class SingleObject<D extends N = any, E = any, N = D, K = any> implements
     readonly core: Core,
     readonly key: K | undefined,
     readonly poster: Poster<D, E, N, K> | undefined,
-    cparams: Params<D, E, N, K> = {},
-    pparams: Params<D, E, N, K> = {},
+    readonly params: Params<D, E, N, K> = {},
   ) {
-    this.params = { ...pparams, ...cparams }
     this.skey = getSingleStorageKey(key, this.params)
 
     this.loadSync()

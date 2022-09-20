@@ -1,5 +1,5 @@
 export * from "./fetcher";
-export * from "./normal";
+export * from "./normalizer";
 export * from "./object";
 export * from "./params";
 export * from "./poster";

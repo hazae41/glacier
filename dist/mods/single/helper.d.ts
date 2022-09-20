@@ -17,7 +17,7 @@ export declare class SingleHelper {
      * @param force Should ignore cooldown
      * @returns The new state
      */
-    fetch<D extends N = any, E = any, N = D, K = any>(key: K | undefined, skey: string | undefined, current: State<D, E, N, K> | undefined, fetcher: Fetcher<D, E, N, K>, aborter?: AbortController, params?: Params<D, E, N, K>, force?: boolean, ignore?: boolean): Promise<State<D, E, N, K> | undefined>;
+    fetch<D = any, E = any, N extends D = D, K = any>(key: K | undefined, skey: string | undefined, current: State<D, E, N, K> | undefined, fetcher: Fetcher<D, E, N, K>, aborter?: AbortController, params?: Params<D, E, N, K>, force?: boolean, ignore?: boolean): Promise<State<D, E, N, K> | undefined>;
     /**
      * Optimistic update
      * @param key Key (:K) (passed to poster)
@@ -29,5 +29,5 @@ export declare class SingleHelper {
      * @returns The new state
      * @throws Error
      */
-    update<D extends N = any, E = any, N = D, K = any>(key: K | undefined, skey: string | undefined, current: State<D, E, N, K> | undefined, poster: Poster<D, E, N, K>, updater: Updater<D, E, N, K>, aborter?: AbortController, params?: Params<D, E, N, K>): Promise<State<D, E, N, K> | undefined>;
+    update<D = any, E = any, N extends D = D, K = any>(key: K | undefined, skey: string | undefined, current: State<D, E, N, K> | undefined, poster: Poster<D, E, N, K>, updater: Updater<D, E, N, K>, aborter?: AbortController, params?: Params<D, E, N, K>): Promise<State<D, E, N, K> | undefined>;
 }

@@ -445,13 +445,12 @@ function getScrollStorageKey(key, params) {
  * Non-React version of ScrollHandle
  */
 var ScrollObject = /** @class */ (function () {
-    function ScrollObject(core, scroller, fetcher, cparams, pparams) {
-        if (cparams === void 0) { cparams = {}; }
-        if (pparams === void 0) { pparams = {}; }
+    function ScrollObject(core, scroller, fetcher, params) {
+        if (params === void 0) { params = {}; }
         this.core = core;
         this.scroller = scroller;
         this.fetcher = fetcher;
-        this.params = __assign(__assign({}, pparams), cparams);
+        this.params = params;
         this.key = scroller();
         this.skey = getScrollStorageKey(this.key, this.params);
         this.loadSync();
@@ -633,10 +632,25 @@ var ScrollSchema = /** @class */ (function () {
         this.fetcher = fetcher;
         this.params = params;
     }
-    ScrollSchema.prototype.make = function (core, pparams) {
-        if (pparams === void 0) { pparams = {}; }
+    ScrollSchema.prototype.make = function (core) {
         var _a = this, scroller = _a.scroller, fetcher = _a.fetcher, params = _a.params;
-        return new ScrollObject(core, scroller, fetcher, params, pparams);
+        return new ScrollObject(core, scroller, fetcher, params);
+    };
+    ScrollSchema.prototype.normalize = function (data, more) {
+        return __awaiter(this, void 0, void 0, function () {
+            var _a, time, cooldown, expiration, optimistic, state;
+            return __generator(this, function (_b) {
+                switch (_b.label) {
+                    case 0:
+                        _a = more.root, time = _a.time, cooldown = _a.cooldown, expiration = _a.expiration, optimistic = _a.optimistic;
+                        state = { data: data, time: time, cooldown: cooldown, expiration: expiration, optimistic: optimistic };
+                        return [4 /*yield*/, this.make(more.core).mutate(function () { return state; })];
+                    case 1:
+                        _b.sent();
+                        return [2 /*return*/];
+                }
+            });
+        });
     };
     return ScrollSchema;
 }());
@@ -810,13 +824,12 @@ function getSingleStorageKey(key, params) {
  * Non-React version of SingleHandle
  */
 var SingleObject = /** @class */ (function () {
-    function SingleObject(core, key, poster, cparams, pparams) {
-        if (cparams === void 0) { cparams = {}; }
-        if (pparams === void 0) { pparams = {}; }
+    function SingleObject(core, key, poster, params) {
+        if (params === void 0) { params = {}; }
         this.core = core;
         this.key = key;
         this.poster = poster;
-        this.params = __assign(__assign({}, pparams), cparams);
+        this.params = params;
         this.skey = getSingleStorageKey(key, this.params);
         this.loadSync();
         this.subscribe();
@@ -997,21 +1010,27 @@ var SingleSchema = /** @class */ (function () {
         this.poster = poster;
         this.params = params;
     }
-    SingleSchema.prototype.make = function (core, pparams) {
-        if (pparams === void 0) { pparams = {}; }
+    SingleSchema.prototype.make = function (core) {
         var _a = this, key = _a.key, poster = _a.poster, params = _a.params;
-        return new SingleObject(core, key, poster, params, pparams);
+        return new SingleObject(core, key, poster, params);
+    };
+    SingleSchema.prototype.normalize = function (data, more) {
+        return __awaiter(this, void 0, void 0, function () {
+            var _a, time, cooldown, expiration, optimistic, state;
+            return __generator(this, function (_b) {
+                switch (_b.label) {
+                    case 0:
+                        _a = more.root, time = _a.time, cooldown = _a.cooldown, expiration = _a.expiration, optimistic = _a.optimistic;
+                        state = { data: data, time: time, cooldown: cooldown, expiration: expiration, optimistic: optimistic };
+                        return [4 /*yield*/, this.make(more.core).mutate(function () { return state; })];
+                    case 1:
+                        _b.sent();
+                        return [2 /*return*/];
+                }
+            });
+        });
     };
     return SingleSchema;
-}());
-
-var Normal = /** @class */ (function () {
-    function Normal(data, schema, result) {
-        this.data = data;
-        this.schema = schema;
-        this.result = result;
-    }
-    return Normal;
 }());
 
 function isAsyncStorage(storage) {
@@ -1152,7 +1171,7 @@ var Core = /** @class */ (function (_super) {
         var _a;
         if (params === void 0) { params = {}; }
         return __awaiter(this, void 0, void 0, function () {
-            var state, next, _b, equals, normalizer, transformed, _c;
+            var state, next, _b, equals, _c;
             return __generator(this, function (_d) {
                 switch (_d.label) {
                     case 0:
@@ -1168,78 +1187,35 @@ var Core = /** @class */ (function (_super) {
                         if (state.time !== undefined && state.time < ((_a = current === null || current === void 0 ? void 0 : current.time) !== null && _a !== void 0 ? _a : 0))
                             return [2 /*return*/, current];
                         next = __assign({ time: Date.now(), data: current === null || current === void 0 ? void 0 : current.data, error: current === null || current === void 0 ? void 0 : current.error, cooldown: current === null || current === void 0 ? void 0 : current.cooldown, expiration: current === null || current === void 0 ? void 0 : current.expiration, aborter: current === null || current === void 0 ? void 0 : current.aborter, optimistic: undefined }, state);
-                        _b = params.equals, equals = _b === void 0 ? DEFAULT_EQUALS : _b, normalizer = params.normalizer;
+                        _b = params.equals, equals = _b === void 0 ? DEFAULT_EQUALS : _b;
                         if (equals(next.data, current === null || current === void 0 ? void 0 : current.data)) // Prevent some renders if the data is the same
                             next.data = current === null || current === void 0 ? void 0 : current.data;
                         if (shallowEquals(next, current)) // Shallow comparison because aborter is not serializable
                             return [2 /*return*/, current];
-                        if (!(normalizer !== undefined && next.data !== undefined && next.data !== (current === null || current === void 0 ? void 0 : current.data))) return [3 /*break*/, 4];
-                        transformed = normalizer(next.data);
                         _c = next;
-                        return [4 /*yield*/, this.normalize(transformed, next)];
+                        return [4 /*yield*/, this.normalize(next, params)];
                     case 3:
-                        _c.data = (_d.sent());
-                        _d.label = 4;
-                    case 4: return [4 /*yield*/, this.set(skey, next, params)];
-                    case 5:
+                        _c.data = _d.sent();
+                        return [4 /*yield*/, this.set(skey, next, params)];
+                    case 4:
                         _d.sent();
                         return [2 /*return*/, next];
                 }
             });
         });
     };
-    Core.prototype.normalize = function (transformed, state) {
+    Core.prototype.normalize = function (root, params) {
+        if (params === void 0) { params = {}; }
         return __awaiter(this, void 0, void 0, function () {
-            var time, cooldown, expiration, optimistic, _loop_1, this_1, _a, _b, _i, key;
-            return __generator(this, function (_c) {
-                switch (_c.label) {
+            return __generator(this, function (_a) {
+                switch (_a.label) {
                     case 0:
-                        time = state.time, cooldown = state.cooldown, expiration = state.expiration, optimistic = state.optimistic;
-                        if (typeof transformed !== "object")
-                            return [2 /*return*/, transformed];
-                        if (transformed === null)
-                            return [2 /*return*/, transformed];
-                        _loop_1 = function (key) {
-                            var item, object, _d, _e;
-                            return __generator(this, function (_f) {
-                                switch (_f.label) {
-                                    case 0:
-                                        item = transformed[key];
-                                        if (!(item instanceof Normal)) return [3 /*break*/, 2];
-                                        object = item.schema.make(this_1, undefined);
-                                        return [4 /*yield*/, object.mutate(function () { return ({ data: item.data, time: time, cooldown: cooldown, expiration: expiration, optimistic: optimistic }); })];
-                                    case 1:
-                                        _f.sent();
-                                        transformed[key] = item.result;
-                                        return [3 /*break*/, 4];
-                                    case 2:
-                                        _d = transformed;
-                                        _e = key;
-                                        return [4 /*yield*/, this_1.normalize(item, state)];
-                                    case 3:
-                                        _d[_e] = _f.sent();
-                                        _f.label = 4;
-                                    case 4: return [2 /*return*/];
-                                }
-                            });
-                        };
-                        this_1 = this;
-                        _a = [];
-                        for (_b in transformed)
-                            _a.push(_b);
-                        _i = 0;
-                        _c.label = 1;
-                    case 1:
-                        if (!(_i < _a.length)) return [3 /*break*/, 4];
-                        key = _a[_i];
-                        return [5 /*yield**/, _loop_1(key)];
-                    case 2:
-                        _c.sent();
-                        _c.label = 3;
-                    case 3:
-                        _i++;
-                        return [3 /*break*/, 1];
-                    case 4: return [2 /*return*/, transformed];
+                        if (root.data === undefined)
+                            return [2 /*return*/];
+                        if (params.normalizer === undefined)
+                            return [2 /*return*/, root.data];
+                        return [4 /*yield*/, params.normalizer(root.data, { core: this, root: root })];
+                    case 1: return [2 /*return*/, _a.sent()];
                 }
             });
         });
@@ -1555,12 +1531,10 @@ function useVisible(handle) {
  * @param cparams Parameters (unmemoized)
  * @returns Scrolling handle
  */
-function useScroll(scroller, fetcher, cparams) {
+function useScroll(scroller, fetcher, params) {
     var _this = this;
-    if (cparams === void 0) { cparams = {}; }
+    if (params === void 0) { params = {}; }
     var core = useCore();
-    var pparams = useParams();
-    var params = __assign(__assign({}, pparams), cparams);
     var scrollerRef = useAutoRef(scroller);
     var fetcherRef = useAutoRef(fetcher);
     var paramsRef = useAutoRef(params);
@@ -1756,12 +1730,10 @@ function useScroll(scroller, fetcher, cparams) {
  * @param cparams Parameters (unmemoized)
  * @returns Single handle
  */
-function useSingle(key, poster, cparams) {
+function useSingle(key, poster, params) {
     var _this = this;
-    if (cparams === void 0) { cparams = {}; }
+    if (params === void 0) { params = {}; }
     var core = useCore();
-    var pparams = useParams();
-    var params = __assign(__assign({}, pparams), cparams);
     var keyRef = useAutoRef(key);
     var posterRef = useAutoRef(poster);
     var paramsRef = useAutoRef(params);
@@ -1960,11 +1932,10 @@ function use(factory, deps) {
 
 function useXSWR() {
     var core = useCore();
-    var params = useParams();
     var make = React.useCallback(function (schema) {
-        return schema.make(core, params);
-    }, [core, params]);
-    return { core: core, params: params, make: make };
+        return schema.make(core);
+    }, [core]);
+    return { core: core, make: make };
 }
 
 function useIDBStorage(name) {
@@ -2488,7 +2459,6 @@ var index = {
     AsyncLocalStorage: AsyncLocalStorage,
     useSyncLocalStorage: useSyncLocalStorage,
     SyncLocalStorage: SyncLocalStorage,
-    Normal: Normal,
     isAsyncStorage: isAsyncStorage,
     DEFAULT_EQUALS: DEFAULT_EQUALS,
     DEFAULT_SERIALIZER: DEFAULT_SERIALIZER,

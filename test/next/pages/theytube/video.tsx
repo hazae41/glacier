@@ -1,7 +1,12 @@
 import { XSWR } from "@hazae41/xswr";
 import { fetchAsJson } from "../../libs/fetcher";
-import { Comment, CommentData, getCommentNormal } from "./comment";
-import { getProfileNormal, Profile, ProfileData } from "./profile";
+import { Comment, CommentData, CommentRef, getCommentRef } from "./comment";
+import { getProfileRef, Profile, ProfileData, ProfileRef } from "./profile";
+
+export interface VideoRef {
+  ref: boolean
+  id: string
+}
 
 export interface VideoData {
   id: string
@@ -13,25 +18,28 @@ export interface VideoData {
 export interface NormalizedVideoData {
   id: string
   title: string
-  author: { id: string }
-  comments: { id: string }[]
+  author: ProfileRef
+  comments: CommentRef[]
 }
 
 export function getVideoSchema(id: string) {
-  function normalizer(video: VideoData) {
-    const author = getProfileNormal(video.author)
-    const comments = video.comments.map(getCommentNormal)
+  async function normalizer(video: VideoData | NormalizedVideoData, more: XSWR.NormalizerMore) {
+    const author = await getProfileRef(video.author, more)
+    const comments = await Promise.all(video.comments.map(data => getCommentRef(data, more)))
     return { ...video, author, comments }
   }
 
-  return XSWR.single<VideoData, Error, NormalizedVideoData>(
+  return XSWR.single<VideoData | NormalizedVideoData>(
     `/api/theytube/video?id=${id}`,
     fetchAsJson,
     { normalizer })
 }
 
-export function getVideoNormal(video: VideoData) {
-  return new XSWR.Normal(video, getVideoSchema(video.id), video.id)
+export async function getVideoRef(video: VideoData | VideoRef, more: XSWR.NormalizerMore) {
+  if ("ref" in video) return video
+  const schema = getVideoSchema(video.id)
+  await schema.normalize(video, more)
+  return { ref: true, id: video.id }
 }
 
 export function useVideo(id: string) {

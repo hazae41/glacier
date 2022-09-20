@@ -2,8 +2,28 @@ import { XSWR } from "@hazae41/xswr"
 import { useCallback } from "react"
 import { fetchAsJson } from "../../libs/fetcher"
 
+export interface RefPage {
+  data: Ref[],
+  after?: string
+}
+
+export interface DataPage {
+  data: Data[],
+  after?: string
+}
+
+export interface Ref {
+  ref: boolean,
+  id: string
+}
+
+export interface Data {
+  id: string,
+  value: number
+}
+
 function getScrollsSchema() {
-  return XSWR.scroll<{ data: number[], after?: string }>((previous) => {
+  return XSWR.scroll<DataPage | RefPage>((previous) => {
     if (!previous)
       return `/api/scroll`
     if (!previous.after)
@@ -22,7 +42,6 @@ function useScrollsData() {
 export default function Page() {
   const scrolls = useScrollsData()
 
-  // this is for you, gaearon
   const { data, error, loading, refetch, scroll, aborter } = scrolls
 
   const onRefreshClick = useCallback(() => {
@@ -44,7 +63,7 @@ export default function Page() {
       return data.map((page, i) => <div key={i}>
         <div>page {i}</div>
         {page.data.map(element =>
-          <div key={element}>{element}</div>)}
+          <div key={element.id}>{element.id}</div>)}
       </div>)
     })()}
     <div style={{ color: "red" }}>

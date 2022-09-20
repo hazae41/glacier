@@ -1,7 +1,7 @@
 import { Mutator } from "mods/types/mutator"
 import { State } from "mods/types/state"
 
-export interface Handle<D extends N = any, E = any, N = D, K = any> {
+export interface Handle<D = any, E = any, N extends D = D, K = any> {
   /**
    * Arbitrary key, must be serializable
    */
@@ -15,7 +15,7 @@ export interface Handle<D extends N = any, E = any, N = D, K = any> {
   /**
    * Data, if any
    */
-  data?: D | N
+  data?: D
 
   /**
    * Error, if any

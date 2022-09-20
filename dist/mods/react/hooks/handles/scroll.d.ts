@@ -6,7 +6,7 @@ import { Handle } from "./handle";
 /**
  * Handle for a scrolling resource
  */
-export interface ScrollHandle<D extends N = any, E = any, N = D, K = any> extends Handle<D[], E, N[], K> {
+export interface ScrollHandle<D = any, E = any, N extends D = D, K = any> extends Handle<D[], E, N[], K> {
     /**
      * Fetch the next page
      */
@@ -19,4 +19,4 @@ export interface ScrollHandle<D extends N = any, E = any, N = D, K = any> extend
  * @param cparams Parameters (unmemoized)
  * @returns Scrolling handle
  */
-export declare function useScroll<D extends N = any, E = any, N = D, K = any>(scroller: Scroller<D, E, N, K>, fetcher: Fetcher<D, E, N, K> | undefined, cparams?: Params<D[], E, N[], K>): ScrollHandle<D, E, N, K>;
+export declare function useScroll<D = any, E = any, N extends D = D, K = any>(scroller: Scroller<D, E, N, K>, fetcher: Fetcher<D, E, N, K> | undefined, params?: Params<D[], E, N[], K>): ScrollHandle<D, E, N, K>;

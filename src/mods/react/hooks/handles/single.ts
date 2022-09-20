@@ -1,5 +1,5 @@
 import { useAutoRef } from "libs/react";
-import { useCore, useParams } from "mods/react/contexts";
+import { useCore } from "mods/react/contexts";
 import { getSingleStorageKey } from "mods/single/object";
 import { Mutator } from "mods/types/mutator";
 import { Params } from "mods/types/params";
@@ -12,7 +12,7 @@ import { Handle } from "./handle";
 /**
  * Handle for a single resource
  */
-export interface SingleHandle<D extends N = any, E = any, N = D, K = any> extends Handle<D, E, N, K> {
+export interface SingleHandle<D = any, E = any, N extends D = D, K = any> extends Handle<D, E, N, K> {
   /**
    * Optimistic update
    * @param updater Mutation function
@@ -28,15 +28,12 @@ export interface SingleHandle<D extends N = any, E = any, N = D, K = any> extend
  * @param cparams Parameters (unmemoized)
  * @returns Single handle
  */
-export function useSingle<D extends N = any, E = any, N = D, K = any>(
+export function useSingle<D = any, E = any, N extends D = D, K = any>(
   key: K | undefined,
   poster: Poster<D, E, N, K> | undefined,
-  cparams: Params<D, E, N, K> = {},
+  params: Params<D, E, N, K> = {},
 ): SingleHandle<D, E, N, K> {
   const core = useCore()
-  const pparams = useParams()
-
-  const params = { ...pparams, ...cparams }
 
   const keyRef = useAutoRef(key)
   const posterRef = useAutoRef(poster)

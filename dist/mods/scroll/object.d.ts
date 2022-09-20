@@ -5,20 +5,20 @@ import { Object } from "../types/object";
 import { Params } from "../types/params";
 import { Scroller } from "../types/scroller";
 import { State } from "../types/state";
-export declare function getScrollStorageKey<D extends N = any, E = any, N = D, K = any>(key: K, params: Params): string | undefined;
+export declare function getScrollStorageKey<D = any, E = any, N extends D = D, K = any>(key: K, params: Params): string | undefined;
 /**
  * Non-React version of ScrollHandle
  */
-export declare class ScrollObject<D extends N = any, E = any, N = D, K = any> implements Object<D[], E, N[], K> {
+export declare class ScrollObject<D = any, E = any, N extends D = D, K = any> implements Object<D[], E, N[], K> {
     readonly core: Core;
     readonly scroller: Scroller<D, E, N, K>;
     readonly fetcher: Fetcher<D, E, N, K> | undefined;
+    readonly params: Params<D[], E, N[], K>;
     readonly key: K | undefined;
     readonly skey: string | undefined;
-    readonly params: Params<D[], E, N[], K>;
     private _init;
     private _state;
-    constructor(core: Core, scroller: Scroller<D, E, N, K>, fetcher: Fetcher<D, E, N, K> | undefined, cparams?: Params<D[], E, N[], K>, pparams?: Params<D[], E, N[], K>);
+    constructor(core: Core, scroller: Scroller<D, E, N, K>, fetcher: Fetcher<D, E, N, K> | undefined, params?: Params<D[], E, N[], K>);
     get init(): Promise<void> | undefined;
     get state(): State<D[], E, N[], K> | null | undefined;
     get ready(): boolean;
