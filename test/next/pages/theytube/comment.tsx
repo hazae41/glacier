@@ -4,7 +4,7 @@ import { fetchAsJson } from "../../libs/fetcher";
 import { getProfileRef, getProfileSchema, Profile, ProfileData, ProfileRef } from "./profile";
 
 export interface CommentRef {
-  ref: boolean
+  ref: true
   id: string
 }
 
@@ -36,7 +36,7 @@ export async function getCommentRef(comment: CommentData | CommentRef, more: XSW
   if ("ref" in comment) return comment
   const schema = getCommentSchema(comment.id)
   await schema.normalize(comment, more)
-  return { ref: true, id: comment.id }
+  return { ref: true, id: comment.id } as CommentRef
 }
 
 export function useComment(id: string) {

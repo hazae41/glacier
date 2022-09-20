@@ -13,7 +13,7 @@ export interface DataPage {
 }
 
 export interface Ref {
-  ref: boolean,
+  ref: true,
   id: string
 }
 

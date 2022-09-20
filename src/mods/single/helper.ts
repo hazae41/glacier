@@ -77,7 +77,7 @@ export class SingleHelper {
       current = await this.core.get(skey, params)
 
       if (data !== undefined)
-        state.data = data as N
+        state.data = data
       state.error = error
 
       return await this.core.mutate(skey, current,

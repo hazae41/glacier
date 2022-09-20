@@ -7,4 +7,4 @@ export interface NormalizerMore<D = any, E = any, N extends D = D, K = any> {
 }
 
 export type Normalizer<D = any, E = any, N extends D = D, K = any> =
-  (data: D, more: NormalizerMore<D, E, N, K>) => Promise<N>
+  (data: D, more: NormalizerMore<D, E, N, K>) => Promise<D>

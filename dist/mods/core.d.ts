@@ -31,7 +31,7 @@ export declare class Core extends Ortho<string, State | undefined> {
      */
     delete<D = any, E = any, N extends D = D, K = any>(skey: string | undefined, params?: Params<D, E, N, K>): Promise<void>;
     mutate<D = any, E = any, N extends D = D, K = any>(skey: string | undefined, current: State<D, E, N, K> | undefined, mutator: Mutator<D, E, N, K>, params?: Params<D, E, N, K>): Promise<State<D, E, N, K> | undefined>;
-    normalize<D = any, E = any, N extends D = D, K = any>(root: State<D, E, N, K>, params?: Params<D, E, N, K>): Promise<N | (D & ({} | null)) | undefined>;
+    normalize<D = any, E = any, N extends D = D, K = any>(root: State<D, E, N, K>, params?: Params<D, E, N, K>): Promise<D | undefined>;
     /**
      * True if we should cooldown this resource
      */

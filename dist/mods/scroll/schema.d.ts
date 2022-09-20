@@ -12,5 +12,5 @@ export declare class ScrollSchema<D = any, E = any, N extends D = D, K = any> im
     readonly params: Params<D[], E, N[], K>;
     constructor(scroller: Scroller<D, E, N, K>, fetcher: Fetcher<D, E, N, K> | undefined, params?: Params<D[], E, N[], K>);
     make(core: Core): ScrollObject<D, E, N, K>;
-    normalize(data: D[] | N[], more: NormalizerMore<D[], E, N[], K>): Promise<void>;
+    normalize(data: D[], more: NormalizerMore<D[], E, N[], K>): Promise<void>;
 }

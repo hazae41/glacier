@@ -4,7 +4,7 @@ import { Comment, CommentData, CommentRef, getCommentRef } from "./comment";
 import { getProfileRef, Profile, ProfileData, ProfileRef } from "./profile";
 
 export interface VideoRef {
-  ref: boolean
+  ref: true
   id: string
 }
 
@@ -39,7 +39,7 @@ export async function getVideoRef(video: VideoData | VideoRef, more: XSWR.Normal
   if ("ref" in video) return video
   const schema = getVideoSchema(video.id)
   await schema.normalize(video, more)
-  return { ref: true, id: video.id }
+  return { ref: true, id: video.id } as VideoRef
 }
 
 export function useVideo(id: string) {

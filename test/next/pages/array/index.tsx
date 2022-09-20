@@ -3,7 +3,7 @@ import { useCallback } from "react";
 import { fetchAsJson } from "../../libs/fetcher";
 
 interface Ref {
-  ref: boolean
+  ref: true
   id: string
 }
 
@@ -20,7 +20,7 @@ async function getDataRef(data: Data | Ref, more: XSWR.NormalizerMore) {
   if ("ref" in data) return data
   const schema = getDataSchema(data.id)
   await schema.normalize(data, more)
-  return { ref: true, id: data.id }
+  return { ref: true, id: data.id } as Ref
 }
 
 function getAllDataSchema() {

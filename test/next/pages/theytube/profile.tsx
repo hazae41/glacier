@@ -3,7 +3,7 @@ import { useCallback } from "react";
 import { fetchAsJson } from "../../libs/fetcher";
 
 export interface ProfileRef {
-  ref: boolean
+  ref: true
   id: string
 }
 
@@ -22,7 +22,7 @@ export async function getProfileRef(profile: ProfileData | ProfileRef, more: XSW
   if ("ref" in profile) return profile
   const schema = getProfileSchema(profile.id)
   await schema.normalize(profile, more)
-  return { ref: true, id: profile.id }
+  return { ref: true, id: profile.id } as ProfileRef
 }
 
 export function useProfile(id: string) {
