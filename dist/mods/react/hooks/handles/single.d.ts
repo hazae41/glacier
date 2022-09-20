@@ -6,13 +6,13 @@ import { Handle } from "./handle";
 /**
  * Handle for a single resource
  */
-export interface SingleHandle<D = any, E = any, N extends D = D, K = any> extends Handle<D, E, N, K> {
+export interface SingleHandle<D = any, E = any, K = any> extends Handle<D, E, K> {
     /**
      * Optimistic update
      * @param updater Mutation function
      * @param aborter Custom AbortController
      */
-    update(updater: Updater<D, E, N, K>, aborter?: AbortController): Promise<State<D, E, N, K> | undefined>;
+    update(updater: Updater<D, E, K>, aborter?: AbortController): Promise<State<D, E, K> | undefined>;
 }
 /**
  * Single resource handle factory
@@ -21,4 +21,4 @@ export interface SingleHandle<D = any, E = any, N extends D = D, K = any> extend
  * @param cparams Parameters (unmemoized)
  * @returns Single handle
  */
-export declare function useSingle<D = any, E = any, N extends D = D, K = any>(key: K | undefined, poster: Poster<D, E, N, K> | undefined, params?: Params<D, E, N, K>): SingleHandle<D, E, N, K>;
+export declare function useSingle<D = any, E = any, K = any>(key: K | undefined, poster: Poster<D, E, K> | undefined, params?: Params<D, E, K>): SingleHandle<D, E, K>;

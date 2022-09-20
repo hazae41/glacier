@@ -7,7 +7,7 @@ import { Scroller } from "mods/types/scroller";
 import { State } from "mods/types/state";
 import { DEFAULT_SERIALIZER } from "mods/utils/defaults";
 
-export function getScrollStorageKey<D = any, E = any, N extends D = D, K = any>(key: K, params: Params) {
+export function getScrollStorageKey<D = any, E = any, K = any>(key: K, params: Params) {
   if (key === undefined)
     return undefined
   if (typeof key === "string")
@@ -23,19 +23,19 @@ export function getScrollStorageKey<D = any, E = any, N extends D = D, K = any>(
 /**
  * Non-React version of ScrollHandle
  */
-export class ScrollObject<D = any, E = any, N extends D = D, K = any> implements Object<D[], E, N[], K> {
+export class ScrollObject<D = any, E = any, K = any> implements Object<D[], E, K> {
   readonly key: K | undefined
   readonly skey: string | undefined
-  readonly mparams: Params<D[], E, N[], K>
+  readonly mparams: Params<D[], E, K>
 
   private _init: Promise<void> | undefined
-  private _state: State<D[], E, N[], K> | undefined | null
+  private _state: State<D[], E, K> | undefined | null
 
   constructor(
     readonly core: Core,
-    readonly scroller: Scroller<D, E, N, K>,
-    readonly fetcher: Fetcher<D, E, N, K> | undefined,
-    readonly params: Params<D[], E, N[], K> = {},
+    readonly scroller: Scroller<D, E, K>,
+    readonly fetcher: Fetcher<D, E, K> | undefined,
+    readonly params: Params<D[], E, K> = {},
   ) {
     this.mparams = { ...core.params, ...params }
 
@@ -67,7 +67,7 @@ export class ScrollObject<D = any, E = any, N extends D = D, K = any> implements
   private subscribe() {
     const { core, skey } = this
 
-    const setter = (state?: State<D[], E, N[], K>) =>
+    const setter = (state?: State<D[], E, K>) =>
       this._state = state
 
     core.on(skey, setter)
@@ -77,7 +77,7 @@ export class ScrollObject<D = any, E = any, N extends D = D, K = any> implements
     }).register(this, undefined)
   }
 
-  async mutate(mutator: Mutator<D[], E, N[], K>) {
+  async mutate(mutator: Mutator<D[], E, K>) {
     const { core, skey, mparams } = this
 
     if (this._state === null)

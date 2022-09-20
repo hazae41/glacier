@@ -21,16 +21,16 @@ export class SingleHelper {
    * @param force Should ignore cooldown
    * @returns The new state
    */
-  async fetch<D = any, E = any, N extends D = D, K = any>(
+  async fetch<D = any, E = any, K = any>(
     key: K | undefined,
     skey: string | undefined,
-    current: State<D, E, N, K> | undefined,
-    fetcher: Fetcher<D, E, N, K>,
+    current: State<D, E, K> | undefined,
+    fetcher: Fetcher<D, E, K>,
     aborter = new AbortController(),
-    params: Params<D, E, N, K> = {},
+    params: Params<D, E, K> = {},
     force = false,
     ignore = false
-  ): Promise<State<D, E, N, K> | undefined> {
+  ): Promise<State<D, E, K> | undefined> {
     if (key === undefined) return
     if (skey === undefined) return
 
@@ -54,7 +54,7 @@ export class SingleHelper {
       aborter.abort("Timed out")
     }, dtimeout)
 
-    const state: State<D, E, N, K> = {}
+    const state: State<D, E, K> = {}
 
     try {
       const { signal } = aborter
@@ -107,15 +107,15 @@ export class SingleHelper {
    * @returns The new state
    * @throws Error
    */
-  async update<D = any, E = any, N extends D = D, K = any>(
+  async update<D = any, E = any, K = any>(
     key: K | undefined,
     skey: string | undefined,
-    current: State<D, E, N, K> | undefined,
-    poster: Poster<D, E, N, K>,
-    updater: Updater<D, E, N, K>,
+    current: State<D, E, K> | undefined,
+    poster: Poster<D, E, K>,
+    updater: Updater<D, E, K>,
     aborter = new AbortController(),
-    params: Params<D, E, N, K> = {},
-  ): Promise<State<D, E, N, K> | undefined> {
+    params: Params<D, E, K> = {},
+  ): Promise<State<D, E, K> | undefined> {
     if (key === undefined) return
     if (skey === undefined) return
 
@@ -164,7 +164,7 @@ export class SingleHelper {
           params)
       }
 
-      const state: State<D, E, D, K> = {}
+      const state: State<D, E, K> = {}
 
       if (data !== undefined)
         state.data = data

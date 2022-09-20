@@ -12,13 +12,13 @@ import { Handle } from "./handle";
 /**
  * Handle for a single resource
  */
-export interface SingleHandle<D = any, E = any, N extends D = D, K = any> extends Handle<D, E, N, K> {
+export interface SingleHandle<D = any, E = any, K = any> extends Handle<D, E, K> {
   /**
    * Optimistic update
    * @param updater Mutation function
    * @param aborter Custom AbortController
    */
-  update(updater: Updater<D, E, N, K>, aborter?: AbortController): Promise<State<D, E, N, K> | undefined>
+  update(updater: Updater<D, E, K>, aborter?: AbortController): Promise<State<D, E, K> | undefined>
 }
 
 /**
@@ -28,11 +28,11 @@ export interface SingleHandle<D = any, E = any, N extends D = D, K = any> extend
  * @param cparams Parameters (unmemoized)
  * @returns Single handle
  */
-export function useSingle<D = any, E = any, N extends D = D, K = any>(
+export function useSingle<D = any, E = any, K = any>(
   key: K | undefined,
-  poster: Poster<D, E, N, K> | undefined,
-  params: Params<D, E, N, K> = {},
-): SingleHandle<D, E, N, K> {
+  poster: Poster<D, E, K> | undefined,
+  params: Params<D, E, K> = {},
+): SingleHandle<D, E, K> {
   const core = useCore()
 
   const mparams = { ...core.params, ...params }
@@ -47,13 +47,13 @@ export function useSingle<D = any, E = any, N extends D = D, K = any>(
 
   const [, setCounter] = useState(0)
 
-  const stateRef = useRef<State<D, E, N, K> | null>()
+  const stateRef = useRef<State<D, E, K> | null>()
 
   useMemo(() => {
-    stateRef.current = core.getSync<D, E, N, K>(skey, paramsRef.current)
+    stateRef.current = core.getSync<D, E, K>(skey, paramsRef.current)
   }, [core, skey])
 
-  const setState = useCallback((state?: State<D, E, N, K>) => {
+  const setState = useCallback((state?: State<D, E, K>) => {
     stateRef.current = state
     setCounter(c => c + 1)
   }, [])
@@ -63,7 +63,7 @@ export function useSingle<D = any, E = any, N extends D = D, K = any>(
   useEffect(() => {
     if (stateRef.current !== null) return
 
-    initRef.current = core.get<D, E, N, K>(skey, paramsRef.current).then(setState)
+    initRef.current = core.get<D, E, K>(skey, paramsRef.current).then(setState)
   }, [core, skey])
 
   useEffect(() => {
@@ -73,7 +73,7 @@ export function useSingle<D = any, E = any, N extends D = D, K = any>(
     return () => void core.off(skey, setState, paramsRef.current)
   }, [core, skey])
 
-  const mutate = useCallback(async (mutator: Mutator<D, E, N, K>) => {
+  const mutate = useCallback(async (mutator: Mutator<D, E, K>) => {
     if (stateRef.current === null)
       await initRef.current
     if (stateRef.current === null)
@@ -130,7 +130,7 @@ export function useSingle<D = any, E = any, N extends D = D, K = any>(
     return await core.single.fetch(key, skey, state, poster, aborter, params, true, true)
   }, [core, skey])
 
-  const update = useCallback(async (updater: Updater<D, E, N, K>, aborter?: AbortController) => {
+  const update = useCallback(async (updater: Updater<D, E, K>, aborter?: AbortController) => {
     if (typeof window === "undefined")
       throw new Error("Update on SSR")
     if (stateRef.current === null)

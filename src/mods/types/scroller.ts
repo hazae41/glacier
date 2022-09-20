@@ -1,2 +1,2 @@
-export type Scroller<D = any, E = any, N extends D = D, K = any> =
+export type Scroller<D = any, E = any, K = any> =
   (previous?: D) => K | undefined

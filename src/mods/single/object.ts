@@ -7,7 +7,7 @@ import { State } from "mods/types/state";
 import { Updater } from "mods/types/updater";
 import { DEFAULT_SERIALIZER } from "mods/utils/defaults";
 
-export function getSingleStorageKey<D = any, E = any, N extends D = D, K = any>(key: K, params: Params) {
+export function getSingleStorageKey<D = any, E = any, K = any>(key: K, params: Params) {
   if (key === undefined)
     return undefined
   if (typeof key === "string")
@@ -23,18 +23,18 @@ export function getSingleStorageKey<D = any, E = any, N extends D = D, K = any>(
 /**
  * Non-React version of SingleHandle
  */
-export class SingleObject<D = any, E = any, N extends D = D, K = any> implements Object<D, E, N, K>{
+export class SingleObject<D = any, E = any, K = any> implements Object<D, E, K>{
   readonly skey: string | undefined
-  readonly mparams: Params<D, E, N, K>
+  readonly mparams: Params<D, E, K>
 
   private _init: Promise<void> | undefined
-  private _state: State<D, E, N, K> | undefined | null
+  private _state: State<D, E, K> | undefined | null
 
   constructor(
     readonly core: Core,
     readonly key: K | undefined,
-    readonly poster: Poster<D, E, N, K> | undefined,
-    readonly params: Params<D, E, N, K> = {},
+    readonly poster: Poster<D, E, K> | undefined,
+    readonly params: Params<D, E, K> = {},
   ) {
     this.mparams = { ...core.params, ...params }
 
@@ -65,7 +65,7 @@ export class SingleObject<D = any, E = any, N extends D = D, K = any> implements
   private subscribe() {
     const { core, skey } = this
 
-    const setter = (state?: State<D, E, N>) =>
+    const setter = (state?: State<D, E, K>) =>
       this._state = state
 
     core.on(this.skey, setter)
@@ -75,7 +75,7 @@ export class SingleObject<D = any, E = any, N extends D = D, K = any> implements
     }).register(this, undefined)
   }
 
-  async mutate(mutator: Mutator<D, E, N, K>) {
+  async mutate(mutator: Mutator<D, E, K>) {
     const { core, skey, mparams } = this
 
     if (this._state === null)
@@ -112,7 +112,7 @@ export class SingleObject<D = any, E = any, N extends D = D, K = any> implements
     return this._state = await core.single.fetch(key, skey, this._state, poster, aborter, mparams, true)
   }
 
-  async update(updater: Updater<D, E, N, K>, aborter?: AbortController) {
+  async update(updater: Updater<D, E, K>, aborter?: AbortController) {
     const { core, key, skey, poster, mparams } = this
 
     if (this._state === null)

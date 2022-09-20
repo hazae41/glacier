@@ -5,18 +5,18 @@ import { DependencyList, useMemo } from "react";
 import { ScrollHandle, useScroll } from "./scroll";
 import { SingleHandle, useSingle } from "./single";
 
-export function use<D = any, E = any, N extends D = D, K = any, L extends DependencyList = []>(
-  factory: (...deps: L) => SingleSchema<D, E, N, K>,
+export function use<D = any, E = any, K = any, L extends DependencyList = []>(
+  factory: (...deps: L) => SingleSchema<D, E, K>,
   deps: L
-): SingleHandle<D, E, N, K>
+): SingleHandle<D, E, K>
 
-export function use<D = any, E = any, N extends D = D, K = any, L extends DependencyList = []>(
-  factory: (...deps: L) => ScrollSchema<D, E, N, K>,
+export function use<D = any, E = any, K = any, L extends DependencyList = []>(
+  factory: (...deps: L) => ScrollSchema<D, E, K>,
   deps: L
-): ScrollHandle<D, E, N, K>
+): ScrollHandle<D, E, K>
 
-export function use<D = any, E = any, N extends D = D, K = any, L extends DependencyList = []>(
-  factory: (...deps: L) => Schema<D, E, N, K>,
+export function use<D = any, E = any, K = any, L extends DependencyList = []>(
+  factory: (...deps: L) => Schema<D, E, K>,
   deps: L
 ) {
   const schema = useMemo(() => {

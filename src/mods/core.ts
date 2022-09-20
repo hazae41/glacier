@@ -8,8 +8,8 @@ import { isAsyncStorage } from "mods/types/storage"
 import { DEFAULT_EQUALS } from "mods/utils/defaults"
 import { shallowEquals } from "mods/utils/equals"
 
-export type Listener<D = any, E = any, N extends D = D, K = any> =
-  (x?: State<D, E, N, K>) => void
+export type Listener<D = any, E = any, K = any> =
+  (x?: State<D, E, K>) => void
 
 export class Core extends Ortho<string, State | undefined> {
   readonly single = new SingleHelper(this)
@@ -31,10 +31,10 @@ export class Core extends Ortho<string, State | undefined> {
     this._mounted = false
   }
 
-  getSync<D = any, E = any, N extends D = D, K = any>(
+  getSync<D = any, E = any, K = any>(
     skey: string | undefined,
-    params: Params<D, E, N, K> = {}
-  ): State<D, E, N, K> | undefined | null {
+    params: Params<D, E, K> = {}
+  ): State<D, E, K> | undefined | null {
     if (skey === undefined) return
 
     if (this.cache.has(skey))
@@ -50,11 +50,11 @@ export class Core extends Ortho<string, State | undefined> {
     return state
   }
 
-  async get<D = any, E = any, N extends D = D, K = any>(
+  async get<D = any, E = any, K = any>(
     skey: string | undefined,
-    params: Params<D, E, N, K> = {},
+    params: Params<D, E, K> = {},
     ignore = false
-  ): Promise<State<D, E, N, K> | undefined> {
+  ): Promise<State<D, E, K> | undefined> {
     if (skey === undefined) return
 
     if (this.cache.has(skey))
@@ -75,10 +75,10 @@ export class Core extends Ortho<string, State | undefined> {
    * @param state New state
    * @returns 
    */
-  async set<D = any, E = any, N extends D = D, K = any>(
+  async set<D = any, E = any, K = any>(
     skey: string | undefined,
-    state: State<D, E, N, K>,
-    params: Params<D, E, N, K> = {}
+    state: State<D, E, K>,
+    params: Params<D, E, K> = {}
   ) {
     if (skey === undefined) return
 
@@ -96,9 +96,9 @@ export class Core extends Ortho<string, State | undefined> {
    * @param skey 
    * @returns 
    */
-  async delete<D = any, E = any, N extends D = D, K = any>(
+  async delete<D = any, E = any, K = any>(
     skey: string | undefined,
-    params: Params<D, E, N, K> = {}
+    params: Params<D, E, K> = {}
   ) {
     if (!skey) return
 
@@ -110,12 +110,12 @@ export class Core extends Ortho<string, State | undefined> {
     await storage.delete(skey)
   }
 
-  async mutate<D = any, E = any, N extends D = D, K = any>(
+  async mutate<D = any, E = any, K = any>(
     skey: string | undefined,
-    current: State<D, E, N, K> | undefined,
-    mutator: Mutator<D, E, N, K>,
-    params: Params<D, E, N, K> = {}
-  ): Promise<State<D, E, N, K> | undefined> {
+    current: State<D, E, K> | undefined,
+    mutator: Mutator<D, E, K>,
+    params: Params<D, E, K> = {}
+  ): Promise<State<D, E, K> | undefined> {
     if (skey === undefined) return
     const state = mutator(current)
 
@@ -127,7 +127,7 @@ export class Core extends Ortho<string, State | undefined> {
     if (state.time !== undefined && state.time < (current?.time ?? 0))
       return current
 
-    const next: State<D, E, N, K> = {
+    const next: State<D, E, K> = {
       time: Date.now(),
       data: current?.data,
       error: current?.error,
@@ -150,13 +150,13 @@ export class Core extends Ortho<string, State | undefined> {
       return current
 
     await this.set(skey, next, params)
-    return next as State<D, E, N, K>
+    return next as State<D, E, K>
   }
 
-  async normalize<D = any, E = any, N extends D = D, K = any>(
+  async normalize<D = any, E = any, K = any>(
     shallow: boolean,
-    root: State<D, E, N, K>,
-    params: Params<D, E, N, K> = {},
+    root: State<D, E, K>,
+    params: Params<D, E, K> = {},
   ) {
     if (root.data === undefined) return
     if (params.normalizer === undefined) return root.data
@@ -166,8 +166,8 @@ export class Core extends Ortho<string, State | undefined> {
   /**
    * True if we should cooldown this resource
    */
-  shouldCooldown<D = any, E = any, N extends D = D, K = any>(
-    current?: State<D, E, N, K>
+  shouldCooldown<D = any, E = any, K = any>(
+    current?: State<D, E, K>
   ) {
     if (current?.cooldown === undefined)
       return false
@@ -177,14 +177,14 @@ export class Core extends Ortho<string, State | undefined> {
   counts = new Map<string, number>()
   timeouts = new Map<string, NodeJS.Timeout>()
 
-  once<D = any, E = any, N extends D = D, K = any>(
+  once<D = any, E = any, K = any>(
     key: string | undefined,
-    listener: Listener<D, E, N, K>,
-    params: Params<D, E, N, K> = {}
+    listener: Listener<D, E, K>,
+    params: Params<D, E, K> = {}
   ) {
     if (!key) return
 
-    const f: Listener<D, E, N, K> = (x) => {
+    const f: Listener<D, E, K> = (x) => {
       this.off(key, f, params)
       listener(x)
     }
@@ -192,10 +192,10 @@ export class Core extends Ortho<string, State | undefined> {
     this.on(key, f, params)
   }
 
-  on<D = any, E = any, N extends D = D, K = any>(
+  on<D = any, E = any, K = any>(
     key: string | undefined,
-    listener: Listener<D, E, N, K>,
-    params: Params<D, E, N, K> = {}
+    listener: Listener<D, E, K>,
+    params: Params<D, E, K> = {}
   ) {
     if (!key) return
 
@@ -211,10 +211,10 @@ export class Core extends Ortho<string, State | undefined> {
     this.timeouts.delete(key)
   }
 
-  async off<D = any, E = any, N extends D = D, K = any>(
+  async off<D = any, E = any, K = any>(
     key: string | undefined,
-    listener: Listener<D, E, N, K>,
-    params: Params<D, E, N, K> = {}
+    listener: Listener<D, E, K>,
+    params: Params<D, E, K> = {}
   ) {
     if (!key) return
 

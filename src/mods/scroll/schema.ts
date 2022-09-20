@@ -6,28 +6,28 @@ import { Schema } from "mods/types/schema";
 import { Scroller } from "mods/types/scroller";
 import { ScrollObject } from "./object";
 
-export function scroll<D = any, E = any, N extends D = D, K = any>(
-  scroller: Scroller<D, E, N, K>,
-  fetcher: Fetcher<D, E, N, K> | undefined,
-  params: Params<D[], E, N[], K> = {},
+export function scroll<D = any, E = any, K = any>(
+  scroller: Scroller<D, E, K>,
+  fetcher: Fetcher<D, E, K> | undefined,
+  params: Params<D[], E, K> = {},
 ) {
   return new ScrollSchema(scroller, fetcher, params)
 }
 
-export class ScrollSchema<D = any, E = any, N extends D = D, K = any> implements Schema<D[], E, N[], K, ScrollObject<D, E, N, K>> {
+export class ScrollSchema<D = any, E = any, K = any> implements Schema<D[], E, K, ScrollObject<D, E, K>> {
   constructor(
-    readonly scroller: Scroller<D, E, N, K>,
-    readonly fetcher: Fetcher<D, E, N, K> | undefined,
-    readonly params: Params<D[], E, N[], K> = {},
+    readonly scroller: Scroller<D, E, K>,
+    readonly fetcher: Fetcher<D, E, K> | undefined,
+    readonly params: Params<D[], E, K> = {},
   ) { }
 
   make(core: Core) {
     const { scroller, fetcher, params } = this
 
-    return new ScrollObject<D, E, N, K>(core, scroller, fetcher, params)
+    return new ScrollObject<D, E, K>(core, scroller, fetcher, params)
   }
 
-  async normalize(data: D[], more: NormalizerMore<D[], E, N[], K>) {
+  async normalize(data: D[], more: NormalizerMore<D[], E, K>) {
     if (more.shallow) return
     const { time, cooldown, expiration, optimistic } = more.root
     const state = { data, time, cooldown, expiration, optimistic }

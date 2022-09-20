@@ -5,28 +5,28 @@ import { Poster } from "mods/types/poster";
 import { Schema } from "mods/types/schema";
 import { SingleObject } from "./object";
 
-export function single<D = any, E = any, N extends D = D, K = any>(
+export function single<D = any, E = any, K = any>(
   key: K | undefined,
-  poster: Poster<D, E, N, K> | undefined,
-  params: Params<D, E, N, K> = {},
+  poster: Poster<D, E, K> | undefined,
+  params: Params<D, E, K> = {},
 ) {
   return new SingleSchema(key, poster, params)
 }
 
-export class SingleSchema<D = any, E = any, N extends D = D, K = any> implements Schema<D, E, N, K, SingleObject<D, E, N, K>>  {
+export class SingleSchema<D = any, E = any, K = any> implements Schema<D, E, K, SingleObject<D, E, K>>  {
   constructor(
     readonly key: K | undefined,
-    readonly poster: Poster<D, E, N, K> | undefined,
-    readonly params: Params<D, E, N, K> = {},
+    readonly poster: Poster<D, E, K> | undefined,
+    readonly params: Params<D, E, K> = {},
   ) { }
 
   make(core: Core) {
     const { key, poster, params } = this
 
-    return new SingleObject<D, E, N, K>(core, key, poster, params)
+    return new SingleObject<D, E, K>(core, key, poster, params)
   }
 
-  async normalize(data: D, more: NormalizerMore<D, E, N, K>) {
+  async normalize(data: D, more: NormalizerMore<D, E, K>) {
     if (more.shallow) return
     const { time, cooldown, expiration, optimistic } = more.root
     const state = { data, time, cooldown, expiration, optimistic }

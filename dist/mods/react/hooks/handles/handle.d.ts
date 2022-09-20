@@ -1,6 +1,6 @@
 import { Mutator } from "../../../types/mutator";
 import { State } from "../../../types/state";
-export interface Handle<D = any, E = any, N extends D = D, K = any> {
+export interface Handle<D = any, E = any, K = any> {
     /**
      * Arbitrary key, must be serializable
      */
@@ -50,18 +50,18 @@ export interface Handle<D = any, E = any, N extends D = D, K = any> {
      * Fetch with cooldown
      * @example You want to fetch and don't care if it's cooldowned
      */
-    fetch(aborter?: AbortController): Promise<State<D, E, N, K> | undefined>;
+    fetch(aborter?: AbortController): Promise<State<D, E, K> | undefined>;
     /**
      * Fetch without cooldown
      * @example User clicked on the refresh button
      * @example You just made a POST request and want to get some fresh data
      */
-    refetch(aborter?: AbortController): Promise<State<D, E, N, K> | undefined>;
+    refetch(aborter?: AbortController): Promise<State<D, E, K> | undefined>;
     /**
      * Mutate the cache
      * @param res
      */
-    mutate(mutator: Mutator<D, E, N, K>): Promise<State<D, E, N, K> | undefined>;
+    mutate(mutator: Mutator<D, E, K>): Promise<State<D, E, K> | undefined>;
     /**
      * Clear the cache
      */

@@ -3,8 +3,8 @@ import { Object } from "mods/types/object"
 import { Schema } from "mods/types/schema"
 import { useCallback } from "react"
 
-export type Maker = <D = any, E = any, N extends D = D, K = any, O extends Object<D, E, N, K> = Object<D, E, N, K>>(
-  schema: Schema<D, E, N, K, O>
+export type Maker = <D = any, E = any, K = any, O extends Object<D, E, K> = Object<D, E, K>>(
+  schema: Schema<D, E, K, O>
 ) => O
 
 export function useXSWR() {

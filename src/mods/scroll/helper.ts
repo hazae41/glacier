@@ -21,16 +21,16 @@ export class ScrollHelper {
    * @param force Should ignore cooldown
    * @returns The new state
    */
-  async first<D = any, E = any, N extends D = D, K = any>(
+  async first<D = any, E = any, K = any>(
     skey: string | undefined,
-    current: State<D[], E, N[], K> | undefined,
-    scroller: Scroller<D, E, N, K>,
-    fetcher: Fetcher<D, E, N, K>,
+    current: State<D[], E, K> | undefined,
+    scroller: Scroller<D, E, K>,
+    fetcher: Fetcher<D, E, K>,
     aborter = new AbortController(),
-    params: Params<D[], E, N[], K> = {},
+    params: Params<D[], E, K> = {},
     force = false,
     ignore = false
-  ): Promise<State<D[], E, N[], K> | undefined> {
+  ): Promise<State<D[], E, K> | undefined> {
     if (skey === undefined) return
 
     const {
@@ -77,7 +77,7 @@ export class ScrollHelper {
 
       current = await this.core.get(skey, params)
 
-      const state: State<D[], E, D[], K> = {}
+      const state: State<D[], E, K> = {}
 
       if (data !== undefined)
         state.data = [data]
@@ -114,16 +114,16 @@ export class ScrollHelper {
    * @param force Should ignore cooldown
    * @returns The new state
    */
-  async scroll<D = any, E = any, N extends D = D, K = any>(
+  async scroll<D = any, E = any, K = any>(
     skey: string | undefined,
-    current: State<D[], E, N[], K> | undefined,
-    scroller: Scroller<D, E, N, K>,
-    fetcher: Fetcher<D, E, N, K>,
+    current: State<D[], E, K> | undefined,
+    scroller: Scroller<D, E, K>,
+    fetcher: Fetcher<D, E, K>,
     aborter = new AbortController(),
-    params: Params<D[], E, N[], K> = {},
+    params: Params<D[], E, K> = {},
     force = false,
     ignore = false
-  ): Promise<State<D[], E, N[], K> | undefined> {
+  ): Promise<State<D[], E, K> | undefined> {
     if (skey === undefined) return
 
     const {
@@ -173,7 +173,7 @@ export class ScrollHelper {
 
       current = await this.core.get(skey, params)
 
-      const state: State<D[], E, N[], K> = {}
+      const state: State<D[], E, K> = {}
 
       if (data !== undefined)
         state.data = [...(current?.data ?? []), data]

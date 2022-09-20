@@ -12,11 +12,11 @@ import { Handle } from "./handle";
 /**
  * Handle for a scrolling resource
  */
-export interface ScrollHandle<D = any, E = any, N extends D = D, K = any> extends Handle<D[], E, N[], K> {
+export interface ScrollHandle<D = any, E = any, K = any> extends Handle<D[], E, K> {
   /**
    * Fetch the next page
    */
-  scroll(): Promise<State<D[], E, N[], K> | undefined>
+  scroll(): Promise<State<D[], E, K> | undefined>
 }
 
 /**
@@ -26,11 +26,11 @@ export interface ScrollHandle<D = any, E = any, N extends D = D, K = any> extend
  * @param cparams Parameters (unmemoized)
  * @returns Scrolling handle
  */
-export function useScroll<D = any, E = any, N extends D = D, K = any>(
-  scroller: Scroller<D, E, N, K>,
-  fetcher: Fetcher<D, E, N, K> | undefined,
-  params: Params<D[], E, N[], K> = {},
-): ScrollHandle<D, E, N, K> {
+export function useScroll<D = any, E = any, K = any>(
+  scroller: Scroller<D, E, K>,
+  fetcher: Fetcher<D, E, K> | undefined,
+  params: Params<D[], E, K> = {},
+): ScrollHandle<D, E, K> {
   const core = useCore()
 
   const mparams = { ...core.params, ...params }
@@ -49,13 +49,13 @@ export function useScroll<D = any, E = any, N extends D = D, K = any>(
 
   const [, setCounter] = useState(0)
 
-  const stateRef = useRef<State<D[], E, N[], K> | null>()
+  const stateRef = useRef<State<D[], E, K> | null>()
 
   useMemo(() => {
-    stateRef.current = core.getSync<D[], E, N[], K>(skey, paramsRef.current)
+    stateRef.current = core.getSync<D[], E, K>(skey, paramsRef.current)
   }, [core, skey])
 
-  const setState = useCallback((state?: State<D[], E, N[], K>) => {
+  const setState = useCallback((state?: State<D[], E, K>) => {
     stateRef.current = state
     setCounter(c => c + 1)
   }, [])
@@ -65,7 +65,7 @@ export function useScroll<D = any, E = any, N extends D = D, K = any>(
   useEffect(() => {
     if (stateRef.current !== null) return
 
-    initRef.current = core.get<D[], E, N[], K>(skey, paramsRef.current).then(setState)
+    initRef.current = core.get<D[], E, K>(skey, paramsRef.current).then(setState)
   }, [core, skey])
 
   useEffect(() => {
@@ -75,7 +75,7 @@ export function useScroll<D = any, E = any, N extends D = D, K = any>(
     return () => void core.off(skey, setState, paramsRef.current)
   }, [core, skey])
 
-  const mutate = useCallback(async (mutator: Mutator<D[], E, N[], K>) => {
+  const mutate = useCallback(async (mutator: Mutator<D[], E, K>) => {
     if (stateRef.current === null)
       await initRef.current
     if (stateRef.current === null)
