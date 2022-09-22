@@ -32,7 +32,7 @@ export default function Page() {
   }, [mutate])
 
   const onUpdateClick = useCallback(async () => {
-    await update(async function* (previous) {
+    await update(async function* (previous, { signal }) {
       const data: HelloData = {
         name: "John Smith"
       }
@@ -40,6 +40,7 @@ export default function Page() {
       yield { data }
 
       return await fetchAsJson<HelloData>("/api/hello", {
+        signal,
         method: "POST",
         body: JSON.stringify(data)
       })

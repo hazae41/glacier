@@ -127,6 +127,9 @@ export class Core extends Ortho<string, State | undefined> {
     if (state.time !== undefined && state.time < (current?.time ?? 0))
       return current
 
+    if (state.optimistic === undefined && current?.optimistic)
+      return current
+
     const next: State<D, E, K> = {
       time: Date.now(),
       data: current?.data,
@@ -134,7 +137,7 @@ export class Core extends Ortho<string, State | undefined> {
       cooldown: current?.cooldown,
       expiration: current?.expiration,
       aborter: current?.aborter,
-      optimistic: undefined,
+      optimistic: current?.optimistic,
       ...state
     }
 

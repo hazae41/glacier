@@ -831,14 +831,14 @@ var SingleHelper = /** @class */ (function () {
                         if (!(error_3 !== undefined)) return [3 /*break*/, 7];
                         if ((current === null || current === void 0 ? void 0 : current.aborter) !== aborter)
                             return [2 /*return*/, current];
-                        return [4 /*yield*/, this.core.mutate(skey, current, function (c) { return ({ time: c === null || c === void 0 ? void 0 : c.time, cooldown: cooldown_2, expiration: expiration_2, aborter: undefined, data: c === null || c === void 0 ? void 0 : c.data, error: error_3 }); }, params)];
+                        return [4 /*yield*/, this.core.mutate(skey, current, function (c) { return ({ time: c === null || c === void 0 ? void 0 : c.time, cooldown: cooldown_2, expiration: expiration_2, aborter: undefined, optimistic: false, data: c === null || c === void 0 ? void 0 : c.data, error: error_3 }); }, params)];
                     case 6: return [2 /*return*/, _j.sent()];
                     case 7:
                         state_1 = {};
                         if (data !== undefined)
                             state_1.data = data;
                         state_1.error = error_3;
-                        return [4 /*yield*/, this.core.mutate(skey, current, function () { return (__assign({ time: time_2, cooldown: cooldown_2, expiration: expiration_2, aborter: undefined }, state_1)); }, params)];
+                        return [4 /*yield*/, this.core.mutate(skey, current, function () { return (__assign({ time: time_2, cooldown: cooldown_2, expiration: expiration_2, aborter: undefined, optimistic: false }, state_1)); }, params)];
                     case 8: return [2 /*return*/, _j.sent()];
                     case 9:
                         error_2 = _j.sent();
@@ -847,7 +847,7 @@ var SingleHelper = /** @class */ (function () {
                         current = _j.sent();
                         if ((current === null || current === void 0 ? void 0 : current.aborter) !== aborter)
                             return [2 /*return*/, current];
-                        return [4 /*yield*/, this.core.mutate(skey, current, function (c) { return ({ time: c === null || c === void 0 ? void 0 : c.time, aborter: undefined, data: c === null || c === void 0 ? void 0 : c.data, error: error_2 }); }, params)];
+                        return [4 /*yield*/, this.core.mutate(skey, current, function (c) { return ({ time: c === null || c === void 0 ? void 0 : c.time, aborter: undefined, optimistic: false, data: c === null || c === void 0 ? void 0 : c.data, error: error_2 }); }, params)];
                     case 11: return [2 /*return*/, _j.sent()];
                     case 12:
                         clearTimeout(timeout);
@@ -1236,7 +1236,9 @@ var Core = /** @class */ (function (_super) {
                     case 2:
                         if (state.time !== undefined && state.time < ((_a = current === null || current === void 0 ? void 0 : current.time) !== null && _a !== void 0 ? _a : 0))
                             return [2 /*return*/, current];
-                        next = __assign({ time: Date.now(), data: current === null || current === void 0 ? void 0 : current.data, error: current === null || current === void 0 ? void 0 : current.error, cooldown: current === null || current === void 0 ? void 0 : current.cooldown, expiration: current === null || current === void 0 ? void 0 : current.expiration, aborter: current === null || current === void 0 ? void 0 : current.aborter, optimistic: undefined }, state);
+                        if ((current === null || current === void 0 ? void 0 : current.optimistic) && state.optimistic === undefined)
+                            return [2 /*return*/, current];
+                        next = __assign({ time: Date.now(), data: current === null || current === void 0 ? void 0 : current.data, error: current === null || current === void 0 ? void 0 : current.error, cooldown: current === null || current === void 0 ? void 0 : current.cooldown, expiration: current === null || current === void 0 ? void 0 : current.expiration, aborter: current === null || current === void 0 ? void 0 : current.aborter, optimistic: current === null || current === void 0 ? void 0 : current.optimistic }, state);
                         _b = next;
                         return [4 /*yield*/, this.normalize(false, next, params)];
                     case 3:
