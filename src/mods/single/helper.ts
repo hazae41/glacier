@@ -1,9 +1,9 @@
+import { nextOf, returnOf } from "libs/generator";
 import { getTimeFromDelay } from "libs/time";
 import { Core } from "mods/core";
 import { AbortError } from "mods/errors";
 import { Fetcher } from "mods/types/fetcher";
 import { Params } from "mods/types/params";
-import { Poster } from "mods/types/poster";
 import { State } from "mods/types/state";
 import { Updater } from "mods/types/updater";
 import { DEFAULT_COOLDOWN, DEFAULT_EXPIRATION, DEFAULT_TIMEOUT } from "mods/utils/defaults";
@@ -100,7 +100,7 @@ export class SingleHelper {
    * Optimistic update
    * @param key Key (:K) (passed to poster)
    * @param skey Storage key
-   * @param poster Resource poster
+   * @param fetcher Resource poster
    * @param updater Mutation function
    * @param aborter AbortController
    * @param tparams Time parameters
@@ -111,7 +111,6 @@ export class SingleHelper {
     key: K | undefined,
     skey: string | undefined,
     current: State<D, E, K> | undefined,
-    poster: Poster<D, E, K>,
     updater: Updater<D, E, K>,
     aborter = new AbortController(),
     params: Params<D, E, K> = {},
@@ -130,8 +129,6 @@ export class SingleHelper {
     if (current?.aborter)
       current.aborter.abort("Replaced")
 
-    const updated = updater(current?.data)
-
     const timeout = setTimeout(() => {
       aborter.abort("Timed out")
     }, dtimeout)
@@ -139,40 +136,54 @@ export class SingleHelper {
     try {
       const { signal } = aborter
 
-      await this.core.mutate(skey, current,
-        c => ({ time: c?.time, aborter, optimistic: true, data: updated }),
-        params)
+      const generator = updater(current, { signal })
 
-      const {
-        data,
-        error,
-        time = Date.now(),
-        cooldown = getTimeFromDelay(dcooldown),
-        expiration = getTimeFromDelay(dexpiration)
-      } = await poster(key, { data: updated, signal })
+      {
+        const { data, error } = await nextOf(generator)
 
-      if (signal.aborted)
-        throw new AbortError(signal)
+        const optimistic: State<D, E, K> = {}
 
-      current = await this.core.get(skey, params)
+        if (data !== undefined)
+          optimistic.data = data
+        optimistic.error = error
 
-      if (error !== undefined) {
-        if (current?.aborter !== aborter)
-          return current
-        return await this.core.mutate(skey, current,
-          c => ({ time: c?.time, cooldown, expiration, aborter: undefined, data: c?.data, error }),
+        await this.core.mutate(skey, current,
+          c => ({ time: c?.time, aborter, optimistic: true, ...optimistic }),
           params)
       }
 
-      const state: State<D, E, K> = {}
+      {
+        const {
+          data,
+          error,
+          time = Date.now(),
+          cooldown = getTimeFromDelay(dcooldown),
+          expiration = getTimeFromDelay(dexpiration)
+        } = await returnOf(generator)
 
-      if (data !== undefined)
-        state.data = data
-      state.error = error
+        if (signal.aborted)
+          throw new AbortError(signal)
 
-      return await this.core.mutate(skey, current,
-        () => ({ time, cooldown, expiration, aborter: undefined, ...state }),
-        params)
+        current = await this.core.get(skey, params)
+
+        if (error !== undefined) {
+          if (current?.aborter !== aborter)
+            return current
+          return await this.core.mutate(skey, current,
+            c => ({ time: c?.time, cooldown, expiration, aborter: undefined, data: c?.data, error }),
+            params)
+        }
+
+        const state: State<D, E, K> = {}
+
+        if (data !== undefined)
+          state.data = data
+        state.error = error
+
+        return await this.core.mutate(skey, current,
+          () => ({ time, cooldown, expiration, aborter: undefined, ...state }),
+          params)
+      }
     } catch (error: any) {
       current = await this.core.get(skey, params)
 

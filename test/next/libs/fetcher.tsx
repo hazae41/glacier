@@ -1,7 +1,6 @@
-import { XSWR } from "@hazae41/xswr";
 
-export async function fetchAsJson<T>(url: string, more: XSWR.PosterMore<T>) {
-  const { signal } = more
+export async function fetchAsJson<T>(url: string, init: RequestInit) {
+  const { signal } = init
 
   const res = await fetch(url, { signal })
   const cooldown = Date.now() + (5 * 1000)

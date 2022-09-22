@@ -1,8 +1,8 @@
 import { Core } from "mods/core";
+import { Fetcher } from "mods/index";
 import { Mutator } from "mods/types/mutator";
 import { Object } from "mods/types/object";
 import { Params } from "mods/types/params";
-import { Poster } from "mods/types/poster";
 import { State } from "mods/types/state";
 import { Updater } from "mods/types/updater";
 import { DEFAULT_SERIALIZER } from "mods/utils/defaults";
@@ -33,7 +33,7 @@ export class SingleObject<D = any, E = any, K = any> implements Object<D, E, K>{
   constructor(
     readonly core: Core,
     readonly key: K | undefined,
-    readonly poster: Poster<D, E, K> | undefined,
+    readonly fetcher: Fetcher<D, E, K> | undefined,
     readonly params: Params<D, E, K> = {},
   ) {
     this.mparams = { ...core.params, ...params }
@@ -87,42 +87,40 @@ export class SingleObject<D = any, E = any, K = any> implements Object<D, E, K>{
   }
 
   async fetch(aborter?: AbortController) {
-    const { core, key, skey, poster, mparams } = this
+    const { core, key, skey, fetcher, mparams } = this
 
     if (this._state === null)
       await (this._init ??= this.loadAsync())
     if (this._state === null)
       throw new Error("Null state after init")
-    if (poster === undefined)
+    if (fetcher === undefined)
       return this._state
 
-    return this._state = await core.single.fetch(key, skey, this._state, poster, aborter, mparams)
+    return this._state = await core.single.fetch(key, skey, this._state, fetcher, aborter, mparams)
   }
 
   async refetch(aborter?: AbortController) {
-    const { core, key, skey, poster, mparams } = this
+    const { core, key, skey, fetcher, mparams } = this
 
     if (this._state === null)
       await (this._init ??= this.loadAsync())
     if (this._state === null)
       throw new Error("Null state after init")
-    if (poster === undefined)
+    if (fetcher === undefined)
       return this._state
 
-    return this._state = await core.single.fetch(key, skey, this._state, poster, aborter, mparams, true)
+    return this._state = await core.single.fetch(key, skey, this._state, fetcher, aborter, mparams, true)
   }
 
   async update(updater: Updater<D, E, K>, aborter?: AbortController) {
-    const { core, key, skey, poster, mparams } = this
+    const { core, key, skey, mparams } = this
 
     if (this._state === null)
       await (this._init ??= this.loadAsync())
     if (this._state === null)
       throw new Error("Null state after init")
-    if (poster === undefined)
-      return this._state
 
-    return this._state = await core.single.update(key, skey, this._state, poster, updater, aborter, mparams)
+    return this._state = await core.single.update(key, skey, this._state, updater, aborter, mparams)
   }
 
   async clear() {

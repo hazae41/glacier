@@ -1,32 +1,13 @@
 import { XSWR } from "@hazae41/xswr"
 import { useCallback } from "react"
-
-async function postAsJson<T>(url: string, more: XSWR.PosterMore<T>) {
-  const { signal } = more
-
-  const method = more.data ? "POST" : "GET"
-  const body = more.data ? JSON.stringify(more.data) : undefined
-
-  const res = await fetch(url, { method, body, signal })
-  const cooldown = Date.now() + (5 * 1000)
-  const expiration = Date.now() + (10 * 1000)
-
-  if (!res.ok) {
-    const error = new Error(await res.text())
-    return { error, cooldown, expiration }
-  }
-
-  const data = await res.json() as T
-  const time = Date.now()
-  return { data, time, cooldown, expiration }
-}
+import { fetchAsJson } from "../../libs/fetcher"
 
 interface HelloData {
   name: string
 }
 
 function getHelloSchema() {
-  return XSWR.single<HelloData>("/api/hello", postAsJson)
+  return XSWR.single<HelloData>("/api/hello", fetchAsJson)
 }
 
 function useHelloData() {
@@ -51,14 +32,18 @@ export default function Page() {
   }, [mutate])
 
   const onUpdateClick = useCallback(async () => {
-    const aborter = new AbortController()
+    await update(async function* (previous) {
+      const data: HelloData = {
+        name: "John Smith"
+      }
 
-    update(previous => ({
-      name: previous?.name.replace("Doe", "Smith") ?? "None"
-    }), aborter)
+      yield { data }
 
-    // await new Promise(ok => setTimeout(ok, 500))
-    // aborter.abort()
+      return await fetchAsJson<HelloData>("/api/hello", {
+        method: "POST",
+        body: JSON.stringify(data)
+      })
+    })
   }, [update])
 
   const onAbortClick = useCallback(() => {

@@ -24,8 +24,8 @@ export function use<D = any, E = any, K = any, L extends DependencyList = []>(
   }, deps)
 
   if (schema instanceof SingleSchema) {
-    const { key, poster, params } = schema
-    return useSingle(key, poster, params)
+    const { key, fetcher, params } = schema
+    return useSingle(key, fetcher, params)
   }
 
   if (schema instanceof ScrollSchema) {

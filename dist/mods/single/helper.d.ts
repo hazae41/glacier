@@ -1,7 +1,6 @@
 import { Core } from "../core";
 import { Fetcher } from "../types/fetcher";
 import { Params } from "../types/params";
-import { Poster } from "../types/poster";
 import { State } from "../types/state";
 import { Updater } from "../types/updater";
 export declare class SingleHelper {
@@ -22,12 +21,12 @@ export declare class SingleHelper {
      * Optimistic update
      * @param key Key (:K) (passed to poster)
      * @param skey Storage key
-     * @param poster Resource poster
+     * @param fetcher Resource poster
      * @param updater Mutation function
      * @param aborter AbortController
      * @param tparams Time parameters
      * @returns The new state
      * @throws Error
      */
-    update<D = any, E = any, K = any>(key: K | undefined, skey: string | undefined, current: State<D, E, K> | undefined, poster: Poster<D, E, K>, updater: Updater<D, E, K>, aborter?: AbortController, params?: Params<D, E, K>): Promise<State<D, E, K> | undefined>;
+    update<D = any, E = any, K = any>(key: K | undefined, skey: string | undefined, current: State<D, E, K> | undefined, updater: Updater<D, E, K>, aborter?: AbortController, params?: Params<D, E, K>): Promise<State<D, E, K> | undefined>;
 }

@@ -1,8 +1,8 @@
 import { Core } from "../core";
+import { Fetcher } from "../index";
 import { Mutator } from "../types/mutator";
 import { Object } from "../types/object";
 import { Params } from "../types/params";
-import { Poster } from "../types/poster";
 import { State } from "../types/state";
 import { Updater } from "../types/updater";
 export declare function getSingleStorageKey<D = any, E = any, K = any>(key: K, params: Params): string | undefined;
@@ -12,13 +12,13 @@ export declare function getSingleStorageKey<D = any, E = any, K = any>(key: K, p
 export declare class SingleObject<D = any, E = any, K = any> implements Object<D, E, K> {
     readonly core: Core;
     readonly key: K | undefined;
-    readonly poster: Poster<D, E, K> | undefined;
+    readonly fetcher: Fetcher<D, E, K> | undefined;
     readonly params: Params<D, E, K>;
     readonly skey: string | undefined;
     readonly mparams: Params<D, E, K>;
     private _init;
     private _state;
-    constructor(core: Core, key: K | undefined, poster: Poster<D, E, K> | undefined, params?: Params<D, E, K>);
+    constructor(core: Core, key: K | undefined, fetcher: Fetcher<D, E, K> | undefined, params?: Params<D, E, K>);
     get init(): Promise<void> | undefined;
     get state(): State<D, E, K> | null | undefined;
     get ready(): boolean;
