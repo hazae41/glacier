@@ -789,7 +789,7 @@ var SingleHelper = /** @class */ (function () {
         if (aborter === void 0) { aborter = new AbortController(); }
         if (params === void 0) { params = {}; }
         return __awaiter(this, void 0, void 0, function () {
-            var _a, dcooldown, _b, dexpiration, _c, dtimeout, timeout, signal, generator, _d, data_1, error_3, optimistic_1, _e, data, error_4, _f, time_2, _g, cooldown_2, _h, expiration_2, state_1, error_2;
+            var _a, dcooldown, _b, dexpiration, _c, dtimeout, timeout, signal, generator, _d, data, error, optimistic_1, _e, data, error_3, _f, time_2, _g, cooldown_2, _h, expiration_2, state_1, error_2;
             return __generator(this, function (_j) {
                 switch (_j.label) {
                     case 0:
@@ -812,32 +812,32 @@ var SingleHelper = /** @class */ (function () {
                         generator = updater(current, { signal: signal });
                         return [4 /*yield*/, nextOf(generator)];
                     case 2:
-                        _d = _j.sent(), data_1 = _d.data, error_3 = _d.error;
+                        _d = _j.sent(), data = _d.data, error = _d.error;
                         optimistic_1 = {};
-                        if (data_1 !== undefined)
-                            optimistic_1.data = data_1;
-                        optimistic_1.error = error_3;
+                        if (data !== undefined)
+                            optimistic_1.data = data;
+                        optimistic_1.error = error;
                         return [4 /*yield*/, this.core.mutate(skey, current, function (c) { return (__assign({ time: c === null || c === void 0 ? void 0 : c.time, aborter: aborter, optimistic: true }, optimistic_1)); }, params)];
                     case 3:
                         _j.sent();
                         return [4 /*yield*/, returnOf(generator)];
                     case 4:
-                        _e = _j.sent(), data = _e.data, error_4 = _e.error, _f = _e.time, time_2 = _f === void 0 ? Date.now() : _f, _g = _e.cooldown, cooldown_2 = _g === void 0 ? getTimeFromDelay(dcooldown) : _g, _h = _e.expiration, expiration_2 = _h === void 0 ? getTimeFromDelay(dexpiration) : _h;
+                        _e = _j.sent(), data = _e.data, error_3 = _e.error, _f = _e.time, time_2 = _f === void 0 ? Date.now() : _f, _g = _e.cooldown, cooldown_2 = _g === void 0 ? getTimeFromDelay(dcooldown) : _g, _h = _e.expiration, expiration_2 = _h === void 0 ? getTimeFromDelay(dexpiration) : _h;
                         if (signal.aborted)
                             throw new AbortError(signal);
                         return [4 /*yield*/, this.core.get(skey, params)];
                     case 5:
                         current = _j.sent();
-                        if (!(error_4 !== undefined)) return [3 /*break*/, 7];
+                        if (!(error_3 !== undefined)) return [3 /*break*/, 7];
                         if ((current === null || current === void 0 ? void 0 : current.aborter) !== aborter)
                             return [2 /*return*/, current];
-                        return [4 /*yield*/, this.core.mutate(skey, current, function (c) { return ({ time: c === null || c === void 0 ? void 0 : c.time, cooldown: cooldown_2, expiration: expiration_2, aborter: undefined, data: c === null || c === void 0 ? void 0 : c.data, error: error_4 }); }, params)];
+                        return [4 /*yield*/, this.core.mutate(skey, current, function (c) { return ({ time: c === null || c === void 0 ? void 0 : c.time, cooldown: cooldown_2, expiration: expiration_2, aborter: undefined, data: c === null || c === void 0 ? void 0 : c.data, error: error_3 }); }, params)];
                     case 6: return [2 /*return*/, _j.sent()];
                     case 7:
                         state_1 = {};
                         if (data !== undefined)
                             state_1.data = data;
-                        state_1.error = error_4;
+                        state_1.error = error_3;
                         return [4 /*yield*/, this.core.mutate(skey, current, function () { return (__assign({ time: time_2, cooldown: cooldown_2, expiration: expiration_2, aborter: undefined }, state_1)); }, params)];
                     case 8: return [2 /*return*/, _j.sent()];
                     case 9:
