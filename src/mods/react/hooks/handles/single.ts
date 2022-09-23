@@ -5,7 +5,7 @@ import { getSingleStorageKey } from "mods/single/object";
 import { Mutator } from "mods/types/mutator";
 import { Params } from "mods/types/params";
 import { State } from "mods/types/state";
-import { Updater } from "mods/types/updater";
+import { Updater, UpdaterParams } from "mods/types/updater";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Handle } from "./handle";
 
@@ -18,7 +18,7 @@ export interface SingleHandle<D = any, E = any, K = any> extends Handle<D, E, K>
    * @param updater Mutation function
    * @param aborter Custom AbortController
    */
-  update(updater: Updater<D, E, K>, aborter?: AbortController): Promise<State<D, E, K> | undefined>
+  update(updater: Updater<D, E, K>, uparams: UpdaterParams<D, E, K>, aborter?: AbortController): Promise<State<D, E, K> | undefined>
 }
 
 /**
@@ -39,10 +39,10 @@ export function useSingle<D = any, E = any, K = any>(
 
   const keyRef = useAutoRef(key)
   const fetcherRef = useAutoRef(fetcher)
-  const paramsRef = useAutoRef(mparams)
+  const mparamsRef = useAutoRef(mparams)
 
   const skey = useMemo(() => {
-    return getSingleStorageKey(key, paramsRef.current)
+    return getSingleStorageKey(key, mparamsRef.current)
   }, [key])
 
   const [, setCounter] = useState(0)
@@ -50,7 +50,7 @@ export function useSingle<D = any, E = any, K = any>(
   const stateRef = useRef<State<D, E, K> | null>()
 
   useMemo(() => {
-    stateRef.current = core.getSync<D, E, K>(skey, paramsRef.current)
+    stateRef.current = core.getSync<D, E, K>(skey, mparamsRef.current)
   }, [core, skey])
 
   const setState = useCallback((state?: State<D, E, K>) => {
@@ -63,14 +63,14 @@ export function useSingle<D = any, E = any, K = any>(
   useEffect(() => {
     if (stateRef.current !== null) return
 
-    initRef.current = core.get<D, E, K>(skey, paramsRef.current).then(setState)
+    initRef.current = core.get<D, E, K>(skey, mparamsRef.current).then(setState)
   }, [core, skey])
 
   useEffect(() => {
     if (!skey) return
 
-    core.on(skey, setState, paramsRef.current)
-    return () => void core.off(skey, setState, paramsRef.current)
+    core.on(skey, setState, mparamsRef.current)
+    return () => void core.off(skey, setState, mparamsRef.current)
   }, [core, skey])
 
   const mutate = useCallback(async (mutator: Mutator<D, E, K>) => {
@@ -80,7 +80,7 @@ export function useSingle<D = any, E = any, K = any>(
       throw new Error("Null state after init")
 
     const state = stateRef.current
-    const params = paramsRef.current
+    const params = mparamsRef.current
 
     return await core.mutate(skey, state, mutator, params)
   }, [core, skey])
@@ -91,7 +91,7 @@ export function useSingle<D = any, E = any, K = any>(
     if (stateRef.current === null)
       throw new Error("Null state after init")
 
-    await core.delete(skey, paramsRef.current)
+    await core.delete(skey, mparamsRef.current)
   }, [core, skey])
 
   const fetch = useCallback(async (aborter?: AbortController) => {
@@ -107,7 +107,7 @@ export function useSingle<D = any, E = any, K = any>(
     const state = stateRef.current
     const key = keyRef.current
     const fetcher = fetcherRef.current
-    const params = paramsRef.current
+    const params = mparamsRef.current
 
     return await core.single.fetch(key, skey, state, fetcher, aborter, params)
   }, [core, skey])
@@ -125,12 +125,12 @@ export function useSingle<D = any, E = any, K = any>(
     const state = stateRef.current
     const key = keyRef.current
     const fetcher = fetcherRef.current
-    const params = paramsRef.current
+    const params = mparamsRef.current
 
     return await core.single.fetch(key, skey, state, fetcher, aborter, params, true, true)
   }, [core, skey])
 
-  const update = useCallback(async (updater: Updater<D, E, K>, aborter?: AbortController) => {
+  const update = useCallback(async (updater: Updater<D, E, K>, uparams: UpdaterParams<D, E, K> = {}, aborter?: AbortController) => {
     if (typeof window === "undefined")
       throw new Error("Update on SSR")
     if (stateRef.current === null)
@@ -140,9 +140,11 @@ export function useSingle<D = any, E = any, K = any>(
 
     const state = stateRef.current
     const key = keyRef.current
-    const params = paramsRef.current
+    const params = mparamsRef.current
 
-    return await core.single.update(key, skey, state, updater, aborter, params)
+    const fparams = { ...params, ...uparams }
+
+    return await core.single.update(key, skey, state, updater, aborter, fparams)
   }, [core, skey])
 
   const suspend = useCallback(() => {
@@ -159,7 +161,7 @@ export function useSingle<D = any, E = any, K = any>(
       const state = stateRef.current
       const key = keyRef.current
       const fetcher = fetcherRef.current
-      const params = paramsRef.current
+      const params = mparamsRef.current
 
       const background = new Promise<void>(ok => core.once(skey, () => ok(), params))
       await core.single.fetch(key, skey, state, fetcher, undefined, params, false, true)

@@ -998,10 +998,11 @@ var SingleObject = /** @class */ (function () {
             });
         });
     };
-    SingleObject.prototype.update = function (updater, aborter) {
+    SingleObject.prototype.update = function (updater, uparams, aborter) {
         var _a;
+        if (uparams === void 0) { uparams = {}; }
         return __awaiter(this, void 0, void 0, function () {
-            var _b, core, key, skey, mparams, _c;
+            var _b, core, key, skey, mparams, fparams, _c;
             return __generator(this, function (_d) {
                 switch (_d.label) {
                     case 0:
@@ -1014,8 +1015,9 @@ var SingleObject = /** @class */ (function () {
                     case 2:
                         if (this._state === null)
                             throw new Error("Null state after init");
+                        fparams = __assign(__assign({}, mparams), uparams);
                         _c = this;
-                        return [4 /*yield*/, core.single.update(key, skey, this._state, updater, aborter, mparams)];
+                        return [4 /*yield*/, core.single.update(key, skey, this._state, updater, aborter, fparams)];
                     case 3: return [2 /*return*/, _c._state = _d.sent()];
                 }
             });
@@ -1765,14 +1767,14 @@ function useSingle(key, fetcher, params) {
     var mparams = __assign(__assign({}, core.params), params);
     var keyRef = useAutoRef(key);
     var fetcherRef = useAutoRef(fetcher);
-    var paramsRef = useAutoRef(mparams);
+    var mparamsRef = useAutoRef(mparams);
     var skey = useMemo(function () {
-        return getSingleStorageKey(key, paramsRef.current);
+        return getSingleStorageKey(key, mparamsRef.current);
     }, [key]);
     var _a = __read(useState(0), 2), setCounter = _a[1];
     var stateRef = useRef();
     useMemo(function () {
-        stateRef.current = core.getSync(skey, paramsRef.current);
+        stateRef.current = core.getSync(skey, mparamsRef.current);
     }, [core, skey]);
     var setState = useCallback(function (state) {
         stateRef.current = state;
@@ -1782,13 +1784,13 @@ function useSingle(key, fetcher, params) {
     useEffect(function () {
         if (stateRef.current !== null)
             return;
-        initRef.current = core.get(skey, paramsRef.current).then(setState);
+        initRef.current = core.get(skey, mparamsRef.current).then(setState);
     }, [core, skey]);
     useEffect(function () {
         if (!skey)
             return;
-        core.on(skey, setState, paramsRef.current);
-        return function () { return void core.off(skey, setState, paramsRef.current); };
+        core.on(skey, setState, mparamsRef.current);
+        return function () { return void core.off(skey, setState, mparamsRef.current); };
     }, [core, skey]);
     var mutate = useCallback(function (mutator) { return __awaiter(_this, void 0, void 0, function () {
         var state, params;
@@ -1804,7 +1806,7 @@ function useSingle(key, fetcher, params) {
                     if (stateRef.current === null)
                         throw new Error("Null state after init");
                     state = stateRef.current;
-                    params = paramsRef.current;
+                    params = mparamsRef.current;
                     return [4 /*yield*/, core.mutate(skey, state, mutator, params)];
                 case 3: return [2 /*return*/, _a.sent()];
             }
@@ -1822,7 +1824,7 @@ function useSingle(key, fetcher, params) {
                 case 2:
                     if (stateRef.current === null)
                         throw new Error("Null state after init");
-                    return [4 /*yield*/, core.delete(skey, paramsRef.current)];
+                    return [4 /*yield*/, core.delete(skey, mparamsRef.current)];
                 case 3:
                     _a.sent();
                     return [2 /*return*/];
@@ -1849,7 +1851,7 @@ function useSingle(key, fetcher, params) {
                     state = stateRef.current;
                     key = keyRef.current;
                     fetcher = fetcherRef.current;
-                    params = paramsRef.current;
+                    params = mparamsRef.current;
                     return [4 /*yield*/, core.single.fetch(key, skey, state, fetcher, aborter, params)];
                 case 3: return [2 /*return*/, _a.sent()];
             }
@@ -1875,35 +1877,39 @@ function useSingle(key, fetcher, params) {
                     state = stateRef.current;
                     key = keyRef.current;
                     fetcher = fetcherRef.current;
-                    params = paramsRef.current;
+                    params = mparamsRef.current;
                     return [4 /*yield*/, core.single.fetch(key, skey, state, fetcher, aborter, params, true, true)];
                 case 3: return [2 /*return*/, _a.sent()];
             }
         });
     }); }, [core, skey]);
-    var update = useCallback(function (updater, aborter) { return __awaiter(_this, void 0, void 0, function () {
-        var state, key, params;
-        return __generator(this, function (_a) {
-            switch (_a.label) {
-                case 0:
-                    if (typeof window === "undefined")
-                        throw new Error("Update on SSR");
-                    if (!(stateRef.current === null)) return [3 /*break*/, 2];
-                    return [4 /*yield*/, initRef.current];
-                case 1:
-                    _a.sent();
-                    _a.label = 2;
-                case 2:
-                    if (stateRef.current === null)
-                        throw new Error("Null state after init");
-                    state = stateRef.current;
-                    key = keyRef.current;
-                    params = paramsRef.current;
-                    return [4 /*yield*/, core.single.update(key, skey, state, updater, aborter, params)];
-                case 3: return [2 /*return*/, _a.sent()];
-            }
+    var update = useCallback(function (updater, uparams, aborter) {
+        if (uparams === void 0) { uparams = {}; }
+        return __awaiter(_this, void 0, void 0, function () {
+            var state, key, params, fparams;
+            return __generator(this, function (_a) {
+                switch (_a.label) {
+                    case 0:
+                        if (typeof window === "undefined")
+                            throw new Error("Update on SSR");
+                        if (!(stateRef.current === null)) return [3 /*break*/, 2];
+                        return [4 /*yield*/, initRef.current];
+                    case 1:
+                        _a.sent();
+                        _a.label = 2;
+                    case 2:
+                        if (stateRef.current === null)
+                            throw new Error("Null state after init");
+                        state = stateRef.current;
+                        key = keyRef.current;
+                        params = mparamsRef.current;
+                        fparams = __assign(__assign({}, params), uparams);
+                        return [4 /*yield*/, core.single.update(key, skey, state, updater, aborter, fparams)];
+                    case 3: return [2 /*return*/, _a.sent()];
+                }
+            });
         });
-    }); }, [core, skey]);
+    }, [core, skey]);
     var suspend = useCallback(function () {
         if (typeof window === "undefined")
             throw new Error("Suspend on SSR");
@@ -1925,7 +1931,7 @@ function useSingle(key, fetcher, params) {
                         state = stateRef.current;
                         key = keyRef.current;
                         fetcher = fetcherRef.current;
-                        params = paramsRef.current;
+                        params = mparamsRef.current;
                         background = new Promise(function (ok) { return core.once(skey, function () { return ok(); }, params); });
                         return [4 /*yield*/, core.single.fetch(key, skey, state, fetcher, undefined, params, false, true)];
                     case 3:

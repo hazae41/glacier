@@ -4,7 +4,7 @@ import { Mutator } from "mods/types/mutator";
 import { Object } from "mods/types/object";
 import { Params } from "mods/types/params";
 import { State } from "mods/types/state";
-import { Updater } from "mods/types/updater";
+import { Updater, UpdaterParams } from "mods/types/updater";
 import { DEFAULT_SERIALIZER } from "mods/utils/defaults";
 
 export function getSingleStorageKey<D = any, E = any, K = any>(key: K, params: Params) {
@@ -112,7 +112,7 @@ export class SingleObject<D = any, E = any, K = any> implements Object<D, E, K>{
     return this._state = await core.single.fetch(key, skey, this._state, fetcher, aborter, mparams, true)
   }
 
-  async update(updater: Updater<D, E, K>, aborter?: AbortController) {
+  async update(updater: Updater<D, E, K>, uparams: UpdaterParams<D, E, K> = {}, aborter?: AbortController) {
     const { core, key, skey, mparams } = this
 
     if (this._state === null)
@@ -120,7 +120,9 @@ export class SingleObject<D = any, E = any, K = any> implements Object<D, E, K>{
     if (this._state === null)
       throw new Error("Null state after init")
 
-    return this._state = await core.single.update(key, skey, this._state, updater, aborter, mparams)
+    const fparams = { ...mparams, ...uparams }
+
+    return this._state = await core.single.update(key, skey, this._state, updater, aborter, fparams)
   }
 
   async clear() {
