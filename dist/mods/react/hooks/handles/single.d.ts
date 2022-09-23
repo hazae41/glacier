@@ -12,7 +12,7 @@ export interface SingleHandle<D = any, E = any, K = any> extends Handle<D, E, K>
      * @param updater Mutation function
      * @param aborter Custom AbortController
      */
-    update(updater: Updater<D, E, K>, uparams: UpdaterParams<D, E, K>, aborter?: AbortController): Promise<State<D, E, K> | undefined>;
+    update(updater: Updater<D, E, K>, uparams?: UpdaterParams<D, E, K>, aborter?: AbortController): Promise<State<D, E, K> | undefined>;
 }
 /**
  * Single resource handle factory
