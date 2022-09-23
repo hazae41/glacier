@@ -53,13 +53,13 @@ export class ScrollHelper {
     const first = scroller(undefined)
     if (!first) return current
 
+    const { signal } = aborter
+
     const timeout = setTimeout(() => {
-      aborter.abort("Timed out")
+      aborter.abort("First timed out")
     }, dtimeout)
 
     try {
-      const { signal } = aborter
-
       current = await this.core.mutate(skey, current,
         c => ({ time: c?.time, aborter }),
         params)
@@ -146,13 +146,13 @@ export class ScrollHelper {
     const last = scroller(lastOf(pages))
     if (!last) return current
 
+    const { signal } = aborter
+
     const timeout = setTimeout(() => {
-      aborter.abort("Timed out")
+      aborter.abort("Scroll timed out")
     }, dtimeout)
 
     try {
-      const { signal } = aborter
-
       current = await this.core.mutate(skey, current,
         c => ({ time: c?.time, aborter }),
         params)

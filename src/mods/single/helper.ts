@@ -50,15 +50,15 @@ export class SingleHelper {
     if (this.core.shouldCooldown(current) && !ignore)
       return current
 
+    const { signal } = aborter
+
     const timeout = setTimeout(() => {
-      aborter.abort("Timed out")
+      aborter.abort("Fetch timed out")
     }, dtimeout)
 
     const state: State<D, E, K> = {}
 
     try {
-      const { signal } = aborter
-
       current = await this.core.mutate(skey, current,
         c => ({ time: c?.time, aborter }),
         params)
@@ -129,13 +129,13 @@ export class SingleHelper {
     if (current?.aborter)
       current.aborter.abort("Replaced")
 
+    const { signal } = aborter
+
     const timeout = setTimeout(() => {
-      aborter.abort("Timed out")
+      aborter.abort("Update timed out")
     }, dtimeout)
 
     try {
-      const { signal } = aborter
-
       const generator = updater(current, { signal })
 
       {

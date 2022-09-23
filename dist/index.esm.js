@@ -210,7 +210,7 @@ function getTimeFromDelay(delay) {
 var AbortError = /** @class */ (function (_super) {
     __extends(AbortError, _super);
     function AbortError(signal) {
-        return _super.call(this, "Aborted", { cause: signal }) || this;
+        return _super.call(this, "Aborted: ".concat(signal.reason), { cause: signal }) || this;
     }
     return AbortError;
 }(Error));
@@ -286,7 +286,7 @@ var ScrollHelper = /** @class */ (function () {
         if (force === void 0) { force = false; }
         if (ignore === void 0) { ignore = false; }
         return __awaiter(this, void 0, void 0, function () {
-            var _b, equals, _c, dcooldown, _d, dexpiration, _e, dtimeout, first, timeout, signal, _f, data, error, _g, time_1, _h, cooldown_1, _j, expiration_1, state_1, norm, error_1;
+            var _b, equals, _c, dcooldown, _d, dexpiration, _e, dtimeout, first, signal, timeout, _f, data, error, _g, time_1, _h, cooldown_1, _j, expiration_1, state_1, norm, error_1;
             return __generator(this, function (_k) {
                 switch (_k.label) {
                     case 0:
@@ -304,13 +304,13 @@ var ScrollHelper = /** @class */ (function () {
                         first = scroller(undefined);
                         if (!first)
                             return [2 /*return*/, current];
+                        signal = aborter.signal;
                         timeout = setTimeout(function () {
-                            aborter.abort("Timed out");
+                            aborter.abort("First timed out");
                         }, dtimeout);
                         _k.label = 1;
                     case 1:
                         _k.trys.push([1, 8, 11, 12]);
-                        signal = aborter.signal;
                         return [4 /*yield*/, this.core.mutate(skey, current, function (c) { return ({ time: c === null || c === void 0 ? void 0 : c.time, aborter: aborter }); }, params)];
                     case 2:
                         current = _k.sent();
@@ -369,7 +369,7 @@ var ScrollHelper = /** @class */ (function () {
         if (force === void 0) { force = false; }
         if (ignore === void 0) { ignore = false; }
         return __awaiter(this, void 0, void 0, function () {
-            var _c, dcooldown, _d, dexpiration, _e, dtimeout, pages, last, timeout, signal, _f, data, error, _g, time_2, _h, cooldown_2, _j, expiration_2, state_2, error_2;
+            var _c, dcooldown, _d, dexpiration, _e, dtimeout, pages, last, signal, timeout, _f, data, error, _g, time_2, _h, cooldown_2, _j, expiration_2, state_2, error_2;
             return __generator(this, function (_k) {
                 switch (_k.label) {
                     case 0:
@@ -388,13 +388,13 @@ var ScrollHelper = /** @class */ (function () {
                         last = scroller(lastOf(pages));
                         if (!last)
                             return [2 /*return*/, current];
+                        signal = aborter.signal;
                         timeout = setTimeout(function () {
-                            aborter.abort("Timed out");
+                            aborter.abort("Scroll timed out");
                         }, dtimeout);
                         _k.label = 1;
                     case 1:
                         _k.trys.push([1, 6, 9, 10]);
-                        signal = aborter.signal;
                         return [4 /*yield*/, this.core.mutate(skey, current, function (c) { return ({ time: c === null || c === void 0 ? void 0 : c.time, aborter: aborter }); }, params)];
                     case 2:
                         current = _k.sent();
@@ -710,7 +710,7 @@ var SingleHelper = /** @class */ (function () {
         if (force === void 0) { force = false; }
         if (ignore === void 0) { ignore = false; }
         return __awaiter(this, void 0, void 0, function () {
-            var _a, dcooldown, _b, dexpiration, _c, dtimeout, timeout, state, signal, _d, data, error, _e, time_1, _f, cooldown_1, _g, expiration_1, error_1;
+            var _a, dcooldown, _b, dexpiration, _c, dtimeout, signal, timeout, state, _d, data, error, _e, time_1, _f, cooldown_1, _g, expiration_1, error_1;
             return __generator(this, function (_h) {
                 switch (_h.label) {
                     case 0:
@@ -727,14 +727,14 @@ var SingleHelper = /** @class */ (function () {
                             current.aborter.abort("Replaced");
                         if (this.core.shouldCooldown(current) && !ignore)
                             return [2 /*return*/, current];
+                        signal = aborter.signal;
                         timeout = setTimeout(function () {
-                            aborter.abort("Timed out");
+                            aborter.abort("Fetch timed out");
                         }, dtimeout);
                         state = {};
                         _h.label = 1;
                     case 1:
                         _h.trys.push([1, 6, 9, 10]);
-                        signal = aborter.signal;
                         return [4 /*yield*/, this.core.mutate(skey, current, function (c) { return ({ time: c === null || c === void 0 ? void 0 : c.time, aborter: aborter }); }, params)];
                     case 2:
                         current = _h.sent();
@@ -783,7 +783,7 @@ var SingleHelper = /** @class */ (function () {
         if (aborter === void 0) { aborter = new AbortController(); }
         if (params === void 0) { params = {}; }
         return __awaiter(this, void 0, void 0, function () {
-            var _a, dcooldown, _b, dexpiration, _c, dtimeout, timeout, signal, generator, _d, data, error, optimistic_1, _e, data, error_3, _f, time_2, _g, cooldown_2, _h, expiration_2, state_1, error_2;
+            var _a, dcooldown, _b, dexpiration, _c, dtimeout, signal, timeout, generator, _d, data, error, optimistic_1, _e, data, error_3, _f, time_2, _g, cooldown_2, _h, expiration_2, state_1, error_2;
             return __generator(this, function (_j) {
                 switch (_j.label) {
                     case 0:
@@ -796,13 +796,13 @@ var SingleHelper = /** @class */ (function () {
                             return [2 /*return*/, current];
                         if (current === null || current === void 0 ? void 0 : current.aborter)
                             current.aborter.abort("Replaced");
+                        signal = aborter.signal;
                         timeout = setTimeout(function () {
-                            aborter.abort("Timed out");
+                            aborter.abort("Update timed out");
                         }, dtimeout);
                         _j.label = 1;
                     case 1:
                         _j.trys.push([1, 9, 12, 13]);
-                        signal = aborter.signal;
                         generator = updater(current, { signal: signal });
                         return [4 /*yield*/, nextOf(generator)];
                     case 2:
@@ -1230,7 +1230,7 @@ var Core = /** @class */ (function (_super) {
                     case 2:
                         if (state.time !== undefined && state.time < ((_a = current === null || current === void 0 ? void 0 : current.time) !== null && _a !== void 0 ? _a : 0))
                             return [2 /*return*/, current];
-                        if ((current === null || current === void 0 ? void 0 : current.optimistic) && state.optimistic === undefined)
+                        if (state.optimistic === undefined && (current === null || current === void 0 ? void 0 : current.optimistic))
                             return [2 /*return*/, current];
                         next = __assign({ time: Date.now(), data: current === null || current === void 0 ? void 0 : current.data, error: current === null || current === void 0 ? void 0 : current.error, cooldown: current === null || current === void 0 ? void 0 : current.cooldown, expiration: current === null || current === void 0 ? void 0 : current.expiration, aborter: current === null || current === void 0 ? void 0 : current.aborter, optimistic: current === null || current === void 0 ? void 0 : current.optimistic }, state);
                         _b = next;

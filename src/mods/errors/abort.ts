@@ -1,6 +1,6 @@
 export class AbortError extends Error {
   constructor(signal: AbortSignal) {
-    super("Aborted", { cause: signal })
+    super(`Aborted: ${signal.reason}`, { cause: signal })
   }
 }
 
