@@ -159,7 +159,7 @@ export class SingleHelper {
         if (result === undefined) {
           if (fetcher === undefined)
             throw new Error("Updater returned nothing and undefined fetcher")
-          result = await fetcher(key, { signal, cache: "no-cache" })
+          result = await fetcher(key, { signal, cache: "reload" })
         }
 
         const {

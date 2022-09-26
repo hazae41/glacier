@@ -5,5 +5,5 @@ export type Fetcher<D = any, E = any, K = any> =
 
 export interface FetcherMore<D = any, E = any, K = any> {
   signal?: AbortSignal,
-  cache?: "no-cache"
+  cache?: "reload"
 }
