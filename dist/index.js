@@ -826,7 +826,7 @@ var SingleHelper = /** @class */ (function () {
                         if (!(result === undefined)) return [3 /*break*/, 6];
                         if (fetcher === undefined)
                             throw new Error("Updater returned nothing and undefined fetcher");
-                        return [4 /*yield*/, fetcher(key, { signal: signal })];
+                        return [4 /*yield*/, fetcher(key, { signal: signal, cache: "no-cache" })];
                     case 5:
                         result = _h.sent();
                         _h.label = 6;
