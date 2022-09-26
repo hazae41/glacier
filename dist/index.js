@@ -690,7 +690,7 @@ function returnOf(generator) {
                     next = _a.sent();
                     if (next.done)
                         return [2 /*return*/, next.value];
-                    throw new Error("Generator didn't return");
+                    return [2 /*return*/];
             }
         });
     });
@@ -785,13 +785,13 @@ var SingleHelper = /** @class */ (function () {
      * @returns The new state
      * @throws Error
      */
-    SingleHelper.prototype.update = function (key, skey, current, updater, aborter, params) {
+    SingleHelper.prototype.update = function (key, skey, current, fetcher, updater, aborter, params) {
         if (aborter === void 0) { aborter = new AbortController(); }
         if (params === void 0) { params = {}; }
         return __awaiter(this, void 0, void 0, function () {
-            var _a, dcooldown, _b, dexpiration, _c, dtimeout, signal, timeout, generator, _d, data, error, optimistic_1, _e, data, error_3, _f, time_2, _g, cooldown_2, _h, expiration_2, state_1, error_2;
-            return __generator(this, function (_j) {
-                switch (_j.label) {
+            var _a, dcooldown, _b, dexpiration, _c, dtimeout, signal, timeout, generator, _d, data, error, optimistic_1, result, data, error_3, _e, time_2, _f, cooldown_2, _g, expiration_2, state_1, error_2;
+            return __generator(this, function (_h) {
+                switch (_h.label) {
                     case 0:
                         if (key === undefined)
                             return [2 /*return*/];
@@ -806,53 +806,62 @@ var SingleHelper = /** @class */ (function () {
                         timeout = setTimeout(function () {
                             aborter.abort("Update timed out");
                         }, dtimeout);
-                        _j.label = 1;
+                        _h.label = 1;
                     case 1:
-                        _j.trys.push([1, 9, 12, 13]);
+                        _h.trys.push([1, 11, 14, 15]);
                         generator = updater(current, { signal: signal });
                         return [4 /*yield*/, nextOf(generator)];
                     case 2:
-                        _d = _j.sent(), data = _d.data, error = _d.error;
+                        _d = _h.sent(), data = _d.data, error = _d.error;
                         optimistic_1 = {};
                         if (data !== undefined)
                             optimistic_1.data = data;
                         optimistic_1.error = error;
                         return [4 /*yield*/, this.core.mutate(skey, current, function (c) { return (__assign({ time: c === null || c === void 0 ? void 0 : c.time, aborter: aborter, optimistic: true }, optimistic_1)); }, params)];
                     case 3:
-                        _j.sent();
+                        _h.sent();
                         return [4 /*yield*/, returnOf(generator)];
                     case 4:
-                        _e = _j.sent(), data = _e.data, error_3 = _e.error, _f = _e.time, time_2 = _f === void 0 ? Date.now() : _f, _g = _e.cooldown, cooldown_2 = _g === void 0 ? getTimeFromDelay(dcooldown) : _g, _h = _e.expiration, expiration_2 = _h === void 0 ? getTimeFromDelay(dexpiration) : _h;
+                        result = _h.sent();
+                        if (!(result === undefined)) return [3 /*break*/, 6];
+                        if (fetcher === undefined)
+                            throw new Error("Updater returned nothing and undefined fetcher");
+                        return [4 /*yield*/, fetcher(key, { signal: signal })];
+                    case 5:
+                        result = _h.sent();
+                        _h.label = 6;
+                    case 6:
+                        data = result.data, error_3 = result.error, _e = result.time, time_2 = _e === void 0 ? Date.now() : _e, _f = result.cooldown, cooldown_2 = _f === void 0 ? getTimeFromDelay(dcooldown) : _f, _g = result.expiration, expiration_2 = _g === void 0 ? getTimeFromDelay(dexpiration) : _g;
                         if (signal.aborted)
                             throw new AbortError(signal);
                         return [4 /*yield*/, this.core.get(skey, params)];
-                    case 5:
-                        current = _j.sent();
-                        if (!(error_3 !== undefined)) return [3 /*break*/, 7];
+                    case 7:
+                        current = _h.sent();
+                        if (!(error_3 !== undefined)) return [3 /*break*/, 9];
                         if ((current === null || current === void 0 ? void 0 : current.aborter) !== aborter)
                             return [2 /*return*/, current];
                         return [4 /*yield*/, this.core.mutate(skey, current, function (c) { return ({ time: c === null || c === void 0 ? void 0 : c.time, cooldown: cooldown_2, expiration: expiration_2, aborter: undefined, optimistic: false, data: c === null || c === void 0 ? void 0 : c.data, error: error_3 }); }, params)];
-                    case 6: return [2 /*return*/, _j.sent()];
-                    case 7:
+                    case 8: return [2 /*return*/, _h.sent()];
+                    case 9:
                         state_1 = {};
                         if (data !== undefined)
                             state_1.data = data;
                         state_1.error = error_3;
                         return [4 /*yield*/, this.core.mutate(skey, current, function () { return (__assign({ time: time_2, cooldown: cooldown_2, expiration: expiration_2, aborter: undefined, optimistic: false }, state_1)); }, params)];
-                    case 8: return [2 /*return*/, _j.sent()];
-                    case 9:
-                        error_2 = _j.sent();
+                    case 10: return [2 /*return*/, _h.sent()];
+                    case 11:
+                        error_2 = _h.sent();
                         return [4 /*yield*/, this.core.get(skey, params)];
-                    case 10:
-                        current = _j.sent();
+                    case 12:
+                        current = _h.sent();
                         if ((current === null || current === void 0 ? void 0 : current.aborter) !== aborter)
                             return [2 /*return*/, current];
                         return [4 /*yield*/, this.core.mutate(skey, current, function (c) { return ({ time: c === null || c === void 0 ? void 0 : c.time, aborter: undefined, optimistic: false, data: c === null || c === void 0 ? void 0 : c.data, error: error_2 }); }, params)];
-                    case 11: return [2 /*return*/, _j.sent()];
-                    case 12:
+                    case 13: return [2 /*return*/, _h.sent()];
+                    case 14:
                         clearTimeout(timeout);
                         return [7 /*endfinally*/];
-                    case 13: return [2 /*return*/];
+                    case 15: return [2 /*return*/];
                 }
             });
         });
@@ -1008,11 +1017,11 @@ var SingleObject = /** @class */ (function () {
         var _a;
         if (uparams === void 0) { uparams = {}; }
         return __awaiter(this, void 0, void 0, function () {
-            var _b, core, key, skey, mparams, fparams, _c;
+            var _b, core, key, skey, fetcher, mparams, fparams, _c;
             return __generator(this, function (_d) {
                 switch (_d.label) {
                     case 0:
-                        _b = this, core = _b.core, key = _b.key, skey = _b.skey, mparams = _b.mparams;
+                        _b = this, core = _b.core, key = _b.key, skey = _b.skey, fetcher = _b.fetcher, mparams = _b.mparams;
                         if (!(this._state === null)) return [3 /*break*/, 2];
                         return [4 /*yield*/, ((_a = this._init) !== null && _a !== void 0 ? _a : (this._init = this.loadAsync()))];
                     case 1:
@@ -1023,7 +1032,7 @@ var SingleObject = /** @class */ (function () {
                             throw new Error("Null state after init");
                         fparams = __assign(__assign({}, mparams), uparams);
                         _c = this;
-                        return [4 /*yield*/, core.single.update(key, skey, this._state, updater, aborter, fparams)];
+                        return [4 /*yield*/, core.single.update(key, skey, this._state, fetcher, updater, aborter, fparams)];
                     case 3: return [2 /*return*/, _c._state = _d.sent()];
                 }
             });
@@ -1892,7 +1901,7 @@ function useSingle(key, fetcher, params) {
     var update = React.useCallback(function (updater, uparams, aborter) {
         if (uparams === void 0) { uparams = {}; }
         return __awaiter(_this, void 0, void 0, function () {
-            var state, key, params, fparams;
+            var state, key, fetcher, params, fparams;
             return __generator(this, function (_a) {
                 switch (_a.label) {
                     case 0:
@@ -1908,9 +1917,10 @@ function useSingle(key, fetcher, params) {
                             throw new Error("Null state after init");
                         state = stateRef.current;
                         key = keyRef.current;
+                        fetcher = fetcherRef.current;
                         params = mparamsRef.current;
                         fparams = __assign(__assign({}, params), uparams);
-                        return [4 /*yield*/, core.single.update(key, skey, state, updater, aborter, fparams)];
+                        return [4 /*yield*/, core.single.update(key, skey, state, fetcher, updater, aborter, fparams)];
                     case 3: return [2 /*return*/, _a.sent()];
                 }
             });

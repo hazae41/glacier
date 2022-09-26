@@ -111,6 +111,7 @@ export class SingleHelper {
     key: K | undefined,
     skey: string | undefined,
     current: State<D, E, K> | undefined,
+    fetcher: Fetcher<D, E, K> | undefined,
     updater: Updater<D, E, K>,
     aborter = new AbortController(),
     params: Params<D, E, K> = {},
@@ -153,13 +154,21 @@ export class SingleHelper {
       }
 
       {
+        let result = await returnOf(generator)
+
+        if (result === undefined) {
+          if (fetcher === undefined)
+            throw new Error("Updater returned nothing and undefined fetcher")
+          result = await fetcher(key, { signal })
+        }
+
         const {
           data,
           error,
           time = Date.now(),
           cooldown = getTimeFromDelay(dcooldown),
           expiration = getTimeFromDelay(dexpiration)
-        } = await returnOf(generator)
+        } = result
 
         if (signal.aborted)
           throw new AbortError(signal)

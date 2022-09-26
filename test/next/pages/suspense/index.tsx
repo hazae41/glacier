@@ -1,6 +1,6 @@
 import { XSWR } from "@hazae41/xswr"
 import { Suspense, useEffect, useState } from "react"
-import { fetchAsJson } from "../../libs/fetcher"
+import { fetchAsJson } from "../../common/fetcher"
 
 function getHelloSchema() {
   return XSWR.single("/api/hello", fetchAsJson)

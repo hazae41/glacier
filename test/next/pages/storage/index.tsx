@@ -1,6 +1,6 @@
 import { XSWR } from "@hazae41/xswr";
 import { gunzipSync, gzipSync } from "zlib";
-import { fetchAsJson } from "../../libs/fetcher";
+import { fetchAsJson } from "../../common/fetcher";
 
 class GZIP {
   static stringify(value?: any) {

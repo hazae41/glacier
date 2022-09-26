@@ -1,6 +1,6 @@
 import { XSWR } from "@hazae41/xswr";
 import { useCallback } from "react";
-import { fetchAsJson } from "../../libs/fetcher";
+import { fetchAsJson } from "../../common/fetcher";
 import { getProfileRef, getProfileSchema, Profile, ProfileData, ProfileRef } from "./profile";
 
 export interface CommentRef {

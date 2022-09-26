@@ -1,5 +1,5 @@
 import { XSWR } from "@hazae41/xswr";
-import { fetchAsJson } from "../../libs/fetcher";
+import { fetchAsJson } from "../../common/fetcher";
 import { Comment, CommentData, CommentRef, getCommentRef } from "./comment";
 import { getProfileRef, Profile, ProfileData, ProfileRef } from "./profile";
 

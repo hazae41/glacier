@@ -1,6 +1,6 @@
 import { XSWR } from "@hazae41/xswr";
 import { useCallback } from "react";
-import { fetchAsJson } from "../../libs/fetcher";
+import { fetchAsJson } from "../../common/fetcher";
 import { getVideoRef, Video, VideoData, VideoRef } from "./video";
 
 function getAllVideosSchema() {

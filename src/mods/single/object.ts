@@ -113,7 +113,7 @@ export class SingleObject<D = any, E = any, K = any> implements Object<D, E, K>{
   }
 
   async update(updater: Updater<D, E, K>, uparams: UpdaterParams<D, E, K> = {}, aborter?: AbortController) {
-    const { core, key, skey, mparams } = this
+    const { core, key, skey, fetcher, mparams } = this
 
     if (this._state === null)
       await (this._init ??= this.loadAsync())
@@ -122,7 +122,7 @@ export class SingleObject<D = any, E = any, K = any> implements Object<D, E, K>{
 
     const fparams = { ...mparams, ...uparams }
 
-    return this._state = await core.single.update(key, skey, this._state, updater, aborter, fparams)
+    return this._state = await core.single.update(key, skey, this._state, fetcher, updater, aborter, fparams)
   }
 
   async clear() {

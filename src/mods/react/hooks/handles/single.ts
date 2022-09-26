@@ -140,11 +140,12 @@ export function useSingle<D = any, E = any, K = any>(
 
     const state = stateRef.current
     const key = keyRef.current
+    const fetcher = fetcherRef.current
     const params = mparamsRef.current
 
     const fparams = { ...params, ...uparams }
 
-    return await core.single.update(key, skey, state, updater, aborter, fparams)
+    return await core.single.update(key, skey, state, fetcher, updater, aborter, fparams)
   }, [core, skey])
 
   const suspend = useCallback(() => {

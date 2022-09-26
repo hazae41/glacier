@@ -1,6 +1,6 @@
 import { XSWR } from "@hazae41/xswr"
 import { useState } from "react"
-import { fetchAsJson } from "../../libs/fetcher"
+import { fetchAsJson } from "../../common/fetcher"
 
 function getKeySchema(id: number) {
   return XSWR.single<unknown>(`/api/query?id=${id}`, fetchAsJson)

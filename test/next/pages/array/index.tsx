@@ -1,6 +1,6 @@
 import { XSWR } from "@hazae41/xswr";
 import { useCallback } from "react";
-import { fetchAsJson } from "../../libs/fetcher";
+import { fetchAsJson } from "../../common/fetcher";
 
 interface Ref {
   ref: true
