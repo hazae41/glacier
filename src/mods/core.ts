@@ -131,16 +131,12 @@ export class Core extends Ortho<string, State | undefined> {
       return current
 
     const next: State<D, E, K> = {
-      time: Date.now(),
-      data: current?.data,
-      error: current?.error,
-      cooldown: current?.cooldown,
-      expiration: current?.expiration,
-      aborter: current?.aborter,
-      optimistic: current?.optimistic,
+      ...current,
       ...state
     }
 
+    if (next.time === undefined)
+      next.time = Date.now()
     next.data = await this.normalize(false, next, params)
 
     const {
