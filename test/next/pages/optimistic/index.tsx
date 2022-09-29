@@ -33,16 +33,13 @@ export default function Page() {
 
   const onUpdateClick = useCallback(async () => {
     await update(async function* (previous, { signal }) {
-      const data: HelloData = {
-        name: "John Smith"
-      }
-
-      yield { data }
-
+      yield { data: { name: "John Smith" } }
+      await new Promise(ok => setTimeout(ok, 1000))
+      yield { data: { name: "John Smith 2" } }
       return await fetchAsJson<HelloData>("/api/hello", {
         signal,
         method: "POST",
-        body: JSON.stringify(data)
+        body: JSON.stringify({ name: "John Smith" })
       })
     })
   }, [update])

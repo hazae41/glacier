@@ -137,6 +137,14 @@ function __spreadArray(to, from, pack) {
     return to.concat(ar || from);
 }
 
+function __asyncValues(o) {
+    if (!Symbol.asyncIterator) throw new TypeError("Symbol.asyncIterator is not defined.");
+    var m = o[Symbol.asyncIterator], i;
+    return m ? m.call(o) : (o = typeof __values === "function" ? __values(o) : o[Symbol.iterator](), i = {}, verb("next"), verb("throw"), verb("return"), i[Symbol.asyncIterator] = function () { return this; }, i);
+    function verb(n) { i[n] = o[n] && function (v) { return new Promise(function (resolve, reject) { v = o[n](v), settle(resolve, reject, v.done, v.value); }); }; }
+    function settle(resolve, reject, d, v) { Promise.resolve(v).then(function(v) { resolve({ value: v, done: d }); }, reject); }
+}
+
 /**
  * Map of arrays data structure
  */
@@ -665,21 +673,6 @@ var ScrollSchema = /** @class */ (function () {
     return ScrollSchema;
 }());
 
-function nextOf(generator) {
-    return __awaiter(this, void 0, void 0, function () {
-        var next;
-        return __generator(this, function (_a) {
-            switch (_a.label) {
-                case 0: return [4 /*yield*/, generator.next()];
-                case 1:
-                    next = _a.sent();
-                    if (!next.done)
-                        return [2 /*return*/, next.value];
-                    throw new Error("Generator returned");
-            }
-        });
-    });
-}
 function returnOf(generator) {
     return __awaiter(this, void 0, void 0, function () {
         var next;
@@ -786,10 +779,11 @@ var SingleHelper = /** @class */ (function () {
      * @throws Error
      */
     SingleHelper.prototype.update = function (key, skey, current, fetcher, updater, aborter, params) {
+        var e_1, _a;
         if (aborter === void 0) { aborter = new AbortController(); }
         if (params === void 0) { params = {}; }
         return __awaiter(this, void 0, void 0, function () {
-            var _a, dcooldown, _b, dexpiration, _c, dtimeout, signal, timeout, generator, _d, data, error, optimistic_1, result, data, error_3, _e, time_2, _f, cooldown_2, _g, expiration_2, state_1, error_2;
+            var _b, dcooldown, _c, dexpiration, _d, dtimeout, signal, timeout, generator, _loop_1, this_1, generator_1, generator_1_1, e_1_1, result, data, error_3, _e, time_2, _f, cooldown_2, _g, expiration_2, state_1, error_2;
             return __generator(this, function (_h) {
                 switch (_h.label) {
                     case 0:
@@ -797,7 +791,7 @@ var SingleHelper = /** @class */ (function () {
                             return [2 /*return*/];
                         if (skey === undefined)
                             return [2 /*return*/];
-                        _a = params.cooldown, dcooldown = _a === void 0 ? DEFAULT_COOLDOWN : _a, _b = params.expiration, dexpiration = _b === void 0 ? DEFAULT_EXPIRATION : _b, _c = params.timeout, dtimeout = _c === void 0 ? DEFAULT_TIMEOUT : _c;
+                        _b = params.cooldown, dcooldown = _b === void 0 ? DEFAULT_COOLDOWN : _b, _c = params.expiration, dexpiration = _c === void 0 ? DEFAULT_EXPIRATION : _c, _d = params.timeout, dtimeout = _d === void 0 ? DEFAULT_TIMEOUT : _d;
                         if (current === null || current === void 0 ? void 0 : current.optimistic)
                             return [2 /*return*/, current];
                         if (current === null || current === void 0 ? void 0 : current.aborter)
@@ -808,60 +802,98 @@ var SingleHelper = /** @class */ (function () {
                         }, dtimeout);
                         _h.label = 1;
                     case 1:
-                        _h.trys.push([1, 11, 14, 15]);
+                        _h.trys.push([1, 22, 25, 26]);
                         generator = updater(current, { signal: signal });
-                        return [4 /*yield*/, nextOf(generator)];
+                        _h.label = 2;
                     case 2:
-                        _d = _h.sent(), data = _d.data, error = _d.error;
-                        optimistic_1 = {};
-                        if (data !== undefined)
-                            optimistic_1.data = data;
-                        optimistic_1.error = error;
-                        return [4 /*yield*/, this.core.mutate(skey, current, function (c) { return (__assign({ time: c === null || c === void 0 ? void 0 : c.time, aborter: aborter, optimistic: true }, optimistic_1)); }, params)];
-                    case 3:
-                        _h.sent();
-                        return [4 /*yield*/, returnOf(generator)];
+                        _h.trys.push([2, 8, 9, 14]);
+                        _loop_1 = function () {
+                            var _j, data_1, error_4, optimistic;
+                            return __generator(this, function (_k) {
+                                switch (_k.label) {
+                                    case 0:
+                                        _j = generator_1_1.value, data_1 = _j.data, error_4 = _j.error;
+                                        optimistic = {};
+                                        if (data_1 !== undefined)
+                                            optimistic.data = data_1;
+                                        optimistic.error = error_4;
+                                        return [4 /*yield*/, this_1.core.mutate(skey, current, function (c) { return (__assign({ time: c === null || c === void 0 ? void 0 : c.time, aborter: aborter, optimistic: true }, optimistic)); }, params)];
+                                    case 1:
+                                        _k.sent();
+                                        return [2 /*return*/];
+                                }
+                            });
+                        };
+                        this_1 = this;
+                        generator_1 = __asyncValues(generator);
+                        _h.label = 3;
+                    case 3: return [4 /*yield*/, generator_1.next()];
                     case 4:
+                        if (!(generator_1_1 = _h.sent(), !generator_1_1.done)) return [3 /*break*/, 7];
+                        return [5 /*yield**/, _loop_1()];
+                    case 5:
+                        _h.sent();
+                        _h.label = 6;
+                    case 6: return [3 /*break*/, 3];
+                    case 7: return [3 /*break*/, 14];
+                    case 8:
+                        e_1_1 = _h.sent();
+                        e_1 = { error: e_1_1 };
+                        return [3 /*break*/, 14];
+                    case 9:
+                        _h.trys.push([9, , 12, 13]);
+                        if (!(generator_1_1 && !generator_1_1.done && (_a = generator_1.return))) return [3 /*break*/, 11];
+                        return [4 /*yield*/, _a.call(generator_1)];
+                    case 10:
+                        _h.sent();
+                        _h.label = 11;
+                    case 11: return [3 /*break*/, 13];
+                    case 12:
+                        if (e_1) throw e_1.error;
+                        return [7 /*endfinally*/];
+                    case 13: return [7 /*endfinally*/];
+                    case 14: return [4 /*yield*/, returnOf(generator)];
+                    case 15:
                         result = _h.sent();
-                        if (!(result === undefined)) return [3 /*break*/, 6];
+                        if (!(result === undefined)) return [3 /*break*/, 17];
                         if (fetcher === undefined)
                             throw new Error("Updater returned nothing and undefined fetcher");
                         return [4 /*yield*/, fetcher(key, { signal: signal, cache: "reload" })];
-                    case 5:
+                    case 16:
                         result = _h.sent();
-                        _h.label = 6;
-                    case 6:
+                        _h.label = 17;
+                    case 17:
                         data = result.data, error_3 = result.error, _e = result.time, time_2 = _e === void 0 ? Date.now() : _e, _f = result.cooldown, cooldown_2 = _f === void 0 ? getTimeFromDelay(dcooldown) : _f, _g = result.expiration, expiration_2 = _g === void 0 ? getTimeFromDelay(dexpiration) : _g;
                         if (signal.aborted)
                             throw new AbortError(signal);
                         return [4 /*yield*/, this.core.get(skey, params)];
-                    case 7:
+                    case 18:
                         current = _h.sent();
-                        if (!(error_3 !== undefined)) return [3 /*break*/, 9];
+                        if (!(error_3 !== undefined)) return [3 /*break*/, 20];
                         if ((current === null || current === void 0 ? void 0 : current.aborter) !== aborter)
                             return [2 /*return*/, current];
                         return [4 /*yield*/, this.core.mutate(skey, current, function (c) { return ({ time: c === null || c === void 0 ? void 0 : c.time, cooldown: cooldown_2, expiration: expiration_2, aborter: undefined, optimistic: false, data: c === null || c === void 0 ? void 0 : c.data, error: error_3 }); }, params)];
-                    case 8: return [2 /*return*/, _h.sent()];
-                    case 9:
+                    case 19: return [2 /*return*/, _h.sent()];
+                    case 20:
                         state_1 = {};
                         if (data !== undefined)
                             state_1.data = data;
                         state_1.error = error_3;
                         return [4 /*yield*/, this.core.mutate(skey, current, function () { return (__assign({ time: time_2, cooldown: cooldown_2, expiration: expiration_2, aborter: undefined, optimistic: false }, state_1)); }, params)];
-                    case 10: return [2 /*return*/, _h.sent()];
-                    case 11:
+                    case 21: return [2 /*return*/, _h.sent()];
+                    case 22:
                         error_2 = _h.sent();
                         return [4 /*yield*/, this.core.get(skey, params)];
-                    case 12:
+                    case 23:
                         current = _h.sent();
                         if ((current === null || current === void 0 ? void 0 : current.aborter) !== aborter)
                             return [2 /*return*/, current];
                         return [4 /*yield*/, this.core.mutate(skey, current, function (c) { return ({ time: c === null || c === void 0 ? void 0 : c.time, aborter: undefined, optimistic: false, data: c === null || c === void 0 ? void 0 : c.data, error: error_2 }); }, params)];
-                    case 13: return [2 /*return*/, _h.sent()];
-                    case 14:
+                    case 24: return [2 /*return*/, _h.sent()];
+                    case 25:
                         clearTimeout(timeout);
                         return [7 /*endfinally*/];
-                    case 15: return [2 /*return*/];
+                    case 26: return [2 /*return*/];
                 }
             });
         });
@@ -1249,7 +1281,9 @@ var Core = /** @class */ (function (_super) {
                             return [2 /*return*/, current];
                         if (state.optimistic === undefined && (current === null || current === void 0 ? void 0 : current.optimistic))
                             return [2 /*return*/, current];
-                        next = __assign({ time: Date.now(), data: current === null || current === void 0 ? void 0 : current.data, error: current === null || current === void 0 ? void 0 : current.error, cooldown: current === null || current === void 0 ? void 0 : current.cooldown, expiration: current === null || current === void 0 ? void 0 : current.expiration, aborter: current === null || current === void 0 ? void 0 : current.aborter, optimistic: current === null || current === void 0 ? void 0 : current.optimistic }, state);
+                        next = __assign(__assign({}, current), state);
+                        if (next.time === undefined)
+                            next.time = Date.now();
                         _b = next;
                         return [4 /*yield*/, this.normalize(false, next, params)];
                     case 3:
