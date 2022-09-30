@@ -24,7 +24,6 @@ export class SingleHelper {
   async fetch<D = any, E = any, K = any>(
     key: K | undefined,
     skey: string | undefined,
-    current: State<D, E, K> | undefined,
     fetcher: Fetcher<D, E, K>,
     aborter = new AbortController(),
     params: Params<D, E, K> = {},
@@ -34,21 +33,33 @@ export class SingleHelper {
     if (key === undefined) return
     if (skey === undefined) return
 
+    let { current, skip } = await this.core.lock(skey, async () => {
+      let current = await this.core.get(skey, params)
+
+      if (current?.optimistic)
+        return { current, skip: true }
+      if (current?.aborter && !force)
+        return { current, skip: true }
+      if (current?.aborter && force)
+        current.aborter.abort("Replaced")
+
+      if (this.core.shouldCooldown(current) && !ignore)
+        return { current, skip: true }
+
+      current = await this.core.mutate(skey, current,
+        c => ({ time: c?.time, aborter }),
+        params)
+      return { current }
+    })
+
+    if (skip)
+      return current
+
     const {
       cooldown: dcooldown = DEFAULT_COOLDOWN,
       expiration: dexpiration = DEFAULT_EXPIRATION,
       timeout: dtimeout = DEFAULT_TIMEOUT,
     } = params
-
-    if (current?.optimistic)
-      return current
-    if (current?.aborter && !force)
-      return current
-    if (current?.aborter && force)
-      current.aborter.abort("Replaced")
-
-    if (this.core.shouldCooldown(current) && !ignore)
-      return current
 
     const { signal } = aborter
 
@@ -56,13 +67,7 @@ export class SingleHelper {
       aborter.abort("Fetch timed out")
     }, dtimeout)
 
-    const state: State<D, E, K> = {}
-
     try {
-      current = await this.core.mutate(skey, current,
-        c => ({ time: c?.time, aborter }),
-        params)
-
       const {
         data,
         error,
@@ -75,6 +80,8 @@ export class SingleHelper {
         throw new AbortError(signal)
 
       current = await this.core.get(skey, params)
+
+      const state: State<D, E, K> = {}
 
       if (data !== undefined)
         state.data = data
@@ -110,7 +117,6 @@ export class SingleHelper {
   async update<D = any, E = any, K = any>(
     key: K | undefined,
     skey: string | undefined,
-    current: State<D, E, K> | undefined,
     fetcher: Fetcher<D, E, K> | undefined,
     updater: Updater<D, E, K>,
     aborter = new AbortController(),
@@ -119,24 +125,14 @@ export class SingleHelper {
     if (key === undefined) return
     if (skey === undefined) return
 
-    const {
-      cooldown: dcooldown = DEFAULT_COOLDOWN,
-      expiration: dexpiration = DEFAULT_EXPIRATION,
-      timeout: dtimeout = DEFAULT_TIMEOUT,
-    } = params
+    let { current, generator, skip } = await this.core.lock(skey, async () => {
+      let current = await this.core.get(skey, params)
 
-    if (current?.optimistic)
-      return current
-    if (current?.aborter)
-      current.aborter.abort("Replaced")
+      if (current?.optimistic)
+        return { current, skip: true }
+      if (current?.aborter)
+        current.aborter.abort("Replaced")
 
-    const { signal } = aborter
-
-    const timeout = setTimeout(() => {
-      aborter.abort("Update timed out")
-    }, dtimeout)
-
-    try {
       const generator = updater(current, { signal })
 
       for await (const { data, error } of generator) {
@@ -146,11 +142,32 @@ export class SingleHelper {
           optimistic.data = data
         optimistic.error = error
 
-        await this.core.mutate(skey, current,
+        current = await this.core.mutate(skey, current,
           c => ({ time: c?.time, aborter, optimistic: true, ...optimistic }),
           params)
       }
 
+      return { current, generator }
+    })
+
+    if (skip)
+      return current
+    if (generator === undefined)
+      throw new Error("Undefined generator")
+
+    const {
+      cooldown: dcooldown = DEFAULT_COOLDOWN,
+      expiration: dexpiration = DEFAULT_EXPIRATION,
+      timeout: dtimeout = DEFAULT_TIMEOUT,
+    } = params
+
+    const { signal } = aborter
+
+    const timeout = setTimeout(() => {
+      aborter.abort("Update timed out")
+    }, dtimeout)
+
+    try {
       let result = await returnOf(generator)
 
       if (result === undefined) {

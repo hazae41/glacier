@@ -104,12 +104,11 @@ export function useSingle<D = any, E = any, K = any>(
     if (fetcherRef.current === undefined)
       return stateRef.current
 
-    const state = stateRef.current
     const key = keyRef.current
     const fetcher = fetcherRef.current
     const params = mparamsRef.current
 
-    return await core.single.fetch(key, skey, state, fetcher, aborter, params)
+    return await core.single.fetch(key, skey, fetcher, aborter, params)
   }, [core, skey])
 
   const refetch = useCallback(async (aborter?: AbortController) => {
@@ -122,12 +121,11 @@ export function useSingle<D = any, E = any, K = any>(
     if (fetcherRef.current === undefined)
       return stateRef.current
 
-    const state = stateRef.current
     const key = keyRef.current
     const fetcher = fetcherRef.current
     const params = mparamsRef.current
 
-    return await core.single.fetch(key, skey, state, fetcher, aborter, params, true, true)
+    return await core.single.fetch(key, skey, fetcher, aborter, params, true, true)
   }, [core, skey])
 
   const update = useCallback(async (updater: Updater<D, E, K>, uparams: UpdaterParams<D, E, K> = {}, aborter?: AbortController) => {
@@ -138,14 +136,13 @@ export function useSingle<D = any, E = any, K = any>(
     if (stateRef.current === null)
       throw new Error("Null state after init")
 
-    const state = stateRef.current
     const key = keyRef.current
     const fetcher = fetcherRef.current
     const params = mparamsRef.current
 
     const fparams = { ...params, ...uparams }
 
-    return await core.single.update(key, skey, state, fetcher, updater, aborter, fparams)
+    return await core.single.update(key, skey, fetcher, updater, aborter, fparams)
   }, [core, skey])
 
   const suspend = useCallback(() => {
@@ -159,13 +156,12 @@ export function useSingle<D = any, E = any, K = any>(
       if (fetcherRef.current === undefined)
         throw new Error("No fetcher")
 
-      const state = stateRef.current
       const key = keyRef.current
       const fetcher = fetcherRef.current
       const params = mparamsRef.current
 
       const background = new Promise<void>(ok => core.once(skey, () => ok(), params))
-      await core.single.fetch(key, skey, state, fetcher, undefined, params, false, true)
+      await core.single.fetch(key, skey, fetcher, undefined, params, false, true)
       await background
     })()
   }, [core, skey])

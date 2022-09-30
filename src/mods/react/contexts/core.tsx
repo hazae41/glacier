@@ -7,17 +7,20 @@ export const CoreContext =
   createContext<Core | undefined>(undefined)
 
 export function useCore() {
-  return useContext(CoreContext)!
+  const core = useContext(CoreContext)
+  if (core === undefined)
+    throw new Error("Undefined core")
+  return core
 }
 
 export function useCoreProvider(params: Params) {
   const coreRef = useRef<Core>()
 
-  if (!coreRef.current)
+  if (coreRef.current === undefined)
     coreRef.current = new Core(params)
 
   useEffect(() => () => {
-    coreRef.current!.unmount()
+    coreRef.current?.unmount()
   }, [])
 
   return coreRef.current

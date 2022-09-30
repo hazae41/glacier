@@ -7,6 +7,7 @@ import { State } from "mods/types/state"
 import { isAsyncStorage } from "mods/types/storage"
 import { DEFAULT_EQUALS } from "mods/utils/defaults"
 import { shallowEquals } from "mods/utils/equals"
+import { Lock } from "mods/utils/lock"
 
 export type Listener<D = any, E = any, K = any> =
   (x?: State<D, E, K>) => void
@@ -16,6 +17,7 @@ export class Core extends Ortho<string, State | undefined> {
   readonly scroll = new ScrollHelper(this)
 
   readonly cache = new Map<string, State>()
+  readonly locks = new Map<string, Lock>()
 
   private _mounted = true
 
@@ -31,14 +33,25 @@ export class Core extends Ortho<string, State | undefined> {
     this._mounted = false
   }
 
+  async lock<T>(skey: string, callback: () => Promise<T>) {
+    const lock = this.locks.get(skey)
+
+    if (lock !== undefined)
+      return await lock.lock(callback)
+
+    const lock2 = new Lock()
+    this.locks.set(skey, lock2)
+    return await lock2.lock(callback)
+  }
+
   getSync<D = any, E = any, K = any>(
     skey: string | undefined,
     params: Params<D, E, K> = {}
   ): State<D, E, K> | undefined | null {
     if (skey === undefined) return
 
-    if (this.cache.has(skey))
-      return this.cache.get(skey)
+    const cached = this.cache.get(skey)
+    if (cached !== undefined) return cached
 
     const { storage } = params
     if (!storage) return
@@ -57,8 +70,8 @@ export class Core extends Ortho<string, State | undefined> {
   ): Promise<State<D, E, K> | undefined> {
     if (skey === undefined) return
 
-    if (this.cache.has(skey))
-      return this.cache.get(skey)
+    const cached = this.cache.get(skey)
+    if (cached !== undefined) return cached
 
     const { storage } = params
     if (!storage) return
@@ -103,6 +116,7 @@ export class Core extends Ortho<string, State | undefined> {
     if (!skey) return
 
     this.cache.delete(skey)
+    this.locks.delete(skey)
     this.publish(skey, undefined)
 
     const { storage } = params
@@ -219,7 +233,10 @@ export class Core extends Ortho<string, State | undefined> {
 
     super.off(key, listener)
 
-    const count = this.counts.get(key)!
+    const count = this.counts.get(key)
+
+    if (count === undefined)
+      throw new Error("Undefined count")
 
     if (count > 1) {
       this.counts.set(key, count - 1)

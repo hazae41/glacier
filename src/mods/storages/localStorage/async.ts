@@ -19,11 +19,11 @@ import { useEffect, useRef } from "react"
 export function useAsyncLocalStorage(prefix?: string, serializer?: Serializer) {
   const storage = useRef<AsyncLocalStorage>()
 
-  if (!storage.current)
+  if (storage.current === undefined)
     storage.current = new AsyncLocalStorage(prefix, serializer)
 
   useEffect(() => () => {
-    storage.current!.unmount()
+    storage.current?.unmount()
   }, [])
 
   return storage.current
@@ -60,7 +60,8 @@ export class AsyncLocalStorage implements AsyncStorage {
   unmount() {
     if (typeof Storage === "undefined")
       return
-    removeEventListener("beforeunload", this.onunload!);
+    if (this.onunload)
+      removeEventListener("beforeunload", this.onunload);
     (async () => this.collect())().catch(console.error)
   }
 

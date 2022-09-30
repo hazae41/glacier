@@ -5,16 +5,19 @@ import { SingleHelper } from "./single";
 import { Mutator } from "./types/mutator";
 import { Params } from "./types/params";
 import { State } from "./types/state";
+import { Lock } from "./utils/lock";
 export declare type Listener<D = any, E = any, K = any> = (x?: State<D, E, K>) => void;
 export declare class Core extends Ortho<string, State | undefined> {
     readonly params: Params;
     readonly single: SingleHelper;
     readonly scroll: ScrollHelper;
     readonly cache: Map<string, State<any, any, any>>;
+    readonly locks: Map<string, Lock>;
     private _mounted;
     constructor(params: Params);
     get mounted(): boolean;
     unmount(): void;
+    lock<T>(skey: string, callback: () => Promise<T>): Promise<T>;
     getSync<D = any, E = any, K = any>(skey: string | undefined, params?: Params<D, E, K>): State<D, E, K> | undefined | null;
     get<D = any, E = any, K = any>(skey: string | undefined, params?: Params<D, E, K>, ignore?: boolean): Promise<State<D, E, K> | undefined>;
     /**

@@ -106,12 +106,11 @@ export function useScroll<D = any, E = any, K = any>(
     if (fetcherRef.current === undefined)
       return stateRef.current
 
-    const state = stateRef.current
     const scroller = scrollerRef.current
     const fetcher = fetcherRef.current
     const params = paramsRef.current
 
-    return await core.scroll.first(skey, state, scroller, fetcher, aborter, params)
+    return await core.scroll.first(skey, scroller, fetcher, aborter, params)
   }, [core, skey])
 
   const refetch = useCallback(async (aborter?: AbortController) => {
@@ -124,12 +123,11 @@ export function useScroll<D = any, E = any, K = any>(
     if (fetcherRef.current === undefined)
       return stateRef.current
 
-    const state = stateRef.current
     const scroller = scrollerRef.current
     const fetcher = fetcherRef.current
     const params = paramsRef.current
 
-    return await core.scroll.first(skey, state, scroller, fetcher, aborter, params, true, true)
+    return await core.scroll.first(skey, scroller, fetcher, aborter, params, true, true)
   }, [core, skey])
 
   const scroll = useCallback(async (aborter?: AbortController) => {
@@ -142,12 +140,11 @@ export function useScroll<D = any, E = any, K = any>(
     if (fetcherRef.current === undefined)
       return stateRef.current
 
-    const state = stateRef.current
     const scroller = scrollerRef.current
     const fetcher = fetcherRef.current
     const params = paramsRef.current
 
-    return await core.scroll.scroll(skey, state, scroller, fetcher, aborter, params, true, true)
+    return await core.scroll.scroll(skey, scroller, fetcher, aborter, params, true, true)
   }, [core, skey])
 
   const suspend = useCallback(() => {
@@ -161,13 +158,12 @@ export function useScroll<D = any, E = any, K = any>(
       if (fetcherRef.current === undefined)
         throw new Error("No fetcher")
 
-      const state = stateRef.current
       const scroller = scrollerRef.current
       const fetcher = fetcherRef.current
       const params = paramsRef.current
 
       const background = new Promise<void>(ok => core.once(skey, () => ok(), params))
-      await core.scroll.first(skey, state, scroller, fetcher, undefined, params, false, true)
+      await core.scroll.first(skey, scroller, fetcher, undefined, params, false, true)
       await background
     })()
   }, [core, skey])

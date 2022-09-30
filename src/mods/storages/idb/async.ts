@@ -5,11 +5,11 @@ import { useEffect, useRef } from "react"
 export function useIDBStorage(name: string) {
   const storage = useRef<IDBStorage>()
 
-  if (!storage.current)
+  if (storage.current === undefined)
     storage.current = new IDBStorage(name)
 
   useEffect(() => () => {
-    storage.current!.unmount()
+    storage.current?.unmount()
   }, [])
 
   return storage.current
@@ -58,7 +58,8 @@ export class IDBStorage implements AsyncStorage {
   unmount() {
     if (typeof indexedDB === "undefined")
       return
-    removeEventListener("beforeunload", this.onunload!)
+    if (this.onunload !== undefined)
+      removeEventListener("beforeunload", this.onunload)
     this.collect().catch(console.error)
   }
 
@@ -83,11 +84,13 @@ export class IDBStorage implements AsyncStorage {
   async transact<T>(callback: (store: IDBObjectStore) => Promise<T>, mode: IDBTransactionMode) {
     if (typeof indexedDB === "undefined")
       return
-    if (!this.database)
+    if (this.database === undefined)
       await this.initialization
 
     return await new Promise<T>((ok, err) => {
-      const tx = this.database!.transaction("keyval", mode)
+      if (this.database === undefined)
+        throw new Error("Undefined database")
+      const tx = this.database.transaction("keyval", mode)
       tx.onerror = () => err(tx.error)
       tx.oncomplete = () => ok(result)
 

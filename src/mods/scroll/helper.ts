@@ -23,7 +23,6 @@ export class ScrollHelper {
    */
   async first<D = any, E = any, K = any>(
     skey: string | undefined,
-    current: State<D[], E, K> | undefined,
     scroller: Scroller<D, E, K>,
     fetcher: Fetcher<D, E, K>,
     aborter = new AbortController(),
@@ -33,25 +32,41 @@ export class ScrollHelper {
   ): Promise<State<D[], E, K> | undefined> {
     if (skey === undefined) return
 
+    let { current, skip, first } = await this.core.lock(skey, async () => {
+      let current = await this.core.get(skey, params)
+
+      if (current?.optimistic)
+        return { current, skip: true }
+      if (current?.aborter && !force)
+        return { current, skip: true }
+      if (current?.aborter && force)
+        current.aborter.abort("Replaced")
+
+      if (this.core.shouldCooldown(current) && !ignore)
+        return { current, skip: true }
+
+      const first = scroller(undefined)
+
+      if (first === undefined)
+        return { current, skip: true }
+
+      current = await this.core.mutate(skey, current,
+        c => ({ time: c?.time, aborter }),
+        params)
+      return { current, first }
+    })
+
+    if (skip)
+      return current
+    if (first === undefined)
+      throw new Error("Undefined first")
+
     const {
       equals = DEFAULT_EQUALS,
       cooldown: dcooldown = DEFAULT_COOLDOWN,
       expiration: dexpiration = DEFAULT_EXPIRATION,
       timeout: dtimeout = DEFAULT_TIMEOUT,
     } = params
-
-    if (current?.optimistic)
-      return current
-    if (current?.aborter && !force)
-      return current
-    if (current?.aborter && force)
-      current.aborter.abort("Replaced")
-
-    if (this.core.shouldCooldown(current) && !ignore)
-      return current
-
-    const first = scroller(undefined)
-    if (!first) return current
 
     const { signal } = aborter
 
@@ -60,10 +75,6 @@ export class ScrollHelper {
     }, dtimeout)
 
     try {
-      current = await this.core.mutate(skey, current,
-        c => ({ time: c?.time, aborter }),
-        params)
-
       const {
         data,
         error,
@@ -116,7 +127,6 @@ export class ScrollHelper {
    */
   async scroll<D = any, E = any, K = any>(
     skey: string | undefined,
-    current: State<D[], E, K> | undefined,
     scroller: Scroller<D, E, K>,
     fetcher: Fetcher<D, E, K>,
     aborter = new AbortController(),
@@ -126,25 +136,41 @@ export class ScrollHelper {
   ): Promise<State<D[], E, K> | undefined> {
     if (skey === undefined) return
 
+    let { current, skip, last } = await this.core.lock(skey, async () => {
+      let current = await this.core.get(skey, params)
+
+      if (current?.optimistic)
+        return { current, skip: true }
+      if (current?.aborter && !force)
+        return { current, skip: true }
+      if (current?.aborter && force)
+        current.aborter.abort("Replaced")
+
+      if (this.core.shouldCooldown(current) && !ignore)
+        return { current, skip: true }
+
+      const pages = current?.data ?? []
+      const last = scroller(lastOf(pages))
+
+      if (last === undefined)
+        return { current, skip: true }
+
+      current = await this.core.mutate(skey, current,
+        c => ({ time: c?.time, aborter }),
+        params)
+      return { current, last }
+    })
+
+    if (skip)
+      return current
+    if (last === undefined)
+      throw new Error("Undefined last")
+
     const {
       cooldown: dcooldown = DEFAULT_COOLDOWN,
       expiration: dexpiration = DEFAULT_EXPIRATION,
       timeout: dtimeout = DEFAULT_TIMEOUT,
     } = params
-
-    if (current?.optimistic)
-      return current
-    if (current?.aborter && !force)
-      return current
-    if (current?.aborter && force)
-      current.aborter.abort("Replaced")
-
-    if (this.core.shouldCooldown(current) && !ignore)
-      return current
-
-    const pages = current?.data ?? []
-    const last = scroller(lastOf(pages))
-    if (!last) return current
 
     const { signal } = aborter
 
@@ -153,10 +179,6 @@ export class ScrollHelper {
     }, dtimeout)
 
     try {
-      current = await this.core.mutate(skey, current,
-        c => ({ time: c?.time, aborter }),
-        params)
-
       let {
         data,
         error,

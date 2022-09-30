@@ -20,7 +20,7 @@ export function useSyncLocalStorage(prefix?: string, serializer?: Serializer) {
     storage.current = new SyncLocalStorage(prefix, serializer)
 
   useEffect(() => () => {
-    storage.current!.unmount()
+    storage.current?.unmount()
   }, [])
 
   return storage.current
