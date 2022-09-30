@@ -61,13 +61,13 @@ export class SingleHelper {
       timeout: dtimeout = DEFAULT_TIMEOUT,
     } = params
 
-    const { signal } = aborter
-
     const timeout = setTimeout(() => {
       aborter.abort("Fetch timed out")
     }, dtimeout)
 
     try {
+      const { signal } = aborter
+
       const {
         data,
         error,
@@ -125,13 +125,35 @@ export class SingleHelper {
     if (key === undefined) return
     if (skey === undefined) return
 
-    let { current, generator, skip } = await this.core.lock(skey, async () => {
+    let { current, skip } = await this.core.lock(skey, async () => {
       let current = await this.core.get(skey, params)
 
       if (current?.optimistic)
         return { current, skip: true }
       if (current?.aborter)
         current.aborter.abort("Replaced")
+
+      current = await this.core.mutate(skey, current,
+        c => ({ time: c?.time, aborter }),
+        params)
+      return { current }
+    })
+
+    if (skip)
+      return current
+
+    const {
+      cooldown: dcooldown = DEFAULT_COOLDOWN,
+      expiration: dexpiration = DEFAULT_EXPIRATION,
+      timeout: dtimeout = DEFAULT_TIMEOUT,
+    } = params
+
+    const timeout = setTimeout(() => {
+      aborter.abort("Update timed out")
+    }, dtimeout)
+
+    try {
+      const { signal } = aborter
 
       const generator = updater(current, { signal })
 
@@ -147,27 +169,6 @@ export class SingleHelper {
           params)
       }
 
-      return { current, generator }
-    })
-
-    if (skip)
-      return current
-    if (generator === undefined)
-      throw new Error("Undefined generator")
-
-    const {
-      cooldown: dcooldown = DEFAULT_COOLDOWN,
-      expiration: dexpiration = DEFAULT_EXPIRATION,
-      timeout: dtimeout = DEFAULT_TIMEOUT,
-    } = params
-
-    const { signal } = aborter
-
-    const timeout = setTimeout(() => {
-      aborter.abort("Update timed out")
-    }, dtimeout)
-
-    try {
       let result = await returnOf(generator)
 
       if (result === undefined) {

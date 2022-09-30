@@ -68,13 +68,13 @@ export class ScrollHelper {
       timeout: dtimeout = DEFAULT_TIMEOUT,
     } = params
 
-    const { signal } = aborter
-
     const timeout = setTimeout(() => {
       aborter.abort("First timed out")
     }, dtimeout)
 
     try {
+      const { signal } = aborter
+
       const {
         data,
         error,
@@ -172,13 +172,13 @@ export class ScrollHelper {
       timeout: dtimeout = DEFAULT_TIMEOUT,
     } = params
 
-    const { signal } = aborter
-
     const timeout = setTimeout(() => {
       aborter.abort("Scroll timed out")
     }, dtimeout)
 
     try {
+      const { signal } = aborter
+
       let {
         data,
         error,
