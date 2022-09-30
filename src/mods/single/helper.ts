@@ -158,6 +158,9 @@ export class SingleHelper {
       const generator = updater(current, { signal })
 
       for await (const { data, error } of generator) {
+        if (signal.aborted)
+          throw new AbortError(signal)
+
         const optimistic: State<D, E, K> = {}
 
         if (data !== undefined)

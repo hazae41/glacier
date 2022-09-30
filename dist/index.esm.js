@@ -294,7 +294,7 @@ var ScrollHelper = /** @class */ (function () {
         if (force === void 0) { force = false; }
         if (ignore === void 0) { ignore = false; }
         return __awaiter(this, void 0, void 0, function () {
-            var _b, current, skip, first, _c, equals, _d, dcooldown, _e, dexpiration, _f, dtimeout, signal, timeout, _g, data, error, _h, time_1, _j, cooldown_1, _k, expiration_1, state_1, norm, error_1;
+            var _b, current, skip, first, _c, equals, _d, dcooldown, _e, dexpiration, _f, dtimeout, timeout, signal, _g, data, error, _h, time_1, _j, cooldown_1, _k, expiration_1, state_1, norm, error_1;
             var _this = this;
             return __generator(this, function (_l) {
                 switch (_l.label) {
@@ -333,13 +333,13 @@ var ScrollHelper = /** @class */ (function () {
                         if (first === undefined)
                             throw new Error("Undefined first");
                         _c = params.equals, equals = _c === void 0 ? DEFAULT_EQUALS : _c, _d = params.cooldown, dcooldown = _d === void 0 ? DEFAULT_COOLDOWN : _d, _e = params.expiration, dexpiration = _e === void 0 ? DEFAULT_EXPIRATION : _e, _f = params.timeout, dtimeout = _f === void 0 ? DEFAULT_TIMEOUT : _f;
-                        signal = aborter.signal;
                         timeout = setTimeout(function () {
                             aborter.abort("First timed out");
                         }, dtimeout);
                         _l.label = 2;
                     case 2:
                         _l.trys.push([2, 8, 11, 12]);
+                        signal = aborter.signal;
                         return [4 /*yield*/, fetcher(first, { signal: signal })];
                     case 3:
                         _g = _l.sent(), data = _g.data, error = _g.error, _h = _g.time, time_1 = _h === void 0 ? Date.now() : _h, _j = _g.cooldown, cooldown_1 = _j === void 0 ? getTimeFromDelay(dcooldown) : _j, _k = _g.expiration, expiration_1 = _k === void 0 ? getTimeFromDelay(dexpiration) : _k;
@@ -395,7 +395,7 @@ var ScrollHelper = /** @class */ (function () {
         if (force === void 0) { force = false; }
         if (ignore === void 0) { ignore = false; }
         return __awaiter(this, void 0, void 0, function () {
-            var _b, current, skip, last, _c, dcooldown, _d, dexpiration, _e, dtimeout, signal, timeout, _f, data, error, _g, time_2, _h, cooldown_2, _j, expiration_2, state_2, error_2;
+            var _b, current, skip, last, _c, dcooldown, _d, dexpiration, _e, dtimeout, timeout, signal, _f, data, error, _g, time_2, _h, cooldown_2, _j, expiration_2, state_2, error_2;
             var _this = this;
             return __generator(this, function (_k) {
                 switch (_k.label) {
@@ -436,13 +436,13 @@ var ScrollHelper = /** @class */ (function () {
                         if (last === undefined)
                             throw new Error("Undefined last");
                         _c = params.cooldown, dcooldown = _c === void 0 ? DEFAULT_COOLDOWN : _c, _d = params.expiration, dexpiration = _d === void 0 ? DEFAULT_EXPIRATION : _d, _e = params.timeout, dtimeout = _e === void 0 ? DEFAULT_TIMEOUT : _e;
-                        signal = aborter.signal;
                         timeout = setTimeout(function () {
                             aborter.abort("Scroll timed out");
                         }, dtimeout);
                         _k.label = 2;
                     case 2:
                         _k.trys.push([2, 6, 9, 10]);
+                        signal = aborter.signal;
                         return [4 /*yield*/, fetcher(last, { signal: signal })];
                     case 3:
                         _f = _k.sent(), data = _f.data, error = _f.error, _g = _f.time, time_2 = _g === void 0 ? Date.now() : _g, _h = _f.cooldown, cooldown_2 = _h === void 0 ? getTimeFromDelay(dcooldown) : _h, _j = _f.expiration, expiration_2 = _j === void 0 ? getTimeFromDelay(dexpiration) : _j;
@@ -740,7 +740,7 @@ var SingleHelper = /** @class */ (function () {
         if (force === void 0) { force = false; }
         if (ignore === void 0) { ignore = false; }
         return __awaiter(this, void 0, void 0, function () {
-            var _a, current, skip, _b, dcooldown, _c, dexpiration, _d, dtimeout, signal, timeout, _e, data, error, _f, time_1, _g, cooldown_1, _h, expiration_1, state_1, error_1;
+            var _a, current, skip, _b, dcooldown, _c, dexpiration, _d, dtimeout, timeout, signal, _e, data, error, _f, time_1, _g, cooldown_1, _h, expiration_1, state_1, error_1;
             var _this = this;
             return __generator(this, function (_j) {
                 switch (_j.label) {
@@ -776,13 +776,13 @@ var SingleHelper = /** @class */ (function () {
                         if (skip)
                             return [2 /*return*/, current];
                         _b = params.cooldown, dcooldown = _b === void 0 ? DEFAULT_COOLDOWN : _b, _c = params.expiration, dexpiration = _c === void 0 ? DEFAULT_EXPIRATION : _c, _d = params.timeout, dtimeout = _d === void 0 ? DEFAULT_TIMEOUT : _d;
-                        signal = aborter.signal;
                         timeout = setTimeout(function () {
                             aborter.abort("Fetch timed out");
                         }, dtimeout);
                         _j.label = 2;
                     case 2:
                         _j.trys.push([2, 6, 9, 10]);
+                        signal = aborter.signal;
                         return [4 /*yield*/, fetcher(key, { signal: signal })];
                     case 3:
                         _e = _j.sent(), data = _e.data, error = _e.error, _f = _e.time, time_1 = _f === void 0 ? Date.now() : _f, _g = _e.cooldown, cooldown_1 = _g === void 0 ? getTimeFromDelay(dcooldown) : _g, _h = _e.expiration, expiration_1 = _h === void 0 ? getTimeFromDelay(dexpiration) : _h;
@@ -826,139 +826,142 @@ var SingleHelper = /** @class */ (function () {
      * @throws Error
      */
     SingleHelper.prototype.update = function (key, skey, fetcher, updater, aborter, params) {
+        var e_1, _a;
         if (aborter === void 0) { aborter = new AbortController(); }
         if (params === void 0) { params = {}; }
         return __awaiter(this, void 0, void 0, function () {
-            var _a, current, generator, skip, _b, dcooldown, _c, dexpiration, _d, dtimeout, signal, timeout, result, data, error_3, _e, time_2, _f, cooldown_2, _g, expiration_2, state_2, error_2;
+            var _b, current, skip, _c, dcooldown, _d, dexpiration, _e, dtimeout, timeout, signal, generator, _loop_1, this_1, generator_1, generator_1_1, e_1_1, result, data, error_3, _f, time_2, _g, cooldown_2, _h, expiration_2, state_2, error_2;
             var _this = this;
-            return __generator(this, function (_h) {
-                switch (_h.label) {
+            return __generator(this, function (_j) {
+                switch (_j.label) {
                     case 0:
                         if (key === undefined)
                             return [2 /*return*/];
                         if (skey === undefined)
                             return [2 /*return*/];
                         return [4 /*yield*/, this.core.lock(skey, function () { return __awaiter(_this, void 0, void 0, function () {
-                                var current, generator, _loop_1, this_1, generator_1, generator_1_1, e_1_1;
-                                var e_1, _a;
-                                return __generator(this, function (_b) {
-                                    switch (_b.label) {
+                                var current;
+                                return __generator(this, function (_a) {
+                                    switch (_a.label) {
                                         case 0: return [4 /*yield*/, this.core.get(skey, params)];
                                         case 1:
-                                            current = _b.sent();
+                                            current = _a.sent();
                                             if (current === null || current === void 0 ? void 0 : current.optimistic)
                                                 return [2 /*return*/, { current: current, skip: true }];
                                             if (current === null || current === void 0 ? void 0 : current.aborter)
                                                 current.aborter.abort("Replaced");
-                                            generator = updater(current, { signal: signal });
-                                            _b.label = 2;
+                                            return [4 /*yield*/, this.core.mutate(skey, current, function (c) { return ({ time: c === null || c === void 0 ? void 0 : c.time, aborter: aborter }); }, params)];
                                         case 2:
-                                            _b.trys.push([2, 8, 9, 14]);
-                                            _loop_1 = function () {
-                                                var _c, data, error, optimistic;
-                                                return __generator(this, function (_d) {
-                                                    switch (_d.label) {
-                                                        case 0:
-                                                            _c = generator_1_1.value, data = _c.data, error = _c.error;
-                                                            optimistic = {};
-                                                            if (data !== undefined)
-                                                                optimistic.data = data;
-                                                            optimistic.error = error;
-                                                            return [4 /*yield*/, this_1.core.mutate(skey, current, function (c) { return (__assign({ time: c === null || c === void 0 ? void 0 : c.time, aborter: aborter, optimistic: true }, optimistic)); }, params)];
-                                                        case 1:
-                                                            current = _d.sent();
-                                                            return [2 /*return*/];
-                                                    }
-                                                });
-                                            };
-                                            this_1 = this;
-                                            generator_1 = __asyncValues(generator);
-                                            _b.label = 3;
-                                        case 3: return [4 /*yield*/, generator_1.next()];
-                                        case 4:
-                                            if (!(generator_1_1 = _b.sent(), !generator_1_1.done)) return [3 /*break*/, 7];
-                                            return [5 /*yield**/, _loop_1()];
-                                        case 5:
-                                            _b.sent();
-                                            _b.label = 6;
-                                        case 6: return [3 /*break*/, 3];
-                                        case 7: return [3 /*break*/, 14];
-                                        case 8:
-                                            e_1_1 = _b.sent();
-                                            e_1 = { error: e_1_1 };
-                                            return [3 /*break*/, 14];
-                                        case 9:
-                                            _b.trys.push([9, , 12, 13]);
-                                            if (!(generator_1_1 && !generator_1_1.done && (_a = generator_1.return))) return [3 /*break*/, 11];
-                                            return [4 /*yield*/, _a.call(generator_1)];
-                                        case 10:
-                                            _b.sent();
-                                            _b.label = 11;
-                                        case 11: return [3 /*break*/, 13];
-                                        case 12:
-                                            if (e_1) throw e_1.error;
-                                            return [7 /*endfinally*/];
-                                        case 13: return [7 /*endfinally*/];
-                                        case 14: return [2 /*return*/, { current: current, generator: generator }];
+                                            current = _a.sent();
+                                            return [2 /*return*/, { current: current }];
                                     }
                                 });
                             }); })];
                     case 1:
-                        _a = _h.sent(), current = _a.current, generator = _a.generator, skip = _a.skip;
+                        _b = _j.sent(), current = _b.current, skip = _b.skip;
                         if (skip)
                             return [2 /*return*/, current];
-                        if (generator === undefined)
-                            throw new Error("Undefined generator");
-                        _b = params.cooldown, dcooldown = _b === void 0 ? DEFAULT_COOLDOWN : _b, _c = params.expiration, dexpiration = _c === void 0 ? DEFAULT_EXPIRATION : _c, _d = params.timeout, dtimeout = _d === void 0 ? DEFAULT_TIMEOUT : _d;
-                        signal = aborter.signal;
+                        _c = params.cooldown, dcooldown = _c === void 0 ? DEFAULT_COOLDOWN : _c, _d = params.expiration, dexpiration = _d === void 0 ? DEFAULT_EXPIRATION : _d, _e = params.timeout, dtimeout = _e === void 0 ? DEFAULT_TIMEOUT : _e;
                         timeout = setTimeout(function () {
                             aborter.abort("Update timed out");
                         }, dtimeout);
-                        _h.label = 2;
+                        _j.label = 2;
                     case 2:
-                        _h.trys.push([2, 10, 13, 14]);
-                        return [4 /*yield*/, returnOf(generator)];
+                        _j.trys.push([2, 23, 26, 27]);
+                        signal = aborter.signal;
+                        generator = updater(current, { signal: signal });
+                        _j.label = 3;
                     case 3:
-                        result = _h.sent();
-                        if (!(result === undefined)) return [3 /*break*/, 5];
+                        _j.trys.push([3, 9, 10, 15]);
+                        _loop_1 = function () {
+                            var _k, data_1, error_4, optimistic;
+                            return __generator(this, function (_l) {
+                                switch (_l.label) {
+                                    case 0:
+                                        _k = generator_1_1.value, data_1 = _k.data, error_4 = _k.error;
+                                        if (signal.aborted)
+                                            throw new AbortError(signal);
+                                        optimistic = {};
+                                        if (data_1 !== undefined)
+                                            optimistic.data = data_1;
+                                        optimistic.error = error_4;
+                                        return [4 /*yield*/, this_1.core.mutate(skey, current, function (c) { return (__assign({ time: c === null || c === void 0 ? void 0 : c.time, aborter: aborter, optimistic: true }, optimistic)); }, params)];
+                                    case 1:
+                                        current = _l.sent();
+                                        return [2 /*return*/];
+                                }
+                            });
+                        };
+                        this_1 = this;
+                        generator_1 = __asyncValues(generator);
+                        _j.label = 4;
+                    case 4: return [4 /*yield*/, generator_1.next()];
+                    case 5:
+                        if (!(generator_1_1 = _j.sent(), !generator_1_1.done)) return [3 /*break*/, 8];
+                        return [5 /*yield**/, _loop_1()];
+                    case 6:
+                        _j.sent();
+                        _j.label = 7;
+                    case 7: return [3 /*break*/, 4];
+                    case 8: return [3 /*break*/, 15];
+                    case 9:
+                        e_1_1 = _j.sent();
+                        e_1 = { error: e_1_1 };
+                        return [3 /*break*/, 15];
+                    case 10:
+                        _j.trys.push([10, , 13, 14]);
+                        if (!(generator_1_1 && !generator_1_1.done && (_a = generator_1.return))) return [3 /*break*/, 12];
+                        return [4 /*yield*/, _a.call(generator_1)];
+                    case 11:
+                        _j.sent();
+                        _j.label = 12;
+                    case 12: return [3 /*break*/, 14];
+                    case 13:
+                        if (e_1) throw e_1.error;
+                        return [7 /*endfinally*/];
+                    case 14: return [7 /*endfinally*/];
+                    case 15: return [4 /*yield*/, returnOf(generator)];
+                    case 16:
+                        result = _j.sent();
+                        if (!(result === undefined)) return [3 /*break*/, 18];
                         if (fetcher === undefined)
                             throw new Error("Updater returned nothing and undefined fetcher");
                         return [4 /*yield*/, fetcher(key, { signal: signal, cache: "reload" })];
-                    case 4:
-                        result = _h.sent();
-                        _h.label = 5;
-                    case 5:
-                        data = result.data, error_3 = result.error, _e = result.time, time_2 = _e === void 0 ? Date.now() : _e, _f = result.cooldown, cooldown_2 = _f === void 0 ? getTimeFromDelay(dcooldown) : _f, _g = result.expiration, expiration_2 = _g === void 0 ? getTimeFromDelay(dexpiration) : _g;
+                    case 17:
+                        result = _j.sent();
+                        _j.label = 18;
+                    case 18:
+                        data = result.data, error_3 = result.error, _f = result.time, time_2 = _f === void 0 ? Date.now() : _f, _g = result.cooldown, cooldown_2 = _g === void 0 ? getTimeFromDelay(dcooldown) : _g, _h = result.expiration, expiration_2 = _h === void 0 ? getTimeFromDelay(dexpiration) : _h;
                         if (signal.aborted)
                             throw new AbortError(signal);
                         return [4 /*yield*/, this.core.get(skey, params)];
-                    case 6:
-                        current = _h.sent();
-                        if (!(error_3 !== undefined)) return [3 /*break*/, 8];
+                    case 19:
+                        current = _j.sent();
+                        if (!(error_3 !== undefined)) return [3 /*break*/, 21];
                         if ((current === null || current === void 0 ? void 0 : current.aborter) !== aborter)
                             return [2 /*return*/, current];
                         return [4 /*yield*/, this.core.mutate(skey, current, function (c) { return ({ time: c === null || c === void 0 ? void 0 : c.time, cooldown: cooldown_2, expiration: expiration_2, aborter: undefined, optimistic: false, data: c === null || c === void 0 ? void 0 : c.data, error: error_3 }); }, params)];
-                    case 7: return [2 /*return*/, _h.sent()];
-                    case 8:
+                    case 20: return [2 /*return*/, _j.sent()];
+                    case 21:
                         state_2 = {};
                         if (data !== undefined)
                             state_2.data = data;
                         state_2.error = error_3;
                         return [4 /*yield*/, this.core.mutate(skey, current, function () { return (__assign({ time: time_2, cooldown: cooldown_2, expiration: expiration_2, aborter: undefined, optimistic: false }, state_2)); }, params)];
-                    case 9: return [2 /*return*/, _h.sent()];
-                    case 10:
-                        error_2 = _h.sent();
+                    case 22: return [2 /*return*/, _j.sent()];
+                    case 23:
+                        error_2 = _j.sent();
                         return [4 /*yield*/, this.core.get(skey, params)];
-                    case 11:
-                        current = _h.sent();
+                    case 24:
+                        current = _j.sent();
                         if ((current === null || current === void 0 ? void 0 : current.aborter) !== aborter)
                             return [2 /*return*/, current];
                         return [4 /*yield*/, this.core.mutate(skey, current, function (c) { return ({ time: c === null || c === void 0 ? void 0 : c.time, aborter: undefined, optimistic: false, data: c === null || c === void 0 ? void 0 : c.data, error: error_2 }); }, params)];
-                    case 12: return [2 /*return*/, _h.sent()];
-                    case 13:
+                    case 25: return [2 /*return*/, _j.sent()];
+                    case 26:
                         clearTimeout(timeout);
                         return [7 /*endfinally*/];
-                    case 14: return [2 /*return*/];
+                    case 27: return [2 /*return*/];
                 }
             });
         });
