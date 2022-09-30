@@ -45,7 +45,7 @@ export default function Page() {
   }, [update])
 
   const onAbortClick = useCallback(() => {
-    aborter!.abort("dd")
+    aborter!.abort("aborted lol")
   }, [aborter])
 
   return <>
