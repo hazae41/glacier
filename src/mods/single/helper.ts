@@ -134,7 +134,7 @@ export class SingleHelper {
         current.aborter.abort("Replaced")
 
       current = await this.core.mutate(skey, current,
-        c => ({ time: c?.time, aborter }),
+        c => ({ time: c?.time, aborter, optimistic: true }),
         params)
       return { current }
     })
