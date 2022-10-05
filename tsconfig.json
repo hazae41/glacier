@@ -4,16 +4,15 @@
     "outDir": "dist",
     "module": "NodeNext",
     "moduleResolution": "NodeNext",
+    "strict": true,
     "declaration": true,
     "emitDeclarationOnly": true,
+    "downlevelIteration": true,
+    "jsx": "preserve",
     "lib": [
       "dom",
       "ESNext"
     ],
-    "jsx": "react",
-    "downlevelIteration": true,
-    "strict": true,
-    "allowSyntheticDefaultImports": true,
     "paths": {
       "mods/*": [
         "mods/*"
@@ -33,8 +32,7 @@
     ]
   },
   "exclude": [
-    "node_modules",
-    "libs"
+    "node_modules"
   ],
   "include": [
     "./src/index.ts"
