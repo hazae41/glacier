@@ -5,5 +5,6 @@ export interface State<D = any, E = any, K = any> {
   aborter?: AbortController,
   optimistic?: boolean,
   cooldown?: number
-  expiration?: number
+  expiration?: number,
+  realData?: D
 }

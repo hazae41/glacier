@@ -14,6 +14,10 @@ export interface Handle<D = any, E = any, K = any> {
      */
     data?: D;
     /**
+     * Data, if any, but not optimistic
+     */
+    realData?: D;
+    /**
      * Error, if any
      */
     error?: E;

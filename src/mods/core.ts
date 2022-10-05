@@ -144,24 +144,26 @@ export class Core extends Ortho<string, State | undefined> {
     if (state.optimistic === undefined && current?.optimistic)
       return current
 
+    const {
+      equals = DEFAULT_EQUALS
+    } = params
+
     const next: State<D, E, K> = {
       ...current,
       ...state
     }
 
-    if (next.time === undefined)
-      next.time = Date.now()
     next.data = await this.normalize(false, next, params)
 
-    const {
-      equals = DEFAULT_EQUALS
-    } = params
-
-    if (equals(next.data, current?.data)) // Prevent some renders if the data is the same
+    if (next.time === undefined)
+      next.time = Date.now()
+    if (equals(next.data, current?.data))
       next.data = current?.data
-    if (shallowEquals(next, current)) // Shallow comparison because aborter is not serializable
-      return current
+    if (!next.optimistic)
+      next.realData = next.data
 
+    if (shallowEquals(next, current))
+      return current
     await this.set(skey, next, params)
     return next as State<D, E, K>
   }

@@ -168,10 +168,10 @@ export function useSingle<D = any, E = any, K = any>(
 
   const state = stateRef.current
 
-  const { data, error, time, cooldown, expiration, aborter, optimistic } = state ?? {}
+  const { data, error, time, cooldown, expiration, aborter, optimistic, realData } = state ?? {}
 
   const ready = state !== null
   const loading = Boolean(aborter)
 
-  return { key, skey, data, error, time, cooldown, expiration, aborter, optimistic, loading, ready, mutate, fetch, refetch, update, clear, suspend }
+  return { key, skey, data, error, time, cooldown, expiration, aborter, optimistic, realData, loading, ready, mutate, fetch, refetch, update, clear, suspend }
 }

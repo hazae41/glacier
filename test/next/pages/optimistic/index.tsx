@@ -21,7 +21,7 @@ export default function Page() {
   const hello = useHelloData()
 
   // this is for you, gaearon
-  const { data, error, time, loading, update, refetch, mutate, aborter, optimistic } = hello
+  const { data, realData, error, time, loading, update, refetch, mutate, aborter, optimistic } = hello
 
   const onRefreshClick = useCallback(() => {
     refetch()
@@ -50,7 +50,10 @@ export default function Page() {
 
   return <>
     <div>
-      {JSON.stringify(data) ?? "undefined"}
+      Data: {JSON.stringify(data) ?? "undefined"}
+    </div>
+    <div>
+      Real data: {JSON.stringify(realData) ?? "undefined"}
     </div>
     <div>
       time: {time && ~~(time / 1000)}

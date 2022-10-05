@@ -6,4 +6,5 @@ export interface State<D = any, E = any, K = any> {
     optimistic?: boolean;
     cooldown?: number;
     expiration?: number;
+    realData?: D;
 }
