@@ -1,6 +1,6 @@
-import { useCore } from "mods/react/contexts/core"
-import { Object } from "mods/types/object"
-import { Schema } from "mods/types/schema"
+import { useCore } from "mods/react/contexts/core.js"
+import { Object } from "mods/types/object.js"
+import { Schema } from "mods/types/schema.js"
 import { useCallback } from "react"
 
 export type Maker = <D = any, E = any, K = any, O extends Object<D, E, K> = Object<D, E, K>>(

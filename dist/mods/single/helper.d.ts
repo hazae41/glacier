@@ -1,8 +1,8 @@
-import { Core } from "../core";
-import { Fetcher } from "../types/fetcher";
-import { Params } from "../types/params";
-import { State } from "../types/state";
-import { Updater } from "../types/updater";
+import { Core } from "../core.js";
+import { Fetcher } from "../types/fetcher.js";
+import { Params } from "../types/params.js";
+import { State } from "../types/state.js";
+import { Updater } from "../types/updater.js";
 export declare class SingleHelper {
     readonly core: Core;
     constructor(core: Core);

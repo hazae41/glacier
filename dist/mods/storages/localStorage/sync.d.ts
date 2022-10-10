@@ -1,5 +1,5 @@
-import { Serializer } from "../../types/serializer";
-import { SyncStorage } from "../../types/storage";
+import { Serializer } from "../../types/serializer.js";
+import { SyncStorage } from "../../types/storage.js";
 /**
  * Synchronous local storage
  *

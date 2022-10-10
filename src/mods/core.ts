@@ -1,13 +1,13 @@
-import { Ortho } from "libs/ortho"
-import { ScrollHelper } from "mods/scroll"
-import { SingleHelper } from "mods/single"
-import { Mutator } from "mods/types/mutator"
-import { Params } from "mods/types/params"
-import { State } from "mods/types/state"
-import { isAsyncStorage } from "mods/types/storage"
-import { DEFAULT_EQUALS } from "mods/utils/defaults"
-import { shallowEquals } from "mods/utils/equals"
-import { Lock } from "mods/utils/lock"
+import { Ortho } from "libs/ortho.js"
+import { ScrollHelper } from "mods/scroll/helper.js"
+import { SingleHelper } from "mods/single/helper.js"
+import { Mutator } from "mods/types/mutator.js"
+import { Params } from "mods/types/params.js"
+import { State } from "mods/types/state.js"
+import { isAsyncStorage } from "mods/types/storage.js"
+import { DEFAULT_EQUALS } from "mods/utils/defaults.js"
+import { shallowEquals } from "mods/utils/equals.js"
+import { Lock } from "mods/utils/lock.js"
 
 export type Listener<D = any, E = any, K = any> =
   (x?: State<D, E, K>) => void

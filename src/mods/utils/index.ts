@@ -1,3 +1,3 @@
-export * from "./defaults"
-export * from "./equals"
+export * from "./defaults.js"
+export * from "./equals.js"
 

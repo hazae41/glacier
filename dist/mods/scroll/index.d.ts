@@ -1,3 +1,3 @@
-export * from "./helper";
-export * from "./object";
-export * from "./schema";
+export * from "./helper.js";
+export * from "./object.js";
+export * from "./schema.js";

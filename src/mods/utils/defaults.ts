@@ -1,4 +1,4 @@
-import { jsonEquals } from "./equals"
+import { jsonEquals } from "./equals.js"
 
 export const DEFAULT_EQUALS = jsonEquals
 export const DEFAULT_SERIALIZER = JSON

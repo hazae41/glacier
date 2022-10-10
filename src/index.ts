@@ -1,1 +1,1 @@
-export * as XSWR from "./mods";
+export * as XSWR from "./mods/index.js";

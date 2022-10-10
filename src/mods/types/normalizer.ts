@@ -1,5 +1,5 @@
-import { Core } from "mods/core"
-import { State } from "mods/types/state"
+import { Core } from "mods/core.js"
+import { State } from "mods/types/state.js"
 
 export interface NormalizerMore<D = any, E = any, K = any> {
   core: Core,

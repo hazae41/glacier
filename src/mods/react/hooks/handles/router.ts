@@ -1,9 +1,9 @@
-import { ScrollSchema } from "mods/scroll";
-import { SingleSchema } from "mods/single";
-import { Schema } from "mods/types/schema";
+import { ScrollSchema } from "mods/scroll/schema.js";
+import { SingleSchema } from "mods/single/schema.js";
+import { Schema } from "mods/types/schema.js";
 import { DependencyList, useMemo } from "react";
-import { ScrollHandle, useScroll } from "./scroll";
-import { SingleHandle, useSingle } from "./single";
+import { ScrollHandle, useScroll } from "./scroll.js";
+import { SingleHandle, useSingle } from "./single.js";
 
 export function use<D = any, E = any, K = any, L extends DependencyList = []>(
   factory: (...deps: L) => SingleSchema<D, E, K>,

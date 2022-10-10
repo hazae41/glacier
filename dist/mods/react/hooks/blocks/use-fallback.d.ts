@@ -1,5 +1,5 @@
-import { Handle } from "../handles";
-import { State } from "../../../types/state";
+import { Handle } from "../handles/handle.js";
+import { State } from "../../../types/state.js";
 /**
  * Fallback to given data/error if there is no data/error
  * @example You got some data/error using SSR/ISR and want to display it on first render

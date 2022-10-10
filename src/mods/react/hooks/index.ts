@@ -1,4 +1,4 @@
-export * from "./blocks";
-export * from "./handles";
-export * from "./xswr";
+export * from "./blocks/index.js";
+export * from "./handles/index.js";
+export * from "./xswr.js";
 

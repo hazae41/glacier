@@ -1,10 +1,10 @@
-import { Core } from "mods/core";
-import { NormalizerMore } from "mods/index";
-import { Fetcher } from "mods/types/fetcher";
-import { Params } from "mods/types/params";
-import { Schema } from "mods/types/schema";
-import { Scroller } from "mods/types/scroller";
-import { ScrollObject } from "./object";
+import { Core } from "mods/core.js";
+import { Fetcher } from "mods/types/fetcher.js";
+import { NormalizerMore } from "mods/types/normalizer.js";
+import { Params } from "mods/types/params.js";
+import { Schema } from "mods/types/schema.js";
+import { Scroller } from "mods/types/scroller.js";
+import { ScrollObject } from "./object.js";
 
 export function scroll<D = any, E = any, K = any>(
   scroller: Scroller<D, E, K>,

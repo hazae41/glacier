@@ -1,4 +1,4 @@
-import { Handle } from "../handles";
+import { Handle } from "../handles/handle.js";
 /**
  * Show handle in console when it changes
  * @param handle

@@ -1,8 +1,8 @@
-import { Fetcher } from "../../../types/fetcher";
-import { Params } from "../../../types/params";
-import { Scroller } from "../../../types/scroller";
-import { State } from "../../../types/state";
-import { Handle } from "./handle";
+import { Fetcher } from "../../../types/fetcher.js";
+import { Params } from "../../../types/params.js";
+import { Scroller } from "../../../types/scroller.js";
+import { State } from "../../../types/state.js";
+import { Handle } from "./handle.js";
 /**
  * Handle for a scrolling resource
  */

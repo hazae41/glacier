@@ -1,5 +1,5 @@
-import { Core } from "../core";
-import { State } from "./state";
+import { Core } from "../core.js";
+import { State } from "./state.js";
 export interface NormalizerMore<D = any, E = any, K = any> {
     core: Core;
     shallow: boolean;

@@ -1,4 +1,4 @@
-import { jsonEquals } from "./equals";
+import { jsonEquals } from "./equals.js";
 export declare const DEFAULT_EQUALS: typeof jsonEquals;
 export declare const DEFAULT_SERIALIZER: JSON;
 export declare const DEFAULT_COOLDOWN: number;

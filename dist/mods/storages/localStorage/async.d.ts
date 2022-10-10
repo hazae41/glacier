@@ -1,5 +1,5 @@
-import { Serializer } from "../../types/serializer";
-import { AsyncStorage } from "../../types/storage";
+import { Serializer } from "../../types/serializer.js";
+import { AsyncStorage } from "../../types/storage.js";
 /**
  * Asynchronous local storage
  *

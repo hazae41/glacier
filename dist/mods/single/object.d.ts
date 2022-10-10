@@ -1,10 +1,10 @@
-import { Core } from "../core";
-import { Fetcher } from "../index";
-import { Mutator } from "../types/mutator";
-import { Object } from "../types/object";
-import { Params } from "../types/params";
-import { State } from "../types/state";
-import { Updater, UpdaterParams } from "../types/updater";
+import { Core } from "../core.js";
+import { Fetcher } from "../types/fetcher.js";
+import { Mutator } from "../types/mutator.js";
+import { Object } from "../types/object.js";
+import { Params } from "../types/params.js";
+import { State } from "../types/state.js";
+import { Updater, UpdaterParams } from "../types/updater.js";
 export declare function getSingleStorageKey<D = any, E = any, K = any>(key: K, params: Params): string | undefined;
 /**
  * Non-React version of SingleHandle

@@ -1,4 +1,4 @@
-import { AsyncStorage } from "../../types/storage";
+import { AsyncStorage } from "../../types/storage.js";
 export declare function useIDBStorage(name: string): IDBStorage;
 export declare class IDBStorage implements AsyncStorage {
     readonly name: string;

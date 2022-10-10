@@ -1,13 +1,13 @@
-import { useAutoRef } from "libs/react";
-import { Fetcher } from "mods/index";
-import { useCore } from "mods/react/contexts";
-import { getSingleStorageKey } from "mods/single/object";
-import { Mutator } from "mods/types/mutator";
-import { Params } from "mods/types/params";
-import { State } from "mods/types/state";
-import { Updater, UpdaterParams } from "mods/types/updater";
+import { useAutoRef } from "libs/react.js";
+import { useCore } from "mods/react/contexts/core.js";
+import { getSingleStorageKey } from "mods/single/object.js";
+import { Fetcher } from "mods/types/fetcher.js";
+import { Mutator } from "mods/types/mutator.js";
+import { Params } from "mods/types/params.js";
+import { State } from "mods/types/state.js";
+import { Updater, UpdaterParams } from "mods/types/updater.js";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { Handle } from "./handle";
+import { Handle } from "./handle.js";
 
 /**
  * Handle for a single resource

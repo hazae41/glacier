@@ -1,5 +1,5 @@
-import { Mutator } from "mods/types/mutator"
-import { State } from "mods/types/state"
+import { Mutator } from "mods/types/mutator.js"
+import { State } from "mods/types/state.js"
 
 export interface Handle<D = any, E = any, K = any> {
   /**

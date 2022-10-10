@@ -1,10 +1,10 @@
-import { Core } from "../core";
-import { NormalizerMore } from "../index";
-import { Fetcher } from "../types/fetcher";
-import { Params } from "../types/params";
-import { Schema } from "../types/schema";
-import { Scroller } from "../types/scroller";
-import { ScrollObject } from "./object";
+import { Core } from "../core.js";
+import { Fetcher } from "../types/fetcher.js";
+import { NormalizerMore } from "../types/normalizer.js";
+import { Params } from "../types/params.js";
+import { Schema } from "../types/schema.js";
+import { Scroller } from "../types/scroller.js";
+import { ScrollObject } from "./object.js";
 export declare function scroll<D = any, E = any, K = any>(scroller: Scroller<D, E, K>, fetcher: Fetcher<D, E, K> | undefined, params?: Params<D[], E, K>): ScrollSchema<D, E, K>;
 export declare class ScrollSchema<D = any, E = any, K = any> implements Schema<D[], E, K, ScrollObject<D, E, K>> {
     readonly scroller: Scroller<D, E, K>;

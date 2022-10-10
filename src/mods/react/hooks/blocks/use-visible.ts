@@ -1,5 +1,5 @@
-import { useAutoRef } from "libs/react"
-import { Handle } from "mods/react/hooks/handles"
+import { useAutoRef } from "libs/react.js"
+import { Handle } from "mods/react/hooks/handles/handle.js"
 import { useEffect } from "react"
 
 /**

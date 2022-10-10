@@ -1,10 +1,10 @@
-import { Core } from "../core";
-import { Fetcher } from "../index";
-import { Mutator } from "../types/mutator";
-import { Object } from "../types/object";
-import { Params } from "../types/params";
-import { Scroller } from "../types/scroller";
-import { State } from "../types/state";
+import { Core } from "../core.js";
+import { Fetcher } from "../types/fetcher.js";
+import { Mutator } from "../types/mutator.js";
+import { Object } from "../types/object.js";
+import { Params } from "../types/params.js";
+import { Scroller } from "../types/scroller.js";
+import { State } from "../types/state.js";
 export declare function getScrollStorageKey<D = any, E = any, K = any>(key: K, params: Params): string | undefined;
 /**
  * Non-React version of ScrollHandle

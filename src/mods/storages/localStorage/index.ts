@@ -1,3 +1,3 @@
-export * from "./async"
-export * from "./sync"
+export * from "./async.js"
+export * from "./sync.js"
 

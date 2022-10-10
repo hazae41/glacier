@@ -1,9 +1,9 @@
-import { Core } from "mods/core";
-import { Fetcher } from "mods/index";
-import { NormalizerMore } from "mods/types/normalizer";
-import { Params } from "mods/types/params";
-import { Schema } from "mods/types/schema";
-import { SingleObject } from "./object";
+import { Core } from "mods/core.js";
+import { Fetcher } from "mods/types/fetcher.js";
+import { NormalizerMore } from "mods/types/normalizer.js";
+import { Params } from "mods/types/params.js";
+import { Schema } from "mods/types/schema.js";
+import { SingleObject } from "./object.js";
 
 export function single<D = any, E = any, K = any>(
   key: K | undefined,

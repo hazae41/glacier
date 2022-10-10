@@ -1,5 +1,5 @@
-import { Handle } from "mods/react/hooks/handles"
-import { State } from "mods/types/state"
+import { Handle } from "mods/react/hooks/handles/handle.js"
+import { State } from "mods/types/state.js"
 
 /**
  * Fallback to given data/error if there is no data/error

@@ -1,7 +1,7 @@
-import { ChildrenProps } from "../../../libs/react";
-import { Core } from "../../core";
-import { Params } from "../../types/params";
-import * as React from "react";
+import { ChildrenProps } from "../../../libs/react.js";
+import { Core } from "../../core.js";
+import { Params } from "../../types/params.js";
+import React from "react";
 export declare const CoreContext: React.Context<Core | undefined>;
 export declare function useCore(): Core;
 export declare function useCoreProvider(params: Params): Core;

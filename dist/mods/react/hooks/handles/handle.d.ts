@@ -1,5 +1,5 @@
-import { Mutator } from "../../../types/mutator";
-import { State } from "../../../types/state";
+import { Mutator } from "../../../types/mutator.js";
+import { State } from "../../../types/state.js";
 export interface Handle<D = any, E = any, K = any> {
     /**
      * Arbitrary key, must be serializable
