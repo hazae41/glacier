@@ -1,4 +1,4 @@
-import { Handle } from "../handles/handle.js";
+import { Handle } from "../../types/handle.js";
 import { State } from "../../../types/state.js";
 /**
  * Fallback to given data/error if there is no data/error

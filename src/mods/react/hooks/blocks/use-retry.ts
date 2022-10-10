@@ -1,5 +1,5 @@
 import { useAutoRef } from "libs/react.js"
-import { Handle } from "mods/react/hooks/handles/handle.js"
+import { Handle } from "mods/react/types/handle.js"
 import { useEffect, useRef } from "react"
 
 export interface RetryOptions {

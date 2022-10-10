@@ -1,4 +1,4 @@
-import { Handle } from "../handles/handle.js";
+import { Handle } from "../../types/handle.js";
 /**
  * Do a request on mount and url change only if there is no data yet
  * @warning Will still try to fetch is there is an error

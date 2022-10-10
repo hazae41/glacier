@@ -1,4 +1,4 @@
-import { Handle } from "mods/react/hooks/handles/handle.js"
+import { Handle } from "mods/react/types/handle.js"
 import { useEffect } from "react"
 
 /**

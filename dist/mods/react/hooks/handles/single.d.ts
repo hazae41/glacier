@@ -1,8 +1,8 @@
+import { Handle } from "../../types/handle.js";
 import { Fetcher } from "../../../types/fetcher.js";
 import { Params } from "../../../types/params.js";
 import { State } from "../../../types/state.js";
 import { Updater, UpdaterParams } from "../../../types/updater.js";
-import { Handle } from "./handle.js";
 /**
  * Handle for a single resource
  */

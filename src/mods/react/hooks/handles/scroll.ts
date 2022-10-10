@@ -1,5 +1,6 @@
 import { useAutoRef } from "libs/react.js";
 import { useCore } from "mods/react/contexts/core.js";
+import { Handle } from "mods/react/types/handle.js";
 import { getScrollStorageKey } from "mods/scroll/object.js";
 import { Fetcher } from "mods/types/fetcher.js";
 import { Mutator } from "mods/types/mutator.js";
@@ -7,7 +8,6 @@ import { Params } from "mods/types/params.js";
 import { Scroller } from "mods/types/scroller.js";
 import { State } from "mods/types/state.js";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { Handle } from "./handle.js";
 
 /**
  * Handle for a scrolling resource
