@@ -1,7 +1,7 @@
 {
   "type": "module",
   "name": "@hazae41/xswr",
-  "version": "1.0.88",
+  "version": "1.0.89",
   "author": "hazae41",
   "license": "MIT",
   "description": "The simplest React data (re)fetching library ever made",
@@ -13,8 +13,8 @@
   "scripts": {
     "build": "rimraf dist && bunchee -m ./src/index.ts && ttsc && rimraf dist/libs"
   },
-  "dependencies": {
-    "react": "^18.2.0"
+  "peerDependencies": {
+    "react": "^16.11.0 || ^17.0.0 || ^18.0.0"
   },
   "devDependencies": {
     "@types/react": "^18.0.21",
