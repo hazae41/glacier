@@ -1,7 +1,7 @@
 {
   "type": "module",
   "name": "@hazae41/xswr",
-  "version": "1.0.91",
+  "version": "1.0.93",
   "author": "hazae41",
   "license": "MIT",
   "description": "The simplest React data (re)fetching library ever made",
@@ -11,11 +11,14 @@
   "main": "./dist/cjs/index.cjs",
   "sideEffects": false,
   "scripts": {
-    "build": "rimraf dist && rollup -c && ttsc --outDir ./dist/types && rimraf ./dist/types/libs",
+    "build:rollup": "rollup -c",
+    "build:types": "ttsc --outDir ./dist/types && rimraf ./dist/types/libs",
+    "build": "rimraf dist && (npm run build:rollup & npm run build:types)",
     "prepare": "npm run build"
   },
   "peerDependencies": {
-    "react": "^16.11.0 || ^17.0.0 || ^18.0.0"
+    "react": "^16.11.0 || ^17.0.0 || ^18.0.0",
+    "tslib": "^2.4.0"
   },
   "devDependencies": {
     "@rollup/plugin-commonjs": "^23.0.0",
