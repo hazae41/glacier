@@ -1,5 +1,6 @@
-import { Serializer } from "../../types/serializer.js";
-import { SyncStorage } from "../../types/storage.js";
+import { Serializer } from '../../types/serializer.js';
+import { SyncStorage } from '../../types/storage.js';
+
 /**
  * Synchronous local storage
  *
@@ -10,7 +11,7 @@ import { SyncStorage } from "../../types/storage.js";
  *
  * @see AsyncLocalStorage
  */
-export declare function useSyncLocalStorage(prefix?: string, serializer?: Serializer): SyncLocalStorage;
+declare function useSyncLocalStorage(prefix?: string, serializer?: Serializer): SyncLocalStorage;
 /**
  * Synchronous local storage
  *
@@ -21,7 +22,7 @@ export declare function useSyncLocalStorage(prefix?: string, serializer?: Serial
  *
  * @see AsyncLocalStorage
  */
-export declare class SyncLocalStorage implements SyncStorage {
+declare class SyncLocalStorage implements SyncStorage {
     readonly prefix: string;
     readonly serializer: Serializer;
     readonly async = false;
@@ -34,3 +35,5 @@ export declare class SyncLocalStorage implements SyncStorage {
     set<T = any>(key: string, value: T, ignore?: boolean): void;
     delete(key: string, ignore?: boolean): void;
 }
+
+export { SyncLocalStorage, useSyncLocalStorage };

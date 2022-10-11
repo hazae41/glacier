@@ -1,4 +1,5 @@
 export * from "./fetcher.js"
+export * from "./mutator.js"
 export * from "./normalizer.js"
 export * from "./object.js"
 export * from "./params.js"

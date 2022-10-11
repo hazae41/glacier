@@ -1,1 +1,2 @@
-export * as XSWR from "./mods/index.js";
+import * as index from './mods/index.js';
+export { index as XSWR };

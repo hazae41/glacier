@@ -1,12 +1,13 @@
-import { Handle } from "../../types/handle.js";
-import { Fetcher } from "../../../types/fetcher.js";
-import { Params } from "../../../types/params.js";
-import { State } from "../../../types/state.js";
-import { Updater, UpdaterParams } from "../../../types/updater.js";
+import { Handle } from '../../types/handle.js';
+import { Fetcher } from '../../../types/fetcher.js';
+import { Params } from '../../../types/params.js';
+import { State } from '../../../types/state.js';
+import { Updater, UpdaterParams } from '../../../types/updater.js';
+
 /**
  * Handle for a single resource
  */
-export interface SingleHandle<D = any, E = any, K = any> extends Handle<D, E, K> {
+interface SingleHandle<D = any, E = any, K = any> extends Handle<D, E, K> {
     /**
      * Optimistic update
      * @param updater Mutation function
@@ -21,4 +22,6 @@ export interface SingleHandle<D = any, E = any, K = any> extends Handle<D, E, K>
  * @param cparams Parameters (unmemoized)
  * @returns Single handle
  */
-export declare function useSingle<D = any, E = any, K = any>(key: K | undefined, fetcher: Fetcher<D, E, K> | undefined, params?: Params<D, E, K>): SingleHandle<D, E, K>;
+declare function useSingle<D = any, E = any, K = any>(key: K | undefined, fetcher: Fetcher<D, E, K> | undefined, params?: Params<D, E, K>): SingleHandle<D, E, K>;
+
+export { SingleHandle, useSingle };

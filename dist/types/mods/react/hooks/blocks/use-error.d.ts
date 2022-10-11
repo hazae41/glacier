@@ -1,7 +1,10 @@
-import { Handle } from "../../types/handle.js";
+import { Handle } from '../../types/handle.js';
+
 /**
  * Call a function on error
  * @param handle
  * @param callback
  */
-export declare function useError<D = any, E = any, K = any>(handle: Handle<D, E, K>, callback: (e: E) => void): void;
+declare function useError<D = any, E = any, K = any>(handle: Handle<D, E, K>, callback: (e: E) => void): void;
+
+export { useError };

@@ -1,8 +1,9 @@
-import { Normalizer } from "./normalizer.js";
-import { Serializer } from "./serializer.js";
-import { Storage } from "./storage.js";
-import { Equals } from "../utils/equals.js";
-export interface Params<D = any, E = any, K = any> {
+import { Normalizer } from './normalizer.js';
+import { Serializer } from './serializer.js';
+import { Storage } from './storage.js';
+import { Equals } from '../utils/equals.js';
+
+interface Params<D = any, E = any, K = any> {
     storage?: Storage;
     serializer?: Serializer<K>;
     normalizer?: Normalizer<D, E, K>;
@@ -11,3 +12,5 @@ export interface Params<D = any, E = any, K = any> {
     expiration?: number;
     timeout?: number;
 }
+
+export { Params };

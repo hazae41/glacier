@@ -1,6 +1,7 @@
-import { AsyncStorage } from "../../types/storage.js";
-export declare function useIDBStorage(name: string): IDBStorage;
-export declare class IDBStorage implements AsyncStorage {
+import { AsyncStorage } from '../../types/storage.js';
+
+declare function useIDBStorage(name: string): IDBStorage;
+declare class IDBStorage implements AsyncStorage {
     readonly name: string;
     readonly async = true;
     readonly initialization?: Promise<void>;
@@ -18,3 +19,5 @@ export declare class IDBStorage implements AsyncStorage {
     set<T = any>(key: string, value: T, ignore?: boolean): Promise<void>;
     delete(key: string, ignore?: boolean): Promise<void>;
 }
+
+export { IDBStorage, useIDBStorage };

@@ -1,12 +1,13 @@
-import { Handle } from "../../types/handle.js";
-import { Fetcher } from "../../../types/fetcher.js";
-import { Params } from "../../../types/params.js";
-import { Scroller } from "../../../types/scroller.js";
-import { State } from "../../../types/state.js";
+import { Handle } from '../../types/handle.js';
+import { Fetcher } from '../../../types/fetcher.js';
+import { Params } from '../../../types/params.js';
+import { Scroller } from '../../../types/scroller.js';
+import { State } from '../../../types/state.js';
+
 /**
  * Handle for a scrolling resource
  */
-export interface ScrollHandle<D = any, E = any, K = any> extends Handle<D[], E, K> {
+interface ScrollHandle<D = any, E = any, K = any> extends Handle<D[], E, K> {
     /**
      * Fetch the next page
      */
@@ -19,4 +20,6 @@ export interface ScrollHandle<D = any, E = any, K = any> extends Handle<D[], E, 
  * @param cparams Parameters (unmemoized)
  * @returns Scrolling handle
  */
-export declare function useScroll<D = any, E = any, K = any>(scroller: Scroller<D, E, K>, fetcher: Fetcher<D, E, K> | undefined, params?: Params<D[], E, K>): ScrollHandle<D, E, K>;
+declare function useScroll<D = any, E = any, K = any>(scroller: Scroller<D, E, K>, fetcher: Fetcher<D, E, K> | undefined, params?: Params<D[], E, K>): ScrollHandle<D, E, K>;
+
+export { ScrollHandle, useScroll };

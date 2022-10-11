@@ -1,15 +1,16 @@
-import { Core } from "../core.js";
-import { Fetcher } from "../types/fetcher.js";
-import { Mutator } from "../types/mutator.js";
-import { Object } from "../types/object.js";
-import { Params } from "../types/params.js";
-import { Scroller } from "../types/scroller.js";
-import { State } from "../types/state.js";
-export declare function getScrollStorageKey<D = any, E = any, K = any>(key: K, params: Params): string | undefined;
+import { Core } from '../core.js';
+import { Fetcher } from '../types/fetcher.js';
+import { Mutator } from '../types/mutator.js';
+import { Object as Object$1 } from '../types/object.js';
+import { Params } from '../types/params.js';
+import { Scroller } from '../types/scroller.js';
+import { State } from '../types/state.js';
+
+declare function getScrollStorageKey<D = any, E = any, K = any>(key: K, params: Params): string | undefined;
 /**
  * Non-React version of ScrollHandle
  */
-export declare class ScrollObject<D = any, E = any, K = any> implements Object<D[], E, K> {
+declare class ScrollObject<D = any, E = any, K = any> implements Object$1<D[], E, K> {
     readonly core: Core;
     readonly scroller: Scroller<D, E, K>;
     readonly fetcher: Fetcher<D, E, K> | undefined;
@@ -32,3 +33,5 @@ export declare class ScrollObject<D = any, E = any, K = any> implements Object<D
     scroll(aborter?: AbortController): Promise<State<D[], E, K> | undefined>;
     clear(): Promise<void>;
 }
+
+export { ScrollObject, getScrollStorageKey };

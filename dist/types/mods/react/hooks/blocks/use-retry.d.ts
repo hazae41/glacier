@@ -1,5 +1,6 @@
-import { Handle } from "../../types/handle.js";
-export interface RetryOptions {
+import { Handle } from '../../types/handle.js';
+
+interface RetryOptions {
     init?: number;
     base?: number;
     max?: number;
@@ -15,4 +16,6 @@ export interface RetryOptions {
  * @see https://en.wikipedia.org/wiki/Exponential_backoff
  * @see https://en.wikipedia.org/wiki/Geometric_progression
  */
-export declare function useRetry(handle: Handle, options?: RetryOptions): void;
+declare function useRetry(handle: Handle, options?: RetryOptions): void;
+
+export { RetryOptions, useRetry };

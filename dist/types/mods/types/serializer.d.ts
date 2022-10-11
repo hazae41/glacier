@@ -1,4 +1,6 @@
-export interface Serializer<T = any> {
+interface Serializer<T = any> {
     stringify<T>(value: T): string;
     parse(text: string): T;
 }
+
+export { Serializer };

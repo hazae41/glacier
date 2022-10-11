@@ -1,13 +1,13 @@
-/// <reference types="node" resolution-mode="require"/>
-import { Ortho } from "../libs/ortho.js";
-import { ScrollHelper } from "./scroll/helper.js";
-import { SingleHelper } from "./single/helper.js";
-import { Mutator } from "./types/mutator.js";
-import { Params } from "./types/params.js";
-import { State } from "./types/state.js";
-import { Lock } from "./utils/lock.js";
-export declare type Listener<D = any, E = any, K = any> = (x?: State<D, E, K>) => void;
-export declare class Core extends Ortho<string, State | undefined> {
+import { Ortho } from '../libs/ortho.js';
+import { ScrollHelper } from './scroll/helper.js';
+import { SingleHelper } from './single/helper.js';
+import { Mutator } from './types/mutator.js';
+import { Params } from './types/params.js';
+import { State } from './types/state.js';
+import { Lock } from './utils/lock.js';
+
+declare type Listener<D = any, E = any, K = any> = (x?: State<D, E, K>) => void;
+declare class Core extends Ortho<string, State | undefined> {
     readonly params: Params;
     readonly single: SingleHelper;
     readonly scroll: ScrollHelper;
@@ -46,3 +46,5 @@ export declare class Core extends Ortho<string, State | undefined> {
     on<D = any, E = any, K = any>(key: string | undefined, listener: Listener<D, E, K>, params?: Params<D, E, K>): void;
     off<D = any, E = any, K = any>(key: string | undefined, listener: Listener<D, E, K>, params?: Params<D, E, K>): Promise<void>;
 }
+
+export { Core, Listener };

@@ -1,4 +1,4 @@
-export interface State<D = any, E = any, K = any> {
+interface State<D = any, E = any, K = any> {
     data?: D;
     error?: E;
     time?: number;
@@ -8,3 +8,5 @@ export interface State<D = any, E = any, K = any> {
     expiration?: number;
     realData?: D;
 }
+
+export { State };

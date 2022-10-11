@@ -1,9 +1,10 @@
-import { Core } from "../core.js";
-import { Fetcher } from "../types/fetcher.js";
-import { Params } from "../types/params.js";
-import { Scroller } from "../types/scroller.js";
-import { State } from "../types/state.js";
-export declare class ScrollHelper {
+import { Core } from '../core.js';
+import { Fetcher } from '../types/fetcher.js';
+import { Params } from '../types/params.js';
+import { Scroller } from '../types/scroller.js';
+import { State } from '../types/state.js';
+
+declare class ScrollHelper {
     readonly core: Core;
     constructor(core: Core);
     /**
@@ -29,3 +30,5 @@ export declare class ScrollHelper {
      */
     scroll<D = any, E = any, K = any>(skey: string | undefined, scroller: Scroller<D, E, K>, fetcher: Fetcher<D, E, K>, aborter?: AbortController, params?: Params<D[], E, K>, force?: boolean, ignore?: boolean): Promise<State<D[], E, K> | undefined>;
 }
+
+export { ScrollHelper };

@@ -2,11 +2,9 @@
   "compilerOptions": {
     "target": "ES5",
     "baseUrl": "./src",
-    "module": "ESNext",
+    "module": "NodeNext",
     "moduleResolution": "NodeNext",
     "strict": true,
-    "declaration": true,
-    "emitDeclarationOnly": true,
     "downlevelIteration": true,
     "jsx": "react",
     "lib": [

@@ -1,8 +1,11 @@
-import { ChildrenProps } from "../../../libs/react.js";
-import { Core } from "../../core.js";
-import { Params } from "../../types/params.js";
-import * as React from "react";
-export declare const CoreContext: React.Context<Core | undefined>;
-export declare function useCore(): Core;
-export declare function useCoreProvider(params: Params): Core;
-export declare function CoreProvider(props: ChildrenProps & Params): JSX.Element;
+import { ChildrenProps } from '../../../libs/react.js';
+import { Core } from '../../core.js';
+import { Params } from '../../types/params.js';
+import * as react from 'react';
+
+declare const CoreContext: react.Context<Core | undefined>;
+declare function useCore(): Core;
+declare function useCoreProvider(params: Params): Core;
+declare function CoreProvider(props: ChildrenProps & Params): JSX.Element;
+
+export { CoreContext, CoreProvider, useCore, useCoreProvider };

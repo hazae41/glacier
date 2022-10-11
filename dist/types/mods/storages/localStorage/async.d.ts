@@ -1,5 +1,6 @@
-import { Serializer } from "../../types/serializer.js";
-import { AsyncStorage } from "../../types/storage.js";
+import { Serializer } from '../../types/serializer.js';
+import { AsyncStorage } from '../../types/storage.js';
+
 /**
  * Asynchronous local storage
  *
@@ -13,7 +14,7 @@ import { AsyncStorage } from "../../types/storage.js";
  * @see SyncLocalStorage
  * @see useFallback
  */
-export declare function useAsyncLocalStorage(prefix?: string, serializer?: Serializer): AsyncLocalStorage;
+declare function useAsyncLocalStorage(prefix?: string, serializer?: Serializer): AsyncLocalStorage;
 /**
  * Asynchronous local storage
  *
@@ -27,7 +28,7 @@ export declare function useAsyncLocalStorage(prefix?: string, serializer?: Seria
  * @see SyncLocalStorage
  * @see useFallback
  */
-export declare class AsyncLocalStorage implements AsyncStorage {
+declare class AsyncLocalStorage implements AsyncStorage {
     readonly prefix: string;
     readonly serializer: Serializer;
     readonly async = true;
@@ -41,3 +42,5 @@ export declare class AsyncLocalStorage implements AsyncStorage {
     set<T = any>(key: string, value: T, ignore?: boolean): Promise<void>;
     delete(key: string, ignore?: boolean): Promise<void>;
 }
+
+export { AsyncLocalStorage, useAsyncLocalStorage };

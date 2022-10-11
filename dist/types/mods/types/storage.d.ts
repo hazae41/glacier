@@ -1,5 +1,5 @@
-export declare type Storage = SyncStorage | AsyncStorage;
-export interface SyncStorage {
+declare type Storage = SyncStorage | AsyncStorage;
+interface SyncStorage {
     async?: false;
     unmount(): void;
     collect(): void;
@@ -7,7 +7,7 @@ export interface SyncStorage {
     set<T = any>(key: string, value: T, ignore?: boolean): void;
     delete(key: string, ignore?: boolean): void;
 }
-export interface AsyncStorage {
+interface AsyncStorage {
     async: true;
     unmount(): void;
     collect(): void;
@@ -15,4 +15,6 @@ export interface AsyncStorage {
     set<T = any>(key: string, value: T, ignore?: boolean): Promise<void>;
     delete(key: string, ignore?: boolean): Promise<void>;
 }
-export declare function isAsyncStorage(storage: Storage): storage is AsyncStorage;
+declare function isAsyncStorage(storage: Storage): storage is AsyncStorage;
+
+export { AsyncStorage, Storage, SyncStorage, isAsyncStorage };

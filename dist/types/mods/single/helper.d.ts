@@ -1,9 +1,10 @@
-import { Core } from "../core.js";
-import { Fetcher } from "../types/fetcher.js";
-import { Params } from "../types/params.js";
-import { State } from "../types/state.js";
-import { Updater } from "../types/updater.js";
-export declare class SingleHelper {
+import { Core } from '../core.js';
+import { Fetcher } from '../types/fetcher.js';
+import { Params } from '../types/params.js';
+import { State } from '../types/state.js';
+import { Updater } from '../types/updater.js';
+
+declare class SingleHelper {
     readonly core: Core;
     constructor(core: Core);
     /**
@@ -30,3 +31,5 @@ export declare class SingleHelper {
      */
     update<D = any, E = any, K = any>(key: K | undefined, skey: string | undefined, fetcher: Fetcher<D, E, K> | undefined, updater: Updater<D, E, K>, aborter?: AbortController, params?: Params<D, E, K>): Promise<State<D, E, K> | undefined>;
 }
+
+export { SingleHelper };
