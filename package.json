@@ -7,8 +7,8 @@
   "description": "The simplest React data (re)fetching library ever made",
   "homepage": "https://github.com/hazae41/xswr",
   "types": "./dist/index.d.ts",
-  "module": "./dist/index.esm.js",
-  "main": "./dist/index.cjs.js",
+  "module": "./dist/index.mjs",
+  "main": "./dist/index.cjs",
   "sideEffects": false,
   "scripts": {
     "build": "rimraf dist && bunchee -m ./src/index.ts && ttsc && rimraf dist/libs"
@@ -19,7 +19,7 @@
   "devDependencies": {
     "@types/node": "^18.8.4",
     "@types/react": "^18.0.21",
-    "bunchee": "^2.0.1",
+    "bunchee": "2.0.1",
     "rimraf": "^3.0.2",
     "ts-node": "^10.9.1",
     "ttypescript": "^1.5.13",
@@ -29,8 +29,8 @@
   "exports": {
     ".": {
       "types": "./dist/index.d.ts",
-      "import": "./dist/index.esm.js",
-      "require": "./dist/index.cjs.js"
+      "import": "./dist/index.mjs",
+      "require": "./dist/index.cjs"
     }
   }
 }
