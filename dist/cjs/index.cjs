@@ -7,3 +7,4 @@ var index = require('./mods/index.cjs');
 
 
 exports.XSWR = index;
+//# sourceMappingURL=index.cjs.map

@@ -27,3 +27,4 @@ function CoreProvider(props) {
 }
 
 export { CoreContext, CoreProvider, useCore, useCoreProvider };
+//# sourceMappingURL=core.mjs.map

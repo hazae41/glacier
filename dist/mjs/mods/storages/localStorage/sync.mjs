@@ -108,3 +108,4 @@ var SyncLocalStorage = /** @class */ (function () {
 }());
 
 export { SyncLocalStorage, useSyncLocalStorage };
+//# sourceMappingURL=sync.mjs.map

@@ -43,3 +43,4 @@ var SingleSchema = /** @class */ (function () {
 
 exports.SingleSchema = SingleSchema;
 exports.single = single;
+//# sourceMappingURL=schema.cjs.map

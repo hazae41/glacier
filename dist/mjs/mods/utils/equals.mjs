@@ -38,3 +38,4 @@ function shallowEquals(a, b) {
 }
 
 export { jsonEquals, refEquals, shallowEquals };
+//# sourceMappingURL=equals.mjs.map

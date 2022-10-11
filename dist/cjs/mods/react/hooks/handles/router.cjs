@@ -25,3 +25,4 @@ function use(factory, deps) {
 }
 
 exports.use = use;
+//# sourceMappingURL=router.cjs.map

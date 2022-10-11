@@ -27,3 +27,4 @@ export { SyncLocalStorage, useSyncLocalStorage } from './storages/localStorage/s
 export { isAsyncStorage } from './types/storage.mjs';
 export { DEFAULT_COOLDOWN, DEFAULT_EQUALS, DEFAULT_EXPIRATION, DEFAULT_SERIALIZER, DEFAULT_TIMEOUT } from './utils/defaults.mjs';
 export { jsonEquals, refEquals, shallowEquals } from './utils/equals.mjs';
+//# sourceMappingURL=index.mjs.map

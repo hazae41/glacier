@@ -5,3 +5,4 @@ function getTimeFromDelay(delay) {
 }
 
 export { getTimeFromDelay };
+//# sourceMappingURL=time.mjs.map

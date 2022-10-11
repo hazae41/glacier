@@ -23,3 +23,4 @@ function useInterval(handle, interval) {
 }
 
 exports.useInterval = useInterval;
+//# sourceMappingURL=use-interval.cjs.map

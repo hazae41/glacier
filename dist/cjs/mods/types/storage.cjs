@@ -7,3 +7,4 @@ function isAsyncStorage(storage) {
 }
 
 exports.isAsyncStorage = isAsyncStorage;
+//# sourceMappingURL=storage.cjs.map

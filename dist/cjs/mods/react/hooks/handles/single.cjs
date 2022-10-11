@@ -204,3 +204,4 @@ function useSingle(key, fetcher, params) {
 }
 
 exports.useSingle = useSingle;
+//# sourceMappingURL=single.cjs.map

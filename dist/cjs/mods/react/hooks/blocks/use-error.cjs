@@ -18,3 +18,4 @@ function useError(handle, callback) {
 }
 
 exports.useError = useError;
+//# sourceMappingURL=use-error.cjs.map

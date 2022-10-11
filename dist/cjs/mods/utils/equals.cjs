@@ -44,3 +44,4 @@ function shallowEquals(a, b) {
 exports.jsonEquals = jsonEquals;
 exports.refEquals = refEquals;
 exports.shallowEquals = shallowEquals;
+//# sourceMappingURL=equals.cjs.map

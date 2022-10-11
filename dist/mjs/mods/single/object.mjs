@@ -190,3 +190,4 @@ var SingleObject = /** @class */ (function () {
 }());
 
 export { SingleObject, getSingleStorageKey };
+//# sourceMappingURL=object.mjs.map

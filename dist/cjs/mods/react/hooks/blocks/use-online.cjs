@@ -22,3 +22,4 @@ function useOnline(handle) {
 }
 
 exports.useOnline = useOnline;
+//# sourceMappingURL=use-online.cjs.map

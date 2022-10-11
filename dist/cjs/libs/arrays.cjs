@@ -8,3 +8,4 @@ function lastOf(array) {
 }
 
 exports.lastOf = lastOf;
+//# sourceMappingURL=arrays.cjs.map

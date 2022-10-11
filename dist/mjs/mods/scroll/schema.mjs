@@ -38,3 +38,4 @@ var ScrollSchema = /** @class */ (function () {
 }());
 
 export { ScrollSchema, scroll };
+//# sourceMappingURL=schema.mjs.map

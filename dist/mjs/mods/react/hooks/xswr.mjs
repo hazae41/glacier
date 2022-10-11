@@ -10,3 +10,4 @@ function useXSWR() {
 }
 
 export { useXSWR };
+//# sourceMappingURL=xswr.mjs.map

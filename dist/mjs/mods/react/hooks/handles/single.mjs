@@ -200,3 +200,4 @@ function useSingle(key, fetcher, params) {
 }
 
 export { useSingle };
+//# sourceMappingURL=single.mjs.map

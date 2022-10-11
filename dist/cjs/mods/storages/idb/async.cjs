@@ -246,3 +246,4 @@ var IDBStorage = /** @class */ (function () {
 
 exports.IDBStorage = IDBStorage;
 exports.useIDBStorage = useIDBStorage;
+//# sourceMappingURL=async.cjs.map

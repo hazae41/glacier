@@ -21,3 +21,4 @@ function use(factory, deps) {
 }
 
 export { use };
+//# sourceMappingURL=router.mjs.map

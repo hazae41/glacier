@@ -195,3 +195,4 @@ var SingleObject = /** @class */ (function () {
 
 exports.SingleObject = SingleObject;
 exports.getSingleStorageKey = getSingleStorageKey;
+//# sourceMappingURL=object.cjs.map

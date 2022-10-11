@@ -9,3 +9,4 @@ function getTimeFromDelay(delay) {
 }
 
 exports.getTimeFromDelay = getTimeFromDelay;
+//# sourceMappingURL=time.cjs.map

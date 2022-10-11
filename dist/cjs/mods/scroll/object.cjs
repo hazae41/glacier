@@ -196,3 +196,4 @@ var ScrollObject = /** @class */ (function () {
 
 exports.ScrollObject = ScrollObject;
 exports.getScrollStorageKey = getScrollStorageKey;
+//# sourceMappingURL=object.cjs.map

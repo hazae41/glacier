@@ -18,3 +18,4 @@ function useOnline(handle) {
 }
 
 export { useOnline };
+//# sourceMappingURL=use-online.mjs.map

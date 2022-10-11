@@ -18,3 +18,4 @@ function useFetch(handle) {
 }
 
 exports.useFetch = useFetch;
+//# sourceMappingURL=use-fetch.cjs.map

@@ -3,3 +3,4 @@ function isAsyncStorage(storage) {
 }
 
 export { isAsyncStorage };
+//# sourceMappingURL=storage.mjs.map

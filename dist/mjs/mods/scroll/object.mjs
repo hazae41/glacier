@@ -191,3 +191,4 @@ var ScrollObject = /** @class */ (function () {
 }());
 
 export { ScrollObject, getScrollStorageKey };
+//# sourceMappingURL=object.mjs.map

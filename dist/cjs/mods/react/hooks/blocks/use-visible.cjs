@@ -22,3 +22,4 @@ function useVisible(handle) {
 }
 
 exports.useVisible = useVisible;
+//# sourceMappingURL=use-visible.cjs.map

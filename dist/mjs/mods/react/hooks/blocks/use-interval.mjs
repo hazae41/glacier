@@ -19,3 +19,4 @@ function useInterval(handle, interval) {
 }
 
 export { useInterval };
+//# sourceMappingURL=use-interval.mjs.map

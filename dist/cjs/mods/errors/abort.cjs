@@ -21,3 +21,4 @@ function isAbortError(e) {
 
 exports.AbortError = AbortError;
 exports.isAbortError = isAbortError;
+//# sourceMappingURL=abort.cjs.map

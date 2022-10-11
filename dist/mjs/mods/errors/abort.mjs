@@ -16,3 +16,4 @@ function isAbortError(e) {
 }
 
 export { AbortError, isAbortError };
+//# sourceMappingURL=abort.mjs.map

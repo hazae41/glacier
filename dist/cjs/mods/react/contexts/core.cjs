@@ -53,3 +53,4 @@ exports.CoreContext = CoreContext;
 exports.CoreProvider = CoreProvider;
 exports.useCore = useCore;
 exports.useCoreProvider = useCoreProvider;
+//# sourceMappingURL=core.cjs.map

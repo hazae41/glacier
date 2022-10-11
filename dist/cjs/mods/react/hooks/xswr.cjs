@@ -14,3 +14,4 @@ function useXSWR() {
 }
 
 exports.useXSWR = useXSWR;
+//# sourceMappingURL=xswr.cjs.map

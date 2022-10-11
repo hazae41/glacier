@@ -113,3 +113,4 @@ var SyncLocalStorage = /** @class */ (function () {
 
 exports.SyncLocalStorage = SyncLocalStorage;
 exports.useSyncLocalStorage = useSyncLocalStorage;
+//# sourceMappingURL=sync.cjs.map

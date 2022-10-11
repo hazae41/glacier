@@ -38,3 +38,4 @@ var SingleSchema = /** @class */ (function () {
 }());
 
 export { SingleSchema, single };
+//# sourceMappingURL=schema.mjs.map

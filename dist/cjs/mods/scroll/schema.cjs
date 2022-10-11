@@ -43,3 +43,4 @@ var ScrollSchema = /** @class */ (function () {
 
 exports.ScrollSchema = ScrollSchema;
 exports.scroll = scroll;
+//# sourceMappingURL=schema.cjs.map

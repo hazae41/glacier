@@ -4,3 +4,4 @@ function lastOf(array) {
 }
 
 export { lastOf };
+//# sourceMappingURL=arrays.mjs.map
