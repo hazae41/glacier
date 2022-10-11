@@ -11,7 +11,7 @@
   "main": "./dist/cjs/index.cjs",
   "sideEffects": false,
   "scripts": {
-    "build": "rimraf dist && rollup -c && rimraf ./dist/types/libs",
+    "build": "rimraf dist && rollup -c",
     "prepare": "npm run build"
   },
   "peerDependencies": {
