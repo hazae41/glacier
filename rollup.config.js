@@ -18,7 +18,7 @@ export const config = [
       entryFileNames: "[name].cjs",
     }],
     plugins: [resolve(), ts({ typescript, declaration: false }), commonjs()],
-    external: ["react"]
+    external: ["react", "tslib"]
   }
 ]
 
