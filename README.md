@@ -12,7 +12,7 @@ npm i @hazae41/xswr
 
 xswr uses two new approaches compared to other data fetching libraries like swr or react-query:
 1) Encapsulating key+fetcher+params in a single abstraction called schema.
-2) Composing features with very simple hooks instead of having bloated configuration and unexpected behaviours.
+2) Composing features with very simple hooks instead of having bloated configuration and unexpected behaviors.
 
 ## Features 🔥
 
