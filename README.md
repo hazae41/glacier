@@ -1,6 +1,5 @@
-# xswr
+![](https://user-images.githubusercontent.com/4405263/198050028-32a60d16-709f-4bbf-8d5d-88b8d0f76eef.png)
 
-The God tier React data (re)fetching library
 
 ```bash
 npm i @hazae41/xswr
