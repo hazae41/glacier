@@ -111,7 +111,7 @@ function MyApp() {
 }
 ```
 
-## Advanced example
+## Advanced example 🗿
 
 Last example was good, but here is the best way to use XSWR.
 
