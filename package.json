@@ -4,7 +4,7 @@
   "version": "1.0.96",
   "author": "hazae41",
   "license": "MIT",
-  "description": "The simplest React data (re)fetching library ever made",
+  "description": "The God tier React data (re)fetching library",
   "homepage": "https://github.com/hazae41/xswr",
   "types": "./dist/types/index.d.ts",
   "module": "./dist/mjs/index.mjs",

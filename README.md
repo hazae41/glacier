@@ -1,22 +1,20 @@
-<img width="1000" alt="Image PNG" src="https://user-images.githubusercontent.com/4405263/189959352-a1e5a276-4b71-4576-9758-6ad28f778717.png">
+# xswr
+
+The God tier React data (re)fetching library
 
 ```bash
 npm i @hazae41/xswr
 ```
 
-## [Go to the docs 📚](https://xswr.hazae41.me)
+[**Read the docs 📚**](https://xswr.hazae41.me) • [**Try it online 🚀**](https://test.xswr.hazae41.me) • [**Comparison with other libs 💩**](https://xswr.hazae41.me/faq/comparison)
 
-## [Try it right now 🚀](https://test.xswr.hazae41.me)
+## Philosophy 🧠
 
-## Philosophy
-
-XSWR uses two new approaches compared to other data fetching libraries like swr or react-query:
+xswr uses two new approaches compared to other data fetching libraries like swr or react-query:
 1) Encapsulating key+fetcher+params in a single abstraction called schema.
 2) Composing features with very simple hooks instead of having bloated configuration and unexpected behaviours.
 
-### [Comparison with swr and react-query 💩](https://xswr.hazae41.me/faq/comparison)
-
-## Features
+## Features 🔥
 
 ### Current features
 
@@ -48,7 +46,7 @@ XSWR uses two new approaches compared to other data fetching libraries like swr 
 - Transport agnostic streaming (ethers.js, WebSockets, Socket.io)
 - Bidirectional scrolling
 
-# Installation
+# Installation 🔧
 
 Just install `@hazae41/xswr` using your favorite package manager.
 
@@ -66,7 +64,7 @@ function MyWrapper() {
 }
 ```
 
-# Your first mix
+# Your first mix 🧪
 
 When using xswr and its composition-based hooks, you create a mix and only include the ingredients you want.
 
@@ -189,4 +187,5 @@ function MyApp() {
 }
 ```
 
-# [Go to the docs](https://xswr.hazae41.me)
+[**Read the docs 📚**](https://xswr.hazae41.me) • [**Try it online 🚀**](https://test.xswr.hazae41.me) • [**Comparison with other libs 💩**](https://xswr.hazae41.me/faq/comparison)
+
