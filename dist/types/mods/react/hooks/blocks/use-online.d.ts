@@ -1,9 +1,9 @@
-import { Handle } from '../../types/handle.js';
+import { Query } from '../../types/query.js';
 
 /**
  * Do a request when the browser is online
- * @param handle
+ * @param query
  */
-declare function useOnline(handle: Handle): void;
+declare function useOnline(query: Query): void;
 
 export { useOnline };

@@ -1,4 +1,4 @@
-import { XSWR } from "@hazae41/xswr";
+import { getSingleSchema, NormalizerMore, useFetch, useQuery } from "@hazae41/xswr";
 import { useCallback } from "react";
 import { fetchAsJson } from "../../common/fetcher";
 
@@ -13,12 +13,12 @@ export interface ProfileData {
 }
 
 export function getProfileSchema(id: string) {
-  return XSWR.single<ProfileData>(
+  return getSingleSchema<ProfileData>(
     `/api/theytube/profile?id=${id}`,
     fetchAsJson)
 }
 
-export async function getProfileRef(profile: ProfileData | ProfileRef, more: XSWR.NormalizerMore) {
+export async function getProfileRef(profile: ProfileData | ProfileRef, more: NormalizerMore) {
   if ("ref" in profile) return profile
   const schema = getProfileSchema(profile.id)
   await schema.normalize(profile, more)
@@ -26,8 +26,8 @@ export async function getProfileRef(profile: ProfileData | ProfileRef, more: XSW
 }
 
 export function useProfile(id: string) {
-  const handle = XSWR.use(getProfileSchema, [id])
-  XSWR.useFetch(handle)
+  const handle = useQuery(getProfileSchema, [id])
+  useFetch(handle)
   return handle
 }
 

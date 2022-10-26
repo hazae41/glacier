@@ -1,18 +1,16 @@
-# xswr
-
-The God tier React data (re)fetching library
+![](https://user-images.githubusercontent.com/4405263/198129674-d7beabc9-61ed-43ab-852f-ab317c51f1f9.png)
 
 ```bash
 npm i @hazae41/xswr
 ```
 
-[**Read the docs 📚**](https://xswr.hazae41.me) • [**Try it online 🚀**](https://test.xswr.hazae41.me) • [**Comparison with other libs 💩**](https://xswr.hazae41.me/faq/comparison)
+[**Read the docs 📚**](https://xswr.hazae41.me) • [**Try it online 🚀**](https://test.xswr.hazae41.me) • [**Next.js CodeSandbox 🪣**](https://codesandbox.io/p/sandbox/misty-butterfly-64m881) • [**Comparison with other libs 🌐**](https://xswr.hazae41.me/faq/comparison)
 
 ## Philosophy 🧠
 
 xswr uses two new approaches compared to other data fetching libraries like swr or react-query:
 1) Encapsulating key+fetcher+params in a single abstraction called schema.
-2) Composing features with very simple hooks instead of having bloated configuration and unexpected behaviours.
+2) Composing features with very simple hooks instead of having bloated configuration and unexpected behaviors.
 
 ## Features 🔥
 
@@ -64,13 +62,13 @@ function MyWrapper() {
 }
 ```
 
-# Your first mix 🧪
+## Your first mix 🧪
 
 When using xswr and its composition-based hooks, you create a mix and only include the ingredients you want.
 
 We'll do a request at `/api/data` using JSON, display it with a loading, and automatically refetch it.
 
-## Create a fetcher ⚡️
+### Create a fetcher ⚡️
 
 It will just take an url, fetch it, and return the data.
 
@@ -82,22 +80,23 @@ async function fetchAsJson<T>(url: string) {
 }
 ```
 
-## Create a mix 🌪
+### Create a mix 🌪
 
-Then create a mix using a handle and some blocks.
+Then create a mix using a query and some blocks.
 
 ```tsx
 function useHello() {
-  const handle = XSWR.useSingle<Hello>(`/api/hello`, fetchAsJson)
+  const query = useSingleQuery<Hello>(`/api/hello`, fetchAsJson)
   
-  XSWR.useFetch(handle) // Fetch on mount and on url change
-  XSWR.useVisible(handle) // Fetch when the page becomes visible
-  XSWR.useOnline(handle) // Fetch when the browser becomes online
-  return handle
+  useFetch(query) // Fetch on mount and on url change
+  useVisible(query) // Fetch when the page becomes visible
+  useOnline(query) // Fetch when the browser becomes online
+
+  return query
 }
 ```
 
-## Use it in your components 🚀
+### Use it in your components 🚀
 
 ```tsx
 function MyApp() {
@@ -111,16 +110,16 @@ function MyApp() {
 }
 ```
 
-# Advanced example
+## Advanced example 🗿
 
 Last example was good, but here is the best way to use XSWR.
 
-## Making our fetcher cancellable ⚡️
+### Making our fetcher cancellable ⚡️
 
 Our fetcher was good, but this one can be aborted.
 
 ```tsx
-async function fetchAsJson<T>(url: string, more: XSWR.FetcherMore<T>) {
+async function fetchAsJson<T>(url: string, more: FetcherMore<T>) {
   const { signal } = more
 
   const res = await fetch(url, { signal })
@@ -137,43 +136,43 @@ async function fetchAsJson<T>(url: string, more: XSWR.FetcherMore<T>) {
 
 It also returns an error if the request failed.
 
-## Defining schemas 📐
+### Defining schemas 📐
 
 Using schemas may seems boilerplate, but it will save you a lot of time later.
 
 ```tsx
 function getHelloSchema() {
-  return XSWR.single<Hello>("/api/hello", fetchAsJson)
+  return getSingleSchema<Hello>("/api/hello", fetchAsJson)
 }
 ```
 
 It allows you to reuse the same set of key+fetcher+params in multiple places, including imperative code.
 
-## Creating mixtures 🧪
+### Creating mixtures 🧪
 
 The mixtures pattern allows you to reuse the same group of blocks.
 
 ```tsx
-function useAutoFetchMixture(handle: XSWR.Handle) {
-  XSWR.useFetch(handle)
-  XSWR.useVisible(handle)
-  XSWR.useOnline(handle)
+function useAutoFetchMixture(query: Query) {
+  useFetch(query)
+  useVisible(query)
+  useOnline(query)
 }
 ```
 
-## Mixing it 🌪
+### Mixing it 🌪
 
 Once you got a schema and a mixture, you just have to mix it.
 
 ```tsx
 function useHelloMix() {
-  const handle = XSWR.use(getHelloSchema, [])
-  useAutoFetchMixture(handle)
-  return handle
+  const query = useQuery(getHelloSchema, [])
+  useAutoFetchMixture(query)
+  return query
 }
 ```
 
-## Use it in your app 🚀
+### Use it in your app 🚀
 
 ```tsx
 function MyApp() {
@@ -187,5 +186,4 @@ function MyApp() {
 }
 ```
 
-[**Read the docs 📚**](https://xswr.hazae41.me) • [**Try it online 🚀**](https://test.xswr.hazae41.me) • [**Comparison with other libs 💩**](https://xswr.hazae41.me/faq/comparison)
-
+[**Read the docs 📚**](https://xswr.hazae41.me) • [**Try it online 🚀**](https://test.xswr.hazae41.me) • [**Next.js CodeSandbox 🪣**](https://codesandbox.io/p/sandbox/misty-butterfly-64m881) • [**Comparison with other libs 🌐**](https://xswr.hazae41.me/faq/comparison)

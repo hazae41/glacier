@@ -1,22 +1,22 @@
-import { XSWR } from "@hazae41/xswr";
+import { getSingleSchema, NormalizerMore, useFetch, useQuery } from "@hazae41/xswr";
 import { useCallback } from "react";
 import { fetchAsJson } from "../../common/fetcher";
 import { getVideoRef, Video, VideoData, VideoRef } from "./video";
 
 function getAllVideosSchema() {
-  async function normalizer(videos: (VideoData | VideoRef)[], more: XSWR.NormalizerMore) {
+  async function normalizer(videos: (VideoData | VideoRef)[], more: NormalizerMore) {
     return await Promise.all(videos.map(data => getVideoRef(data, more)))
   }
 
-  return XSWR.single<(VideoData | VideoRef)[]>(
+  return getSingleSchema<(VideoData | VideoRef)[]>(
     `/api/theytube`,
     fetchAsJson,
     { normalizer })
 }
 
 function useAllVideos() {
-  const handle = XSWR.use(getAllVideosSchema, [])
-  XSWR.useFetch(handle)
+  const handle = useQuery(getAllVideosSchema, [])
+  useFetch(handle)
   return handle
 }
 

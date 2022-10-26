@@ -1,9 +1,9 @@
-import { returnOf } from "libs/generator.js";
 import { getTimeFromDelay } from "libs/time.js";
 import { Core } from "mods/core.js";
 import { AbortError } from "mods/errors/abort.js";
 import { Fetcher } from "mods/types/fetcher.js";
 import { Params } from "mods/types/params.js";
+import { Result } from "mods/types/result.js";
 import { State } from "mods/types/state.js";
 import { Updater } from "mods/types/updater.js";
 import { DEFAULT_COOLDOWN, DEFAULT_EXPIRATION, DEFAULT_TIMEOUT } from "mods/utils/defaults.js";
@@ -157,7 +157,21 @@ export class SingleHelper {
 
       const generator = updater(current, { signal })
 
-      for await (const { data, error } of generator) {
+      let result: Result<D, E, K> | void = undefined
+
+      while (true) {
+        const { done, value } = await generator.next()
+
+        if (done) {
+          result = value
+          break
+        }
+
+        const {
+          data,
+          error
+        } = value
+
         if (signal.aborted)
           throw new AbortError(signal)
 
@@ -171,8 +185,6 @@ export class SingleHelper {
           c => ({ time: c?.time, aborter, optimistic: true, ...optimistic }),
           params)
       }
-
-      let result = await returnOf(generator)
 
       if (result === undefined) {
         if (fetcher === undefined)

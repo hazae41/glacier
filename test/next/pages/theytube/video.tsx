@@ -1,4 +1,4 @@
-import { XSWR } from "@hazae41/xswr";
+import { getSingleSchema, NormalizerMore, useFetch, useQuery } from "@hazae41/xswr";
 import { fetchAsJson } from "../../common/fetcher";
 import { Comment, CommentData, CommentRef, getCommentRef } from "./comment";
 import { getProfileRef, Profile, ProfileData, ProfileRef } from "./profile";
@@ -23,19 +23,19 @@ export interface NormalizedVideoData {
 }
 
 export function getVideoSchema(id: string) {
-  async function normalizer(video: VideoData | NormalizedVideoData, more: XSWR.NormalizerMore) {
+  async function normalizer(video: VideoData | NormalizedVideoData, more: NormalizerMore) {
     const author = await getProfileRef(video.author, more)
     const comments = await Promise.all(video.comments.map(data => getCommentRef(data, more)))
     return { ...video, author, comments }
   }
 
-  return XSWR.single<VideoData | NormalizedVideoData>(
+  return getSingleSchema<VideoData | NormalizedVideoData>(
     `/api/theytube/video?id=${id}`,
     fetchAsJson,
     { normalizer })
 }
 
-export async function getVideoRef(video: VideoData | VideoRef, more: XSWR.NormalizerMore) {
+export async function getVideoRef(video: VideoData | VideoRef, more: NormalizerMore) {
   if ("ref" in video) return video
   const schema = getVideoSchema(video.id)
   await schema.normalize(video, more)
@@ -43,8 +43,8 @@ export async function getVideoRef(video: VideoData | VideoRef, more: XSWR.Normal
 }
 
 export function useVideo(id: string) {
-  const handle = XSWR.use(getVideoSchema, [id])
-  XSWR.useFetch(handle)
+  const handle = useQuery(getVideoSchema, [id])
+  useFetch(handle)
   return handle
 }
 

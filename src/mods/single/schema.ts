@@ -3,9 +3,9 @@ import { Fetcher } from "mods/types/fetcher.js";
 import { NormalizerMore } from "mods/types/normalizer.js";
 import { Params } from "mods/types/params.js";
 import { Schema } from "mods/types/schema.js";
-import { SingleObject } from "./object.js";
+import { SingleInstance } from "./instance.js";
 
-export function single<D = any, E = any, K = any>(
+export function getSingleSchema<D = any, E = any, K = any>(
   key: K | undefined,
   fetcher: Fetcher<D, E, K> | undefined,
   params: Params<D, E, K> = {},
@@ -13,7 +13,7 @@ export function single<D = any, E = any, K = any>(
   return new SingleSchema(key, fetcher, params)
 }
 
-export class SingleSchema<D = any, E = any, K = any> implements Schema<D, E, K, SingleObject<D, E, K>>  {
+export class SingleSchema<D = any, E = any, K = any> implements Schema<D, E, K, SingleInstance<D, E, K>>  {
   constructor(
     readonly key: K | undefined,
     readonly fetcher: Fetcher<D, E, K> | undefined,
@@ -23,7 +23,7 @@ export class SingleSchema<D = any, E = any, K = any> implements Schema<D, E, K, 
   make(core: Core) {
     const { key, fetcher, params } = this
 
-    return new SingleObject<D, E, K>(core, key, fetcher, params)
+    return new SingleInstance<D, E, K>(core, key, fetcher, params)
   }
 
   async normalize(data: D, more: NormalizerMore<D, E, K>) {

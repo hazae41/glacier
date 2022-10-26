@@ -1,4 +1,4 @@
 export * from "./helper.js";
-export * from "./object.js";
+export * from "./instance.js";
 export * from "./schema.js";
 

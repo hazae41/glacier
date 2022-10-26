@@ -1,4 +1,4 @@
-import { XSWR } from "@hazae41/xswr";
+import { getSingleSchema, NormalizerMore, useFetch, useQuery } from "@hazae41/xswr";
 import { useCallback } from "react";
 import { fetchAsJson } from "../../common/fetcher";
 
@@ -13,10 +13,10 @@ interface Data {
 }
 
 function getDataSchema(id: string) {
-  return XSWR.single<Data>(`/api/array?id=${id}`, fetchAsJson)
+  return getSingleSchema<Data>(`/api/array?id=${id}`, fetchAsJson)
 }
 
-async function getDataRef(data: Data | Ref, more: XSWR.NormalizerMore) {
+async function getDataRef(data: Data | Ref, more: NormalizerMore) {
   if ("ref" in data) return data
   const schema = getDataSchema(data.id)
   await schema.normalize(data, more)
@@ -24,25 +24,25 @@ async function getDataRef(data: Data | Ref, more: XSWR.NormalizerMore) {
 }
 
 function getAllDataSchema() {
-  async function normalizer(data: (Data | Ref)[], more: XSWR.NormalizerMore) {
+  async function normalizer(data: (Data | Ref)[], more: NormalizerMore) {
     return await Promise.all(data.map(data => getDataRef(data, more)))
   }
 
-  return XSWR.single<(Data | Ref)[]>(
+  return getSingleSchema<(Data | Ref)[]>(
     `/api/array/all`,
     fetchAsJson,
     { normalizer })
 }
 
 function useAllData() {
-  const handle = XSWR.use(getAllDataSchema, [])
-  XSWR.useFetch(handle)
+  const handle = useQuery(getAllDataSchema, [])
+  useFetch(handle)
   return handle
 }
 
 function useData(id: string) {
-  const handle = XSWR.use(getDataSchema, [id])
-  XSWR.useFetch(handle)
+  const handle = useQuery(getDataSchema, [id])
+  useFetch(handle)
   return handle
 }
 

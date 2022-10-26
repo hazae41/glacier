@@ -4,16 +4,16 @@ import { NormalizerMore } from '../types/normalizer.js';
 import { Params } from '../types/params.js';
 import { Schema } from '../types/schema.js';
 import { Scroller } from '../types/scroller.js';
-import { ScrollObject } from './object.js';
+import { ScrollInstance } from './instance.js';
 
-declare function scroll<D = any, E = any, K = any>(scroller: Scroller<D, E, K>, fetcher: Fetcher<D, E, K> | undefined, params?: Params<D[], E, K>): ScrollSchema<D, E, K>;
-declare class ScrollSchema<D = any, E = any, K = any> implements Schema<D[], E, K, ScrollObject<D, E, K>> {
+declare function getScrollSchema<D = any, E = any, K = any>(scroller: Scroller<D, E, K>, fetcher: Fetcher<D, E, K> | undefined, params?: Params<D[], E, K>): ScrollSchema<D, E, K>;
+declare class ScrollSchema<D = any, E = any, K = any> implements Schema<D[], E, K, ScrollInstance<D, E, K>> {
     readonly scroller: Scroller<D, E, K>;
     readonly fetcher: Fetcher<D, E, K> | undefined;
     readonly params: Params<D[], E, K>;
     constructor(scroller: Scroller<D, E, K>, fetcher: Fetcher<D, E, K> | undefined, params?: Params<D[], E, K>);
-    make(core: Core): ScrollObject<D, E, K>;
+    make(core: Core): ScrollInstance<D, E, K>;
     normalize(data: D[], more: NormalizerMore<D[], E, K>): Promise<void>;
 }
 
-export { ScrollSchema, scroll };
+export { ScrollSchema, getScrollSchema };
