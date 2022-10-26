@@ -63,13 +63,13 @@ function MyWrapper() {
 }
 ```
 
-# Your first mix 🧪
+## Your first mix 🧪
 
 When using xswr and its composition-based hooks, you create a mix and only include the ingredients you want.
 
 We'll do a request at `/api/data` using JSON, display it with a loading, and automatically refetch it.
 
-## Create a fetcher ⚡️
+### Create a fetcher ⚡️
 
 It will just take an url, fetch it, and return the data.
 
@@ -81,7 +81,7 @@ async function fetchAsJson<T>(url: string) {
 }
 ```
 
-## Create a mix 🌪
+### Create a mix 🌪
 
 Then create a mix using a handle and some blocks.
 
@@ -97,7 +97,7 @@ function useHello() {
 }
 ```
 
-## Use it in your components 🚀
+### Use it in your components 🚀
 
 ```tsx
 function MyApp() {
@@ -111,11 +111,11 @@ function MyApp() {
 }
 ```
 
-# Advanced example
+## Advanced example
 
 Last example was good, but here is the best way to use XSWR.
 
-## Making our fetcher cancellable ⚡️
+### Making our fetcher cancellable ⚡️
 
 Our fetcher was good, but this one can be aborted.
 
@@ -137,7 +137,7 @@ async function fetchAsJson<T>(url: string, more: XSWR.FetcherMore<T>) {
 
 It also returns an error if the request failed.
 
-## Defining schemas 📐
+### Defining schemas 📐
 
 Using schemas may seems boilerplate, but it will save you a lot of time later.
 
@@ -161,7 +161,7 @@ function useAutoFetchMixture(query: Query) {
 }
 ```
 
-## Mixing it 🌪
+### Mixing it 🌪
 
 Once you got a schema and a mixture, you just have to mix it.
 
@@ -173,7 +173,7 @@ function useHelloMix() {
 }
 ```
 
-## Use it in your app 🚀
+### Use it in your app 🚀
 
 ```tsx
 function MyApp() {
