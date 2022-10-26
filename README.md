@@ -149,7 +149,7 @@ function getHelloSchema() {
 
 It allows you to reuse the same set of key+fetcher+params in multiple places, including imperative code.
 
-## Creating mixtures 🧪
+### Creating mixtures 🧪
 
 The mixtures pattern allows you to reuse the same group of blocks.
 
