@@ -1,17 +1,14 @@
-import { Handle } from "mods/react/types/handle.js"
+import { Query } from "mods/react/types/query.js"
 import { useEffect } from "react"
 
 /**
- * Show handle in console when it changes
- * @param handle 
+ * Show query in console when it changes
+ * @param query 
  */
-export function useDebug<D = any, E = any, K = any>(
-  handle: Handle<D, E, K>,
-  label: string
-) {
-  const { data, error, time, } = handle
+export function useDebug(query: Query, label: string) {
+  const { data, error, time } = query
 
   useEffect(() => {
-    console.debug(label, handle)
+    console.debug(label, query)
   }, [data, error, time])
 }

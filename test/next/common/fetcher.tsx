@@ -1,8 +1,6 @@
 
 export async function fetchAsJson<T>(url: string, init: RequestInit) {
-  const { signal, cache } = init
-
-  const res = await fetch(url, { signal, cache })
+  const res = await fetch(url, init)
   const cooldown = Date.now() + (5 * 1000)
   const expiration = Date.now() + (10 * 1000)
 

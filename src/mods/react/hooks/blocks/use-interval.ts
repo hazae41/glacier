@@ -1,14 +1,14 @@
-import { Handle } from "mods/react/types/handle.js"
+import { Query } from "mods/react/types/query.js"
 import { useEffect } from "react"
 
 /**
  * Do a request on interval
  * @see useRetry for error retry
- * @param handle 
- * @param options 
+ * @param query 
+ * @param interval 
  */
-export function useInterval(handle: Handle, interval: number) {
-  const { ready, fetch } = handle
+export function useInterval(query: Query, interval: number) {
+  const { ready, fetch } = query
 
   useEffect(() => {
     if (!ready) return

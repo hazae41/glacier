@@ -1,9 +1,9 @@
-import { Handle } from '../../types/handle.js';
+import { Query } from '../../types/query.js';
 
 /**
- * Show handle in console when it changes
- * @param handle
+ * Show query in console when it changes
+ * @param query
  */
-declare function useDebug<D = any, E = any, K = any>(handle: Handle<D, E, K>, label: string): void;
+declare function useDebug(query: Query, label: string): void;
 
 export { useDebug };

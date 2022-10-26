@@ -1,10 +1,10 @@
-import { Handle } from '../../types/handle.js';
+import { Query } from '../../types/query.js';
 
 /**
  * Call a function on error
- * @param handle
+ * @param query
  * @param callback
  */
-declare function useError<D = any, E = any, K = any>(handle: Handle<D, E, K>, callback: (e: E) => void): void;
+declare function useError<D = any, E = any, K = any>(query: Query<D, E, K>, callback: (e: E) => void): void;
 
 export { useError };

@@ -1,9 +1,9 @@
-import { Handle } from '../../types/handle.js';
+import { Query } from '../../types/query.js';
 
 /**
  * Do a request when the tab is visible
- * @param handle
+ * @param query
  */
-declare function useVisible(handle: Handle): void;
+declare function useVisible(query: Query): void;
 
 export { useVisible };

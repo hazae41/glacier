@@ -1,15 +1,15 @@
-import { XSWR } from "@hazae41/xswr"
+import { getSingleSchema, useFetch, useQuery } from "@hazae41/xswr"
 import { Suspense, useEffect, useState } from "react"
 import { fetchAsJson } from "../../common/fetcher"
 
 function getHelloSchema() {
-  return XSWR.single("/api/hello", fetchAsJson)
+  return getSingleSchema("/api/hello", fetchAsJson)
 }
 
 function useHelloData() {
-  const handle = XSWR.use(getHelloSchema, [])
+  const handle = useQuery(getHelloSchema, [])
 
-  XSWR.useFetch(handle)
+  useFetch(handle)
   return handle
 }
 

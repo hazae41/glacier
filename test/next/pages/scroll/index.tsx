@@ -1,4 +1,4 @@
-import { XSWR } from "@hazae41/xswr"
+import { getScrollSchema, getSingleSchema, NormalizerMore, useFetch, useQuery } from "@hazae41/xswr"
 import { useCallback } from "react"
 import { fetchAsJson } from "../../common/fetcher"
 
@@ -18,10 +18,10 @@ interface ElementData {
 }
 
 function getElementSchema(id: string) {
-  return XSWR.single(`data:${id}`, undefined)
+  return getSingleSchema(`data:${id}`, undefined)
 }
 
-async function getElementRef(data: ElementData | ElementRef, more: XSWR.NormalizerMore) {
+async function getElementRef(data: ElementData | ElementRef, more: NormalizerMore) {
   if ("ref" in data) return data
   const schema = getElementSchema(data.id)
   await schema.normalize(data, more)
@@ -29,14 +29,14 @@ async function getElementRef(data: ElementData | ElementRef, more: XSWR.Normaliz
 }
 
 function getElementsSchema() {
-  async function normalizer(pages: ElementPage[], more: XSWR.NormalizerMore) {
+  async function normalizer(pages: ElementPage[], more: NormalizerMore) {
     return await Promise.all(pages.map(async page => {
       const data = await Promise.all(page.data.map(data => getElementRef(data, more)))
       return { ...page, data } as ElementPage
     }))
   }
 
-  return XSWR.scroll<ElementPage>((previous) => {
+  return getScrollSchema<ElementPage>((previous) => {
     if (!previous)
       return `/api/scroll`
     if (!previous.after)
@@ -46,12 +46,12 @@ function getElementsSchema() {
 }
 
 function useElement(id: string) {
-  return XSWR.use(getElementSchema, [id])
+  return useQuery(getElementSchema, [id])
 }
 
 function useElements() {
-  const handle = XSWR.use(getElementsSchema, [])
-  XSWR.useFetch(handle)
+  const handle = useQuery(getElementsSchema, [])
+  useFetch(handle)
   return handle
 }
 
