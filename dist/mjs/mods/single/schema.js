@@ -1,5 +1,5 @@
 import { __awaiter, __generator } from 'tslib';
-import { SingleObject } from './object.js';
+import { SingleInstance } from './instance.js';
 
 function getSingleSchema(key, fetcher, params) {
     if (params === void 0) { params = {}; }
@@ -14,7 +14,7 @@ var SingleSchema = /** @class */ (function () {
     }
     SingleSchema.prototype.make = function (core) {
         var _a = this, key = _a.key, fetcher = _a.fetcher, params = _a.params;
-        return new SingleObject(core, key, fetcher, params);
+        return new SingleInstance(core, key, fetcher, params);
     };
     SingleSchema.prototype.normalize = function (data, more) {
         return __awaiter(this, void 0, void 0, function () {

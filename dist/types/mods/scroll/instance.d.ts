@@ -1,7 +1,7 @@
 import { Core } from '../core.js';
 import { Fetcher } from '../types/fetcher.js';
+import { Instance } from '../types/instance.js';
 import { Mutator } from '../types/mutator.js';
-import { Object as Object$1 } from '../types/object.js';
 import { Params } from '../types/params.js';
 import { Scroller } from '../types/scroller.js';
 import { State } from '../types/state.js';
@@ -10,7 +10,7 @@ declare function getScrollStorageKey<D = any, E = any, K = any>(key: K, params: 
 /**
  * Non-React version of ScrollHandle
  */
-declare class ScrollObject<D = any, E = any, K = any> implements Object$1<D[], E, K> {
+declare class ScrollInstance<D = any, E = any, K = any> implements Instance<D[], E, K> {
     readonly core: Core;
     readonly scroller: Scroller<D, E, K>;
     readonly fetcher: Fetcher<D, E, K> | undefined;
@@ -34,4 +34,4 @@ declare class ScrollObject<D = any, E = any, K = any> implements Object$1<D[], E
     clear(): Promise<void>;
 }
 
-export { ScrollObject, getScrollStorageKey };
+export { ScrollInstance, getScrollStorageKey };

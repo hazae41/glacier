@@ -1,13 +1,13 @@
 import { Core } from "mods/core.js";
 import { Fetcher } from "mods/types/fetcher.js";
+import { Instance } from "mods/types/instance.js";
 import { Mutator } from "mods/types/mutator.js";
-import { Object } from "mods/types/object.js";
 import { Params } from "mods/types/params.js";
+import { Scroller } from "mods/types/scroller.js";
 import { State } from "mods/types/state.js";
-import { Updater, UpdaterParams } from "mods/types/updater.js";
 import { DEFAULT_SERIALIZER } from "mods/utils/defaults.js";
 
-export function getSingleStorageKey<D = any, E = any, K = any>(key: K, params: Params) {
+export function getScrollStorageKey<D = any, E = any, K = any>(key: K, params: Params) {
   if (key === undefined)
     return undefined
   if (typeof key === "string")
@@ -17,28 +17,30 @@ export function getSingleStorageKey<D = any, E = any, K = any>(key: K, params: P
     serializer = DEFAULT_SERIALIZER
   } = params
 
-  return serializer.stringify(key)
+  return `scroll:${serializer.stringify(key)}`
 }
 
 /**
- * Non-React version of SingleHandle
+ * Non-React version of ScrollHandle
  */
-export class SingleObject<D = any, E = any, K = any> implements Object<D, E, K>{
+export class ScrollInstance<D = any, E = any, K = any> implements Instance<D[], E, K> {
+  readonly key: K | undefined
   readonly skey: string | undefined
-  readonly mparams: Params<D, E, K>
+  readonly mparams: Params<D[], E, K>
 
   private _init: Promise<void> | undefined
-  private _state: State<D, E, K> | undefined | null
+  private _state: State<D[], E, K> | undefined | null
 
   constructor(
     readonly core: Core,
-    readonly key: K | undefined,
+    readonly scroller: Scroller<D, E, K>,
     readonly fetcher: Fetcher<D, E, K> | undefined,
-    readonly params: Params<D, E, K> = {},
+    readonly params: Params<D[], E, K> = {},
   ) {
     this.mparams = { ...core.params, ...params }
 
-    this.skey = getSingleStorageKey(key, this.mparams)
+    this.key = scroller()
+    this.skey = getScrollStorageKey(this.key, this.mparams)
 
     this.loadSync()
     this.subscribe()
@@ -65,17 +67,17 @@ export class SingleObject<D = any, E = any, K = any> implements Object<D, E, K>{
   private subscribe() {
     const { core, skey } = this
 
-    const setter = (state?: State<D, E, K>) =>
+    const setter = (state?: State<D[], E, K>) =>
       this._state = state
 
-    core.on(this.skey, setter)
+    core.on(skey, setter)
 
     new FinalizationRegistry(() => {
       core.off(skey, setter)
     }).register(this, undefined)
   }
 
-  async mutate(mutator: Mutator<D, E, K>) {
+  async mutate(mutator: Mutator<D[], E, K>) {
     const { core, skey, mparams } = this
 
     if (this._state === null)
@@ -87,7 +89,7 @@ export class SingleObject<D = any, E = any, K = any> implements Object<D, E, K>{
   }
 
   async fetch(aborter?: AbortController) {
-    const { core, key, skey, fetcher, mparams } = this
+    const { core, scroller, skey, fetcher, mparams } = this
 
     if (this._state === null)
       await (this._init ??= this.loadAsync())
@@ -96,11 +98,11 @@ export class SingleObject<D = any, E = any, K = any> implements Object<D, E, K>{
     if (fetcher === undefined)
       return this._state
 
-    return this._state = await core.single.fetch(key, skey, fetcher, aborter, mparams)
+    return this._state = await core.scroll.first(skey, scroller, fetcher, aborter, mparams)
   }
 
   async refetch(aborter?: AbortController) {
-    const { core, key, skey, fetcher, mparams } = this
+    const { core, scroller, skey, fetcher, mparams } = this
 
     if (this._state === null)
       await (this._init ??= this.loadAsync())
@@ -109,20 +111,20 @@ export class SingleObject<D = any, E = any, K = any> implements Object<D, E, K>{
     if (fetcher === undefined)
       return this._state
 
-    return this._state = await core.single.fetch(key, skey, fetcher, aborter, mparams, true, true)
+    return this._state = await core.scroll.first(skey, scroller, fetcher, aborter, mparams, true, true)
   }
 
-  async update(updater: Updater<D, E, K>, uparams: UpdaterParams<D, E, K> = {}, aborter?: AbortController) {
-    const { core, key, skey, fetcher, mparams } = this
+  async scroll(aborter?: AbortController) {
+    const { core, scroller, skey, fetcher, mparams } = this
 
     if (this._state === null)
       await (this._init ??= this.loadAsync())
     if (this._state === null)
       throw new Error("Null state after init")
+    if (fetcher === undefined)
+      return this._state
 
-    const fparams = { ...mparams, ...uparams }
-
-    return this._state = await core.single.update(key, skey, fetcher, updater, aborter, fparams)
+    return this._state = await core.scroll.scroll(skey, scroller, fetcher, aborter, mparams, true, true)
   }
 
   async clear() {

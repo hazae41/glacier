@@ -1,7 +1,7 @@
 import { Core } from '../core.js';
-import { Object as Object$1 } from './object.js';
+import { Instance } from './instance.js';
 
-interface Schema<D = any, E = any, K = any, O extends Object$1<D, E, K> = Object$1<D, E, K>> {
+interface Schema<D = any, E = any, K = any, O extends Instance<D, E, K> = Instance<D, E, K>> {
     make(core: Core): O;
 }
 

@@ -1,15 +1,15 @@
-import { XSWR } from "@hazae41/xswr"
+import { getSingleSchema, useFetch, useQuery, useXSWR } from "@hazae41/xswr"
 import { useCallback, useEffect, useState } from "react"
 import { fetchAsJson } from "../../common/fetcher"
 
 function getHelloSchema() {
-  return XSWR.single("/api/hello", fetchAsJson)
+  return getSingleSchema("/api/hello", fetchAsJson)
 }
 
 function useHello() {
-  const handle = XSWR.use(getHelloSchema, [])
+  const handle = useQuery(getHelloSchema, [])
 
-  XSWR.useFetch(handle)
+  useFetch(handle)
   return handle
 }
 
@@ -22,7 +22,7 @@ function Consumer() {
 }
 
 export default function Page() {
-  const core = XSWR.useCore()
+  const { core } = useXSWR()
 
   const [count, setCount] = useState(0)
 

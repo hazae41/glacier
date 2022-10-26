@@ -3,7 +3,7 @@
 Object.defineProperty(exports, '__esModule', { value: true });
 
 var tslib = require('tslib');
-var object = require('./object.js');
+var instance = require('./instance.js');
 
 function getSingleSchema(key, fetcher, params) {
     if (params === void 0) { params = {}; }
@@ -18,7 +18,7 @@ var SingleSchema = /** @class */ (function () {
     }
     SingleSchema.prototype.make = function (core) {
         var _a = this, key = _a.key, fetcher = _a.fetcher, params = _a.params;
-        return new object.SingleObject(core, key, fetcher, params);
+        return new instance.SingleInstance(core, key, fetcher, params);
     };
     SingleSchema.prototype.normalize = function (data, more) {
         return tslib.__awaiter(this, void 0, void 0, function () {

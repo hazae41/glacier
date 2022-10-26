@@ -1,7 +1,7 @@
 import { Core } from '../core.js';
 import { Fetcher } from '../types/fetcher.js';
+import { Instance } from '../types/instance.js';
 import { Mutator } from '../types/mutator.js';
-import { Object as Object$1 } from '../types/object.js';
 import { Params } from '../types/params.js';
 import { State } from '../types/state.js';
 import { Updater, UpdaterParams } from '../types/updater.js';
@@ -10,7 +10,7 @@ declare function getSingleStorageKey<D = any, E = any, K = any>(key: K, params: 
 /**
  * Non-React version of SingleHandle
  */
-declare class SingleObject<D = any, E = any, K = any> implements Object$1<D, E, K> {
+declare class SingleInstance<D = any, E = any, K = any> implements Instance<D, E, K> {
     readonly core: Core;
     readonly key: K | undefined;
     readonly fetcher: Fetcher<D, E, K> | undefined;
@@ -33,4 +33,4 @@ declare class SingleObject<D = any, E = any, K = any> implements Object$1<D, E, 
     clear(): Promise<void>;
 }
 
-export { SingleObject, getSingleStorageKey };
+export { SingleInstance, getSingleStorageKey };

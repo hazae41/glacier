@@ -3,7 +3,7 @@
 Object.defineProperty(exports, '__esModule', { value: true });
 
 var tslib = require('tslib');
-var object = require('./object.js');
+var instance = require('./instance.js');
 
 function getScrollSchema(scroller, fetcher, params) {
     if (params === void 0) { params = {}; }
@@ -18,7 +18,7 @@ var ScrollSchema = /** @class */ (function () {
     }
     ScrollSchema.prototype.make = function (core) {
         var _a = this, scroller = _a.scroller, fetcher = _a.fetcher, params = _a.params;
-        return new object.ScrollObject(core, scroller, fetcher, params);
+        return new instance.ScrollInstance(core, scroller, fetcher, params);
     };
     ScrollSchema.prototype.normalize = function (data, more) {
         return tslib.__awaiter(this, void 0, void 0, function () {

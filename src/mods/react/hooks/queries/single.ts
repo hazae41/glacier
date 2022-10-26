@@ -1,7 +1,7 @@
 import { useAutoRef } from "libs/react.js";
 import { useCore } from "mods/react/contexts/core.js";
 import { Query } from "mods/react/types/query.js";
-import { getSingleStorageKey } from "mods/single/object.js";
+import { getSingleStorageKey } from "mods/single/instance.js";
 import { Fetcher } from "mods/types/fetcher.js";
 import { Mutator } from "mods/types/mutator.js";
 import { Params } from "mods/types/params.js";

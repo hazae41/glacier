@@ -5,7 +5,7 @@ Object.defineProperty(exports, '__esModule', { value: true });
 var tslib = require('tslib');
 var react = require('../../../../libs/react.js');
 var core = require('../../contexts/core.js');
-var object = require('../../../scroll/object.js');
+var instance = require('../../../scroll/instance.js');
 var React = require('react');
 
 /**
@@ -27,7 +27,7 @@ function useScrollQuery(scroller, fetcher, params) {
         return scroller();
     }, [scroller]);
     var skey = React.useMemo(function () {
-        return object.getScrollStorageKey(key, paramsRef.current);
+        return instance.getScrollStorageKey(key, paramsRef.current);
     }, [key]);
     var _a = tslib.__read(React.useState(0), 2), setCounter = _a[1];
     var stateRef = React.useRef();

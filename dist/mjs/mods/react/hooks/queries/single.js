@@ -1,7 +1,7 @@
 import { __assign, __read, __awaiter, __generator } from 'tslib';
 import { useAutoRef } from '../../../../libs/react.js';
 import { useCore } from '../../contexts/core.js';
-import { getSingleStorageKey } from '../../../single/object.js';
+import { getSingleStorageKey } from '../../../single/instance.js';
 import { useMemo, useState, useRef, useCallback, useEffect } from 'react';
 
 /**

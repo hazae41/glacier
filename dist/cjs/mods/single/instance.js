@@ -16,8 +16,8 @@ function getSingleStorageKey(key, params) {
 /**
  * Non-React version of SingleHandle
  */
-var SingleObject = /** @class */ (function () {
-    function SingleObject(core, key, fetcher, params) {
+var SingleInstance = /** @class */ (function () {
+    function SingleInstance(core, key, fetcher, params) {
         if (params === void 0) { params = {}; }
         this.core = core;
         this.key = key;
@@ -28,26 +28,26 @@ var SingleObject = /** @class */ (function () {
         this.loadSync();
         this.subscribe();
     }
-    Object.defineProperty(SingleObject.prototype, "init", {
+    Object.defineProperty(SingleInstance.prototype, "init", {
         get: function () { return this._init; },
         enumerable: false,
         configurable: true
     });
-    Object.defineProperty(SingleObject.prototype, "state", {
+    Object.defineProperty(SingleInstance.prototype, "state", {
         get: function () { return this._state; },
         enumerable: false,
         configurable: true
     });
-    Object.defineProperty(SingleObject.prototype, "ready", {
+    Object.defineProperty(SingleInstance.prototype, "ready", {
         get: function () { return this._state !== null; },
         enumerable: false,
         configurable: true
     });
-    SingleObject.prototype.loadSync = function () {
+    SingleInstance.prototype.loadSync = function () {
         var _a = this, core = _a.core, skey = _a.skey, mparams = _a.mparams;
         this._state = core.getSync(skey, mparams);
     };
-    SingleObject.prototype.loadAsync = function () {
+    SingleInstance.prototype.loadAsync = function () {
         return tslib.__awaiter(this, void 0, void 0, function () {
             var _a, core, skey, mparams, _b;
             return tslib.__generator(this, function (_c) {
@@ -65,7 +65,7 @@ var SingleObject = /** @class */ (function () {
             });
         });
     };
-    SingleObject.prototype.subscribe = function () {
+    SingleInstance.prototype.subscribe = function () {
         var _this = this;
         var _a = this, core = _a.core, skey = _a.skey;
         var setter = function (state) {
@@ -76,7 +76,7 @@ var SingleObject = /** @class */ (function () {
             core.off(skey, setter);
         }).register(this, undefined);
     };
-    SingleObject.prototype.mutate = function (mutator) {
+    SingleInstance.prototype.mutate = function (mutator) {
         var _a;
         return tslib.__awaiter(this, void 0, void 0, function () {
             var _b, core, skey, mparams, _c;
@@ -99,7 +99,7 @@ var SingleObject = /** @class */ (function () {
             });
         });
     };
-    SingleObject.prototype.fetch = function (aborter) {
+    SingleInstance.prototype.fetch = function (aborter) {
         var _a;
         return tslib.__awaiter(this, void 0, void 0, function () {
             var _b, core, key, skey, fetcher, mparams, _c;
@@ -124,7 +124,7 @@ var SingleObject = /** @class */ (function () {
             });
         });
     };
-    SingleObject.prototype.refetch = function (aborter) {
+    SingleInstance.prototype.refetch = function (aborter) {
         var _a;
         return tslib.__awaiter(this, void 0, void 0, function () {
             var _b, core, key, skey, fetcher, mparams, _c;
@@ -149,7 +149,7 @@ var SingleObject = /** @class */ (function () {
             });
         });
     };
-    SingleObject.prototype.update = function (updater, uparams, aborter) {
+    SingleInstance.prototype.update = function (updater, uparams, aborter) {
         var _a;
         if (uparams === void 0) { uparams = {}; }
         return tslib.__awaiter(this, void 0, void 0, function () {
@@ -174,7 +174,7 @@ var SingleObject = /** @class */ (function () {
             });
         });
     };
-    SingleObject.prototype.clear = function () {
+    SingleInstance.prototype.clear = function () {
         return tslib.__awaiter(this, void 0, void 0, function () {
             var _a, core, skey, mparams;
             return tslib.__generator(this, function (_b) {
@@ -190,9 +190,9 @@ var SingleObject = /** @class */ (function () {
             });
         });
     };
-    return SingleObject;
+    return SingleInstance;
 }());
 
-exports.SingleObject = SingleObject;
+exports.SingleInstance = SingleInstance;
 exports.getSingleStorageKey = getSingleStorageKey;
-//# sourceMappingURL=object.js.map
+//# sourceMappingURL=instance.js.map

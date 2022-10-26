@@ -1,4 +1,4 @@
-import { XSWR } from "@hazae41/xswr";
+import { getSingleSchema, NormalizerMore, useFetch, useQuery, useXSWR } from "@hazae41/xswr";
 import { useCallback } from "react";
 import { fetchAsJson } from "../../common/fetcher";
 import { getProfileRef, getProfileSchema, Profile, ProfileData, ProfileRef } from "./profile";
@@ -21,18 +21,18 @@ export interface NormalizedCommentData {
 }
 
 export function getCommentSchema(id: string) {
-  async function normalizer(comment: CommentData | NormalizedCommentData, more: XSWR.NormalizerMore) {
+  async function normalizer(comment: CommentData | NormalizedCommentData, more: NormalizerMore) {
     const author = await getProfileRef(comment.author, more)
     return { ...comment, author }
   }
 
-  return XSWR.single<CommentData | NormalizedCommentData>(
+  return getSingleSchema<CommentData | NormalizedCommentData>(
     `/api/theytube/comment?id=${id}`,
     fetchAsJson,
     { normalizer })
 }
 
-export async function getCommentRef(comment: CommentData | CommentRef, more: XSWR.NormalizerMore) {
+export async function getCommentRef(comment: CommentData | CommentRef, more: NormalizerMore) {
   if ("ref" in comment) return comment
   const schema = getCommentSchema(comment.id)
   await schema.normalize(comment, more)
@@ -40,13 +40,13 @@ export async function getCommentRef(comment: CommentData | CommentRef, more: XSW
 }
 
 export function useComment(id: string) {
-  const handle = XSWR.use(getCommentSchema, [id])
-  XSWR.useFetch(handle)
+  const handle = useQuery(getCommentSchema, [id])
+  useFetch(handle)
   return handle
 }
 
 export function Comment(props: { id: string }) {
-  const { make } = XSWR.useXSWR()
+  const { make } = useXSWR()
   const comment = useComment(props.id)
 
   const onChangeAuthorClick = useCallback(() => {

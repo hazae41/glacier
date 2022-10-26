@@ -1,57 +1,53 @@
-'use strict';
-
-Object.defineProperty(exports, '__esModule', { value: true });
-
-var tslib = require('tslib');
-var defaults = require('../utils/defaults.js');
+import { __awaiter, __generator, __assign } from 'tslib';
+import { DEFAULT_SERIALIZER } from '../utils/defaults.js';
 
 function getScrollStorageKey(key, params) {
     if (key === undefined)
         return undefined;
     if (typeof key === "string")
         return key;
-    var _a = params.serializer, serializer = _a === void 0 ? defaults.DEFAULT_SERIALIZER : _a;
+    var _a = params.serializer, serializer = _a === void 0 ? DEFAULT_SERIALIZER : _a;
     return "scroll:".concat(serializer.stringify(key));
 }
 /**
  * Non-React version of ScrollHandle
  */
-var ScrollObject = /** @class */ (function () {
-    function ScrollObject(core, scroller, fetcher, params) {
+var ScrollInstance = /** @class */ (function () {
+    function ScrollInstance(core, scroller, fetcher, params) {
         if (params === void 0) { params = {}; }
         this.core = core;
         this.scroller = scroller;
         this.fetcher = fetcher;
         this.params = params;
-        this.mparams = tslib.__assign(tslib.__assign({}, core.params), params);
+        this.mparams = __assign(__assign({}, core.params), params);
         this.key = scroller();
         this.skey = getScrollStorageKey(this.key, this.mparams);
         this.loadSync();
         this.subscribe();
     }
-    Object.defineProperty(ScrollObject.prototype, "init", {
+    Object.defineProperty(ScrollInstance.prototype, "init", {
         get: function () { return this._init; },
         enumerable: false,
         configurable: true
     });
-    Object.defineProperty(ScrollObject.prototype, "state", {
+    Object.defineProperty(ScrollInstance.prototype, "state", {
         get: function () { return this._state; },
         enumerable: false,
         configurable: true
     });
-    Object.defineProperty(ScrollObject.prototype, "ready", {
+    Object.defineProperty(ScrollInstance.prototype, "ready", {
         get: function () { return this._state !== null; },
         enumerable: false,
         configurable: true
     });
-    ScrollObject.prototype.loadSync = function () {
+    ScrollInstance.prototype.loadSync = function () {
         var _a = this, core = _a.core, skey = _a.skey, mparams = _a.mparams;
         this._state = core.getSync(skey, mparams);
     };
-    ScrollObject.prototype.loadAsync = function () {
-        return tslib.__awaiter(this, void 0, void 0, function () {
+    ScrollInstance.prototype.loadAsync = function () {
+        return __awaiter(this, void 0, void 0, function () {
             var _a, core, skey, mparams, _b;
-            return tslib.__generator(this, function (_c) {
+            return __generator(this, function (_c) {
                 switch (_c.label) {
                     case 0:
                         if (this.ready)
@@ -66,7 +62,7 @@ var ScrollObject = /** @class */ (function () {
             });
         });
     };
-    ScrollObject.prototype.subscribe = function () {
+    ScrollInstance.prototype.subscribe = function () {
         var _this = this;
         var _a = this, core = _a.core, skey = _a.skey;
         var setter = function (state) {
@@ -77,11 +73,11 @@ var ScrollObject = /** @class */ (function () {
             core.off(skey, setter);
         }).register(this, undefined);
     };
-    ScrollObject.prototype.mutate = function (mutator) {
+    ScrollInstance.prototype.mutate = function (mutator) {
         var _a;
-        return tslib.__awaiter(this, void 0, void 0, function () {
+        return __awaiter(this, void 0, void 0, function () {
             var _b, core, skey, mparams, _c;
-            return tslib.__generator(this, function (_d) {
+            return __generator(this, function (_d) {
                 switch (_d.label) {
                     case 0:
                         _b = this, core = _b.core, skey = _b.skey, mparams = _b.mparams;
@@ -100,11 +96,11 @@ var ScrollObject = /** @class */ (function () {
             });
         });
     };
-    ScrollObject.prototype.fetch = function (aborter) {
+    ScrollInstance.prototype.fetch = function (aborter) {
         var _a;
-        return tslib.__awaiter(this, void 0, void 0, function () {
+        return __awaiter(this, void 0, void 0, function () {
             var _b, core, scroller, skey, fetcher, mparams, _c;
-            return tslib.__generator(this, function (_d) {
+            return __generator(this, function (_d) {
                 switch (_d.label) {
                     case 0:
                         _b = this, core = _b.core, scroller = _b.scroller, skey = _b.skey, fetcher = _b.fetcher, mparams = _b.mparams;
@@ -125,11 +121,11 @@ var ScrollObject = /** @class */ (function () {
             });
         });
     };
-    ScrollObject.prototype.refetch = function (aborter) {
+    ScrollInstance.prototype.refetch = function (aborter) {
         var _a;
-        return tslib.__awaiter(this, void 0, void 0, function () {
+        return __awaiter(this, void 0, void 0, function () {
             var _b, core, scroller, skey, fetcher, mparams, _c;
-            return tslib.__generator(this, function (_d) {
+            return __generator(this, function (_d) {
                 switch (_d.label) {
                     case 0:
                         _b = this, core = _b.core, scroller = _b.scroller, skey = _b.skey, fetcher = _b.fetcher, mparams = _b.mparams;
@@ -150,11 +146,11 @@ var ScrollObject = /** @class */ (function () {
             });
         });
     };
-    ScrollObject.prototype.scroll = function (aborter) {
+    ScrollInstance.prototype.scroll = function (aborter) {
         var _a;
-        return tslib.__awaiter(this, void 0, void 0, function () {
+        return __awaiter(this, void 0, void 0, function () {
             var _b, core, scroller, skey, fetcher, mparams, _c;
-            return tslib.__generator(this, function (_d) {
+            return __generator(this, function (_d) {
                 switch (_d.label) {
                     case 0:
                         _b = this, core = _b.core, scroller = _b.scroller, skey = _b.skey, fetcher = _b.fetcher, mparams = _b.mparams;
@@ -175,10 +171,10 @@ var ScrollObject = /** @class */ (function () {
             });
         });
     };
-    ScrollObject.prototype.clear = function () {
-        return tslib.__awaiter(this, void 0, void 0, function () {
+    ScrollInstance.prototype.clear = function () {
+        return __awaiter(this, void 0, void 0, function () {
             var _a, core, skey, mparams;
-            return tslib.__generator(this, function (_b) {
+            return __generator(this, function (_b) {
                 switch (_b.label) {
                     case 0:
                         _a = this, core = _a.core, skey = _a.skey, mparams = _a.mparams;
@@ -191,9 +187,8 @@ var ScrollObject = /** @class */ (function () {
             });
         });
     };
-    return ScrollObject;
+    return ScrollInstance;
 }());
 
-exports.ScrollObject = ScrollObject;
-exports.getScrollStorageKey = getScrollStorageKey;
-//# sourceMappingURL=object.js.map
+export { ScrollInstance, getScrollStorageKey };
+//# sourceMappingURL=instance.js.map

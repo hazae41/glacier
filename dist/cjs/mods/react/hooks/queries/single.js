@@ -5,7 +5,7 @@ Object.defineProperty(exports, '__esModule', { value: true });
 var tslib = require('tslib');
 var react = require('../../../../libs/react.js');
 var core = require('../../contexts/core.js');
-var object = require('../../../single/object.js');
+var instance = require('../../../single/instance.js');
 var React = require('react');
 
 /**
@@ -24,7 +24,7 @@ function useSingleQuery(key, fetcher, params) {
     var fetcherRef = react.useAutoRef(fetcher);
     var mparamsRef = react.useAutoRef(mparams);
     var skey = React.useMemo(function () {
-        return object.getSingleStorageKey(key, mparamsRef.current);
+        return instance.getSingleStorageKey(key, mparamsRef.current);
     }, [key]);
     var _a = tslib.__read(React.useState(0), 2), setCounter = _a[1];
     var stateRef = React.useRef();
