@@ -5,7 +5,7 @@ import { Params } from "mods/types/params.js";
 import { Schema } from "mods/types/schema.js";
 import { SingleObject } from "./object.js";
 
-export function single<D = any, E = any, K = any>(
+export function getSingleSchema<D = any, E = any, K = any>(
   key: K | undefined,
   fetcher: Fetcher<D, E, K> | undefined,
   params: Params<D, E, K> = {},

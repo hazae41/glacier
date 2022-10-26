@@ -15,7 +15,7 @@ var React = require('react');
  * @param cparams Parameters (unmemoized)
  * @returns Scrolling handle
  */
-function useScroll(scroller, fetcher, params) {
+function useScrollQuery(scroller, fetcher, params) {
     var _this = this;
     if (params === void 0) { params = {}; }
     var core$1 = core.useCore();
@@ -204,5 +204,5 @@ function useScroll(scroller, fetcher, params) {
     return { key: key, skey: skey, data: data, error: error, time: time, cooldown: cooldown, expiration: expiration, aborter: aborter, optimistic: optimistic, realData: realData, loading: loading, ready: ready, mutate: mutate, fetch: fetch, refetch: refetch, scroll: scroll, clear: clear, suspend: suspend };
 }
 
-exports.useScroll = useScroll;
+exports.useScrollQuery = useScrollQuery;
 //# sourceMappingURL=scroll.cjs.map

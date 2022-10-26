@@ -4,10 +4,10 @@ import { useEffect } from 'react';
  * Do a request on mount and url change
  * @see useMount for doing a request on mount only
  * @see useOnce for doing a request only if there is no data yet
- * @param handle
+ * @param query
  */
-function useFetch(handle) {
-    var fetch = handle.fetch;
+function useFetch(query) {
+    var fetch = query.fetch;
     useEffect(function () {
         fetch();
     }, [fetch]);

@@ -1,6 +1,6 @@
 import { useAutoRef } from "libs/react.js";
 import { useCore } from "mods/react/contexts/core.js";
-import { Handle } from "mods/react/types/handle.js";
+import { Query } from "mods/react/types/query.js";
 import { getSingleStorageKey } from "mods/single/object.js";
 import { Fetcher } from "mods/types/fetcher.js";
 import { Mutator } from "mods/types/mutator.js";
@@ -12,7 +12,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 /**
  * Handle for a single resource
  */
-export interface SingleHandle<D = any, E = any, K = any> extends Handle<D, E, K> {
+export interface SingleQuery<D = any, E = any, K = any> extends Query<D, E, K> {
   /**
    * Optimistic update
    * @param updater Mutation function
@@ -28,11 +28,11 @@ export interface SingleHandle<D = any, E = any, K = any> extends Handle<D, E, K>
  * @param cparams Parameters (unmemoized)
  * @returns Single handle
  */
-export function useSingle<D = any, E = any, K = any>(
+export function useSingleQuery<D = any, E = any, K = any>(
   key: K | undefined,
   fetcher: Fetcher<D, E, K> | undefined,
   params: Params<D, E, K> = {},
-): SingleHandle<D, E, K> {
+): SingleQuery<D, E, K> {
   const core = useCore()
 
   const mparams = { ...core.params, ...params }

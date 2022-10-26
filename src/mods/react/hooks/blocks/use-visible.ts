@@ -1,13 +1,13 @@
 import { useAutoRef } from "libs/react.js"
-import { Handle } from "mods/react/types/handle.js"
+import { Query } from "mods/react/types/query.js"
 import { useEffect } from "react"
 
 /**
  * Do a request when the tab is visible
- * @param handle 
+ * @param query 
  */
-export function useVisible(handle: Handle) {
-  const { ready, fetch } = handle
+export function useVisible(query: Query) {
+  const { ready, fetch } = query
 
   const fetchRef = useAutoRef(fetch)
 

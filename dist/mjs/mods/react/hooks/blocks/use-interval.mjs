@@ -3,11 +3,11 @@ import { useEffect } from 'react';
 /**
  * Do a request on interval
  * @see useRetry for error retry
- * @param handle
- * @param options
+ * @param query
+ * @param interval
  */
-function useInterval(handle, interval) {
-    var ready = handle.ready, fetch = handle.fetch;
+function useInterval(query, interval) {
+    var ready = query.ready, fetch = query.fetch;
     useEffect(function () {
         if (!ready)
             return;

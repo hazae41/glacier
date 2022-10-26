@@ -1,7 +1,7 @@
 import { __awaiter, __generator } from 'tslib';
 import { ScrollObject } from './object.mjs';
 
-function scroll(scroller, fetcher, params) {
+function getScrollSchema(scroller, fetcher, params) {
     if (params === void 0) { params = {}; }
     return new ScrollSchema(scroller, fetcher, params);
 }
@@ -37,5 +37,5 @@ var ScrollSchema = /** @class */ (function () {
     return ScrollSchema;
 }());
 
-export { ScrollSchema, scroll };
+export { ScrollSchema, getScrollSchema };
 //# sourceMappingURL=schema.mjs.map

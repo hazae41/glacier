@@ -5,7 +5,7 @@ Object.defineProperty(exports, '__esModule', { value: true });
 var tslib = require('tslib');
 var object = require('./object.cjs');
 
-function scroll(scroller, fetcher, params) {
+function getScrollSchema(scroller, fetcher, params) {
     if (params === void 0) { params = {}; }
     return new ScrollSchema(scroller, fetcher, params);
 }
@@ -42,5 +42,5 @@ var ScrollSchema = /** @class */ (function () {
 }());
 
 exports.ScrollSchema = ScrollSchema;
-exports.scroll = scroll;
+exports.getScrollSchema = getScrollSchema;
 //# sourceMappingURL=schema.cjs.map

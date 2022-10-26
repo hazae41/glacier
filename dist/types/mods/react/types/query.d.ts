@@ -1,7 +1,7 @@
 import { Mutator } from '../../types/mutator.js';
 import { State } from '../../types/state.js';
 
-interface Handle<D = any, E = any, K = any> {
+interface Query<D = any, E = any, K = any> {
     /**
      * Arbitrary key, must be serializable
      */
@@ -77,4 +77,4 @@ interface Handle<D = any, E = any, K = any> {
     suspend(): Promise<void>;
 }
 
-export { Handle };
+export { Query };

@@ -7,10 +7,10 @@ var React = require('react');
 
 /**
  * Do a request when the tab is visible
- * @param handle
+ * @param query
  */
-function useVisible(handle) {
-    var ready = handle.ready, fetch = handle.fetch;
+function useVisible(query) {
+    var ready = query.ready, fetch = query.fetch;
     var fetchRef = react.useAutoRef(fetch);
     React.useEffect(function () {
         if (!ready)

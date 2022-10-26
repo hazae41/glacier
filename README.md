@@ -88,12 +88,13 @@ Then create a mix using a handle and some blocks.
 
 ```tsx
 function useHello() {
-  const handle = XSWR.useSingle<Hello>(`/api/hello`, fetchAsJson)
+  const query = useSingleQuery<Hello>(`/api/hello`, fetchAsJson)
   
-  XSWR.useFetch(handle) // Fetch on mount and on url change
-  XSWR.useVisible(handle) // Fetch when the page becomes visible
-  XSWR.useOnline(handle) // Fetch when the browser becomes online
-  return handle
+  useFetch(query) // Fetch on mount and on url change
+  useVisible(query) // Fetch when the page becomes visible
+  useOnline(query) // Fetch when the browser becomes online
+
+  return query
 }
 ```
 
@@ -143,7 +144,7 @@ Using schemas may seems boilerplate, but it will save you a lot of time later.
 
 ```tsx
 function getHelloSchema() {
-  return XSWR.single<Hello>("/api/hello", fetchAsJson)
+  return getSingleSchema<Hello>("/api/hello", fetchAsJson)
 }
 ```
 
@@ -154,10 +155,10 @@ It allows you to reuse the same set of key+fetcher+params in multiple places, in
 The mixtures pattern allows you to reuse the same group of blocks.
 
 ```tsx
-function useAutoFetchMixture(handle: XSWR.Handle) {
-  XSWR.useFetch(handle)
-  XSWR.useVisible(handle)
-  XSWR.useOnline(handle)
+function useAutoFetchMixture(query: Query) {
+  useFetch(query)
+  useVisible(query)
+  useOnline(query)
 }
 ```
 
@@ -167,7 +168,7 @@ Once you got a schema and a mixture, you just have to mix it.
 
 ```tsx
 function useHelloMix() {
-  const handle = XSWR.use(getHelloSchema, [])
+  const handle = useQuery(getHelloSchema, [])
   useAutoFetchMixture(handle)
   return handle
 }

@@ -6,11 +6,11 @@ var React = require('react');
 
 /**
  * Call a function on error
- * @param handle
+ * @param query
  * @param callback
  */
-function useError(handle, callback) {
-    var error = handle.error;
+function useError(query, callback) {
+    var error = query.error;
     React.useEffect(function () {
         if (error !== undefined)
             callback(error);

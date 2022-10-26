@@ -1,11 +1,11 @@
-import { Handle } from '../../types/handle.js';
+import { Query } from '../../types/query.js';
 
 /**
  * Do a request on interval
  * @see useRetry for error retry
- * @param handle
- * @param options
+ * @param query
+ * @param interval
  */
-declare function useInterval(handle: Handle, interval: number): void;
+declare function useInterval(query: Query, interval: number): void;
 
 export { useInterval };

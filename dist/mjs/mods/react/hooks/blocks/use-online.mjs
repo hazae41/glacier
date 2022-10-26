@@ -3,10 +3,10 @@ import { useEffect } from 'react';
 
 /**
  * Do a request when the browser is online
- * @param handle
+ * @param query
  */
-function useOnline(handle) {
-    var ready = handle.ready, fetch = handle.fetch;
+function useOnline(query) {
+    var ready = query.ready, fetch = query.fetch;
     var fetchRef = useAutoRef(fetch);
     useEffect(function () {
         if (!ready)

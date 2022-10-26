@@ -1,1 +1,1 @@
-export * from "./handle.js";
+export * from "./query.js";

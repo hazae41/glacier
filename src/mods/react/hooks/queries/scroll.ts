@@ -1,6 +1,6 @@
 import { useAutoRef } from "libs/react.js";
 import { useCore } from "mods/react/contexts/core.js";
-import { Handle } from "mods/react/types/handle.js";
+import { Query } from "mods/react/types/query.js";
 import { getScrollStorageKey } from "mods/scroll/object.js";
 import { Fetcher } from "mods/types/fetcher.js";
 import { Mutator } from "mods/types/mutator.js";
@@ -12,7 +12,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 /**
  * Handle for a scrolling resource
  */
-export interface ScrollHandle<D = any, E = any, K = any> extends Handle<D[], E, K> {
+export interface ScrollQuery<D = any, E = any, K = any> extends Query<D[], E, K> {
   /**
    * Fetch the next page
    */
@@ -26,11 +26,11 @@ export interface ScrollHandle<D = any, E = any, K = any> extends Handle<D[], E, 
  * @param cparams Parameters (unmemoized)
  * @returns Scrolling handle
  */
-export function useScroll<D = any, E = any, K = any>(
+export function useScrollQuery<D = any, E = any, K = any>(
   scroller: Scroller<D, E, K>,
   fetcher: Fetcher<D, E, K> | undefined,
   params: Params<D[], E, K> = {},
-): ScrollHandle<D, E, K> {
+): ScrollQuery<D, E, K> {
   const core = useCore()
 
   const mparams = { ...core.params, ...params }

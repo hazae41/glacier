@@ -1,7 +1,7 @@
 import { __awaiter, __generator } from 'tslib';
 import { SingleObject } from './object.mjs';
 
-function single(key, fetcher, params) {
+function getSingleSchema(key, fetcher, params) {
     if (params === void 0) { params = {}; }
     return new SingleSchema(key, fetcher, params);
 }
@@ -37,5 +37,5 @@ var SingleSchema = /** @class */ (function () {
     return SingleSchema;
 }());
 
-export { SingleSchema, single };
+export { SingleSchema, getSingleSchema };
 //# sourceMappingURL=schema.mjs.map

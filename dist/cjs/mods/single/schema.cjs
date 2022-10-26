@@ -5,7 +5,7 @@ Object.defineProperty(exports, '__esModule', { value: true });
 var tslib = require('tslib');
 var object = require('./object.cjs');
 
-function single(key, fetcher, params) {
+function getSingleSchema(key, fetcher, params) {
     if (params === void 0) { params = {}; }
     return new SingleSchema(key, fetcher, params);
 }
@@ -42,5 +42,5 @@ var SingleSchema = /** @class */ (function () {
 }());
 
 exports.SingleSchema = SingleSchema;
-exports.single = single;
+exports.getSingleSchema = getSingleSchema;
 //# sourceMappingURL=schema.cjs.map
