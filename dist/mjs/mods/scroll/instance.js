@@ -10,7 +10,7 @@ function getScrollStorageKey(key, params) {
     return "scroll:".concat(serializer.stringify(key));
 }
 /**
- * Non-React version of ScrollHandle
+ * Non-React version of ScrollQuery
  */
 var ScrollInstance = /** @class */ (function () {
     function ScrollInstance(core, scroller, fetcher, params) {

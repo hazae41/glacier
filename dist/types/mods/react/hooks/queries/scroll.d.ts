@@ -5,7 +5,7 @@ import { Scroller } from '../../../types/scroller.js';
 import { State } from '../../../types/state.js';
 
 /**
- * Handle for a scrolling resource
+ * Query for a scrolling resource
  */
 interface ScrollQuery<D = any, E = any, K = any> extends Query<D[], E, K> {
     /**
@@ -14,11 +14,11 @@ interface ScrollQuery<D = any, E = any, K = any> extends Query<D[], E, K> {
     scroll(): Promise<State<D[], E, K> | undefined>;
 }
 /**
- * Scrolling resource handle factory
+ * Scrolling resource query factory
  * @param scroller Key scroller (memoized)
  * @param fetcher Resource fetcher (unmemoized)
  * @param cparams Parameters (unmemoized)
- * @returns Scrolling handle
+ * @returns Scrolling query
  */
 declare function useScrollQuery<D = any, E = any, K = any>(scroller: Scroller<D, E, K>, fetcher: Fetcher<D, E, K> | undefined, params?: Params<D[], E, K>): ScrollQuery<D, E, K>;
 

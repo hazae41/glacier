@@ -21,7 +21,7 @@ export function getScrollStorageKey<D = any, E = any, K = any>(key: K, params: P
 }
 
 /**
- * Non-React version of ScrollHandle
+ * Non-React version of ScrollQuery
  */
 export class ScrollInstance<D = any, E = any, K = any> implements Instance<D[], E, K> {
   readonly key: K | undefined

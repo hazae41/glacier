@@ -9,11 +9,11 @@ var instance = require('../../../scroll/instance.js');
 var React = require('react');
 
 /**
- * Scrolling resource handle factory
+ * Scrolling resource query factory
  * @param scroller Key scroller (memoized)
  * @param fetcher Resource fetcher (unmemoized)
  * @param cparams Parameters (unmemoized)
- * @returns Scrolling handle
+ * @returns Scrolling query
  */
 function useScrollQuery(scroller, fetcher, params) {
     var _this = this;

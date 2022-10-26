@@ -10,7 +10,7 @@ import { State } from "mods/types/state.js";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 /**
- * Handle for a scrolling resource
+ * Query for a scrolling resource
  */
 export interface ScrollQuery<D = any, E = any, K = any> extends Query<D[], E, K> {
   /**
@@ -20,11 +20,11 @@ export interface ScrollQuery<D = any, E = any, K = any> extends Query<D[], E, K>
 }
 
 /**
- * Scrolling resource handle factory
+ * Scrolling resource query factory
  * @param scroller Key scroller (memoized)
  * @param fetcher Resource fetcher (unmemoized)
  * @param cparams Parameters (unmemoized)
- * @returns Scrolling handle
+ * @returns Scrolling query
  */
 export function useScrollQuery<D = any, E = any, K = any>(
   scroller: Scroller<D, E, K>,

@@ -8,7 +8,7 @@ import { State } from '../types/state.js';
 
 declare function getScrollStorageKey<D = any, E = any, K = any>(key: K, params: Params): string | undefined;
 /**
- * Non-React version of ScrollHandle
+ * Non-React version of ScrollQuery
  */
 declare class ScrollInstance<D = any, E = any, K = any> implements Instance<D[], E, K> {
     readonly core: Core;

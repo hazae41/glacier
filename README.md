@@ -83,7 +83,7 @@ async function fetchAsJson<T>(url: string) {
 
 ### Create a mix 🌪
 
-Then create a mix using a handle and some blocks.
+Then create a mix using a query and some blocks.
 
 ```tsx
 function useHello() {
@@ -120,7 +120,7 @@ Last example was good, but here is the best way to use XSWR.
 Our fetcher was good, but this one can be aborted.
 
 ```tsx
-async function fetchAsJson<T>(url: string, more: XSWR.FetcherMore<T>) {
+async function fetchAsJson<T>(url: string, more: FetcherMore<T>) {
   const { signal } = more
 
   const res = await fetch(url, { signal })
@@ -167,9 +167,9 @@ Once you got a schema and a mixture, you just have to mix it.
 
 ```tsx
 function useHelloMix() {
-  const handle = useQuery(getHelloSchema, [])
-  useAutoFetchMixture(handle)
-  return handle
+  const query = useQuery(getHelloSchema, [])
+  useAutoFetchMixture(query)
+  return query
 }
 ```
 

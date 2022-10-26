@@ -5,11 +5,11 @@ import { getSingleStorageKey } from '../../../single/instance.js';
 import { useMemo, useState, useRef, useCallback, useEffect } from 'react';
 
 /**
- * Single resource handle factory
+ * Single resource query factory
  * @param key Key (memoized)
  * @param fetcher Resource fetcher (unmemoized)
  * @param cparams Parameters (unmemoized)
- * @returns Single handle
+ * @returns Single query
  */
 function useSingleQuery(key, fetcher, params) {
     var _this = this;

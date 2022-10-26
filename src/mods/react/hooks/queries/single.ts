@@ -10,7 +10,7 @@ import { Updater, UpdaterParams } from "mods/types/updater.js";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 /**
- * Handle for a single resource
+ * Query for a single resource
  */
 export interface SingleQuery<D = any, E = any, K = any> extends Query<D, E, K> {
   /**
@@ -22,11 +22,11 @@ export interface SingleQuery<D = any, E = any, K = any> extends Query<D, E, K> {
 }
 
 /**
- * Single resource handle factory
+ * Single resource query factory
  * @param key Key (memoized)
  * @param fetcher Resource fetcher (unmemoized)
  * @param cparams Parameters (unmemoized)
- * @returns Single handle
+ * @returns Single query
  */
 export function useSingleQuery<D = any, E = any, K = any>(
   key: K | undefined,

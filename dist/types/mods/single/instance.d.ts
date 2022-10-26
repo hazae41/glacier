@@ -8,7 +8,7 @@ import { Updater, UpdaterParams } from '../types/updater.js';
 
 declare function getSingleStorageKey<D = any, E = any, K = any>(key: K, params: Params): string | undefined;
 /**
- * Non-React version of SingleHandle
+ * Non-React version of SingleQuery
  */
 declare class SingleInstance<D = any, E = any, K = any> implements Instance<D, E, K> {
     readonly core: Core;

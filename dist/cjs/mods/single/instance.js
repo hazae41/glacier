@@ -14,7 +14,7 @@ function getSingleStorageKey(key, params) {
     return serializer.stringify(key);
 }
 /**
- * Non-React version of SingleHandle
+ * Non-React version of SingleQuery
  */
 var SingleInstance = /** @class */ (function () {
     function SingleInstance(core, key, fetcher, params) {

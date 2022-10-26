@@ -5,13 +5,13 @@ Object.defineProperty(exports, '__esModule', { value: true });
 var React = require('react');
 
 /**
- * Show handle in console when it changes
- * @param handle
+ * Show query in console when it changes
+ * @param query
  */
-function useDebug(handle, label) {
-    var data = handle.data, error = handle.error, time = handle.time;
+function useDebug(query, label) {
+    var data = query.data, error = query.error, time = query.time;
     React.useEffect(function () {
-        console.debug(label, handle);
+        console.debug(label, query);
     }, [data, error, time]);
 }
 

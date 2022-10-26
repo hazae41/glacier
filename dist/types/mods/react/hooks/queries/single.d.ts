@@ -5,7 +5,7 @@ import { State } from '../../../types/state.js';
 import { Updater, UpdaterParams } from '../../../types/updater.js';
 
 /**
- * Handle for a single resource
+ * Query for a single resource
  */
 interface SingleQuery<D = any, E = any, K = any> extends Query<D, E, K> {
     /**
@@ -16,11 +16,11 @@ interface SingleQuery<D = any, E = any, K = any> extends Query<D, E, K> {
     update(updater: Updater<D, E, K>, uparams?: UpdaterParams<D, E, K>, aborter?: AbortController): Promise<State<D, E, K> | undefined>;
 }
 /**
- * Single resource handle factory
+ * Single resource query factory
  * @param key Key (memoized)
  * @param fetcher Resource fetcher (unmemoized)
  * @param cparams Parameters (unmemoized)
- * @returns Single handle
+ * @returns Single query
  */
 declare function useSingleQuery<D = any, E = any, K = any>(key: K | undefined, fetcher: Fetcher<D, E, K> | undefined, params?: Params<D, E, K>): SingleQuery<D, E, K>;
 

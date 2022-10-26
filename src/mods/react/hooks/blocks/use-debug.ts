@@ -2,13 +2,13 @@ import { Query } from "mods/react/types/query.js"
 import { useEffect } from "react"
 
 /**
- * Show handle in console when it changes
- * @param handle 
+ * Show query in console when it changes
+ * @param query 
  */
-export function useDebug(handle: Query, label: string) {
-  const { data, error, time } = handle
+export function useDebug(query: Query, label: string) {
+  const { data, error, time } = query
 
   useEffect(() => {
-    console.debug(label, handle)
+    console.debug(label, query)
   }, [data, error, time])
 }

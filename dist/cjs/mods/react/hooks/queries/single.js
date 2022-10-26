@@ -9,11 +9,11 @@ var instance = require('../../../single/instance.js');
 var React = require('react');
 
 /**
- * Single resource handle factory
+ * Single resource query factory
  * @param key Key (memoized)
  * @param fetcher Resource fetcher (unmemoized)
  * @param cparams Parameters (unmemoized)
- * @returns Single handle
+ * @returns Single query
  */
 function useSingleQuery(key, fetcher, params) {
     var _this = this;

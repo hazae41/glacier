@@ -1,9 +1,9 @@
 import { Query } from '../../types/query.js';
 
 /**
- * Show handle in console when it changes
- * @param handle
+ * Show query in console when it changes
+ * @param query
  */
-declare function useDebug(handle: Query, label: string): void;
+declare function useDebug(query: Query, label: string): void;
 
 export { useDebug };
