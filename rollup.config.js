@@ -12,13 +12,13 @@ export const config = [
       format: "esm",
       preserveModules: true,
       sourcemap: true,
-      entryFileNames: "[name].mjs"
+      entryFileNames: "[name].js"
     }, {
       dir: "./dist/cjs",
       format: "cjs",
       preserveModules: true,
       sourcemap: true,
-      entryFileNames: "[name].cjs",
+      entryFileNames: "[name].js",
     }],
     plugins: [resolve(), ts({ typescript }), commonjs()],
     external: ["react", "tslib"]
