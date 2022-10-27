@@ -1,4 +1,7 @@
-![](https://user-images.githubusercontent.com/4405263/198129674-d7beabc9-61ed-43ab-852f-ab317c51f1f9.png)
+<p align="center">
+<img width="500"
+src="https://user-images.githubusercontent.com/4405263/198222057-038c8fdc-a4b0-44c4-8aaf-e4ad1d301b28.png" />
+</p>
 
 ```bash
 npm i @hazae41/xswr
