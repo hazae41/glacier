@@ -7,7 +7,7 @@ src="https://user-images.githubusercontent.com/4405263/198222057-038c8fdc-a4b0-4
 npm i @hazae41/xswr
 ```
 
-[**Read the docs 📚**](https://xswr.hazae41.me) • [**Try it online 🚀**](https://test.xswr.hazae41.me) • [**Next.js CodeSandbox 🪣**](https://codesandbox.io/p/sandbox/misty-butterfly-64m881) • [**Comparison with other libs 🌐**](https://xswr.hazae41.me/faq/comparison)
+[**Read the docs 📚**](https://xswr.hazae41.me) • [**Try it online 🚀**](https://test.xswr.hazae41.me) • [**Next.js CodeSandbox 🪣**](https://codesandbox.io/p/github/hazae41/xswr-example-next/main) • [**Comparison with other libs 🌐**](https://xswr.hazae41.me/faq/comparison)
 
 ## Philosophy 🧠
 
@@ -189,4 +189,4 @@ function MyApp() {
 }
 ```
 
-[**Read the docs 📚**](https://xswr.hazae41.me) • [**Try it online 🚀**](https://test.xswr.hazae41.me) • [**Next.js CodeSandbox 🪣**](https://codesandbox.io/p/sandbox/misty-butterfly-64m881) • [**Comparison with other libs 🌐**](https://xswr.hazae41.me/faq/comparison)
+[**Read the docs 📚**](https://xswr.hazae41.me) • [**Try it online 🚀**](https://test.xswr.hazae41.me) • [**Next.js CodeSandbox 🪣**](https://codesandbox.io/p/github/hazae41/xswr-example-next/main) • [**Comparison with other libs 🌐**](https://xswr.hazae41.me/faq/comparison)
