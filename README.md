@@ -7,7 +7,7 @@ src="https://user-images.githubusercontent.com/4405263/198222057-038c8fdc-a4b0-4
 npm i @hazae41/xswr
 ```
 
-[**Read the docs 📚**](https://xswr.hazae41.me) • [**Next.js CodeSandbox 🪣**](https://codesandbox.io/p/github/hazae41/xswr-example-next) • [**Comparison with other libs 🌐**](https://xswr.hazae41.me/faq/comparison)
+[**Read the docs 📚**](https://xswr.hazae41.me) • [**Next.js Example 🪣**](https://codesandbox.io/p/github/hazae41/xswr-example-next) • [**Expo Example 🪣**](https://snack.expo.dev/@git/github.com/hazae41/xswr-example-expo) • [**Comparison with other libs 🌐**](https://xswr.hazae41.me/faq/comparison)
 
 ## Philosophy 🧠
 
@@ -41,6 +41,7 @@ xswr uses two new approaches compared to other data fetching libraries like swr 
 - Out of the box IndexedDB and LocalStorage
 - Out of the box store normalization
 - Super natural React Suspense
+- React Native support
 
 ### Upcoming features
 
@@ -188,5 +189,3 @@ function MyApp() {
   return <MyPage data={data} />
 }
 ```
-
-[**Read the docs 📚**](https://xswr.hazae41.me) • [**Next.js CodeSandbox 🪣**](https://codesandbox.io/p/github/hazae41/xswr-example-next) • [**Comparison with other libs 🌐**](https://xswr.hazae41.me/faq/comparison)
