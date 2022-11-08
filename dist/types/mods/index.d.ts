@@ -30,7 +30,7 @@ export { Instance } from './types/instance.js';
 export { Mutator } from './types/mutator.js';
 export { Normalizer, NormalizerMore } from './types/normalizer.js';
 export { Params } from './types/params.js';
-export { Result } from './types/result.js';
+export { DataResult, ErrorResult, Result } from './types/result.js';
 export { Schema } from './types/schema.js';
 export { Scroller } from './types/scroller.js';
 export { Serializer } from './types/serializer.js';

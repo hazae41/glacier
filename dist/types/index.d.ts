@@ -32,7 +32,7 @@ export { Instance } from './mods/types/instance.js';
 export { Mutator } from './mods/types/mutator.js';
 export { Normalizer, NormalizerMore } from './mods/types/normalizer.js';
 export { Params } from './mods/types/params.js';
-export { Result } from './mods/types/result.js';
+export { DataResult, ErrorResult, Result } from './mods/types/result.js';
 export { Schema } from './mods/types/schema.js';
 export { Scroller } from './mods/types/scroller.js';
 export { Serializer } from './mods/types/serializer.js';
