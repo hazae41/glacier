@@ -1,1 +1,0 @@
-{"version":3,"file":"arrays.js","sources":["../../../src/libs/arrays.ts"],"sourcesContent":["export function lastOf<T>(array: T[]) {\n  if (array.length) return array[array.length - 1]\n}"],"names":[],"mappings":";;;;AAAM,SAAU,MAAM,CAAI,KAAU,EAAA;IAClC,IAAI,KAAK,CAAC,MAAM;QAAE,OAAO,KAAK,CAAC,KAAK,CAAC,MAAM,GAAG,CAAC,CAAC,CAAA;AAClD;;;;"}

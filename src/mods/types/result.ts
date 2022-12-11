@@ -3,7 +3,7 @@ export type Result<D = any, E = any, K = any> =
   | ErrorResult<D, E, K>
 
 export interface DataResult<D = any, E = any, K = any> {
-  data: D,
+  data?: D,
   error?: undefined,
   time?: number,
   cooldown?: number
@@ -12,7 +12,7 @@ export interface DataResult<D = any, E = any, K = any> {
 
 export interface ErrorResult<D = any, E = any, K = any> {
   data?: undefined,
-  error: E,
+  error?: E,
   time?: number,
   cooldown?: number
   expiration?: number

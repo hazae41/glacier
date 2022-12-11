@@ -1,7 +1,7 @@
 {
   "type": "module",
   "name": "@hazae41/xswr",
-  "version": "1.1.7",
+  "version": "1.1.8",
   "author": "hazae41",
   "license": "MIT",
   "description": "Yet another React data (re)fetching library",
@@ -38,5 +38,6 @@
       "import": "./dist/mjs/index.js",
       "require": "./dist/cjs/index.js"
     }
-  }
+  },
+  "files": ["/dist"]
 }

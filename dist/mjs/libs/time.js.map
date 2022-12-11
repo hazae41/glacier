@@ -1,1 +1,0 @@
-{"version":3,"file":"time.js","sources":["../../../src/libs/time.ts"],"sourcesContent":["export function getTimeFromDelay(delay: number) {\n  if (delay === -1) return\n  return Date.now() + delay\n}"],"names":[],"mappings":"AAAM,SAAU,gBAAgB,CAAC,KAAa,EAAA;IAC5C,IAAI,KAAK,KAAK,CAAC,CAAC;QAAE,OAAM;AACxB,IAAA,OAAO,IAAI,CAAC,GAAG,EAAE,GAAG,KAAK,CAAA;AAC3B;;;;"}
