@@ -1,7 +1,6 @@
-<p align="center">
-<img width="500"
-src="https://user-images.githubusercontent.com/4405263/198222057-038c8fdc-a4b0-44c4-8aaf-e4ad1d301b28.png" />
-</p>
+<div align="center">
+<img width="500" src="https://user-images.githubusercontent.com/4405263/198222057-038c8fdc-a4b0-44c4-8aaf-e4ad1d301b28.png" />
+</div>
 
 ```bash
 npm i @hazae41/xswr

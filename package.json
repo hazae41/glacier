@@ -1,15 +1,19 @@
 {
   "type": "module",
   "name": "@hazae41/xswr",
-  "version": "1.1.8",
+  "version": "1.1.9",
   "author": "hazae41",
   "license": "MIT",
   "description": "Yet another React data (re)fetching library",
   "homepage": "https://github.com/hazae41/xswr",
+  "repository": "github:hazae41/xswr",
   "types": "./dist/types/index.d.ts",
-  "module": "./dist/mjs/index.js",
-  "main": "./dist/cjs/index.js",
+  "module": "./dist/esm/index.mjs",
+  "main": "./dist/cjs/index.cjs",
   "sideEffects": false,
+  "files": [
+    "/dist"
+  ],
   "scripts": {
     "build": "rimraf dist && rollup -c",
     "prepare": "npm run build"
@@ -35,9 +39,50 @@
   "exports": {
     ".": {
       "types": "./dist/types/index.d.ts",
-      "import": "./dist/mjs/index.js",
-      "require": "./dist/cjs/index.js"
+      "import": "./dist/esm/index.mjs",
+      "require": "./dist/cjs/index.cjs"
     }
   },
-  "files": ["/dist"]
+  "keywords": [
+    "xswr",
+    "react",
+    "esmodules",
+    "fetch",
+    "data",
+    "normalization",
+    "data-fetching",
+    "web",
+    "typescript",
+    "hooks",
+    "react-hooks",
+    "query",
+    "react-query",
+    "swr",
+    "suspense",
+    "react-suspense",
+    "graphql",
+    "nextjs",
+    "ethereum",
+    "blockchain",
+    "rest",
+    "redux",
+    "garbage",
+    "garbage-collection",
+    "ssr",
+    "server-side-rendering",
+    "storage",
+    "localstorage",
+    "indexeddb",
+    "native",
+    "react-native",
+    "expo",
+    "optimistic",
+    "optimistic-updates",
+    "websocket",
+    "composition",
+    "cancellation",
+    "routes",
+    "api",
+    "backend"
+    ]
 }
