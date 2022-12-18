@@ -12,7 +12,9 @@
   "main": "./dist/cjs/index.cjs",
   "sideEffects": false,
   "files": [
-    "/dist"
+    "./dist/esm",
+    "./dist/cjs",
+    "./dist/types"
   ],
   "scripts": {
     "build": "rimraf dist && rollup -c",
