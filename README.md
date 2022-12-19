@@ -55,13 +55,15 @@ Just install `@hazae41/xswr` using your favorite package manager.
 npm i @hazae41/xswr
 ```
 
-Then, wrap your app in a `XSWR.CoreProvider` component.
+Then, wrap your app in a `CoreProvider` component.
 
 ```tsx
+import { CoreProvider } from "@hazae41/xswr"
+
 function MyWrapper() {
-  return <XSWR.CoreProvider>
+  return <CoreProvider>
     <MyAwesomeApp />
-  </XSWR.CoreProvider>
+  </CoreProvider>
 }
 ```
 
