@@ -1,5 +1,10 @@
 import { assert, test } from "@hazae41/phobos";
 import { Mutex } from "libs/mutex/mutex.js";
+import { relative, resolve } from "path";
+
+const directory = resolve("./dist/test/")
+const { pathname } = new URL(import.meta.url)
+console.log(relative(directory, pathname))
 
 test("mutex", async ({ test, wait }) => {
   const mutex = new Mutex()
@@ -30,6 +35,4 @@ test("mutex", async ({ test, wait }) => {
     "second start",
     "second end"
   ]), `unexpected order`)
-
-  console.log(`mutex ✅`)
 })

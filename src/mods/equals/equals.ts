@@ -3,11 +3,11 @@ export type Equalser =
 
 export namespace Equals {
 
-  export function ref<T>(a: T, b: T) {
+  export function ref(a: unknown, b: unknown) {
     return a === b
   }
 
-  export function json<T>(a: T, b: T) {
+  export function json<T>(a: unknown, b: unknown) {
     if (a === b)
       return true
     if (typeof a !== typeof b)
@@ -15,14 +15,14 @@ export namespace Equals {
     return JSON.stringify(a) === JSON.stringify(b)
   }
 
-  export function shallow<T extends {}>(a?: T, b?: T) {
+  export function shallow(a?: unknown, b?: unknown) {
     if (a === b)
       return true
     if (typeof a !== typeof b)
       return false
-    if (a === undefined || a === null)
+    if (a === null || typeof a !== "object")
       return false
-    if (b === undefined || b === null)
+    if (b === null || typeof b !== "object")
       return false
     const ka = Object.keys(a)
     const kb = Object.keys(b)
@@ -34,6 +34,5 @@ export namespace Equals {
         return false
     return true
   }
-
 }
 
