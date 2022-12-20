@@ -33,7 +33,20 @@ export const config = [
     }],
     plugins: [dts(), resolve(), ts({ typescript })],
     external: ["react", "tslib"]
-  }
+  },
+  {
+    input: "./src/index.test.ts",
+    output: [{
+      dir: "./dist/test",
+      format: "cjs",
+      exports: "named",
+      preserveModules: true,
+      sourcemap: true,
+      entryFileNames: "[name].cjs",
+    }],
+    plugins: [resolve(), ts({ typescript }), commonjs()],
+    external: ["react", "tslib", "@hazae41/phobos"]
+  },
 ]
 
 export default config
