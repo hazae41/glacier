@@ -1,12 +1,12 @@
-import { lastOf } from "libs/arrays.js";
+import { Arrays } from "libs/arrays/arrays.js";
 import { getTimeFromDelay } from "libs/time.js";
-import { Core } from "mods/core.js";
+import { Core } from "mods/core/core.js";
+import { DEFAULT_COOLDOWN, DEFAULT_EQUALS, DEFAULT_EXPIRATION, DEFAULT_TIMEOUT } from "mods/defaults.js";
 import { AbortError } from "mods/errors/abort.js";
 import { Fetcher } from "mods/types/fetcher.js";
 import { Params } from "mods/types/params.js";
 import { Scroller } from "mods/types/scroller.js";
 import { State } from "mods/types/state.js";
-import { DEFAULT_COOLDOWN, DEFAULT_EQUALS, DEFAULT_EXPIRATION, DEFAULT_TIMEOUT } from "mods/utils/defaults.js";
 
 export class ScrollHelper {
   constructor(readonly core: Core) { }
@@ -150,7 +150,7 @@ export class ScrollHelper {
         return { current, skip: true }
 
       const pages = current?.data ?? []
-      const last = scroller(lastOf(pages))
+      const last = scroller(Arrays.lastOf(pages))
 
       if (last === undefined)
         return { current, skip: true }

@@ -1,23 +1,26 @@
+import { AsyncStorage } from "mods/storages/storage.js"
 import { Serializer } from "mods/types/serializer.js"
 import { State } from "mods/types/state.js"
-import { SyncStorage } from "mods/types/storage.js"
 import { useEffect, useRef } from "react"
 
 /**
- * Synchronous local storage
+ * Asynchronous local storage
  * 
- * Do NOT use with SSR, it will create hydratation errors
- * Do NOT use for storing large objects, it will harm performances
+ * Use for compatibility with SSR
+ * Use for storing large objects
  * 
- * Will display data on first render
+ * Won't display data on first render or hydratation, you can either:
+ * - use SyncLocalStorage
+ * - use useFallback
  * 
- * @see AsyncLocalStorage
+ * @see SyncLocalStorage
+ * @see useFallback
  */
-export function useSyncLocalStorage(prefix?: string, serializer?: Serializer) {
-  const storage = useRef<SyncLocalStorage>()
+export function useAsyncLocalStorage(prefix?: string, serializer?: Serializer) {
+  const storage = useRef<AsyncLocalStorage>()
 
-  if (!storage.current)
-    storage.current = new SyncLocalStorage(prefix, serializer)
+  if (storage.current === undefined)
+    storage.current = new AsyncLocalStorage(prefix, serializer)
 
   useEffect(() => () => {
     storage.current?.unmount()
@@ -27,17 +30,20 @@ export function useSyncLocalStorage(prefix?: string, serializer?: Serializer) {
 }
 
 /**
- * Synchronous local storage
+ * Asynchronous local storage
  * 
- * Do NOT use with SSR, it will create hydratation errors
- * Do NOT use for storing large objects, it will harm performances
+ * Use for compatibility with SSR
+ * Use for storing large objects
  * 
- * Will display data on first render
+ * Won't display data on first render or hydratation, you can either:
+ * - use SyncLocalStorage
+ * - use useFallback
  * 
- * @see AsyncLocalStorage
+ * @see SyncLocalStorage
+ * @see useFallback
  */
-export class SyncLocalStorage implements SyncStorage {
-  readonly async = false
+export class AsyncLocalStorage implements AsyncStorage {
+  readonly async = true
   readonly keys = new Set<string>()
   readonly onunload?: () => void
 
@@ -54,7 +60,8 @@ export class SyncLocalStorage implements SyncStorage {
   unmount() {
     if (typeof Storage === "undefined")
       return
-    removeEventListener("beforeunload", this.onunload!);
+    if (this.onunload)
+      removeEventListener("beforeunload", this.onunload);
     (async () => this.collect())().catch(console.error)
   }
 
@@ -62,14 +69,14 @@ export class SyncLocalStorage implements SyncStorage {
     if (typeof Storage === "undefined")
       return
     for (const key of this.keys) {
-      const state = this.get<State>(key, true)
+      const state = this.getSync<State>(key, true)
       if (state?.expiration === undefined) continue
       if (state.expiration > Date.now()) continue
       this.delete(key, false)
     }
   }
 
-  get<T = any>(key: string, ignore = false) {
+  getSync<T = any>(key: string, ignore = false) {
     if (typeof Storage === "undefined")
       return
     if (!ignore && !this.keys.has(key))
@@ -78,7 +85,16 @@ export class SyncLocalStorage implements SyncStorage {
     if (item) return this.serializer.parse(item) as T
   }
 
-  set<T = any>(key: string, value: T, ignore = false) {
+  async get<T = any>(key: string, ignore = false) {
+    if (typeof Storage === "undefined")
+      return
+    if (!ignore && !this.keys.has(key))
+      this.keys.add(key)
+    const item = localStorage.getItem(this.prefix + key)
+    if (item) return this.serializer.parse(item) as T
+  }
+
+  async set<T = any>(key: string, value: T, ignore = false) {
     if (typeof Storage === "undefined")
       return
     if (!ignore && !this.keys.has(key))
@@ -87,7 +103,7 @@ export class SyncLocalStorage implements SyncStorage {
     localStorage.setItem(this.prefix + key, item)
   }
 
-  delete(key: string, ignore = false) {
+  async delete(key: string, ignore = false) {
     if (typeof Storage === "undefined")
       return
     if (!ignore && this.keys.has(key))

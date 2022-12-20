@@ -1,13 +1,13 @@
-import { Ortho } from "libs/ortho.js"
+import { Mutex } from "libs/mutex/mutex.js"
+import { Ortho } from "libs/ortho/ortho.js"
+import { DEFAULT_EQUALS } from "mods/defaults.js"
+import { Equals } from "mods/equals/equals.js"
 import { ScrollHelper } from "mods/scroll/helper.js"
 import { SingleHelper } from "mods/single/helper.js"
+import { isAsyncStorage } from "mods/storages/storage.js"
 import { Mutator } from "mods/types/mutator.js"
 import { Params } from "mods/types/params.js"
 import { State } from "mods/types/state.js"
-import { isAsyncStorage } from "mods/types/storage.js"
-import { DEFAULT_EQUALS } from "mods/utils/defaults.js"
-import { shallowEquals } from "mods/utils/equals.js"
-import { Lock } from "mods/utils/lock.js"
 
 export type Listener<D = any, E = any, K = any> =
   (x?: State<D, E, K>) => void
@@ -17,7 +17,7 @@ export class Core extends Ortho<string, State | undefined> {
   readonly scroll = new ScrollHelper(this)
 
   readonly cache = new Map<string, State>()
-  readonly locks = new Map<string, Lock>()
+  readonly locks = new Map<string, Mutex>()
 
   private _mounted = true
 
@@ -39,7 +39,7 @@ export class Core extends Ortho<string, State | undefined> {
     if (lock !== undefined)
       return await lock.lock(callback)
 
-    const lock2 = new Lock()
+    const lock2 = new Mutex()
     this.locks.set(skey, lock2)
     return await lock2.lock(callback)
   }
@@ -162,7 +162,7 @@ export class Core extends Ortho<string, State | undefined> {
     if (!next.optimistic)
       next.realData = next.data
 
-    if (shallowEquals(next, current))
+    if (Equals.shallow(next, current))
       return current
     await this.set(skey, next, params)
     return next as State<D, E, K>

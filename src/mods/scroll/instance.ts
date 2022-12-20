@@ -1,11 +1,11 @@
-import { Core } from "mods/core.js";
+import { Core } from "mods/core/core.js";
+import { DEFAULT_SERIALIZER } from "mods/defaults.js";
 import { Fetcher } from "mods/types/fetcher.js";
 import { Instance } from "mods/types/instance.js";
 import { Mutator } from "mods/types/mutator.js";
 import { Params } from "mods/types/params.js";
 import { Scroller } from "mods/types/scroller.js";
 import { State } from "mods/types/state.js";
-import { DEFAULT_SERIALIZER } from "mods/utils/defaults.js";
 
 export function getScrollStorageKey<D = any, E = any, K = any>(key: K, params: Params) {
   if (key === undefined)

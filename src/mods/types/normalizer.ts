@@ -1,4 +1,4 @@
-import { Core } from "mods/core.js"
+import { Core } from "mods/core/core.js"
 import { State } from "mods/types/state.js"
 
 export type Normalizer<D = any, E = any, K = any> =

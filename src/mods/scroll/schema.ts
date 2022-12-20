@@ -1,4 +1,4 @@
-import { Core } from "mods/core.js";
+import { Core } from "mods/core/core.js";
 import { Fetcher } from "mods/types/fetcher.js";
 import { NormalizerMore } from "mods/types/normalizer.js";
 import { Params } from "mods/types/params.js";

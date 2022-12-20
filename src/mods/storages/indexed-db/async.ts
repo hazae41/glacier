@@ -1,5 +1,5 @@
+import { AsyncStorage } from "mods/storages/storage.js"
 import { State } from "mods/types/state.js"
-import { AsyncStorage } from "mods/types/storage.js"
 import { useEffect, useRef } from "react"
 
 export function useIDBStorage(name: string) {

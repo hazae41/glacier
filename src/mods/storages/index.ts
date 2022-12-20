@@ -1,3 +1,3 @@
-export * from "./idb/index.js";
-export * from "./localStorage/index.js";
+export * from "./indexed-db/index.js";
+export * from "./local-storage/index.js";
 
