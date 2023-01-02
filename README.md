@@ -6,7 +6,7 @@
 npm i @hazae41/xswr
 ```
 
-[**Read the docs 📚**](https://xswr.hazae41.me) • [**Next.js Example 🪣**](https://codesandbox.io/p/github/hazae41/xswr-example-next) • [**Expo Example 🪣**](https://snack.expo.dev/@git/github.com/hazae41/xswr-example-expo) • [**Comparison with other libs 🌐**](https://xswr.hazae41.me/faq/comparison)
+[**Node Package 📦**](https://www.npmjs.com/package/@hazae41/xswr) • [**Read the docs 📚**](https://xswr.hazae41.me) • [**Next.js Example 🪣**](https://codesandbox.io/p/github/hazae41/xswr-example-next) • [**Expo Example 🪣**](https://snack.expo.dev/@git/github.com/hazae41/xswr-example-expo) • [**Comparison with other libs 🌐**](https://xswr.hazae41.me/faq/comparison)
 
 ## Philosophy 🧠
 
