@@ -4,20 +4,40 @@
 export class MapOfArrays<K = any, V = any> {
   private map = new Map<K, V[]>()
 
+  /**
+   * Get all values from a key
+   * @param key the key
+   * @returns the array mapped to that key
+   */
   get(key: K) {
     return this.map.get(key)
   }
 
+  /**
+   * Push some value to a key
+   * @param key the key
+   * @param value the value to push into that key
+   */
   push(key: K, value: V) {
     const values = this.map.get(key)
-    if (!values) this.map.set(key, [value])
-    else values.push(value)
+
+    if (values !== undefined) {
+      values.push(value)
+      return
+    }
+
+    this.map.set(key, [value])
   }
 
+  /**
+   * Erase some value from a key
+   * @param key the key
+   * @param value the value to remove from that key
+   * @returns 
+   */
   erase(key: K, value: V) {
     const values = this.map.get(key)
-
-    if (!values) return
+    if (values === undefined) return
 
     const values2 = values.filter(it => it !== value)
 

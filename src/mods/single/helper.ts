@@ -1,4 +1,4 @@
-import { getTimeFromDelay } from "libs/time.js";
+import { Time } from "libs/time/time.js";
 import { Core } from "mods/core/core.js";
 import { DEFAULT_COOLDOWN, DEFAULT_EXPIRATION, DEFAULT_TIMEOUT } from "mods/defaults.js";
 import { AbortError } from "mods/errors/abort.js";
@@ -72,8 +72,8 @@ export class SingleHelper {
         data,
         error,
         time = Date.now(),
-        cooldown = getTimeFromDelay(dcooldown),
-        expiration = getTimeFromDelay(dexpiration)
+        cooldown = Time.fromDelay(dcooldown),
+        expiration = Time.fromDelay(dexpiration)
       } = await fetcher(key, { signal })
 
       if (signal.aborted)
@@ -196,8 +196,8 @@ export class SingleHelper {
         data,
         error,
         time = Date.now(),
-        cooldown = getTimeFromDelay(dcooldown),
-        expiration = getTimeFromDelay(dexpiration)
+        cooldown = Time.fromDelay(dcooldown),
+        expiration = Time.fromDelay(dexpiration)
       } = result
 
       if (signal.aborted)

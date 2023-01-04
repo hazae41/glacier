@@ -1,5 +1,5 @@
 import { Arrays } from "libs/arrays/arrays.js";
-import { getTimeFromDelay } from "libs/time.js";
+import { Time } from "libs/time/time.js";
 import { Core } from "mods/core/core.js";
 import { DEFAULT_COOLDOWN, DEFAULT_EQUALS, DEFAULT_EXPIRATION, DEFAULT_TIMEOUT } from "mods/defaults.js";
 import { AbortError } from "mods/errors/abort.js";
@@ -79,8 +79,8 @@ export class ScrollHelper {
         data,
         error,
         time = Date.now(),
-        cooldown = getTimeFromDelay(dcooldown),
-        expiration = getTimeFromDelay(dexpiration)
+        cooldown = Time.fromDelay(dcooldown),
+        expiration = Time.fromDelay(dexpiration)
       } = await fetcher(first, { signal })
 
       if (signal.aborted)
@@ -183,8 +183,8 @@ export class ScrollHelper {
         data,
         error,
         time = Date.now(),
-        cooldown = getTimeFromDelay(dcooldown),
-        expiration = getTimeFromDelay(dexpiration)
+        cooldown = Time.fromDelay(dcooldown),
+        expiration = Time.fromDelay(dexpiration)
       } = await fetcher(last, { signal })
 
       if (signal.aborted)
