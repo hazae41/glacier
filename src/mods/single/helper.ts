@@ -209,7 +209,7 @@ export class SingleHelper {
         if (current?.aborter !== aborter)
           return current
         return await this.core.mutate(skey, current,
-          c => ({ time: c?.time, cooldown, expiration, aborter: undefined, optimistic: false, data: c?.data, error }),
+          c => ({ time: c?.realTime, cooldown, expiration, aborter: undefined, optimistic: false, data: c?.realData, error }),
           params)
       }
 
@@ -228,7 +228,7 @@ export class SingleHelper {
       if (current?.aborter !== aborter)
         return current
       return await this.core.mutate(skey, current,
-        c => ({ time: c?.time, aborter: undefined, optimistic: false, data: c?.data, error }),
+        c => ({ time: c?.realTime, aborter: undefined, optimistic: false, data: c?.realData, error }),
         params)
     } finally {
       clearTimeout(timeout)

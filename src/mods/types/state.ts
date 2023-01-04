@@ -7,4 +7,5 @@ export interface State<D = any, E = any, K = any> {
   cooldown?: number
   expiration?: number,
   realData?: D
+  realTime?: number
 }

@@ -128,6 +128,14 @@ export class Core extends Ortho<string, State | undefined> {
     await storage.delete(skey)
   }
 
+  /**
+   * The most important function
+   * @param skey 
+   * @param current 
+   * @param mutator 
+   * @param params 
+   * @returns 
+   */
   async mutate<D = any, E = any, K = any>(
     skey: string | undefined,
     current: State<D, E, K> | undefined,
@@ -135,39 +143,83 @@ export class Core extends Ortho<string, State | undefined> {
     params: Params<D, E, K> = {}
   ): Promise<State<D, E, K> | undefined> {
     if (skey === undefined) return
+
+    /**
+     * Apply mutator to the current state
+     */
     const state = mutator(current)
 
-    if (!state) {
+    /**
+     * Delete and return if the new state is undefined
+     */
+    if (state === undefined) {
       await this.delete(skey, params)
       return
     }
 
-    if (state.time !== undefined && state.time < (current?.time ?? 0))
-      return current
 
-    if (state.optimistic === undefined && current?.optimistic)
-      return current
+    if (current !== undefined) {
+      /**
+       * Do not apply older states
+       */
+      if (state.time !== undefined && current.time !== undefined && state.time < current.time)
+        return current
 
-    const {
-      equals = DEFAULT_EQUALS
-    } = params
+      /**
+       * Do not apply on an optimistic state
+       * 
+       * (optimistic=false means it's the end of the optimistic mutation)
+       */
+      if (state.optimistic === undefined && current.optimistic === true)
+        return current
+    }
 
+    /**
+     * Merge the current state with the new state
+     */
     const next: State<D, E, K> = {
       ...current,
       ...state
     }
 
+    /**
+     * Normalize the new data
+     */
     next.data = await this.normalize(false, next, params)
 
-    if (next.time === undefined)
-      next.time = Date.now()
+    const {
+      equals = DEFAULT_EQUALS
+    } = params
+
+    /**
+     * Optimization: Do not modify data if it's "equal" to the previous data
+     */
     if (equals(next.data, current?.data))
       next.data = current?.data
-    if (!next.optimistic)
-      next.realData = next.data
 
+    /**
+     * Forcefully set time if it's unset
+     */
+    if (next.time === undefined)
+      next.time = Date.now()
+
+    /**
+     * Set the data and time as real if optimistic is unset
+     */
+    if (next.optimistic !== true) {
+      next.realData = next.data
+      next.realTime = next.time
+    }
+
+    /**
+     * Do not apply if the new state if shallowly equal to the current state
+     */
     if (Equals.shallow(next, current))
       return current
+
+    /**
+     * Publish and return the new state
+     */
     await this.set(skey, next, params)
     return next as State<D, E, K>
   }
