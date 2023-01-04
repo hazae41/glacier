@@ -20,8 +20,9 @@ export function useCoreProvider(params: Params) {
   if (coreRef.current === undefined)
     coreRef.current = new Core(params)
 
-  useEffect(() => () => {
-    coreRef.current?.unmount()
+  useEffect(() => {
+    coreRef.current?.mount()
+    return () => void coreRef.current?.unmount()
   }, [])
 
   return coreRef.current

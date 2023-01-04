@@ -27,6 +27,10 @@ export class Core extends Ortho<string, State | undefined> {
 
   get mounted() { return this._mounted }
 
+  mount() {
+    this._mounted = true
+  }
+
   unmount() {
     for (const timeout of this.timeouts.values())
       clearTimeout(timeout)
