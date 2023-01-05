@@ -42,7 +42,7 @@ xswr uses two new approaches compared to other data fetching libraries like swr 
 - Super natural React Suspense
 - React Native support
 
-### Upcoming features
+### [Upcoming features](https://github.com/sponsors/hazae41)
 
 - Transport agnostic streaming (ethers.js, WebSockets, Socket.io)
 - Bidirectional scrolling
