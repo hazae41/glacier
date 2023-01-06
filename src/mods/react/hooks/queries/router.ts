@@ -5,32 +5,32 @@ import { DependencyList, useMemo } from "react";
 import { ScrollQuery, useScrollQuery } from "./scroll.js";
 import { SingleQuery, useSingleQuery } from "./single.js";
 
-export function useQuery<D = any, E = any, K = any, L extends DependencyList = []>(
-  factory: (...deps: L) => SingleSchema<D, E, K>,
+export function useQuery<D, K, L extends DependencyList = []>(
+  factory: (...deps: L) => SingleSchema<D, K>,
   deps: L
-): SingleQuery<D, E, K>
+): SingleQuery<D, K>
 
-export function useQuery<D = any, E = any, K = any, L extends DependencyList = []>(
-  factory: (...deps: L) => ScrollSchema<D, E, K>,
+export function useQuery<D, K, L extends DependencyList = []>(
+  factory: (...deps: L) => ScrollSchema<D, K>,
   deps: L
-): ScrollQuery<D, E, K>
+): ScrollQuery<D, K>
 
-export function useQuery<D = any, E = any, K = any, L extends DependencyList = []>(
-  factory: (...deps: L) => Schema<D, E, K>,
+export function useQuery<D, K, L extends DependencyList = []>(
+  factory: (...deps: L) => Schema<D, K>,
   deps: L
 ) {
   const schema = useMemo(() => {
     return factory(...deps)
   }, deps)
 
-  if (schema instanceof SingleSchema) {
+  if (schema instanceof SingleSchema<D, K>) {
     const { key, fetcher, params } = schema
-    return useSingleQuery(key, fetcher, params)
+    return useSingleQuery<D, K>(key, fetcher, params)
   }
 
-  if (schema instanceof ScrollSchema) {
+  if (schema instanceof ScrollSchema<D, K>) {
     const { scroller, fetcher, params } = schema
-    return useScrollQuery(scroller, fetcher, params)
+    return useScrollQuery<D, K>(scroller, fetcher, params)
   }
 
   throw new Error("Invalid resource schema")

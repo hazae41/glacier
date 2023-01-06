@@ -5,28 +5,28 @@ import { Params } from "mods/types/params.js";
 import { Schema } from "mods/types/schema.js";
 import { SingleInstance } from "./instance.js";
 
-export function getSingleSchema<D = any, E = any, K = any>(
+export function getSingleSchema<D, K>(
   key: K | undefined,
-  fetcher: Fetcher<D, E, K> | undefined,
-  params: Params<D, E, K> = {},
+  fetcher: Fetcher<D, K> | undefined,
+  params: Params<D, K> = {},
 ) {
-  return new SingleSchema(key, fetcher, params)
+  return new SingleSchema<D, K>(key, fetcher, params)
 }
 
-export class SingleSchema<D = any, E = any, K = any> implements Schema<D, E, K, SingleInstance<D, E, K>>  {
+export class SingleSchema<D = unknown, K = unknown> implements Schema<D, K, SingleInstance<D, K>>  {
   constructor(
     readonly key: K | undefined,
-    readonly fetcher: Fetcher<D, E, K> | undefined,
-    readonly params: Params<D, E, K> = {},
+    readonly fetcher: Fetcher<D, K> | undefined,
+    readonly params: Params<D, K> = {},
   ) { }
 
   make(core: Core) {
     const { key, fetcher, params } = this
 
-    return new SingleInstance<D, E, K>(core, key, fetcher, params)
+    return new SingleInstance<D, K>(core, key, fetcher, params)
   }
 
-  async normalize(data: D, more: NormalizerMore<D, E, K>) {
+  async normalize(data: D, more: NormalizerMore<D>) {
     if (more.shallow) return
     const { time, cooldown, expiration, optimistic } = more.root
     const state = { data, time, cooldown, expiration, optimistic }

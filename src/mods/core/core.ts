@@ -6,11 +6,11 @@ import { ScrollHelper } from "mods/scroll/helper.js"
 import { SingleHelper } from "mods/single/helper.js"
 import { isAsyncStorage } from "mods/storages/storage.js"
 import { Mutator } from "mods/types/mutator.js"
-import { Params } from "mods/types/params.js"
+import { GlobalParams, Params } from "mods/types/params.js"
 import { State } from "mods/types/state.js"
 
-export type Listener<D = any, E = any, K = any> =
-  (x?: State<D, E, K>) => void
+export type Listener<D> =
+  (x?: State<D>) => void
 
 export class Core extends Ortho<string, State | undefined> {
   readonly single = new SingleHelper(this)
@@ -22,7 +22,7 @@ export class Core extends Ortho<string, State | undefined> {
   private _mounted = true
 
   constructor(
-    readonly params: Params
+    readonly params: GlobalParams
   ) { super() }
 
   get mounted() { return this._mounted }
@@ -48,39 +48,52 @@ export class Core extends Ortho<string, State | undefined> {
     return await lock2.lock(callback)
   }
 
-  getSync<D = any, E = any, K = any>(
+  getSync<D, K>(
     skey: string | undefined,
-    params: Params<D, E, K> = {}
-  ): State<D, E, K> | undefined | null {
+    params: Params<D, K> = {}
+  ): State<D> | undefined | null {
     if (skey === undefined) return
 
     const cached = this.cache.get(skey)
-    if (cached !== undefined) return cached
+
+    if (cached !== undefined)
+      return cached as State<D>
 
     const { storage } = params
     if (!storage) return
 
     if (isAsyncStorage(storage))
       return null
-    const state = storage.get(skey)
+
+    const state = storage.get<State<D>>(skey)
+
+    if (state === undefined)
+      return
+
     this.cache.set(skey, state)
     return state
   }
 
-  async get<D = any, E = any, K = any>(
+  async get<D, K>(
     skey: string | undefined,
-    params: Params<D, E, K> = {},
+    params: Params<D, K> = {},
     ignore = false
-  ): Promise<State<D, E, K> | undefined> {
+  ): Promise<State<D> | undefined> {
     if (skey === undefined) return
 
     const cached = this.cache.get(skey)
-    if (cached !== undefined) return cached
+
+    if (cached !== undefined)
+      return cached as State<D>
 
     const { storage } = params
     if (!storage) return
 
-    const state = await storage.get(skey, ignore)
+    const state = await storage.get<State<D>>(skey, ignore)
+
+    if (state === undefined)
+      return
+
     this.cache.set(skey, state)
     return state
   }
@@ -92,10 +105,10 @@ export class Core extends Ortho<string, State | undefined> {
    * @param state New state
    * @returns 
    */
-  async set<D = any, E = any, K = any>(
+  async set<D, K>(
     skey: string | undefined,
-    state: State<D, E, K>,
-    params: Params<D, E, K> = {}
+    state: State<D>,
+    params: Params<D, K> = {}
   ) {
     if (skey === undefined) return
 
@@ -113,9 +126,9 @@ export class Core extends Ortho<string, State | undefined> {
    * @param skey 
    * @returns 
    */
-  async delete<D = any, E = any, K = any>(
+  async delete<D, K>(
     skey: string | undefined,
-    params: Params<D, E, K> = {}
+    params: Params<D, K> = {}
   ) {
     if (!skey) return
 
@@ -136,12 +149,12 @@ export class Core extends Ortho<string, State | undefined> {
    * @param params 
    * @returns 
    */
-  async mutate<D = any, E = any, K = any>(
+  async mutate<D, K>(
     skey: string | undefined,
-    current: State<D, E, K> | undefined,
-    mutator: Mutator<D, E, K>,
-    params: Params<D, E, K> = {}
-  ): Promise<State<D, E, K> | undefined> {
+    current: State<D> | undefined,
+    mutator: Mutator<D>,
+    params: Params<D, K> = {}
+  ): Promise<State<D> | undefined> {
     if (skey === undefined) return
 
     /**
@@ -177,7 +190,7 @@ export class Core extends Ortho<string, State | undefined> {
     /**
      * Merge the current state with the new state
      */
-    const next: State<D, E, K> = {
+    const next: State<D> = {
       ...current,
       ...state
     }
@@ -221,13 +234,13 @@ export class Core extends Ortho<string, State | undefined> {
      * Publish and return the new state
      */
     await this.set(skey, next, params)
-    return next as State<D, E, K>
+    return next as State<D>
   }
 
-  async normalize<D = any, E = any, K = any>(
+  async normalize<D, K>(
     shallow: boolean,
-    root: State<D, E, K>,
-    params: Params<D, E, K> = {},
+    root: State<D>,
+    params: Params<D, K> = {},
   ) {
     if (root.data === undefined) return
     if (params.normalizer === undefined) return root.data
@@ -237,8 +250,8 @@ export class Core extends Ortho<string, State | undefined> {
   /**
    * True if we should cooldown this resource
    */
-  shouldCooldown<D = any, E = any, K = any>(
-    current?: State<D, E, K>
+  shouldCooldown<D>(
+    current?: State<D>
   ) {
     if (current?.cooldown === undefined)
       return false
@@ -248,14 +261,14 @@ export class Core extends Ortho<string, State | undefined> {
   counts = new Map<string, number>()
   timeouts = new Map<string, NodeJS.Timeout>()
 
-  once<D = any, E = any, K = any>(
+  once<D, K>(
     key: string | undefined,
-    listener: Listener<D, E, K>,
-    params: Params<D, E, K> = {}
+    listener: Listener<D>,
+    params: Params<D, K> = {}
   ) {
     if (!key) return
 
-    const f: Listener<D, E, K> = (x) => {
+    const f: Listener<D> = (x) => {
       this.off(key, f, params)
       listener(x)
     }
@@ -263,14 +276,14 @@ export class Core extends Ortho<string, State | undefined> {
     this.on(key, f, params)
   }
 
-  on<D = any, E = any, K = any>(
+  on<D, K>(
     key: string | undefined,
-    listener: Listener<D, E, K>,
-    params: Params<D, E, K> = {}
+    listener: Listener<D>,
+    params: Params<D, K> = {}
   ) {
     if (!key) return
 
-    super.on(key, listener)
+    super.on(key, listener as Listener<unknown>)
 
     const count = this.counts.get(key) ?? 0
     this.counts.set(key, count + 1)
@@ -282,14 +295,14 @@ export class Core extends Ortho<string, State | undefined> {
     this.timeouts.delete(key)
   }
 
-  async off<D = any, E = any, K = any>(
+  async off<D, K>(
     key: string | undefined,
-    listener: Listener<D, E, K>,
-    params: Params<D, E, K> = {}
+    listener: Listener<D>,
+    params: Params<D, K> = {}
   ) {
     if (!key) return
 
-    super.off(key, listener)
+    super.off(key, listener as Listener<unknown>)
 
     const count = this.counts.get(key)
 

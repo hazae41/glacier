@@ -1,7 +1,7 @@
 import { Mutator } from "mods/types/mutator.js"
 import { State } from "mods/types/state.js"
 
-export interface Query<D = any, E = any, K = any> {
+export interface Query<D = unknown, K = unknown> {
   /**
    * Arbitrary key, must be serializable
    */
@@ -25,7 +25,7 @@ export interface Query<D = any, E = any, K = any> {
   /**
    * Error, if any
    */
-  error?: E
+  error?: unknown
 
   /**
    * Shorthand for Boolean(aborter), use this to check if a fetch is ongoing (except those from update())
@@ -67,20 +67,20 @@ export interface Query<D = any, E = any, K = any> {
    * Fetch with cooldown
    * @example You want to fetch and don't care if it's cooldowned
    */
-  fetch(aborter?: AbortController): Promise<State<D, E, K> | undefined>
+  fetch(aborter?: AbortController): Promise<State<D> | undefined>
 
   /**
    * Fetch without cooldown
    * @example User clicked on the refresh button
    * @example You just made a POST request and want to get some fresh data
    */
-  refetch(aborter?: AbortController): Promise<State<D, E, K> | undefined>
+  refetch(aborter?: AbortController): Promise<State<D> | undefined>
 
   /**
    * Mutate the cache
    * @param res 
    */
-  mutate(mutator: Mutator<D, E, K>): Promise<State<D, E, K> | undefined>
+  mutate(mutator: Mutator<D>): Promise<State<D> | undefined>
 
   /**
    * Clear the cache

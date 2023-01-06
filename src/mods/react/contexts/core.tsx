@@ -1,6 +1,6 @@
 import { ChildrenProps } from "libs/react.js"
 import { Core } from "mods/core/core.js"
-import { Params } from "mods/types/params.js"
+import { GlobalParams } from "mods/types/params.js"
 import * as React from "react"
 import { createContext, useContext, useEffect, useRef } from "react"
 
@@ -14,7 +14,7 @@ export function useCore() {
   return core
 }
 
-export function useCoreProvider(params: Params) {
+export function useCoreProvider(params: GlobalParams) {
   const coreRef = useRef<Core>()
 
   if (coreRef.current === undefined)
@@ -28,7 +28,7 @@ export function useCoreProvider(params: Params) {
   return coreRef.current
 }
 
-export function CoreProvider(props: ChildrenProps & Params) {
+export function CoreProvider(props: ChildrenProps & GlobalParams) {
   const { children, ...params } = props
 
   const core = useCoreProvider(params)

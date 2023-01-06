@@ -21,15 +21,15 @@ export class SingleHelper {
    * @param force Should ignore cooldown
    * @returns The new state
    */
-  async fetch<D = any, E = any, K = any>(
+  async fetch<D, K>(
     key: K | undefined,
     skey: string | undefined,
-    fetcher: Fetcher<D, E, K>,
+    fetcher: Fetcher<D, K>,
     aborter = new AbortController(),
-    params: Params<D, E, K> = {},
+    params: Params<D, K> = {},
     force = false,
     ignore = false
-  ): Promise<State<D, E, K> | undefined> {
+  ): Promise<State<D> | undefined> {
     if (key === undefined) return
     if (skey === undefined) return
 
@@ -81,7 +81,7 @@ export class SingleHelper {
 
       current = await this.core.get(skey, params)
 
-      const state: State<D, E, K> = {}
+      const state: State<D> = {}
 
       if (data !== undefined)
         state.data = data
@@ -114,14 +114,14 @@ export class SingleHelper {
    * @returns The new state
    * @throws Error
    */
-  async update<D = any, E = any, K = any>(
+  async update<D, K>(
     key: K | undefined,
     skey: string | undefined,
-    fetcher: Fetcher<D, E, K> | undefined,
-    updater: Updater<D, E, K>,
+    fetcher: Fetcher<D, K> | undefined,
+    updater: Updater<D>,
     aborter = new AbortController(),
-    params: Params<D, E, K> = {},
-  ): Promise<State<D, E, K> | undefined> {
+    params: Params<D, K> = {},
+  ): Promise<State<D> | undefined> {
     if (key === undefined) return
     if (skey === undefined) return
 
@@ -157,7 +157,7 @@ export class SingleHelper {
 
       const generator = updater(current, { signal })
 
-      let result: Result<D, E, K> | void = undefined
+      let result: Result<D> | void = undefined
 
       while (true) {
         const { done, value } = await generator.next()
@@ -175,7 +175,7 @@ export class SingleHelper {
         if (signal.aborted)
           throw new AbortError(signal)
 
-        const optimistic: State<D, E, K> = {}
+        const optimistic: State<D> = {}
 
         if (data !== undefined)
           optimistic.data = data
@@ -213,7 +213,7 @@ export class SingleHelper {
           params)
       }
 
-      const state: State<D, E, K> = {}
+      const state: State<D> = {}
 
       if (data !== undefined)
         state.data = data

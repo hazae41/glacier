@@ -10,7 +10,7 @@ test("Ortho", async () => {
   let a = 0
   let b = 0
 
-  const ortho = new Ortho()
+  const ortho = new Ortho<string, number>()
 
   const fa = (x: number) => { a = x }
   const fb = (x: number) => { b = x }

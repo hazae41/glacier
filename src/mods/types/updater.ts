@@ -1,14 +1,14 @@
 import { Result } from "./result.js"
 import { State } from "./state.js"
 
-export type Updater<D = any, E = any, K = any> =
-  (previous: State<D, E, K> | undefined, more: UpdaterMore<D, E, K>) => AsyncGenerator<Result<D, E, K>, Result<D, E, K> | void>
+export type Updater<D> =
+  (previous: State<D> | undefined, more: UpdaterMore) => AsyncGenerator<Result<D>, Result<D> | void>
 
-export interface UpdaterMore<D = any, E = any, K = any> {
+export interface UpdaterMore {
   signal?: AbortSignal
 }
 
-export interface UpdaterParams<D = any, E = any, K = any> {
+export interface UpdaterParams {
   cooldown?: number
   expiration?: number
   timeout?: number

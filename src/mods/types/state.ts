@@ -1,6 +1,6 @@
-export interface State<D = any, E = any, K = any> {
+export interface State<D = unknown> {
   data?: D
-  error?: E
+  error?: unknown
   time?: number,
   aborter?: AbortController,
   optimistic?: boolean,

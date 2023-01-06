@@ -12,13 +12,13 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 /**
  * Query for a single resource
  */
-export interface SingleQuery<D = any, E = any, K = any> extends Query<D, E, K> {
+export interface SingleQuery<D = unknown, K = unknown> extends Query<D, K> {
   /**
    * Optimistic update
    * @param updater Mutation function
    * @param aborter Custom AbortController
    */
-  update(updater: Updater<D, E, K>, uparams?: UpdaterParams<D, E, K>, aborter?: AbortController): Promise<State<D, E, K> | undefined>
+  update(updater: Updater<D>, uparams?: UpdaterParams, aborter?: AbortController): Promise<State<D> | undefined>
 }
 
 /**
@@ -28,11 +28,11 @@ export interface SingleQuery<D = any, E = any, K = any> extends Query<D, E, K> {
  * @param cparams Parameters (unmemoized)
  * @returns Single query
  */
-export function useSingleQuery<D = any, E = any, K = any>(
+export function useSingleQuery<D, K>(
   key: K | undefined,
-  fetcher: Fetcher<D, E, K> | undefined,
-  params: Params<D, E, K> = {},
-): SingleQuery<D, E, K> {
+  fetcher: Fetcher<D, K> | undefined,
+  params: Params<D, K> = {},
+): SingleQuery<D, K> {
   const core = useCore()
 
   const mparams = { ...core.params, ...params }
@@ -42,18 +42,18 @@ export function useSingleQuery<D = any, E = any, K = any>(
   const mparamsRef = useAutoRef(mparams)
 
   const skey = useMemo(() => {
-    return getSingleStorageKey(key, mparamsRef.current)
+    return getSingleStorageKey<D, K>(key, mparamsRef.current)
   }, [key])
 
   const [, setCounter] = useState(0)
 
-  const stateRef = useRef<State<D, E, K> | null>()
+  const stateRef = useRef<State<D> | null>()
 
   useMemo(() => {
-    stateRef.current = core.getSync<D, E, K>(skey, mparamsRef.current)
+    stateRef.current = core.getSync<D, K>(skey, mparamsRef.current)
   }, [core, skey])
 
-  const setState = useCallback((state?: State<D, E, K>) => {
+  const setState = useCallback((state?: State<D>) => {
     stateRef.current = state
     setCounter(c => c + 1)
   }, [])
@@ -63,7 +63,7 @@ export function useSingleQuery<D = any, E = any, K = any>(
   useEffect(() => {
     if (stateRef.current !== null) return
 
-    initRef.current = core.get<D, E, K>(skey, mparamsRef.current).then(setState)
+    initRef.current = core.get<D, K>(skey, mparamsRef.current).then(setState)
   }, [core, skey])
 
   useEffect(() => {
@@ -73,7 +73,7 @@ export function useSingleQuery<D = any, E = any, K = any>(
     return () => void core.off(skey, setState, mparamsRef.current)
   }, [core, skey])
 
-  const mutate = useCallback(async (mutator: Mutator<D, E, K>) => {
+  const mutate = useCallback(async (mutator: Mutator<D>) => {
     if (stateRef.current === null)
       await initRef.current
     if (stateRef.current === null)
@@ -128,7 +128,7 @@ export function useSingleQuery<D = any, E = any, K = any>(
     return await core.single.fetch(key, skey, fetcher, aborter, params, true, true)
   }, [core, skey])
 
-  const update = useCallback(async (updater: Updater<D, E, K>, uparams: UpdaterParams<D, E, K> = {}, aborter?: AbortController) => {
+  const update = useCallback(async (updater: Updater<D>, uparams: UpdaterParams = {}, aborter?: AbortController) => {
     if (typeof window === "undefined")
       throw new Error("Update on SSR")
     if (stateRef.current === null)

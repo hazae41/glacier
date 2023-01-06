@@ -7,7 +7,7 @@ import { Params } from "mods/types/params.js";
 import { State } from "mods/types/state.js";
 import { Updater, UpdaterParams } from "mods/types/updater.js";
 
-export function getSingleStorageKey<D = any, E = any, K = any>(key: K, params: Params) {
+export function getSingleStorageKey<D, K>(key: K | undefined, params: Params<D, K>) {
   if (key === undefined)
     return undefined
   if (typeof key === "string")
@@ -23,22 +23,22 @@ export function getSingleStorageKey<D = any, E = any, K = any>(key: K, params: P
 /**
  * Non-React version of SingleQuery
  */
-export class SingleInstance<D = any, E = any, K = any> implements Instance<D, E, K>{
+export class SingleInstance<D = unknown, K = unknown> implements Instance<D, K> {
   readonly skey: string | undefined
-  readonly mparams: Params<D, E, K>
+  readonly mparams: Params<D, K>
 
   private _init: Promise<void> | undefined
-  private _state: State<D, E, K> | undefined | null
+  private _state: State<D> | undefined | null
 
   constructor(
     readonly core: Core,
     readonly key: K | undefined,
-    readonly fetcher: Fetcher<D, E, K> | undefined,
-    readonly params: Params<D, E, K> = {},
+    readonly fetcher: Fetcher<D, K> | undefined,
+    readonly params: Params<D, K> = {},
   ) {
     this.mparams = { ...core.params, ...params }
 
-    this.skey = getSingleStorageKey(key, this.mparams)
+    this.skey = getSingleStorageKey<D, K>(key, this.mparams)
 
     this.loadSync()
     this.subscribe()
@@ -51,7 +51,7 @@ export class SingleInstance<D = any, E = any, K = any> implements Instance<D, E,
   private loadSync() {
     const { core, skey, mparams } = this
 
-    this._state = core.getSync(skey, mparams)
+    this._state = core.getSync<D, K>(skey, mparams)
   }
 
   private async loadAsync() {
@@ -65,7 +65,7 @@ export class SingleInstance<D = any, E = any, K = any> implements Instance<D, E,
   private subscribe() {
     const { core, skey } = this
 
-    const setter = (state?: State<D, E, K>) =>
+    const setter = (state?: State<D>) =>
       this._state = state
 
     core.on(this.skey, setter)
@@ -75,7 +75,7 @@ export class SingleInstance<D = any, E = any, K = any> implements Instance<D, E,
     }).register(this, undefined)
   }
 
-  async mutate(mutator: Mutator<D, E, K>) {
+  async mutate(mutator: Mutator<D>) {
     const { core, skey, mparams } = this
 
     if (this._state === null)
@@ -112,7 +112,7 @@ export class SingleInstance<D = any, E = any, K = any> implements Instance<D, E,
     return this._state = await core.single.fetch(key, skey, fetcher, aborter, mparams, true, true)
   }
 
-  async update(updater: Updater<D, E, K>, uparams: UpdaterParams<D, E, K> = {}, aborter?: AbortController) {
+  async update(updater: Updater<D>, uparams: UpdaterParams = {}, aborter?: AbortController) {
     const { core, key, skey, fetcher, mparams } = this
 
     if (this._state === null)

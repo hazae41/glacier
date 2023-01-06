@@ -8,8 +8,8 @@ export interface SyncStorage {
   unmount(): void
   collect(): void
 
-  get<T = any>(key: string, ignore?: boolean): T | undefined
-  set<T = any>(key: string, value: T, ignore?: boolean): void
+  get<T>(key: string, ignore?: boolean): T | undefined
+  set<T>(key: string, value: T, ignore?: boolean): void
   delete(key: string, ignore?: boolean): void
 }
 
@@ -19,8 +19,8 @@ export interface AsyncStorage {
   unmount(): void
   collect(): void
 
-  get<T = any>(key: string, ignore?: boolean): Promise<T | undefined>
-  set<T = any>(key: string, value: T, ignore?: boolean): Promise<void>
+  get<T>(key: string, ignore?: boolean): Promise<T | undefined>
+  set<T>(key: string, value: T, ignore?: boolean): Promise<void>
   delete(key: string, ignore?: boolean): Promise<void>
 }
 

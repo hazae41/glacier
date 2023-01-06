@@ -6,9 +6,9 @@ import { useEffect } from "react"
  * @param query 
  * @param callback 
  */
-export function useError<D = any, E = any, K = any>(
-  query: Query<D, E, K>,
-  callback: (e: E) => void
+export function useError(
+  query: Query,
+  callback: (e: unknown) => void
 ) {
   const { error } = query
 

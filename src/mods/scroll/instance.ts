@@ -7,7 +7,7 @@ import { Params } from "mods/types/params.js";
 import { Scroller } from "mods/types/scroller.js";
 import { State } from "mods/types/state.js";
 
-export function getScrollStorageKey<D = any, E = any, K = any>(key: K, params: Params) {
+export function getScrollStorageKey<D, K>(key: K | undefined, params: Params<D, K>) {
   if (key === undefined)
     return undefined
   if (typeof key === "string")
@@ -23,24 +23,25 @@ export function getScrollStorageKey<D = any, E = any, K = any>(key: K, params: P
 /**
  * Non-React version of ScrollQuery
  */
-export class ScrollInstance<D = any, E = any, K = any> implements Instance<D[], E, K> {
+export class ScrollInstance<D = unknown, K = unknown> implements Instance<D[], K> {
   readonly key: K | undefined
   readonly skey: string | undefined
-  readonly mparams: Params<D[], E, K>
+  readonly mparams: Params<D[], K>
 
   private _init: Promise<void> | undefined
-  private _state: State<D[], E, K> | undefined | null
+  private _state: State<D[]> | undefined | null
 
   constructor(
     readonly core: Core,
-    readonly scroller: Scroller<D, E, K>,
-    readonly fetcher: Fetcher<D, E, K> | undefined,
-    readonly params: Params<D[], E, K> = {},
+    readonly scroller: Scroller<D, K>,
+    readonly fetcher: Fetcher<D, K> | undefined,
+    readonly params: Params<D[], K> = {},
   ) {
     this.mparams = { ...core.params, ...params }
 
     this.key = scroller()
-    this.skey = getScrollStorageKey(this.key, this.mparams)
+
+    this.skey = getScrollStorageKey<D[], K>(this.key, this.mparams)
 
     this.loadSync()
     this.subscribe()
@@ -53,7 +54,7 @@ export class ScrollInstance<D = any, E = any, K = any> implements Instance<D[], 
   private loadSync() {
     const { core, skey, mparams } = this
 
-    this._state = core.getSync(skey, mparams)
+    this._state = core.getSync<D[], K>(skey, mparams)
   }
 
   private async loadAsync() {
@@ -67,7 +68,7 @@ export class ScrollInstance<D = any, E = any, K = any> implements Instance<D[], 
   private subscribe() {
     const { core, skey } = this
 
-    const setter = (state?: State<D[], E, K>) =>
+    const setter = (state?: State<D[]>) =>
       this._state = state
 
     core.on(skey, setter)
@@ -77,7 +78,7 @@ export class ScrollInstance<D = any, E = any, K = any> implements Instance<D[], 
     }).register(this, undefined)
   }
 
-  async mutate(mutator: Mutator<D[], E, K>) {
+  async mutate(mutator: Mutator<D[]>) {
     const { core, skey, mparams } = this
 
     if (this._state === null)

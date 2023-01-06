@@ -1,7 +1,7 @@
 /**
  * Map of arrays data structure
  */
-export class MapOfArrays<K = any, V = any> {
+export class MapOfArrays<K, V> {
   private map = new Map<K, V[]>()
 
   /**

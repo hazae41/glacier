@@ -8,9 +8,9 @@ import { State } from "mods/types/state.js"
  * @param query 
  * @param state 
  */
-export function useFallback<D = any, E = any, K = any>(
-  query: Query<D, E, K>,
-  state?: State<D, E, K>
+export function useFallback<D>(
+  query: Query<D>,
+  state?: State<D>
 ) {
   const { data, error } = query
 

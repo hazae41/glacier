@@ -3,8 +3,8 @@ import { Instance } from "mods/types/instance.js"
 import { Schema } from "mods/types/schema.js"
 import { useCallback } from "react"
 
-export type Maker = <D = any, E = any, K = any, O extends Instance<D, E, K> = Instance<D, E, K>>(
-  schema: Schema<D, E, K, O>
+export type Maker = <D, K, O extends Instance<D, K> = Instance<D, K>>(
+  schema: Schema<D, K, O>
 ) => O
 
 export function useXSWR() {

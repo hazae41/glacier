@@ -21,15 +21,15 @@ export class ScrollHelper {
    * @param force Should ignore cooldown
    * @returns The new state
    */
-  async first<D = any, E = any, K = any>(
+  async first<D, K>(
     skey: string | undefined,
-    scroller: Scroller<D, E, K>,
-    fetcher: Fetcher<D, E, K>,
+    scroller: Scroller<D, K>,
+    fetcher: Fetcher<D, K>,
     aborter = new AbortController(),
-    params: Params<D[], E, K> = {},
+    params: Params<D[], K> = {},
     force = false,
     ignore = false
-  ): Promise<State<D[], E, K> | undefined> {
+  ): Promise<State<D[]> | undefined> {
     if (skey === undefined) return
 
     let { current, skip, first } = await this.core.lock(skey, async () => {
@@ -88,7 +88,7 @@ export class ScrollHelper {
 
       current = await this.core.get(skey, params)
 
-      const state: State<D[], E, K> = {}
+      const state: State<D[]> = {}
 
       if (data !== undefined)
         state.data = [data]
@@ -125,15 +125,15 @@ export class ScrollHelper {
    * @param force Should ignore cooldown
    * @returns The new state
    */
-  async scroll<D = any, E = any, K = any>(
+  async scroll<D, K>(
     skey: string | undefined,
-    scroller: Scroller<D, E, K>,
-    fetcher: Fetcher<D, E, K>,
+    scroller: Scroller<D, K>,
+    fetcher: Fetcher<D, K>,
     aborter = new AbortController(),
-    params: Params<D[], E, K> = {},
+    params: Params<D[], K> = {},
     force = false,
     ignore = false
-  ): Promise<State<D[], E, K> | undefined> {
+  ): Promise<State<D[]> | undefined> {
     if (skey === undefined) return
 
     let { current, skip, last } = await this.core.lock(skey, async () => {
@@ -195,7 +195,7 @@ export class ScrollHelper {
 
       current = await this.core.get(skey, params)
 
-      const state: State<D[], E, K> = {}
+      const state: State<D[]> = {}
 
       if (data !== undefined)
         state.data = [...(current?.data ?? []), data]

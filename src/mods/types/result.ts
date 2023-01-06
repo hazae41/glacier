@@ -1,8 +1,8 @@
-export type Result<D = any, E = any, K = any> =
-  | DataResult<D, E, K>
-  | ErrorResult<D, E, K>
+export type Result<D> =
+  | DataResult<D>
+  | ErrorResult
 
-export interface DataResult<D = any, E = any, K = any> {
+export interface DataResult<D> {
   data?: D,
   error?: undefined,
   time?: number,
@@ -10,9 +10,9 @@ export interface DataResult<D = any, E = any, K = any> {
   expiration?: number
 }
 
-export interface ErrorResult<D = any, E = any, K = any> {
+export interface ErrorResult {
   data?: undefined,
-  error?: E,
+  error?: unknown,
   time?: number,
   cooldown?: number
   expiration?: number

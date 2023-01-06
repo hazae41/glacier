@@ -3,7 +3,7 @@ import { MapOfArrays } from "libs/ortho/map-of-arrays.js"
 /**
  * Orthogonal state publisher
  */
-export class Ortho<K = any, S = any> {
+export class Ortho<K, S> {
   private listeners = new MapOfArrays<K, (x: S) => void>()
 
   /**
