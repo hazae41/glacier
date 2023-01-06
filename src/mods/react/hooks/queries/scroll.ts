@@ -26,7 +26,7 @@ export interface ScrollQuery<D = unknown, K = unknown> extends Query<D[], K> {
  * @param cparams Parameters (unmemoized)
  * @returns Scrolling query
  */
-export function useScrollQuery<D, K>(
+export function useScrollQuery<D = unknown, K = string>(
   scroller: Scroller<D, K>,
   fetcher: Fetcher<D, K> | undefined,
   params: Params<D[], K> = {},

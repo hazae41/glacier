@@ -6,7 +6,7 @@ import { Schema } from "mods/types/schema.js";
 import { Scroller } from "mods/types/scroller.js";
 import { ScrollInstance } from "./instance.js";
 
-export function getScrollSchema<D, K>(
+export function getScrollSchema<D = unknown, K = string>(
   scroller: Scroller<D, K>,
   fetcher: Fetcher<D, K> | undefined,
   params: Params<D[], K> = {},

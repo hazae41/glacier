@@ -28,7 +28,7 @@ export interface SingleQuery<D = unknown, K = unknown> extends Query<D, K> {
  * @param cparams Parameters (unmemoized)
  * @returns Single query
  */
-export function useSingleQuery<D, K>(
+export function useSingleQuery<D = unknown, K = string>(
   key: K | undefined,
   fetcher: Fetcher<D, K> | undefined,
   params: Params<D, K> = {},
