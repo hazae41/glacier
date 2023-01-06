@@ -69,7 +69,7 @@ export class SyncLocalStorage implements SyncStorage {
     }
   }
 
-  get<T = any>(key: string, ignore = false) {
+  get<T>(key: string, ignore = false) {
     if (typeof Storage === "undefined")
       return
     if (!ignore && !this.keys.has(key))
@@ -78,7 +78,7 @@ export class SyncLocalStorage implements SyncStorage {
     if (item) return this.serializer.parse(item) as T
   }
 
-  set<T = any>(key: string, value: T, ignore = false) {
+  set<T>(key: string, value: T, ignore = false) {
     if (typeof Storage === "undefined")
       return
     if (!ignore && !this.keys.has(key))

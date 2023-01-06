@@ -6,7 +6,7 @@ const directory = resolve("./dist/test/")
 const { pathname } = new URL(import.meta.url)
 console.log(relative(directory, pathname))
 
-function jsoneq(a: any, b: any) {
+function jsoneq(a: unknown, b: unknown) {
   return JSON.stringify(a) === JSON.stringify(b)
 }
 

@@ -90,7 +90,7 @@ export class SingleHelper {
       return await this.core.mutate(skey, current,
         () => ({ time, cooldown, expiration, aborter: undefined, ...state }),
         params)
-    } catch (error: any) {
+    } catch (error: unknown) {
       current = await this.core.get(skey, params)
 
       if (current?.aborter !== aborter)
@@ -222,7 +222,7 @@ export class SingleHelper {
       return await this.core.mutate(skey, current,
         () => ({ time, cooldown, expiration, aborter: undefined, optimistic: false, ...state }),
         params)
-    } catch (error: any) {
+    } catch (error: unknown) {
       current = await this.core.get(skey, params)
 
       if (current?.aborter !== aborter)

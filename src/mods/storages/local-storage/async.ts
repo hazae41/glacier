@@ -76,7 +76,7 @@ export class AsyncLocalStorage implements AsyncStorage {
     }
   }
 
-  getSync<T = any>(key: string, ignore = false) {
+  getSync<T>(key: string, ignore = false) {
     if (typeof Storage === "undefined")
       return
     if (!ignore && !this.keys.has(key))
@@ -85,7 +85,7 @@ export class AsyncLocalStorage implements AsyncStorage {
     if (item) return this.serializer.parse(item) as T
   }
 
-  async get<T = any>(key: string, ignore = false) {
+  async get<T>(key: string, ignore = false) {
     if (typeof Storage === "undefined")
       return
     if (!ignore && !this.keys.has(key))
@@ -94,7 +94,7 @@ export class AsyncLocalStorage implements AsyncStorage {
     if (item) return this.serializer.parse(item) as T
   }
 
-  async set<T = any>(key: string, value: T, ignore = false) {
+  async set<T>(key: string, value: T, ignore = false) {
     if (typeof Storage === "undefined")
       return
     if (!ignore && !this.keys.has(key))
