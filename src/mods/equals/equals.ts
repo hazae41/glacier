@@ -27,10 +27,13 @@ export namespace Equals {
     const ka = Object.keys(a)
     const kb = Object.keys(b)
 
+    const oa = a as Record<string, unknown>
+    const ob = b as Record<string, unknown>
+
     if (ka.length !== kb.length)
       return false
     for (const key of ka)
-      if ((a as any)[key] !== (b as any)[key])
+      if (oa[key] !== ob[key])
         return false
     return true
   }
