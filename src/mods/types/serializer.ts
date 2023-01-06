@@ -1,4 +1,4 @@
 export interface Serializer<T = unknown> {
-  stringify<T>(value: T): string
+  stringify(value: T): string
   parse(text: string): T
 }
