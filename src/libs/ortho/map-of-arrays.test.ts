@@ -1,10 +1,10 @@
 import { assert, test } from "@hazae41/phobos";
-import { relative, resolve } from "path";
+import { relative, resolve } from "node:path";
 import { MapOfArrays } from "./map-of-arrays.js";
 
 const directory = resolve("./dist/test/")
 const { pathname } = new URL(import.meta.url)
-console.log(relative(directory, pathname))
+console.log(relative(directory, pathname).replace(".mjs", ".ts"))
 
 function jsoneq(a: unknown, b: unknown) {
   return JSON.stringify(a) === JSON.stringify(b)

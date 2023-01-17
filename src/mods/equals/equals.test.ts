@@ -1,10 +1,10 @@
 import { assert, test, throws } from "@hazae41/phobos";
-import { relative, resolve } from "path";
+import { relative, resolve } from "node:path";
 import { Equals } from "./equals.js";
 
 const directory = resolve("./dist/test/")
 const { pathname } = new URL(import.meta.url)
-console.log(relative(directory, pathname))
+console.log(relative(directory, pathname).replace(".mjs", ".ts"))
 
 test("shallow equals", async ({ test }) => {
   assert(Equals.shallow({ text: "aaaa" }, { text: "aaaa" }) === true, `object should be equals`)

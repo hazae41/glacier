@@ -1,10 +1,10 @@
 import { assert, test } from "@hazae41/phobos";
-import { relative, resolve } from "path";
+import { relative, resolve } from "node:path";
 import { Ortho } from "./ortho.js";
 
 const directory = resolve("./dist/test/")
 const { pathname } = new URL(import.meta.url)
-console.log(relative(directory, pathname))
+console.log(relative(directory, pathname).replace(".mjs", ".ts"))
 
 test("Ortho", async () => {
   let a = 0
