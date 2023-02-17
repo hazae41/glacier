@@ -31,16 +31,16 @@ export class IDBStorage implements AsyncStorage {
     if (typeof indexedDB === "undefined")
       return
 
-    this.initialization = this.load()
+    this.initialization = this.#load()
 
-    this.onunload = () => this.unload()
+    this.onunload = () => this.#unload()
 
     addEventListener("beforeunload", this.onunload)
   }
 
   get database() { return this._database }
 
-  private async load() {
+  async #load() {
     if (typeof indexedDB === "undefined")
       return
 
@@ -81,7 +81,7 @@ export class IDBStorage implements AsyncStorage {
     this.collect().catch(console.error)
   }
 
-  private unload() {
+  #unload() {
     if (typeof Storage === "undefined")
       return
 

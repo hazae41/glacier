@@ -1,6 +1,7 @@
 import { useAutoRef } from "libs/react.js";
 import { useCore } from "mods/react/contexts/core.js";
 import { Query } from "mods/react/types/query.js";
+import { SingleHelper } from "mods/single/helper.js";
 import { getSingleStorageKey } from "mods/single/instance.js";
 import { Fetcher } from "mods/types/fetcher.js";
 import { Mutator } from "mods/types/mutator.js";
@@ -108,7 +109,7 @@ export function useSingleQuery<D = unknown, K = string>(
     const fetcher = fetcherRef.current
     const params = mparamsRef.current
 
-    return await core.single.fetch(key, skey, fetcher, aborter, params)
+    return await SingleHelper.fetch(core, key, skey, fetcher, aborter, params)
   }, [core, skey])
 
   const refetch = useCallback(async (aborter?: AbortController) => {
@@ -125,7 +126,7 @@ export function useSingleQuery<D = unknown, K = string>(
     const fetcher = fetcherRef.current
     const params = mparamsRef.current
 
-    return await core.single.fetch(key, skey, fetcher, aborter, params, true, true)
+    return await SingleHelper.fetch(core, key, skey, fetcher, aborter, params, true, true)
   }, [core, skey])
 
   const update = useCallback(async (updater: Updater<D>, uparams: UpdaterParams = {}, aborter?: AbortController) => {
@@ -142,7 +143,7 @@ export function useSingleQuery<D = unknown, K = string>(
 
     const fparams = { ...params, ...uparams }
 
-    return await core.single.update(key, skey, fetcher, updater, aborter, fparams)
+    return await SingleHelper.update(core, key, skey, fetcher, updater, aborter, fparams)
   }, [core, skey])
 
   const suspend = useCallback(() => {
@@ -161,7 +162,7 @@ export function useSingleQuery<D = unknown, K = string>(
       const params = mparamsRef.current
 
       const background = new Promise<void>(ok => core.once(skey, () => ok(), params))
-      await core.single.fetch(key, skey, fetcher, undefined, params, false, true)
+      await SingleHelper.fetch(core, key, skey, fetcher, undefined, params, false, true)
       await background
     })()
   }, [core, skey])

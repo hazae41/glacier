@@ -2,8 +2,6 @@ import { Mutex } from "libs/mutex/mutex.js"
 import { Ortho } from "libs/ortho/ortho.js"
 import { DEFAULT_EQUALS } from "mods/defaults.js"
 import { Equals } from "mods/equals/equals.js"
-import { ScrollHelper } from "mods/scroll/helper.js"
-import { SingleHelper } from "mods/single/helper.js"
 import { isAsyncStorage } from "mods/storages/storage.js"
 import { Mutator } from "mods/types/mutator.js"
 import { GlobalParams, Params } from "mods/types/params.js"
@@ -13,28 +11,26 @@ export type Listener<D> =
   (x?: State<D>) => void
 
 export class Core extends Ortho<string, State | undefined> {
-  readonly single = new SingleHelper(this)
-  readonly scroll = new ScrollHelper(this)
 
   readonly cache = new Map<string, State>()
   readonly locks = new Map<string, Mutex>()
 
-  private _mounted = true
+  #mounted = true
 
   constructor(
     readonly params: GlobalParams
   ) { super() }
 
-  get mounted() { return this._mounted }
+  get mounted() { return this.#mounted }
 
   mount() {
-    this._mounted = true
+    this.#mounted = true
   }
 
   unmount() {
     for (const timeout of this.timeouts.values())
       clearTimeout(timeout)
-    this._mounted = false
+    this.#mounted = false
   }
 
   async lock<T>(skey: string, callback: () => Promise<T>) {
@@ -321,7 +317,7 @@ export class Core extends Ortho<string, State | undefined> {
     if (current?.expiration === -1) return
 
     const erase = async () => {
-      if (!this._mounted) return
+      if (!this.#mounted) return
 
       const count = this.counts.get(key)
       if (count !== undefined) return

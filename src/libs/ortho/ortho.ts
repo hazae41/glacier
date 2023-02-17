@@ -4,7 +4,8 @@ import { MapOfArrays } from "libs/ortho/map-of-arrays.js"
  * Orthogonal state publisher
  */
 export class Ortho<K, S> {
-  private listeners = new MapOfArrays<K, (x: S) => void>()
+
+  #listeners = new MapOfArrays<K, (x: S) => void>()
 
   /**
    * Publish a value to all listeners of key
@@ -13,7 +14,7 @@ export class Ortho<K, S> {
    * @returns 
    */
   publish(key: K, value: S) {
-    const listeners = this.listeners.get(key)
+    const listeners = this.#listeners.get(key)
 
     if (listeners === undefined)
       return
@@ -28,7 +29,7 @@ export class Ortho<K, S> {
    * @param listener 
    */
   on(key: K, listener: (x: S) => void) {
-    this.listeners.push(key, listener)
+    this.#listeners.push(key, listener)
   }
 
   /**
@@ -37,6 +38,6 @@ export class Ortho<K, S> {
    * @param listener 
    */
   off(key: K, listener: (x: S) => void) {
-    this.listeners.erase(key, listener)
+    this.#listeners.erase(key, listener)
   }
 }

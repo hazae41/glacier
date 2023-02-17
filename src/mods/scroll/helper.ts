@@ -8,8 +8,7 @@ import { Params } from "mods/types/params.js";
 import { Scroller } from "mods/types/scroller.js";
 import { State } from "mods/types/state.js";
 
-export class ScrollHelper {
-  constructor(readonly core: Core) { }
+export namespace ScrollHelper {
 
   /**
    * Fetch first page
@@ -21,7 +20,8 @@ export class ScrollHelper {
    * @param force Should ignore cooldown
    * @returns The new state
    */
-  async first<D, K>(
+  export async function first<D, K>(
+    core: Core,
     skey: string | undefined,
     scroller: Scroller<D, K>,
     fetcher: Fetcher<D, K>,
@@ -32,8 +32,8 @@ export class ScrollHelper {
   ): Promise<State<D[]> | undefined> {
     if (skey === undefined) return
 
-    let { current, skip, first } = await this.core.lock(skey, async () => {
-      let current = await this.core.get(skey, params)
+    let { current, skip, first } = await core.lock(skey, async () => {
+      let current = await core.get(skey, params)
 
       if (current?.optimistic)
         return { current, skip: true }
@@ -42,7 +42,7 @@ export class ScrollHelper {
       if (current?.aborter && force)
         current.aborter.abort("Replaced")
 
-      if (this.core.shouldCooldown(current) && !ignore)
+      if (core.shouldCooldown(current) && !ignore)
         return { current, skip: true }
 
       const first = scroller(undefined)
@@ -50,7 +50,7 @@ export class ScrollHelper {
       if (first === undefined)
         return { current, skip: true }
 
-      current = await this.core.mutate(skey, current,
+      current = await core.mutate(skey, current,
         c => ({ time: c?.time, aborter }),
         params)
       return { current, first }
@@ -86,7 +86,7 @@ export class ScrollHelper {
       if (signal.aborted)
         throw new AbortError(signal)
 
-      current = await this.core.get(skey, params)
+      current = await core.get(skey, params)
 
       const state: State<D[]> = {}
 
@@ -95,19 +95,19 @@ export class ScrollHelper {
       state.error = error
 
       if (data !== undefined) {
-        const norm = await this.core.normalize(true, { data: [data] }, params)
+        const norm = await core.normalize(true, { data: [data] }, params)
         if (equals(norm?.[0], current?.data?.[0])) delete state.data
       }
 
-      return await this.core.mutate(skey, current,
+      return await core.mutate(skey, current,
         () => ({ time, cooldown, expiration, aborter: undefined, ...state }),
         params)
     } catch (error: unknown) {
-      current = await this.core.get(skey, params)
+      current = await core.get(skey, params)
 
       if (current?.aborter !== aborter)
         return current
-      return await this.core.mutate(skey, current,
+      return await core.mutate(skey, current,
         () => ({ aborter: undefined, error }),
         params)
     } finally {
@@ -125,7 +125,8 @@ export class ScrollHelper {
    * @param force Should ignore cooldown
    * @returns The new state
    */
-  async scroll<D, K>(
+  export async function scroll<D, K>(
+    core: Core,
     skey: string | undefined,
     scroller: Scroller<D, K>,
     fetcher: Fetcher<D, K>,
@@ -136,8 +137,8 @@ export class ScrollHelper {
   ): Promise<State<D[]> | undefined> {
     if (skey === undefined) return
 
-    let { current, skip, last } = await this.core.lock(skey, async () => {
-      let current = await this.core.get(skey, params)
+    let { current, skip, last } = await core.lock(skey, async () => {
+      let current = await core.get(skey, params)
 
       if (current?.optimistic)
         return { current, skip: true }
@@ -146,7 +147,7 @@ export class ScrollHelper {
       if (current?.aborter && force)
         current.aborter.abort("Replaced")
 
-      if (this.core.shouldCooldown(current) && !ignore)
+      if (core.shouldCooldown(current) && !ignore)
         return { current, skip: true }
 
       const pages = current?.data ?? []
@@ -155,7 +156,7 @@ export class ScrollHelper {
       if (last === undefined)
         return { current, skip: true }
 
-      current = await this.core.mutate(skey, current,
+      current = await core.mutate(skey, current,
         c => ({ time: c?.time, aborter }),
         params)
       return { current, last }
@@ -193,7 +194,7 @@ export class ScrollHelper {
       if (expiration !== undefined && current?.expiration !== undefined)
         expiration = Math.min(expiration, current?.expiration)
 
-      current = await this.core.get(skey, params)
+      current = await core.get(skey, params)
 
       const state: State<D[]> = {}
 
@@ -201,15 +202,15 @@ export class ScrollHelper {
         state.data = [...(current?.data ?? []), data]
       state.error = error
 
-      return await this.core.mutate(skey, current,
+      return await core.mutate(skey, current,
         () => ({ time, cooldown, expiration, aborter: undefined, ...state }),
         params)
     } catch (error: unknown) {
-      current = await this.core.get(skey, params)
+      current = await core.get(skey, params)
 
       if (current?.aborter !== aborter)
         return current
-      return await this.core.mutate(skey, current,
+      return await core.mutate(skey, current,
         () => ({ aborter: undefined, error }),
         params)
     } finally {
