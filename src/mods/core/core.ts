@@ -12,8 +12,10 @@ export type Listener<D> =
 
 export class Core extends Ortho<string, State | undefined> {
 
-  readonly cache = new Map<string, State>()
-  readonly locks = new Map<string, Mutex>()
+  readonly #cache = new Map<string, State | undefined>()
+  readonly #counts = new Map<string, number>()
+  readonly #timeouts = new Map<string, NodeJS.Timeout>()
+  readonly #locks = new Map<string, Mutex>()
 
   #mounted = true
 
@@ -28,19 +30,19 @@ export class Core extends Ortho<string, State | undefined> {
   }
 
   unmount() {
-    for (const timeout of this.timeouts.values())
+    for (const timeout of this.#timeouts.values())
       clearTimeout(timeout)
     this.#mounted = false
   }
 
   async lock<T>(skey: string, callback: () => Promise<T>) {
-    const lock = this.locks.get(skey)
+    const lock = this.#locks.get(skey)
 
     if (lock !== undefined)
       return await lock.lock(callback)
 
     const lock2 = new Mutex()
-    this.locks.set(skey, lock2)
+    this.#locks.set(skey, lock2)
     return await lock2.lock(callback)
   }
 
@@ -50,23 +52,20 @@ export class Core extends Ortho<string, State | undefined> {
   ): State<D> | undefined | null {
     if (skey === undefined) return
 
-    const cached = this.cache.get(skey)
-
-    if (cached !== undefined)
+    if (this.#cache.has(skey)) {
+      const cached = this.#cache.get(skey)
       return cached as State<D>
+    }
 
     const { storage } = params
-    if (!storage) return
 
+    if (!storage)
+      return undefined
     if (isAsyncStorage(storage))
       return null
 
     const state = storage.get<State<D>>(skey)
-
-    if (state === undefined)
-      return
-
-    this.cache.set(skey, state)
+    this.#cache.set(skey, state)
     return state
   }
 
@@ -77,20 +76,18 @@ export class Core extends Ortho<string, State | undefined> {
   ): Promise<State<D> | undefined> {
     if (skey === undefined) return
 
-    const cached = this.cache.get(skey)
-
-    if (cached !== undefined)
+    if (this.#cache.has(skey)) {
+      const cached = this.#cache.get(skey)
       return cached as State<D>
+    }
 
     const { storage } = params
-    if (!storage) return
+
+    if (!storage)
+      return undefined
 
     const state = await storage.get<State<D>>(skey, ignore)
-
-    if (state === undefined)
-      return
-
-    this.cache.set(skey, state)
+    this.#cache.set(skey, state)
     return state
   }
 
@@ -108,7 +105,7 @@ export class Core extends Ortho<string, State | undefined> {
   ) {
     if (skey === undefined) return
 
-    this.cache.set(skey, state)
+    this.#cache.set(skey, state)
     this.publish(skey, state)
 
     const { storage } = params
@@ -128,8 +125,8 @@ export class Core extends Ortho<string, State | undefined> {
   ) {
     if (!skey) return
 
-    this.cache.delete(skey)
-    this.locks.delete(skey)
+    this.#cache.delete(skey)
+    this.#locks.delete(skey)
     this.publish(skey, undefined)
 
     const { storage } = params
@@ -254,9 +251,6 @@ export class Core extends Ortho<string, State | undefined> {
     return Date.now() < current.cooldown
   }
 
-  counts = new Map<string, number>()
-  timeouts = new Map<string, NodeJS.Timeout>()
-
   once<D, K>(
     key: string | undefined,
     listener: Listener<D>,
@@ -281,14 +275,14 @@ export class Core extends Ortho<string, State | undefined> {
 
     super.on(key, listener as Listener<unknown>)
 
-    const count = this.counts.get(key) ?? 0
-    this.counts.set(key, count + 1)
+    const count = this.#counts.get(key) ?? 0
+    this.#counts.set(key, count + 1)
 
-    const timeout = this.timeouts.get(key)
+    const timeout = this.#timeouts.get(key)
     if (timeout === undefined) return
 
     clearTimeout(timeout)
-    this.timeouts.delete(key)
+    this.#timeouts.delete(key)
   }
 
   async off<D, K>(
@@ -300,17 +294,17 @@ export class Core extends Ortho<string, State | undefined> {
 
     super.off(key, listener as Listener<unknown>)
 
-    const count = this.counts.get(key)
+    const count = this.#counts.get(key)
 
     if (count === undefined)
       throw new Error("Undefined count")
 
     if (count > 1) {
-      this.counts.set(key, count - 1)
+      this.#counts.set(key, count - 1)
       return
     }
 
-    this.counts.delete(key)
+    this.#counts.delete(key)
 
     const current = await this.get(key, params, true)
     if (current?.expiration === undefined) return
@@ -319,10 +313,10 @@ export class Core extends Ortho<string, State | undefined> {
     const erase = async () => {
       if (!this.#mounted) return
 
-      const count = this.counts.get(key)
+      const count = this.#counts.get(key)
       if (count !== undefined) return
 
-      this.timeouts.delete(key)
+      this.#timeouts.delete(key)
       await this.delete(key, params)
     }
 
@@ -333,6 +327,6 @@ export class Core extends Ortho<string, State | undefined> {
 
     const delay = current.expiration - Date.now()
     const timeout = setTimeout(erase, delay)
-    this.timeouts.set(key, timeout)
+    this.#timeouts.set(key, timeout)
   }
 }
