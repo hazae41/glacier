@@ -2,7 +2,6 @@ import { useAutoRef } from "libs/react.js";
 import { useCore } from "mods/react/contexts/core.js";
 import { Query } from "mods/react/types/query.js";
 import { Single } from "mods/single/helper.js";
-import { getSingleStorageKey } from "mods/single/instance.js";
 import { Fetcher } from "mods/types/fetcher.js";
 import { Mutator } from "mods/types/mutator.js";
 import { Params } from "mods/types/params.js";
@@ -43,7 +42,7 @@ export function useSingleQuery<D = unknown, K = string>(
   const mparamsRef = useAutoRef(mparams)
 
   const skey = useMemo(() => {
-    return getSingleStorageKey<D, K>(key, mparamsRef.current)
+    return Single.getStorageKey<D, K>(key, mparamsRef.current)
   }, [key])
 
   const [, setCounter] = useState(0)

@@ -2,7 +2,6 @@ import { useAutoRef } from "libs/react.js";
 import { useCore } from "mods/react/contexts/core.js";
 import { Query } from "mods/react/types/query.js";
 import { Scroll } from "mods/scroll/helper.js";
-import { getScrollStorageKey } from "mods/scroll/instance.js";
 import { Fetcher } from "mods/types/fetcher.js";
 import { Mutator } from "mods/types/mutator.js";
 import { Params } from "mods/types/params.js";
@@ -45,7 +44,7 @@ export function useScrollQuery<D = unknown, K = string>(
   }, [scroller])
 
   const skey = useMemo(() => {
-    return getScrollStorageKey<D[], K>(key, paramsRef.current)
+    return Scroll.getStorageKey<D[], K>(key, paramsRef.current)
   }, [key])
 
   const [, setCounter] = useState(0)

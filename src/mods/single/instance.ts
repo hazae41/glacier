@@ -1,5 +1,4 @@
 import { Core } from "mods/core/core.js";
-import { DEFAULT_SERIALIZER } from "mods/defaults.js";
 import { Fetcher } from "mods/types/fetcher.js";
 import { Instance } from "mods/types/instance.js";
 import { Mutator } from "mods/types/mutator.js";
@@ -7,19 +6,6 @@ import { Params } from "mods/types/params.js";
 import { State } from "mods/types/state.js";
 import { Updater, UpdaterParams } from "mods/types/updater.js";
 import { Single } from "./helper.js";
-
-export function getSingleStorageKey<D, K>(key: K | undefined, params: Params<D, K>) {
-  if (key === undefined)
-    return undefined
-  if (typeof key === "string")
-    return key
-
-  const {
-    serializer = DEFAULT_SERIALIZER
-  } = params
-
-  return serializer.stringify(key)
-}
 
 /**
  * Non-React version of SingleQuery
@@ -39,7 +25,7 @@ export class SingleInstance<D = unknown, K = unknown> implements Instance<D, K> 
   ) {
     this.mparams = { ...core.params, ...params }
 
-    this.skey = getSingleStorageKey<D, K>(key, this.mparams)
+    this.skey = Single.getStorageKey<D, K>(key, this.mparams)
 
     this.#loadSync()
     this.#subscribe()

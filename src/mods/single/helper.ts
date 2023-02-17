@@ -1,6 +1,6 @@
 import { Time } from "libs/time/time.js";
 import { Core } from "mods/core/core.js";
-import { DEFAULT_COOLDOWN, DEFAULT_EXPIRATION, DEFAULT_TIMEOUT } from "mods/defaults.js";
+import { DEFAULT_COOLDOWN, DEFAULT_EXPIRATION, DEFAULT_SERIALIZER, DEFAULT_TIMEOUT } from "mods/defaults.js";
 import { AbortError } from "mods/errors/abort.js";
 import { Fetcher } from "mods/types/fetcher.js";
 import { Params } from "mods/types/params.js";
@@ -9,6 +9,19 @@ import { State } from "mods/types/state.js";
 import { Updater } from "mods/types/updater.js";
 
 export namespace Single {
+
+  export function getStorageKey<D, K>(key: K | undefined, params: Params<D, K>) {
+    if (key === undefined)
+      return undefined
+    if (typeof key === "string")
+      return key
+
+    const {
+      serializer = DEFAULT_SERIALIZER
+    } = params
+
+    return serializer.stringify(key)
+  }
 
   /**
    * Fetch

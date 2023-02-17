@@ -1,5 +1,4 @@
 import { Core } from "mods/core/core.js";
-import { DEFAULT_SERIALIZER } from "mods/defaults.js";
 import { Fetcher } from "mods/types/fetcher.js";
 import { Instance } from "mods/types/instance.js";
 import { Mutator } from "mods/types/mutator.js";
@@ -7,19 +6,6 @@ import { Params } from "mods/types/params.js";
 import { Scroller } from "mods/types/scroller.js";
 import { State } from "mods/types/state.js";
 import { Scroll } from "./helper.js";
-
-export function getScrollStorageKey<D, K>(key: K | undefined, params: Params<D, K>) {
-  if (key === undefined)
-    return undefined
-  if (typeof key === "string")
-    return key
-
-  const {
-    serializer = DEFAULT_SERIALIZER
-  } = params
-
-  return `scroll:${serializer.stringify(key)}`
-}
 
 /**
  * Non-React version of ScrollQuery
@@ -42,7 +28,7 @@ export class ScrollInstance<D = unknown, K = unknown> implements Instance<D[], K
 
     this.key = scroller()
 
-    this.skey = getScrollStorageKey<D[], K>(this.key, this.mparams)
+    this.skey = Scroll.getStorageKey<D[], K>(this.key, this.mparams)
 
     this.#loadSync()
     this.#subscribe()
