@@ -1,7 +1,7 @@
 import { useAutoRef } from "libs/react.js";
 import { useCore } from "mods/react/contexts/core.js";
 import { Query } from "mods/react/types/query.js";
-import { ScrollHelper } from "mods/scroll/helper.js";
+import { Scroll } from "mods/scroll/helper.js";
 import { getScrollStorageKey } from "mods/scroll/instance.js";
 import { Fetcher } from "mods/types/fetcher.js";
 import { Mutator } from "mods/types/mutator.js";
@@ -111,7 +111,7 @@ export function useScrollQuery<D = unknown, K = string>(
     const fetcher = fetcherRef.current
     const params = paramsRef.current
 
-    return await ScrollHelper.first(core, skey, scroller, fetcher, aborter, params)
+    return await Scroll.first(core, skey, scroller, fetcher, aborter, params)
   }, [core, skey])
 
   const refetch = useCallback(async (aborter?: AbortController) => {
@@ -128,7 +128,7 @@ export function useScrollQuery<D = unknown, K = string>(
     const fetcher = fetcherRef.current
     const params = paramsRef.current
 
-    return await ScrollHelper.first(core, skey, scroller, fetcher, aborter, params, true, true)
+    return await Scroll.first(core, skey, scroller, fetcher, aborter, params, true, true)
   }, [core, skey])
 
   const scroll = useCallback(async (aborter?: AbortController) => {
@@ -145,7 +145,7 @@ export function useScrollQuery<D = unknown, K = string>(
     const fetcher = fetcherRef.current
     const params = paramsRef.current
 
-    return await ScrollHelper.scroll(core, skey, scroller, fetcher, aborter, params, true, true)
+    return await Scroll.scroll(core, skey, scroller, fetcher, aborter, params, true, true)
   }, [core, skey])
 
   const suspend = useCallback(() => {
@@ -164,7 +164,7 @@ export function useScrollQuery<D = unknown, K = string>(
       const params = paramsRef.current
 
       const background = new Promise<void>(ok => core.once(skey, () => ok(), params))
-      await ScrollHelper.first(core, skey, scroller, fetcher, undefined, params, false, true)
+      await Scroll.first(core, skey, scroller, fetcher, undefined, params, false, true)
       await background
     })()
   }, [core, skey])

@@ -6,7 +6,7 @@ import { Mutator } from "mods/types/mutator.js";
 import { Params } from "mods/types/params.js";
 import { Scroller } from "mods/types/scroller.js";
 import { State } from "mods/types/state.js";
-import { ScrollHelper } from "./helper.js";
+import { Scroll } from "./helper.js";
 
 export function getScrollStorageKey<D, K>(key: K | undefined, params: Params<D, K>) {
   if (key === undefined)
@@ -100,7 +100,7 @@ export class ScrollInstance<D = unknown, K = unknown> implements Instance<D[], K
     if (fetcher === undefined)
       return this.#state
 
-    return this.#state = await ScrollHelper.first(core, skey, scroller, fetcher, aborter, mparams)
+    return this.#state = await Scroll.first(core, skey, scroller, fetcher, aborter, mparams)
   }
 
   async refetch(aborter?: AbortController) {
@@ -113,7 +113,7 @@ export class ScrollInstance<D = unknown, K = unknown> implements Instance<D[], K
     if (fetcher === undefined)
       return this.#state
 
-    return this.#state = await ScrollHelper.first(core, skey, scroller, fetcher, aborter, mparams, true, true)
+    return this.#state = await Scroll.first(core, skey, scroller, fetcher, aborter, mparams, true, true)
   }
 
   async scroll(aborter?: AbortController) {
@@ -126,7 +126,7 @@ export class ScrollInstance<D = unknown, K = unknown> implements Instance<D[], K
     if (fetcher === undefined)
       return this.#state
 
-    return this.#state = await ScrollHelper.scroll(core, skey, scroller, fetcher, aborter, mparams, true, true)
+    return this.#state = await Scroll.scroll(core, skey, scroller, fetcher, aborter, mparams, true, true)
   }
 
   async clear() {

@@ -8,7 +8,7 @@ import { Params } from "mods/types/params.js";
 import { Scroller } from "mods/types/scroller.js";
 import { State } from "mods/types/state.js";
 
-export namespace ScrollHelper {
+export namespace Scroll {
 
   /**
    * Fetch first page

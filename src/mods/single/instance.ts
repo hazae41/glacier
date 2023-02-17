@@ -6,7 +6,7 @@ import { Mutator } from "mods/types/mutator.js";
 import { Params } from "mods/types/params.js";
 import { State } from "mods/types/state.js";
 import { Updater, UpdaterParams } from "mods/types/updater.js";
-import { SingleHelper } from "./helper.js";
+import { Single } from "./helper.js";
 
 export function getSingleStorageKey<D, K>(key: K | undefined, params: Params<D, K>) {
   if (key === undefined)
@@ -97,7 +97,7 @@ export class SingleInstance<D = unknown, K = unknown> implements Instance<D, K> 
     if (fetcher === undefined)
       return this.#state
 
-    return this.#state = await SingleHelper.fetch(core, key, skey, fetcher, aborter, mparams)
+    return this.#state = await Single.fetch(core, key, skey, fetcher, aborter, mparams)
   }
 
   async refetch(aborter?: AbortController) {
@@ -110,7 +110,7 @@ export class SingleInstance<D = unknown, K = unknown> implements Instance<D, K> 
     if (fetcher === undefined)
       return this.#state
 
-    return this.#state = await SingleHelper.fetch(core, key, skey, fetcher, aborter, mparams, true, true)
+    return this.#state = await Single.fetch(core, key, skey, fetcher, aborter, mparams, true, true)
   }
 
   async update(updater: Updater<D>, uparams: UpdaterParams = {}, aborter?: AbortController) {
@@ -123,7 +123,7 @@ export class SingleInstance<D = unknown, K = unknown> implements Instance<D, K> 
 
     const fparams = { ...mparams, ...uparams }
 
-    return this.#state = await SingleHelper.update(core, key, skey, fetcher, updater, aborter, fparams)
+    return this.#state = await Single.update(core, key, skey, fetcher, updater, aborter, fparams)
   }
 
   async clear() {

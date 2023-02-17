@@ -8,7 +8,7 @@ import { Result } from "mods/types/result.js";
 import { State } from "mods/types/state.js";
 import { Updater } from "mods/types/updater.js";
 
-export namespace SingleHelper {
+export namespace Single {
 
   /**
    * Fetch
