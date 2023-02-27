@@ -3,7 +3,7 @@ export type Result<D> =
   | ErrorResult
 
 export interface DataResult<D> {
-  data?: D,
+  data: D,
   error?: undefined,
   time?: number,
   cooldown?: number
@@ -12,7 +12,7 @@ export interface DataResult<D> {
 
 export interface ErrorResult {
   data?: undefined,
-  error?: unknown,
+  error: unknown,
   time?: number,
   cooldown?: number
   expiration?: number
