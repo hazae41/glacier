@@ -2,12 +2,25 @@ import { useAutoRef } from "libs/react.js";
 import { useCore } from "mods/react/contexts/core.js";
 import { Query } from "mods/react/types/query.js";
 import { Scroll } from "mods/scroll/helper.js";
+import { ScrollSchema } from "mods/scroll/schema.js";
 import { Fetcher } from "mods/types/fetcher.js";
 import { Mutator } from "mods/types/mutator.js";
 import { Params } from "mods/types/params.js";
 import { Scroller } from "mods/types/scroller.js";
 import { State } from "mods/types/state.js";
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { DependencyList, useCallback, useEffect, useMemo, useRef, useState } from "react";
+
+export function useScrollSchema<D, K, L extends DependencyList = []>(
+  factory: (...deps: L) => ScrollSchema<D, K> | undefined,
+  deps: L
+) {
+  const schema = useMemo(() => {
+    return factory(...deps)
+  }, deps)
+
+  const { scroller, fetcher, params } = schema ?? {}
+  return useScrollQuery<D, K>(scroller, fetcher, params)
+}
 
 /**
  * Query for a scrolling resource
@@ -27,7 +40,7 @@ export interface ScrollQuery<D = unknown, K = unknown> extends Query<D[], K> {
  * @returns Scrolling query
  */
 export function useScrollQuery<D = unknown, K = string>(
-  scroller: Scroller<D, K>,
+  scroller: Scroller<D, K> | undefined,
   fetcher: Fetcher<D, K> | undefined,
   params: Params<D[], K> = {},
 ): ScrollQuery<D, K> {
@@ -40,7 +53,7 @@ export function useScrollQuery<D = unknown, K = string>(
   const paramsRef = useAutoRef(mparams)
 
   const key = useMemo(() => {
-    return scroller()
+    return scroller?.()
   }, [scroller])
 
   const skey = useMemo(() => {
@@ -110,7 +123,7 @@ export function useScrollQuery<D = unknown, K = string>(
     const fetcher = fetcherRef.current
     const params = paramsRef.current
 
-    return await Scroll.first(core, skey, scroller, fetcher, aborter, params)
+    return await Scroll.first(core, scroller, skey, fetcher, aborter, params)
   }, [core, skey])
 
   const refetch = useCallback(async (aborter?: AbortController) => {
@@ -127,7 +140,7 @@ export function useScrollQuery<D = unknown, K = string>(
     const fetcher = fetcherRef.current
     const params = paramsRef.current
 
-    return await Scroll.first(core, skey, scroller, fetcher, aborter, params, true, true)
+    return await Scroll.first(core, scroller, skey, fetcher, aborter, params, true, true)
   }, [core, skey])
 
   const scroll = useCallback(async (aborter?: AbortController) => {
@@ -144,7 +157,7 @@ export function useScrollQuery<D = unknown, K = string>(
     const fetcher = fetcherRef.current
     const params = paramsRef.current
 
-    return await Scroll.scroll(core, skey, scroller, fetcher, aborter, params, true, true)
+    return await Scroll.scroll(core, scroller, skey, fetcher, aborter, params, true, true)
   }, [core, skey])
 
   const suspend = useCallback(() => {
@@ -163,7 +176,7 @@ export function useScrollQuery<D = unknown, K = string>(
       const params = paramsRef.current
 
       const background = new Promise<void>(ok => core.once(skey, () => ok(), params))
-      await Scroll.first(core, skey, scroller, fetcher, undefined, params, false, true)
+      await Scroll.first(core, scroller, skey, fetcher, undefined, params, false, true)
       await background
     })()
   }, [core, skey])

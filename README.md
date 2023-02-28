@@ -91,7 +91,7 @@ Then create a mix using a query and some blocks.
 
 ```tsx
 function useHello() {
-  const query = useSingleQuery<Hello>(`/api/hello`, fetchAsJson)
+  const query = useQuery<Hello>(`/api/hello`, fetchAsJson)
   
   useFetch(query) // Fetch on mount and on url change
   useVisible(query) // Fetch when the page becomes visible
@@ -147,7 +147,7 @@ Using schemas may seems boilerplate, but it will save you a lot of time later.
 
 ```tsx
 function getHelloSchema() {
-  return getSingleSchema<Hello>("/api/hello", fetchAsJson)
+  return getSchema<Hello>("/api/hello", fetchAsJson)
 }
 ```
 
@@ -171,7 +171,7 @@ Once you got a schema and a mixture, you just have to mix it.
 
 ```tsx
 function useHelloMix() {
-  const query = useQuery(getHelloSchema, [])
+  const query = useSchema(getHelloSchema, [])
   useAutoFetchMixture(query)
   return query
 }

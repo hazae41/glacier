@@ -20,13 +20,13 @@ export class ScrollInstance<D = unknown, K = unknown> implements Instance<D[], K
 
   constructor(
     readonly core: Core,
-    readonly scroller: Scroller<D, K>,
+    readonly scroller: Scroller<D, K> | undefined,
     readonly fetcher: Fetcher<D, K> | undefined,
     readonly params: Params<D[], K> = {},
   ) {
     this.mparams = { ...core.params, ...params }
 
-    this.key = scroller()
+    this.key = scroller?.()
 
     this.skey = Scroll.getStorageKey<D[], K>(this.key, this.mparams)
 
@@ -86,7 +86,7 @@ export class ScrollInstance<D = unknown, K = unknown> implements Instance<D[], K
     if (fetcher === undefined)
       return this.#state
 
-    return this.#state = await Scroll.first(core, skey, scroller, fetcher, aborter, mparams)
+    return this.#state = await Scroll.first(core, scroller, skey, fetcher, aborter, mparams)
   }
 
   async refetch(aborter?: AbortController) {
@@ -99,7 +99,7 @@ export class ScrollInstance<D = unknown, K = unknown> implements Instance<D[], K
     if (fetcher === undefined)
       return this.#state
 
-    return this.#state = await Scroll.first(core, skey, scroller, fetcher, aborter, mparams, true, true)
+    return this.#state = await Scroll.first(core, scroller, skey, fetcher, aborter, mparams, true, true)
   }
 
   async scroll(aborter?: AbortController) {
@@ -112,7 +112,7 @@ export class ScrollInstance<D = unknown, K = unknown> implements Instance<D[], K
     if (fetcher === undefined)
       return this.#state
 
-    return this.#state = await Scroll.scroll(core, skey, scroller, fetcher, aborter, mparams, true, true)
+    return this.#state = await Scroll.scroll(core, scroller, skey, fetcher, aborter, mparams, true, true)
   }
 
   async clear() {

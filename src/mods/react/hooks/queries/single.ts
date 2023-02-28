@@ -2,12 +2,25 @@ import { useAutoRef } from "libs/react.js";
 import { useCore } from "mods/react/contexts/core.js";
 import { Query } from "mods/react/types/query.js";
 import { Single } from "mods/single/helper.js";
+import { SingleSchema } from "mods/single/schema.js";
 import { Fetcher } from "mods/types/fetcher.js";
 import { Mutator } from "mods/types/mutator.js";
 import { Params } from "mods/types/params.js";
 import { State } from "mods/types/state.js";
 import { Updater, UpdaterParams } from "mods/types/updater.js";
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { DependencyList, useCallback, useEffect, useMemo, useRef, useState } from "react";
+
+export function useSchema<D, K, L extends DependencyList = []>(
+  factory: (...deps: L) => SingleSchema<D, K> | undefined,
+  deps: L
+) {
+  const schema = useMemo(() => {
+    return factory(...deps)
+  }, deps)
+
+  const { key, fetcher, params } = schema ?? {}
+  return useQuery<D, K>(key, fetcher, params)
+}
 
 /**
  * Query for a single resource
@@ -28,7 +41,7 @@ export interface SingleQuery<D = unknown, K = unknown> extends Query<D, K> {
  * @param cparams Parameters (unmemoized)
  * @returns Single query
  */
-export function useSingleQuery<D = unknown, K = string>(
+export function useQuery<D = unknown, K = string>(
   key: K | undefined,
   fetcher: Fetcher<D, K> | undefined,
   params: Params<D, K> = {},

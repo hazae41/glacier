@@ -35,14 +35,15 @@ export namespace Scroll {
    */
   export async function first<D, K>(
     core: Core,
+    scroller: Scroller<D, K> | undefined,
     skey: string | undefined,
-    scroller: Scroller<D, K>,
     fetcher: Fetcher<D, K>,
     aborter = new AbortController(),
     params: Params<D[], K> = {},
     force = false,
     ignore = false
   ): Promise<State<D[]> | undefined> {
+    if (scroller === undefined) return
     if (skey === undefined) return
 
     let { current, skip, first } = await core.lock(skey, async () => {
@@ -140,14 +141,15 @@ export namespace Scroll {
    */
   export async function scroll<D, K>(
     core: Core,
+    scroller: Scroller<D, K> | undefined,
     skey: string | undefined,
-    scroller: Scroller<D, K>,
     fetcher: Fetcher<D, K>,
     aborter = new AbortController(),
     params: Params<D[], K> = {},
     force = false,
     ignore = false
   ): Promise<State<D[]> | undefined> {
+    if (scroller === undefined) return
     if (skey === undefined) return
 
     let { current, skip, last } = await core.lock(skey, async () => {
