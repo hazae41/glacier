@@ -1,7 +1,7 @@
 {
   "type": "module",
   "name": "@hazae41/xswr",
-  "version": "1.2.4",
+  "version": "1.2.5",
   "author": "hazae41",
   "license": "MIT",
   "description": "Yet another React data (re)fetching library",
@@ -20,6 +20,9 @@
     "build": "rimraf dist && rollup -c",
     "test": "node ./dist/test/index.test.mjs",
     "prepare": "npm run build"
+  },
+  "dependencies": {
+    "@hazae41/mutex": "^1.0.2"
   },
   "peerDependencies": {
     "react": ">=17"

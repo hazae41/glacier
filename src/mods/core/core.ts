@@ -1,4 +1,4 @@
-import { Mutex } from "libs/mutex/mutex.js"
+import { Mutex } from "@hazae41/mutex"
 import { Ortho } from "libs/ortho/ortho.js"
 import { DEFAULT_EQUALS } from "mods/defaults.js"
 import { Equals } from "mods/equals/equals.js"
@@ -15,7 +15,7 @@ export class Core extends Ortho<string, State | undefined> {
   readonly #cache = new Map<string, State | undefined>()
   readonly #counts = new Map<string, number>()
   readonly #timeouts = new Map<string, NodeJS.Timeout>()
-  readonly #locks = new Map<string, Mutex>()
+  readonly #mutexes = new Map<string, Mutex>()
 
   #mounted = true
 
@@ -36,14 +36,14 @@ export class Core extends Ortho<string, State | undefined> {
   }
 
   async lock<T>(skey: string, callback: () => Promise<T>) {
-    const lock = this.#locks.get(skey)
+    let mutex = this.#mutexes.get(skey)
 
-    if (lock !== undefined)
-      return await lock.lock(callback)
+    if (mutex === undefined) {
+      mutex = new Mutex()
+      this.#mutexes.set(skey, mutex)
+    }
 
-    const lock2 = new Mutex()
-    this.#locks.set(skey, lock2)
-    return await lock2.lock(callback)
+    return await mutex.lock(callback)
   }
 
   getSync<D, K>(
@@ -126,7 +126,7 @@ export class Core extends Ortho<string, State | undefined> {
     if (!skey) return
 
     this.#cache.delete(skey)
-    this.#locks.delete(skey)
+    this.#mutexes.delete(skey)
     this.publish(skey, undefined)
 
     const { storage } = params
