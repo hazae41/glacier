@@ -23,7 +23,9 @@ export class Core extends Ortho<string, State | undefined> {
     readonly params: GlobalParams
   ) { super() }
 
-  get mounted() { return this.#mounted }
+  get mounted() {
+    return this.#mounted
+  }
 
   mount() {
     this.#mounted = true
