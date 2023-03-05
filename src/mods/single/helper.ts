@@ -203,7 +203,7 @@ export namespace Single {
 
       if (result === undefined) {
         if (fetcher === undefined)
-          throw new Error("Updater returned nothing and undefined fetcher")
+          throw new Error("Updater returned undefined and fetcher is undefined")
         result = await fetcher(key, { signal, cache: "reload" })
       }
 
