@@ -7,7 +7,7 @@ export namespace Equals {
     return a === b
   }
 
-  export function json<T>(a: unknown, b: unknown) {
+  export function json(a: unknown, b: unknown) {
     if (a === b)
       return true
     if (typeof a !== typeof b)

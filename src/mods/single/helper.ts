@@ -46,6 +46,12 @@ export namespace Single {
     if (key === undefined) return
     if (skey === undefined) return
 
+    const {
+      cooldown: dcooldown = DEFAULT_COOLDOWN,
+      expiration: dexpiration = DEFAULT_EXPIRATION,
+      timeout: dtimeout = DEFAULT_TIMEOUT,
+    } = params
+
     let { current, skip } = await core.lock(skey, async () => {
       let current = await core.get(skey, params)
 
@@ -68,12 +74,6 @@ export namespace Single {
     if (skip)
       return current
 
-    const {
-      cooldown: dcooldown = DEFAULT_COOLDOWN,
-      expiration: dexpiration = DEFAULT_EXPIRATION,
-      timeout: dtimeout = DEFAULT_TIMEOUT,
-    } = params
-
     const timeout = setTimeout(() => {
       aborter.abort("Fetch timed out")
     }, dtimeout)
@@ -94,7 +94,12 @@ export namespace Single {
 
       current = await core.get(skey, params)
 
-      const state: State<D> = {}
+      const state: State<D> = {
+        time: time,
+        cooldown: cooldown,
+        expiration: expiration,
+        aborter: undefined
+      }
 
       if ("data" in result) {
         state.data = result.data
@@ -103,17 +108,19 @@ export namespace Single {
         state.error = result.error
       }
 
-      return await core.mutate(skey, current,
-        () => ({ time, cooldown, expiration, aborter: undefined, ...state }),
-        params)
+      return await core.mutate(skey, current, () => state, params)
     } catch (error: unknown) {
       current = await core.get(skey, params)
 
       if (current?.aborter !== aborter)
         return current
-      return await core.mutate(skey, current,
-        () => ({ aborter: undefined, error }),
-        params)
+
+      const state: State<D> = {
+        error: error,
+        aborter: undefined
+      }
+
+      return await core.mutate(skey, current, () => state, params)
     } finally {
       clearTimeout(timeout)
     }
@@ -142,6 +149,13 @@ export namespace Single {
     if (key === undefined) return
     if (skey === undefined) return
 
+    const {
+      cooldown: dcooldown = DEFAULT_COOLDOWN,
+      expiration: dexpiration = DEFAULT_EXPIRATION,
+      timeout: dtimeout = DEFAULT_TIMEOUT,
+    } = params
+
+
     let { current, skip } = await core.lock(skey, async () => {
       let current = await core.get(skey, params)
 
@@ -158,12 +172,6 @@ export namespace Single {
 
     if (skip)
       return current
-
-    const {
-      cooldown: dcooldown = DEFAULT_COOLDOWN,
-      expiration: dexpiration = DEFAULT_EXPIRATION,
-      timeout: dtimeout = DEFAULT_TIMEOUT,
-    } = params
 
     const timeout = setTimeout(() => {
       aborter.abort("Update timed out")
@@ -187,18 +195,20 @@ export namespace Single {
         if (signal.aborted)
           throw new AbortError(signal)
 
-        const optimistic: State<D> = {}
-
-        if ("data" in value) {
-          optimistic.data = value.data
-          optimistic.error = undefined
-        } else {
-          optimistic.error = value.error
+        const state: State<D> = {
+          time: current?.time,
+          aborter: aborter,
+          optimistic: true
         }
 
-        current = await core.mutate(skey, current,
-          c => ({ time: c?.time, aborter, optimistic: true, ...optimistic }),
-          params)
+        if ("data" in value) {
+          state.data = value.data
+          state.error = undefined
+        } else {
+          state.error = value.error
+        }
+
+        current = await core.mutate(skey, current, () => state, params)
       }
 
       if (result === undefined) {
@@ -221,30 +231,46 @@ export namespace Single {
       if ("error" in result) {
         if (current?.aborter !== aborter)
           return current
-        const error = result.error
-        return await core.mutate(skey, current,
-          c => ({ time: c?.realTime, cooldown, expiration, aborter: undefined, optimistic: false, data: c?.realData, error }),
-          params)
+
+        const state: State<D> = {
+          data: current.realData,
+          error: result.error,
+          time: current.realTime,
+          cooldown: cooldown,
+          expiration: expiration,
+          aborter: undefined,
+          optimistic: false
+        }
+
+        return await core.mutate(skey, current, () => state, params)
+      } else {
+        const state: State<D> = {
+          data: result.data,
+          error: undefined,
+          time: time,
+          cooldown: cooldown,
+          expiration: expiration,
+          aborter: undefined,
+          optimistic: false
+        }
+
+        return await core.mutate(skey, current, () => state, params)
       }
-
-      const state: State<D> = {}
-
-      if ("data" in result) {
-        state.data = result.data
-        state.error = undefined
-      }
-
-      return await core.mutate(skey, current,
-        () => ({ time, cooldown, expiration, aborter: undefined, optimistic: false, ...state }),
-        params)
     } catch (error: unknown) {
       current = await core.get(skey, params)
 
       if (current?.aborter !== aborter)
         return current
-      return await core.mutate(skey, current,
-        c => ({ time: c?.realTime, aborter: undefined, optimistic: false, data: c?.realData, error }),
-        params)
+
+      const state: State<D> = {
+        data: current.realData,
+        error: error,
+        time: current.realTime,
+        aborter: undefined,
+        optimistic: false
+      }
+
+      return await core.mutate(skey, current, () => state, params)
     } finally {
       clearTimeout(timeout)
     }
