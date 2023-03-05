@@ -152,6 +152,10 @@ export class Core extends Ortho<string, State | undefined> {
   ): Promise<State<D> | undefined> {
     if (skey === undefined) return
 
+    const {
+      equals = DEFAULT_EQUALS
+    } = params
+
     /**
      * Apply mutator to the current state
      */
@@ -165,7 +169,6 @@ export class Core extends Ortho<string, State | undefined> {
       return
     }
 
-
     if (current !== undefined) {
       /**
        * Do not apply older states
@@ -178,7 +181,7 @@ export class Core extends Ortho<string, State | undefined> {
        * 
        * (optimistic=false means it's the end of the optimistic mutation)
        */
-      if (state.optimistic === undefined && current.optimistic === true)
+      if (current.optimistic === true && state.optimistic !== undefined)
         return current
     }
 
@@ -194,10 +197,6 @@ export class Core extends Ortho<string, State | undefined> {
      * Normalize the new data
      */
     next.data = await this.normalize(false, next, params)
-
-    const {
-      equals = DEFAULT_EQUALS
-    } = params
 
     /**
      * Optimization: Do not modify data if it's "equal" to the previous data
@@ -226,9 +225,10 @@ export class Core extends Ortho<string, State | undefined> {
       return current
 
     /**
-     * Publish and return the new state
+     * Publish the new state
      */
     await this.set(skey, next, params)
+
     return next as State<D>
   }
 

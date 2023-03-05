@@ -89,13 +89,13 @@ export namespace Scroll {
     try {
       const { signal } = aborter
 
+      const result = await fetcher(first, { signal })
+
       const {
-        data,
-        error,
         time = Date.now(),
         cooldown = Time.fromDelay(dcooldown),
         expiration = Time.fromDelay(dexpiration)
-      } = await fetcher(first, { signal })
+      } = result
 
       if (signal.aborted)
         throw new AbortError(signal)
@@ -104,12 +104,15 @@ export namespace Scroll {
 
       const state: State<D[]> = {}
 
-      if (data !== undefined)
-        state.data = [data]
-      state.error = error
+      if ("data" in result) {
+        state.data = [result.data]
+        state.error = undefined
+      } else {
+        state.error = result.error
+      }
 
-      if (data !== undefined) {
-        const norm = await core.normalize(true, { data: [data] }, params)
+      if ("data" in result) {
+        const norm = await core.normalize(true, { data: [result.data] }, params)
         if (equals(norm?.[0], current?.data?.[0])) delete state.data
       }
 
@@ -195,13 +198,13 @@ export namespace Scroll {
     try {
       const { signal } = aborter
 
+      const result = await fetcher(last, { signal })
+
       let {
-        data,
-        error,
         time = Date.now(),
         cooldown = Time.fromDelay(dcooldown),
         expiration = Time.fromDelay(dexpiration)
-      } = await fetcher(last, { signal })
+      } = result
 
       if (signal.aborted)
         throw new AbortError(signal)
@@ -213,9 +216,12 @@ export namespace Scroll {
 
       const state: State<D[]> = {}
 
-      if (data !== undefined)
-        state.data = [...(current?.data ?? []), data]
-      state.error = error
+      if ("data" in result) {
+        state.data = [...(current?.data ?? []), result.data]
+        state.error = undefined
+      } else {
+        state.error = result.error
+      }
 
       return await core.mutate(skey, current,
         () => ({ time, cooldown, expiration, aborter: undefined, ...state }),

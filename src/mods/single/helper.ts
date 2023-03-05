@@ -81,13 +81,13 @@ export namespace Single {
     try {
       const { signal } = aborter
 
+      const result = await fetcher(key, { signal })
+
       const {
-        data,
-        error,
         time = Date.now(),
         cooldown = Time.fromDelay(dcooldown),
         expiration = Time.fromDelay(dexpiration)
-      } = await fetcher(key, { signal })
+      } = result
 
       if (signal.aborted)
         throw new AbortError(signal)
@@ -96,9 +96,12 @@ export namespace Single {
 
       const state: State<D> = {}
 
-      if (data !== undefined)
-        state.data = data
-      state.error = error
+      if ("data" in result) {
+        state.data = result.data
+        state.error = undefined
+      } else {
+        state.error = result.error
+      }
 
       return await core.mutate(skey, current,
         () => ({ time, cooldown, expiration, aborter: undefined, ...state }),
@@ -181,19 +184,17 @@ export namespace Single {
           break
         }
 
-        const {
-          data,
-          error
-        } = value
-
         if (signal.aborted)
           throw new AbortError(signal)
 
         const optimistic: State<D> = {}
 
-        if (data !== undefined)
-          optimistic.data = data
-        optimistic.error = error
+        if ("data" in value) {
+          optimistic.data = value.data
+          optimistic.error = undefined
+        } else {
+          optimistic.error = value.error
+        }
 
         current = await core.mutate(skey, current,
           c => ({ time: c?.time, aborter, optimistic: true, ...optimistic }),
@@ -207,8 +208,6 @@ export namespace Single {
       }
 
       const {
-        data,
-        error,
         time = Date.now(),
         cooldown = Time.fromDelay(dcooldown),
         expiration = Time.fromDelay(dexpiration)
@@ -219,9 +218,10 @@ export namespace Single {
 
       current = await core.get(skey, params)
 
-      if (error !== undefined) {
+      if ("error" in result) {
         if (current?.aborter !== aborter)
           return current
+        const error = result.error
         return await core.mutate(skey, current,
           c => ({ time: c?.realTime, cooldown, expiration, aborter: undefined, optimistic: false, data: c?.realData, error }),
           params)
@@ -229,9 +229,10 @@ export namespace Single {
 
       const state: State<D> = {}
 
-      if (data !== undefined)
-        state.data = data
-      state.error = error
+      if ("data" in result) {
+        state.data = result.data
+        state.error = undefined
+      }
 
       return await core.mutate(skey, current,
         () => ({ time, cooldown, expiration, aborter: undefined, optimistic: false, ...state }),
