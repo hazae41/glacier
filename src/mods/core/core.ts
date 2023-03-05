@@ -181,7 +181,7 @@ export class Core extends Ortho<string, State | undefined> {
        * 
        * (optimistic=false means it's the end of the optimistic mutation)
        */
-      if (current.optimistic === true && state.optimistic !== undefined)
+      if (current.optimistic === true && state.optimistic === undefined)
         return current
     }
 
