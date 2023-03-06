@@ -64,7 +64,7 @@ export namespace Single {
       if (current?.aborter && force)
         current.aborter.abort("Replaced")
 
-      if (core.shouldCooldown(current) && !ignore)
+      if (Time.isAfterNow(current?.cooldown) && !ignore)
         return { current, skip: true }
 
       current = await core.mutate(skey, current,

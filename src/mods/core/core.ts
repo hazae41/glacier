@@ -257,17 +257,6 @@ export class Core extends Ortho<string, State | undefined> {
     return await params.normalizer(root.data, { core: this, shallow, root })
   }
 
-  /**
-   * True if we should cooldown this resource
-   */
-  shouldCooldown<D>(
-    current?: State<D>
-  ) {
-    if (current?.cooldown === undefined)
-      return false
-    return Date.now() < current.cooldown
-  }
-
   once<D, K>(
     key: string | undefined,
     listener: Listener<D>,

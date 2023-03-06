@@ -58,7 +58,7 @@ export namespace Scroll {
       if (current?.aborter && force)
         current.aborter.abort("Replaced")
 
-      if (core.shouldCooldown(current) && !ignore)
+      if (Time.isAfterNow(current?.cooldown) && !ignore)
         return { current, skip: true }
 
       const first = scroller(undefined)
@@ -169,7 +169,7 @@ export namespace Scroll {
       if (current?.aborter && force)
         current.aborter.abort("Replaced")
 
-      if (core.shouldCooldown(current) && !ignore)
+      if (Time.isAfterNow(current?.cooldown) && !ignore)
         return { current, skip: true }
 
       const pages = current?.data ?? []
