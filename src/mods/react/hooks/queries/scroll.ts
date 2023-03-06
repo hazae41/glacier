@@ -73,13 +73,11 @@ export function useScrollQuery<D = unknown, K = string>(
     setCounter(c => c + 1)
   }, [])
 
-  const initRef = useRef<Promise<void>>()
-
   useEffect(() => {
     if (stateRef.current !== null)
       return
 
-    initRef.current = core.get<D[], K>(storageKey, paramsRef.current).then(setState)
+    core.get<D[], K>(storageKey, paramsRef.current).then(setState)
   }, [core, storageKey])
 
   useEffect(() => {
@@ -91,10 +89,8 @@ export function useScrollQuery<D = unknown, K = string>(
   }, [core, storageKey])
 
   const mutate = useCallback(async (mutator: Mutator<D[]>) => {
-    if (stateRef.current === null)
-      await initRef.current
-    if (stateRef.current === null)
-      throw new Error("Null state after init")
+    if (typeof window === "undefined")
+      throw new Error("Can't mutate on SSR")
 
     const params = paramsRef.current
 
@@ -102,23 +98,15 @@ export function useScrollQuery<D = unknown, K = string>(
   }, [core, storageKey])
 
   const clear = useCallback(async () => {
-    if (stateRef.current === null)
-      await initRef.current
-    if (stateRef.current === null)
-      throw new Error("Null state after init")
+    if (typeof window === "undefined")
+      throw new Error("Can't clear on SSR")
 
     await core.delete(storageKey, paramsRef.current)
   }, [core, storageKey])
 
   const fetch = useCallback(async (aborter?: AbortController) => {
     if (typeof window === "undefined")
-      throw new Error("Fetch on SSR")
-    if (stateRef.current === null)
-      await initRef.current
-    if (stateRef.current === null)
-      throw new Error("Null state after init")
-    if (fetcherRef.current === undefined)
-      return stateRef.current
+      throw new Error("Can't fetch on SSR")
 
     const scroller = scrollerRef.current
     const fetcher = fetcherRef.current
@@ -129,13 +117,7 @@ export function useScrollQuery<D = unknown, K = string>(
 
   const refetch = useCallback(async (aborter?: AbortController) => {
     if (typeof window === "undefined")
-      throw new Error("Refetch on SSR")
-    if (stateRef.current === null)
-      await initRef.current
-    if (stateRef.current === null)
-      throw new Error("Null state after init")
-    if (fetcherRef.current === undefined)
-      return stateRef.current
+      throw new Error("Can't refetch on SSR")
 
     const scroller = scrollerRef.current
     const fetcher = fetcherRef.current
@@ -146,13 +128,7 @@ export function useScrollQuery<D = unknown, K = string>(
 
   const scroll = useCallback(async (aborter?: AbortController) => {
     if (typeof window === "undefined")
-      throw new Error("Scroll on SSR")
-    if (stateRef.current === null)
-      await initRef.current
-    if (stateRef.current === null)
-      throw new Error("Null state after init")
-    if (fetcherRef.current === undefined)
-      return stateRef.current
+      throw new Error("Can't scroll on SSR")
 
     const scroller = scrollerRef.current
     const fetcher = fetcherRef.current
@@ -163,15 +139,9 @@ export function useScrollQuery<D = unknown, K = string>(
 
   const suspend = useCallback(() => {
     if (typeof window === "undefined")
-      throw new Error("Suspend on SSR")
-    return (async () => {
-      if (stateRef.current === null)
-        await initRef.current
-      if (stateRef.current === null)
-        throw new Error("Null state after init")
-      if (fetcherRef.current === undefined)
-        throw new Error("No fetcher")
+      throw new Error("Can't suspend on SSR")
 
+    return (async () => {
       const scroller = scrollerRef.current
       const fetcher = fetcherRef.current
       const params = paramsRef.current

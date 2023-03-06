@@ -53,18 +53,20 @@ export namespace Scroll {
     core: Core,
     scroller: Scroller<D, K> | undefined,
     storageKey: string | undefined,
-    fetcher: Fetcher<D, K>,
+    fetcher: Fetcher<D, K> | undefined,
     aborter = new AbortController(),
     params: QueryParams<D[], K> = {},
     replacePending = false,
     ignoreCooldown = false
   ): Promise<State<D[]> | undefined> {
-    if (scroller === undefined)
-      return
     if (storageKey === undefined)
       return
-
     let current = await core.get(storageKey, params)
+
+    if (scroller === undefined)
+      return current
+    if (fetcher === undefined)
+      return current
 
     if (current?.optimistic)
       return current
@@ -169,18 +171,20 @@ export namespace Scroll {
     core: Core,
     scroller: Scroller<D, K> | undefined,
     storageKey: string | undefined,
-    fetcher: Fetcher<D, K>,
+    fetcher: Fetcher<D, K> | undefined,
     aborter = new AbortController(),
     params: QueryParams<D[], K> = {},
     replacePending = false,
     ignoreCooldown = false
   ): Promise<State<D[]> | undefined> {
-    if (scroller === undefined)
-      return
     if (storageKey === undefined)
       return
-
     let current = await core.get(storageKey, params)
+
+    if (scroller === undefined)
+      return current
+    if (fetcher === undefined)
+      return current
 
     if (current?.optimistic)
       return current

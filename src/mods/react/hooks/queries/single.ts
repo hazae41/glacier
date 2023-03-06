@@ -71,13 +71,11 @@ export function useQuery<D = unknown, K = string>(
     setCounter(c => c + 1)
   }, [])
 
-  const initRef = useRef<Promise<void>>()
-
   useEffect(() => {
     if (stateRef.current !== null)
       return
 
-    initRef.current = core.get<D, K>(storageKey, mparamsRef.current).then(setState)
+    core.get<D, K>(storageKey, mparamsRef.current).then(setState)
   }, [core, storageKey])
 
   useEffect(() => {
@@ -89,10 +87,8 @@ export function useQuery<D = unknown, K = string>(
   }, [core, storageKey])
 
   const mutate = useCallback(async (mutator: Mutator<D>) => {
-    if (stateRef.current === null)
-      await initRef.current
-    if (stateRef.current === null)
-      throw new Error("Null state after init")
+    if (typeof window === "undefined")
+      throw new Error("Can't mutate on SSR")
 
     const params = mparamsRef.current
 
@@ -100,23 +96,15 @@ export function useQuery<D = unknown, K = string>(
   }, [core, storageKey])
 
   const clear = useCallback(async () => {
-    if (stateRef.current === null)
-      await initRef.current
-    if (stateRef.current === null)
-      throw new Error("Null state after init")
+    if (typeof window === "undefined")
+      throw new Error("Can't clear on SSR")
 
     await core.delete(storageKey, mparamsRef.current)
   }, [core, storageKey])
 
   const fetch = useCallback(async (aborter?: AbortController) => {
     if (typeof window === "undefined")
-      throw new Error("Fetch on SSR")
-    if (stateRef.current === null)
-      await initRef.current
-    if (stateRef.current === null)
-      throw new Error("Null state after init")
-    if (fetcherRef.current === undefined)
-      return stateRef.current
+      throw new Error("Can't fetch on SSR")
 
     const key = keyRef.current
     const fetcher = fetcherRef.current
@@ -127,13 +115,7 @@ export function useQuery<D = unknown, K = string>(
 
   const refetch = useCallback(async (aborter?: AbortController) => {
     if (typeof window === "undefined")
-      throw new Error("Refetch on SSR")
-    if (stateRef.current === null)
-      await initRef.current
-    if (stateRef.current === null)
-      throw new Error("Null state after init")
-    if (fetcherRef.current === undefined)
-      return stateRef.current
+      throw new Error("Can't refetch on SSR")
 
     const key = keyRef.current
     const fetcher = fetcherRef.current
@@ -144,11 +126,7 @@ export function useQuery<D = unknown, K = string>(
 
   const update = useCallback(async (updater: Updater<D>, uparams: UpdaterParams = {}, aborter?: AbortController) => {
     if (typeof window === "undefined")
-      throw new Error("Update on SSR")
-    if (stateRef.current === null)
-      await initRef.current
-    if (stateRef.current === null)
-      throw new Error("Null state after init")
+      throw new Error("Can't update on SSR")
 
     const key = keyRef.current
     const fetcher = fetcherRef.current
@@ -161,15 +139,9 @@ export function useQuery<D = unknown, K = string>(
 
   const suspend = useCallback(() => {
     if (typeof window === "undefined")
-      throw new Error("Suspend on SSR")
-    return (async () => {
-      if (stateRef.current === null)
-        await initRef.current
-      if (stateRef.current === null)
-        throw new Error("Null state after init")
-      if (fetcherRef.current === undefined)
-        throw new Error("No fetcher")
+      throw new Error("Can't suspend on SSR")
 
+    return (async () => {
       const key = keyRef.current
       const fetcher = fetcherRef.current
       const params = mparamsRef.current

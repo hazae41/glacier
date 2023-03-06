@@ -37,7 +37,7 @@ export namespace Single {
     core: Core,
     key: K | undefined,
     storageKey: string | undefined,
-    fetcher: Fetcher<D, K>,
+    fetcher: Fetcher<D, K> | undefined,
     aborter = new AbortController(),
     params: QueryParams<D, K> = {},
     replacePending = false,
@@ -46,6 +46,8 @@ export namespace Single {
     if (key === undefined)
       return
     if (storageKey === undefined)
+      return
+    if (fetcher === undefined)
       return
 
     let current = await core.get(storageKey, params)
