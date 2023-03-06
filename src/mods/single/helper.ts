@@ -43,14 +43,14 @@ export namespace Single {
     replacePending = false,
     ignoreCooldown = false
   ): Promise<State<D> | undefined> {
-    if (key === undefined)
-      return
     if (storageKey === undefined)
       return
-    if (fetcher === undefined)
-      return
-
     let current = await core.get(storageKey, params)
+
+    if (key === undefined)
+      return current
+    if (fetcher === undefined)
+      return current
 
     if (current?.optimistic)
       return current
@@ -145,12 +145,14 @@ export namespace Single {
     aborter = new AbortController(),
     params: QueryParams<D, K> = {},
   ): Promise<State<D> | undefined> {
-    if (key === undefined)
-      return
     if (storageKey === undefined)
       return
-
     let current = await core.get(storageKey, params)
+
+    if (key === undefined)
+      return current
+    if (fetcher === undefined)
+      return current
 
     if (current?.optimistic)
       return current
@@ -211,15 +213,11 @@ export namespace Single {
           }
         }
 
-        if (final === undefined) {
-          if (fetcher === undefined)
-            throw new Error("Updater returned undefined and fetcher is undefined")
-
+        if (final === undefined)
           final = await fetcher(key, { signal, cache: "reload" })
 
-          if (signal.aborted)
-            throw new AbortError(signal)
-        }
+        if (signal.aborted)
+          throw new AbortError(signal)
 
         const result = final
 
