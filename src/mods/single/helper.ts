@@ -63,16 +63,19 @@ export namespace Single {
       if (!ignoreCooldown)
         return current
 
+    const {
+      cooldown: dcooldown = DEFAULT_COOLDOWN,
+      expiration: dexpiration = DEFAULT_EXPIRATION,
+      timeout: dtimeout = DEFAULT_TIMEOUT,
+    } = params
+
     await core.lock(storageKey, async () => {
-      const {
-        cooldown: dcooldown = DEFAULT_COOLDOWN,
-        expiration: dexpiration = DEFAULT_EXPIRATION,
-        timeout: dtimeout = DEFAULT_TIMEOUT,
-      } = params
 
       const timeout = setTimeout(() => {
         aborter.abort("Fetch timed out")
       }, dtimeout)
+
+      current = await core.get(storageKey, params)
 
       current = await core.apply(storageKey, current, { aborter }, params)
 
@@ -109,8 +112,10 @@ export namespace Single {
           }, params)
         }
       } catch (error: unknown) {
+        console.log("catched", error)
         return await core.apply(storageKey, current, {
           error: error,
+          time: Date.now(),
           aborter: undefined
         }, params)
       } finally {
@@ -152,16 +157,19 @@ export namespace Single {
     if (current?.aborter)
       current.aborter.abort("Replaced")
 
+    const {
+      cooldown: dcooldown = DEFAULT_COOLDOWN,
+      expiration: dexpiration = DEFAULT_EXPIRATION,
+      timeout: dtimeout = DEFAULT_TIMEOUT,
+    } = params
+
     await core.lock(storageKey, async () => {
-      const {
-        cooldown: dcooldown = DEFAULT_COOLDOWN,
-        expiration: dexpiration = DEFAULT_EXPIRATION,
-        timeout: dtimeout = DEFAULT_TIMEOUT,
-      } = params
 
       const timeout = setTimeout(() => {
         aborter.abort("Update timed out")
       }, dtimeout)
+
+      current = await core.get(storageKey, params)
 
       current = await core.apply(storageKey, current, {
         aborter: aborter,

@@ -64,6 +64,26 @@ export namespace Scroll {
     if (storageKey === undefined)
       return
 
+    let current = await core.get(storageKey, params)
+
+    if (current?.optimistic)
+      return current
+
+    if (current?.aborter)
+      if (replacePending)
+        current.aborter.abort("Replaced")
+      else
+        return current
+
+    if (Time.isAfterNow(current?.cooldown))
+      if (!ignoreCooldown)
+        return current
+
+    const key = scroller(undefined)
+
+    if (key === undefined)
+      return current
+
     const {
       equals = DEFAULT_EQUALS,
       cooldown: dcooldown = DEFAULT_COOLDOWN,
@@ -71,88 +91,68 @@ export namespace Scroll {
       timeout: dtimeout = DEFAULT_TIMEOUT,
     } = params
 
-    const skipable = await core.lock(storageKey, async () => {
-      let current = await core.get(storageKey, params)
 
-      if (current?.optimistic)
-        return { skip: true, current }
+    await core.lock(storageKey, async () => {
 
-      if (current?.aborter)
-        if (replacePending)
-          current.aborter.abort("Replaced")
-        else
-          return { skip: true, current }
+      const timeout = setTimeout(() => {
+        aborter.abort("First timed out")
+      }, dtimeout)
 
-      if (Time.isAfterNow(current?.cooldown))
-        if (!ignoreCooldown)
-          return { skip: true, current }
-
-      const key = scroller(undefined)
-
-      if (key === undefined)
-        return { skip: true, current }
+      current = await core.get(storageKey, params)
 
       current = await core.apply(storageKey, current, {
         aborter: aborter
       }, params)
 
-      return { skip: false, current, key }
-    }) as Skipable<D[], K>
+      try {
+        const { signal } = aborter
 
-    if (skipable.skip)
-      return skipable.current
+        const result = await fetcher(key, { signal })
 
-    let current = skipable.current
+        if (signal.aborted)
+          throw new AbortError(signal)
 
-    const timeout = setTimeout(() => {
-      aborter.abort("First timed out")
-    }, dtimeout)
+        const {
+          time = Date.now(),
+          cooldown = Time.fromDelay(dcooldown),
+          expiration = Time.fromDelay(dexpiration)
+        } = result
 
-    try {
-      const { signal } = aborter
+        if ("error" in result) {
+          return await core.apply(storageKey, current, {
+            error: result.error,
+            time: time,
+            cooldown: cooldown,
+            expiration: expiration,
+            aborter: undefined
+          }, params)
+        } else {
+          const state: State<D[]> = {
+            data: [result.data],
+            error: undefined,
+            time: time,
+            cooldown: cooldown,
+            expiration: expiration,
+            aborter: undefined
+          }
 
-      const result = await fetcher(skipable.key, { signal })
+          const normalized = await core.normalize(true, { data: [result.data] }, params)
 
-      const {
-        time = Date.now(),
-        cooldown = Time.fromDelay(dcooldown),
-        expiration = Time.fromDelay(dexpiration)
-      } = result
+          if (equals(normalized?.[0], current?.data?.[0]))
+            state.data = current?.data
 
-      if (signal.aborted)
-        throw new AbortError(signal)
-
-      current = await core.get(storageKey, params)
-
-      const state: State<D[]> = {
-        time: time,
-        cooldown: cooldown,
-        expiration: expiration,
-        aborter: undefined
+          return await core.apply(storageKey, current, state, params)
+        }
+      } catch (error: unknown) {
+        return await core.apply(storageKey, current, {
+          error: error,
+          time: Date.now(),
+          aborter: undefined
+        }, params)
+      } finally {
+        clearTimeout(timeout)
       }
-
-      if ("data" in result) {
-        const normalized = await core.normalize(true, { data: [result.data] }, params)
-
-        if (!equals(normalized?.[0], current?.data?.[0]))
-          state.data = [result.data]
-
-        state.error = undefined
-      } else {
-        state.error = result.error
-      }
-
-      return await core.apply(storageKey, current, state, params)
-    } catch (error: unknown) {
-      current = await core.get(storageKey, params)
-
-      return await core.apply(storageKey, current, {
-        error: error,
-        aborter: undefined
-      }, params)
-    } finally {
-      clearTimeout(timeout)
-    }
+    })
   }
 
   /**
@@ -180,100 +180,92 @@ export namespace Scroll {
     if (storageKey === undefined)
       return
 
+    let current = await core.get(storageKey, params)
+
+    if (current?.optimistic)
+      return current
+
+    if (current?.aborter)
+      if (replacePending)
+        current.aborter.abort("Replaced")
+      else
+        return current
+
+    if (Time.isAfterNow(current?.cooldown))
+      if (!ignoreCooldown)
+        return current
+
+    const previouses = current?.data ?? []
+    const previous = Arrays.lastOf(previouses)
+    const key = scroller(previous)
+
+    if (key === undefined)
+      return current
+
     const {
       cooldown: dcooldown = DEFAULT_COOLDOWN,
       expiration: dexpiration = DEFAULT_EXPIRATION,
       timeout: dtimeout = DEFAULT_TIMEOUT,
     } = params
 
-    const skipable = await core.lock(storageKey, async () => {
-      let current = await core.get(storageKey, params)
+    await core.lock(storageKey, async () => {
 
-      if (current?.optimistic)
-        return { skip: true, current }
+      const timeout = setTimeout(() => {
+        aborter.abort("Scroll timed out")
+      }, dtimeout)
 
-      if (current?.aborter)
-        if (replacePending)
-          current.aborter.abort("Replaced")
-        else
-          return { skip: true, current }
-
-      if (Time.isAfterNow(current?.cooldown))
-        if (!ignoreCooldown)
-          return { skip: true, current }
-
-      const previouses = current?.data ?? []
-      const previous = Arrays.lastOf(previouses)
-      const key = scroller(previous)
-
-      if (key === undefined)
-        return { skip: true, current }
+      current = await core.get(storageKey, params)
 
       current = await core.apply(storageKey, current, {
         aborter: aborter
       }, params)
 
-      return { skip: false, current, key }
-    }) as Skipable<D[], K>
+      try {
+        const { signal } = aborter
 
-    if (skipable.skip)
-      return skipable.current
+        const result = await fetcher(key, { signal })
 
-    let current = skipable.current
+        if (signal.aborted)
+          throw new AbortError(signal)
 
-    const timeout = setTimeout(() => {
-      aborter.abort("Scroll timed out")
-    }, dtimeout)
+        let {
+          time = Date.now(),
+          cooldown = Time.fromDelay(dcooldown),
+          expiration = Time.fromDelay(dexpiration)
+        } = result
 
-    try {
-      const { signal } = aborter
+        if (expiration !== undefined && current?.expiration !== undefined)
+          expiration = Math.min(expiration, current?.expiration)
 
-      const result = await fetcher(skipable.key, { signal })
+        if ("data" in result) {
+          const previouses = current?.data ?? []
 
-      if (signal.aborted)
-        throw new AbortError(signal)
-
-      let {
-        time = Date.now(),
-        cooldown = Time.fromDelay(dcooldown),
-        expiration = Time.fromDelay(dexpiration)
-      } = result
-
-      if (expiration !== undefined && current?.expiration !== undefined)
-        expiration = Math.min(expiration, current?.expiration)
-
-      current = await core.get(storageKey, params)
-
-      const state: State<D[]> = {
-        time: time,
-        cooldown: cooldown,
-        expiration: expiration,
-        aborter: undefined
+          return await core.apply(storageKey, current, {
+            data: [...previouses, result.data],
+            error: undefined,
+            time: time,
+            cooldown: cooldown,
+            expiration: expiration,
+            aborter: undefined
+          }, params)
+        } else {
+          return await core.apply(storageKey, current, {
+            error: result.error,
+            time: time,
+            cooldown: cooldown,
+            expiration: expiration,
+            aborter: undefined
+          }, params)
+        }
+      } catch (error: unknown) {
+        return await core.apply(storageKey, current, {
+          error: error,
+          time: Date.now(),
+          aborter: undefined
+        }, params)
+      } finally {
+        clearTimeout(timeout)
       }
-
-      if ("data" in result) {
-        const previouses = current?.data ?? []
-        state.data = [...previouses, result.data]
-        state.error = undefined
-      } else {
-        state.error = result.error
-      }
-
-      return await core.apply(storageKey, current, state, params)
-    } catch (error: unknown) {
-      current = await core.get(storageKey, params)
-
-      if (current?.aborter !== aborter)
-        return current
-
-      const state: State<D[]> = {
-        error: error,
-        aborter: undefined
-      }
-
-      return await core.apply(storageKey, current, state, params)
-    } finally {
-      clearTimeout(timeout)
-    }
+    })
   }
 }

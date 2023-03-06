@@ -154,7 +154,7 @@ export class Core extends Ortho<string, State | undefined> {
     if (storageKey === undefined)
       return
 
-    const current = await this.get(storageKey, params)
+    let current = await this.get(storageKey, params)
 
     if (current?.optimistic)
       return current
@@ -162,14 +162,17 @@ export class Core extends Ortho<string, State | undefined> {
     if (current?.aborter)
       current.aborter.abort("Replaced")
 
+    console.log(current)
+
     return await this.lock(storageKey, async () => {
+      current = await this.get(storageKey, params)
       const state = mutator(current)
 
       if (!state)
         return await this.apply(storageKey, current, state, params)
 
-      if (state.time === undefined)
-        state.time = Date.now()
+      state.time ??= Date.now()
+
       if (state.aborter !== undefined)
         throw new Error(`Aborter must be undefined`)
       if (state.optimistic)
@@ -205,26 +208,16 @@ export class Core extends Ortho<string, State | undefined> {
       return
     }
 
-    if (current !== undefined) {
-      /**
-       * Do not apply older states
-       */
-      if (mutated.time !== undefined && current.time !== undefined && mutated.time < current.time)
+    if (mutated.time !== undefined && current?.time !== undefined)
+      if (mutated.time < current.time)
         return current
-
-      /**
-       * Do not apply on an optimistic state
-       * 
-       * (optimistic=false means it's the end of the optimistic mutation)
-       */
-      if (current.optimistic === true && mutated.optimistic === undefined)
-        return current
-    }
 
     const next: State<D> = {
       ...current,
       ...mutated
     }
+
+    console.log("next", next)
 
     next.data = await this.normalize(false, next, params)
 
