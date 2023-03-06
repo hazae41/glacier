@@ -178,13 +178,13 @@ export namespace Single {
         while (true) {
           const { done, value } = await generator.next()
 
+          if (signal.aborted)
+            throw new AbortError(signal)
+
           if (done) {
             final = value
             break
           }
-
-          if (signal.aborted)
-            throw new AbortError(signal)
 
           if ("error" in value) {
             current = await core.apply(storageKey, current, {
@@ -207,12 +207,12 @@ export namespace Single {
             throw new Error("Updater returned undefined and fetcher is undefined")
 
           final = await fetcher(key, { signal, cache: "reload" })
+
+          if (signal.aborted)
+            throw new AbortError(signal)
         }
 
         const result = final
-
-        if (signal.aborted)
-          throw new AbortError(signal)
 
         const {
           time = Date.now(),
