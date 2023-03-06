@@ -116,7 +116,6 @@ export namespace Single {
       } catch (error: unknown) {
         return await core.apply(storageKey, current, {
           error: error,
-          time: Date.now(),
           aborter: undefined
         }, params)
       } finally {
