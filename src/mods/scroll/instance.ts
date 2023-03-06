@@ -2,7 +2,7 @@ import { Core } from "mods/core/core.js";
 import { Fetcher } from "mods/types/fetcher.js";
 import { Instance } from "mods/types/instance.js";
 import { Mutator } from "mods/types/mutator.js";
-import { Params } from "mods/types/params.js";
+import { QueryParams } from "mods/types/params.js";
 import { Scroller } from "mods/types/scroller.js";
 import { State } from "mods/types/state.js";
 import { Scroll } from "./helper.js";
@@ -13,7 +13,7 @@ import { Scroll } from "./helper.js";
 export class ScrollInstance<D = unknown, K = unknown> implements Instance<D[], K> {
   readonly key: K | undefined
   readonly storageKey: string | undefined
-  readonly mparams: Params<D[], K>
+  readonly mparams: QueryParams<D[], K>
 
   #init?: Promise<void>
   #state?: State<D[]> | null
@@ -22,7 +22,7 @@ export class ScrollInstance<D = unknown, K = unknown> implements Instance<D[], K
     readonly core: Core,
     readonly scroller: Scroller<D, K> | undefined,
     readonly fetcher: Fetcher<D, K> | undefined,
-    readonly params: Params<D[], K> = {},
+    readonly params: QueryParams<D[], K> = {},
   ) {
     this.mparams = { ...core.params, ...params }
 

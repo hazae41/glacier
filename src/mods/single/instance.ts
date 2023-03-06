@@ -2,7 +2,7 @@ import { Core } from "mods/core/core.js";
 import { Fetcher } from "mods/types/fetcher.js";
 import { Instance } from "mods/types/instance.js";
 import { Mutator } from "mods/types/mutator.js";
-import { Params } from "mods/types/params.js";
+import { QueryParams } from "mods/types/params.js";
 import { State } from "mods/types/state.js";
 import { Updater, UpdaterParams } from "mods/types/updater.js";
 import { Single } from "./helper.js";
@@ -12,7 +12,7 @@ import { Single } from "./helper.js";
  */
 export class SingleInstance<D = unknown, K = unknown> implements Instance<D, K> {
   readonly storageKey: string | undefined
-  readonly mparams: Params<D, K>
+  readonly mparams: QueryParams<D, K>
 
   #init?: Promise<void>
   #state?: State<D> | null
@@ -21,7 +21,7 @@ export class SingleInstance<D = unknown, K = unknown> implements Instance<D, K> 
     readonly core: Core,
     readonly key: K | undefined,
     readonly fetcher: Fetcher<D, K> | undefined,
-    readonly params: Params<D, K> = {},
+    readonly params: QueryParams<D, K> = {},
   ) {
     this.mparams = { ...core.params, ...params }
 

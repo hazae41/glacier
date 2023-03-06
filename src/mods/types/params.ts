@@ -11,7 +11,7 @@ export interface GlobalParams {
   timeout?: number,
 }
 
-export interface Params<D = unknown, K = unknown> {
+export interface QueryParams<D = unknown, K = unknown> {
   storage?: Storage
   serializer?: Serializer<K>,
   normalizer?: Normalizer<D>

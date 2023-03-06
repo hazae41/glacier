@@ -1,14 +1,14 @@
 import { Core } from "mods/core/core.js";
 import { Fetcher } from "mods/types/fetcher.js";
 import { NormalizerMore } from "mods/types/normalizer.js";
-import { Params } from "mods/types/params.js";
+import { QueryParams } from "mods/types/params.js";
 import { Schema } from "mods/types/schema.js";
 import { SingleInstance } from "./instance.js";
 
 export function getSchema<D = unknown, K = string>(
   key: K | undefined,
   fetcher: Fetcher<D, K> | undefined,
-  params: Params<D, K> = {},
+  params: QueryParams<D, K> = {},
 ) {
   return new SingleSchema<D, K>(key, fetcher, params)
 }
@@ -17,7 +17,7 @@ export class SingleSchema<D = unknown, K = unknown> implements Schema<D, K, Sing
   constructor(
     readonly key: K | undefined,
     readonly fetcher: Fetcher<D, K> | undefined,
-    readonly params: Params<D, K> = {},
+    readonly params: QueryParams<D, K> = {},
   ) { }
 
   make(core: Core) {

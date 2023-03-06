@@ -4,7 +4,7 @@ import { Core } from "mods/core/core.js";
 import { DEFAULT_COOLDOWN, DEFAULT_EQUALS, DEFAULT_EXPIRATION, DEFAULT_SERIALIZER, DEFAULT_TIMEOUT } from "mods/defaults.js";
 import { AbortError } from "mods/errors/abort.js";
 import { Fetcher } from "mods/types/fetcher.js";
-import { Params } from "mods/types/params.js";
+import { QueryParams } from "mods/types/params.js";
 import { Scroller } from "mods/types/scroller.js";
 import { State } from "mods/types/state.js";
 
@@ -25,7 +25,7 @@ export namespace Scroll {
     current?: State<D>
   }
 
-  export function getStorageKey<D, K>(key: K | undefined, params: Params<D, K>) {
+  export function getStorageKey<D, K>(key: K | undefined, params: QueryParams<D, K>) {
     if (key === undefined)
       return undefined
     if (typeof key === "string")
@@ -55,7 +55,7 @@ export namespace Scroll {
     storageKey: string | undefined,
     fetcher: Fetcher<D, K>,
     aborter = new AbortController(),
-    params: Params<D[], K> = {},
+    params: QueryParams<D[], K> = {},
     replacePending = false,
     ignoreCooldown = false
   ): Promise<State<D[]> | undefined> {
@@ -173,7 +173,7 @@ export namespace Scroll {
     storageKey: string | undefined,
     fetcher: Fetcher<D, K>,
     aborter = new AbortController(),
-    params: Params<D[], K> = {},
+    params: QueryParams<D[], K> = {},
     replacePending = false,
     ignoreCooldown = false
   ): Promise<State<D[]> | undefined> {

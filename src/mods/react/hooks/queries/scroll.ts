@@ -5,7 +5,7 @@ import { Scroll } from "mods/scroll/helper.js";
 import { ScrollSchema } from "mods/scroll/schema.js";
 import { Fetcher } from "mods/types/fetcher.js";
 import { Mutator } from "mods/types/mutator.js";
-import { Params } from "mods/types/params.js";
+import { QueryParams } from "mods/types/params.js";
 import { Scroller } from "mods/types/scroller.js";
 import { State } from "mods/types/state.js";
 import { DependencyList, useCallback, useEffect, useMemo, useRef, useState } from "react";
@@ -42,7 +42,7 @@ export interface ScrollQuery<D = unknown, K = unknown> extends Query<D[], K> {
 export function useScrollQuery<D = unknown, K = string>(
   scroller: Scroller<D, K> | undefined,
   fetcher: Fetcher<D, K> | undefined,
-  params: Params<D[], K> = {},
+  params: QueryParams<D[], K> = {},
 ): ScrollQuery<D, K> {
   const core = useCore()
 

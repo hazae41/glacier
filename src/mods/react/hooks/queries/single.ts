@@ -5,7 +5,7 @@ import { Single } from "mods/single/helper.js";
 import { SingleSchema } from "mods/single/schema.js";
 import { Fetcher } from "mods/types/fetcher.js";
 import { Mutator } from "mods/types/mutator.js";
-import { Params } from "mods/types/params.js";
+import { QueryParams } from "mods/types/params.js";
 import { State } from "mods/types/state.js";
 import { Updater, UpdaterParams } from "mods/types/updater.js";
 import { DependencyList, useCallback, useEffect, useMemo, useRef, useState } from "react";
@@ -44,7 +44,7 @@ export interface SingleQuery<D = unknown, K = unknown> extends Query<D, K> {
 export function useQuery<D = unknown, K = string>(
   key: K | undefined,
   fetcher: Fetcher<D, K> | undefined,
-  params: Params<D, K> = {},
+  params: QueryParams<D, K> = {},
 ): SingleQuery<D, K> {
   const core = useCore()
 

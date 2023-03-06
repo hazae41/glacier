@@ -4,7 +4,7 @@ import { DEFAULT_EQUALS } from "mods/defaults.js"
 import { Equals } from "mods/equals/equals.js"
 import { isAsyncStorage } from "mods/storages/storage.js"
 import { Mutator } from "mods/types/mutator.js"
-import { GlobalParams, Params } from "mods/types/params.js"
+import { GlobalParams, QueryParams } from "mods/types/params.js"
 import { State } from "mods/types/state.js"
 
 export type Listener<D> =
@@ -50,7 +50,7 @@ export class Core extends Ortho<string, State | undefined> {
 
   getSync<D, K>(
     storageKey: string | undefined,
-    params: Params<D, K> = {}
+    params: QueryParams<D, K> = {}
   ): State<D> | undefined | null {
     if (storageKey === undefined)
       return
@@ -74,7 +74,7 @@ export class Core extends Ortho<string, State | undefined> {
 
   async get<D, K>(
     storageKey: string | undefined,
-    params: Params<D, K> = {},
+    params: QueryParams<D, K> = {},
     ignore = false
   ): Promise<State<D> | undefined> {
     if (storageKey === undefined)
@@ -105,7 +105,7 @@ export class Core extends Ortho<string, State | undefined> {
   async set<D, K>(
     storageKey: string | undefined,
     state: State<D>,
-    params: Params<D, K> = {}
+    params: QueryParams<D, K> = {}
   ) {
     if (storageKey === undefined)
       return
@@ -129,7 +129,7 @@ export class Core extends Ortho<string, State | undefined> {
    */
   async delete<D, K>(
     storageKey: string | undefined,
-    params: Params<D, K> = {}
+    params: QueryParams<D, K> = {}
   ) {
     if (!storageKey)
       return
@@ -158,7 +158,7 @@ export class Core extends Ortho<string, State | undefined> {
     storageKey: string | undefined,
     current: State<D> | undefined,
     mutator: Mutator<D>,
-    params: Params<D, K> = {}
+    params: QueryParams<D, K> = {}
   ): Promise<State<D> | undefined> {
     if (storageKey === undefined)
       return
@@ -246,7 +246,7 @@ export class Core extends Ortho<string, State | undefined> {
   async normalize<D, K>(
     shallow: boolean,
     root: State<D>,
-    params: Params<D, K> = {},
+    params: QueryParams<D, K> = {},
   ) {
     if (root.data === undefined)
       return
@@ -260,7 +260,7 @@ export class Core extends Ortho<string, State | undefined> {
   once<D, K>(
     key: string | undefined,
     listener: Listener<D>,
-    params: Params<D, K> = {}
+    params: QueryParams<D, K> = {}
   ) {
     if (!key)
       return
@@ -276,7 +276,7 @@ export class Core extends Ortho<string, State | undefined> {
   on<D, K>(
     key: string | undefined,
     listener: Listener<D>,
-    params: Params<D, K> = {}
+    params: QueryParams<D, K> = {}
   ) {
     if (!key)
       return
@@ -298,7 +298,7 @@ export class Core extends Ortho<string, State | undefined> {
   async off<D, K>(
     key: string | undefined,
     listener: Listener<D>,
-    params: Params<D, K> = {}
+    params: QueryParams<D, K> = {}
   ) {
     if (!key)
       return
