@@ -10,6 +10,20 @@ import { Updater } from "mods/types/updater.js";
 
 export namespace Single {
 
+  type Skipable<D> =
+    | Skiped<D>
+    | Unskiped<D>
+
+  interface Skiped<D> {
+    skip: true,
+    current?: State<D>
+  }
+
+  interface Unskiped<D> {
+    skip?: false,
+    current?: State<D>
+  }
+
   export function getStorageKey<D, K>(key: K | undefined, params: QueryParams<D, K>) {
     if (key === undefined)
       return undefined
@@ -30,7 +44,7 @@ export namespace Single {
    * @param fetcher Resource fetcher
    * @param aborter AbortController
    * @param tparams Time parameters
-   * @param force Should ignore cooldown
+   * @param replacePending Should ignore cooldown
    * @returns The new state
    */
   export async function fetch<D, K>(
@@ -40,8 +54,8 @@ export namespace Single {
     fetcher: Fetcher<D, K>,
     aborter = new AbortController(),
     params: QueryParams<D, K> = {},
-    force = false,
-    ignore = false
+    replacePending = false,
+    ignoreCooldown = false
   ): Promise<State<D> | undefined> {
     if (key === undefined)
       return
@@ -54,27 +68,32 @@ export namespace Single {
       timeout: dtimeout = DEFAULT_TIMEOUT,
     } = params
 
-    let { current, skip } = await core.lock(storageKey, async () => {
+    const skipable = await core.lock(storageKey, async () => {
       let current = await core.get(storageKey, params)
 
       if (current?.optimistic)
-        return { current, skip: true }
-      if (current?.aborter && !force)
-        return { current, skip: true }
-      if (current?.aborter && force)
-        current.aborter.abort("Replaced")
+        return { skip: true, current }
 
-      if (Time.isAfterNow(current?.cooldown) && !ignore)
-        return { current, skip: true }
+      if (current?.aborter && !replacePending)
+        if (replacePending)
+          current.aborter.abort("Replaced")
+        else
+          return { skip: true, current }
+
+      if (Time.isAfterNow(current?.cooldown))
+        if (!ignoreCooldown)
+          return { skip: true, current }
 
       current = await core.mutate(storageKey, current,
         c => ({ time: c?.time, aborter }),
         params)
-      return { current }
-    })
+      return { skip: false, current }
+    }) as Skipable<D>
 
-    if (skip)
-      return current
+    if (skipable.skip)
+      return skipable.current
+
+    let current = skipable.current
 
     const timeout = setTimeout(() => {
       aborter.abort("Fetch timed out")
@@ -85,14 +104,14 @@ export namespace Single {
 
       const result = await fetcher(key, { signal })
 
+      if (signal.aborted)
+        throw new AbortError(signal)
+
       const {
         time = Date.now(),
         cooldown = Time.fromDelay(dcooldown),
         expiration = Time.fromDelay(dexpiration)
       } = result
-
-      if (signal.aborted)
-        throw new AbortError(signal)
 
       current = await core.get(storageKey, params)
 
@@ -159,23 +178,25 @@ export namespace Single {
       timeout: dtimeout = DEFAULT_TIMEOUT,
     } = params
 
-
-    let { current, skip } = await core.lock(storageKey, async () => {
+    const skipable = await core.lock(storageKey, async () => {
       let current = await core.get(storageKey, params)
 
       if (current?.optimistic)
-        return { current, skip: true }
+        return { skip: true, current }
+
       if (current?.aborter)
         current.aborter.abort("Replaced")
 
       current = await core.mutate(storageKey, current,
         c => ({ time: c?.time, aborter, optimistic: true }),
         params)
-      return { current }
-    })
+      return { skip: false, current }
+    }) as Skipable<D>
 
-    if (skip)
-      return current
+    if (skipable.skip)
+      return skipable.current
+
+    let current = skipable.current
 
     const timeout = setTimeout(() => {
       aborter.abort("Update timed out")
@@ -218,6 +239,7 @@ export namespace Single {
       if (result === undefined) {
         if (fetcher === undefined)
           throw new Error("Updater returned undefined and fetcher is undefined")
+
         result = await fetcher(key, { signal, cache: "reload" })
       }
 
