@@ -1,8 +1,4 @@
-import { ReactNode, useRef } from "react";
-
-export interface ChildrenProps {
-  children?: ReactNode
-}
+import { useRef } from "react";
 
 export function useAutoRef<T>(current: T) {
   const ref = useRef(current)

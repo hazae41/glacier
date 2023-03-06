@@ -1,4 +1,4 @@
-import { useAutoRef } from "libs/react/react.js";
+import { useAutoRef } from "libs/react/ref.js";
 import { useCore } from "mods/react/contexts/core.js";
 import { Query } from "mods/react/types/query.js";
 import { Single } from "mods/single/helper.js";

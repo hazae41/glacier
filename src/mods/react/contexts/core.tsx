@@ -1,4 +1,4 @@
-import { ChildrenProps } from "libs/react/react.js"
+import { ChildrenProps } from "libs/react/props/children.js"
 import { Core } from "mods/core/core.js"
 import { GlobalParams } from "mods/types/params.js"
 import * as React from "react"
@@ -9,8 +9,10 @@ export const CoreContext =
 
 export function useCore() {
   const core = useContext(CoreContext)
+
   if (core === undefined)
-    throw new Error("Undefined core")
+    throw new Error("Core is undefined")
+
   return core
 }
 
