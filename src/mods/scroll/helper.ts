@@ -77,19 +77,19 @@ export namespace Scroll {
       if (current?.optimistic)
         return { skip: true, current }
 
-      if (current?.aborter) {
+      if (current?.aborter)
         if (replacePending)
           current.aborter.abort("Replaced")
         else
           return { skip: true, current }
-      }
 
-      if (Time.isAfterNow(current?.cooldown) && !ignoreCooldown)
-        return { skip: true, current }
+      if (Time.isAfterNow(current?.cooldown))
+        if (!ignoreCooldown)
+          return { skip: true, current }
 
-      const first = scroller(undefined)
+      const key = scroller(undefined)
 
-      if (first === undefined)
+      if (key === undefined)
         return { skip: true, current }
 
       const pending: State<D[]> = {
@@ -99,7 +99,7 @@ export namespace Scroll {
 
       current = await core.mutate(storageKey, current, () => pending, params)
 
-      return { skip: false, current, first }
+      return { skip: false, current, key }
     }) as Skipable<D[], K>
 
     if (skipable.skip)
@@ -127,31 +127,37 @@ export namespace Scroll {
 
       current = await core.get(storageKey, params)
 
-      const state: State<D[]> = {}
+      const state: State<D[]> = {
+        time: time,
+        cooldown: cooldown,
+        expiration: expiration,
+        aborter: undefined
+      }
 
       if ("data" in result) {
-        state.data = [result.data]
+        const normalized = await core.normalize(true, { data: [result.data] }, params)
+
+        if (!equals(normalized?.[0], current?.data?.[0]))
+          state.data = [result.data]
+
         state.error = undefined
       } else {
         state.error = result.error
       }
 
-      if ("data" in result) {
-        const norm = await core.normalize(true, { data: [result.data] }, params)
-        if (equals(norm?.[0], current?.data?.[0])) delete state.data
-      }
-
-      return await core.mutate(storageKey, current,
-        () => ({ time, cooldown, expiration, aborter: undefined, ...state }),
-        params)
+      return await core.mutate(storageKey, current, () => state, params)
     } catch (error: unknown) {
       current = await core.get(storageKey, params)
 
       if (current?.aborter !== aborter)
         return current
-      return await core.mutate(storageKey, current,
-        () => ({ aborter: undefined, error }),
-        params)
+
+      const state: State<D[]> = {
+        error: error,
+        aborter: undefined
+      }
+
+      return await core.mutate(storageKey, current, () => state, params)
     } finally {
       clearTimeout(timeout)
     }
@@ -194,21 +200,21 @@ export namespace Scroll {
       if (current?.optimistic)
         return { skip: true, current }
 
-      if (current?.aborter) {
-        if (replacePending) {
+      if (current?.aborter)
+        if (replacePending)
           current.aborter.abort("Replaced")
-        } else {
+        else
           return { skip: true, current }
-        }
-      }
 
-      if (Time.isAfterNow(current?.cooldown) && !ignoreCooldown)
-        return { skip: true, current }
+      if (Time.isAfterNow(current?.cooldown))
+        if (!ignoreCooldown)
+          return { skip: true, current }
 
-      const pages = current?.data ?? []
-      const last = scroller(Arrays.lastOf(pages))
+      const previouses = current?.data ?? []
+      const previous = Arrays.lastOf(previouses)
+      const key = scroller(previous)
 
-      if (last === undefined)
+      if (key === undefined)
         return { skip: true, current }
 
       const pending: State<D[]> = {
@@ -218,7 +224,7 @@ export namespace Scroll {
 
       current = await core.mutate(storageKey, current, () => pending, params)
 
-      return { skip: false, current, last }
+      return { skip: false, current, key }
     }) as Skipable<D[], K>
 
     if (skipable.skip)
@@ -235,14 +241,14 @@ export namespace Scroll {
 
       const result = await fetcher(skipable.key, { signal })
 
+      if (signal.aborted)
+        throw new AbortError(signal)
+
       let {
         time = Date.now(),
         cooldown = Time.fromDelay(dcooldown),
         expiration = Time.fromDelay(dexpiration)
       } = result
-
-      if (signal.aborted)
-        throw new AbortError(signal)
 
       if (expiration !== undefined && current?.expiration !== undefined)
         expiration = Math.min(expiration, current?.expiration)
@@ -257,7 +263,8 @@ export namespace Scroll {
       }
 
       if ("data" in result) {
-        state.data = [...(current?.data ?? []), result.data]
+        const previouses = current?.data ?? []
+        state.data = [...previouses, result.data]
         state.error = undefined
       } else {
         state.error = result.error
