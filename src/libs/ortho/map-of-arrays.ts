@@ -38,7 +38,9 @@ export class MapOfArrays<K, V> {
    */
   erase(key: K, value: V) {
     const values = this.#map.get(key)
-    if (values === undefined) return
+
+    if (values === undefined)
+      return
 
     const values2 = values.filter(it => it !== value)
 

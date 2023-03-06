@@ -52,7 +52,8 @@ export class Core extends Ortho<string, State | undefined> {
     skey: string | undefined,
     params: Params<D, K> = {}
   ): State<D> | undefined | null {
-    if (skey === undefined) return
+    if (skey === undefined)
+      return
 
     if (this.#cache.has(skey)) {
       const cached = this.#cache.get(skey)
@@ -76,7 +77,8 @@ export class Core extends Ortho<string, State | undefined> {
     params: Params<D, K> = {},
     ignore = false
   ): Promise<State<D> | undefined> {
-    if (skey === undefined) return
+    if (skey === undefined)
+      return
 
     if (this.#cache.has(skey)) {
       const cached = this.#cache.get(skey)
@@ -105,13 +107,17 @@ export class Core extends Ortho<string, State | undefined> {
     state: State<D>,
     params: Params<D, K> = {}
   ) {
-    if (skey === undefined) return
+    if (skey === undefined)
+      return
 
     this.#cache.set(skey, state)
     this.publish(skey, state)
 
     const { storage } = params
-    if (!storage) return
+
+    if (!storage)
+      return
+
     const { data, time, cooldown, expiration } = state
     await storage.set(skey, { data, time, cooldown, expiration })
   }
@@ -125,14 +131,18 @@ export class Core extends Ortho<string, State | undefined> {
     skey: string | undefined,
     params: Params<D, K> = {}
   ) {
-    if (!skey) return
+    if (!skey)
+      return
 
     this.#cache.delete(skey)
     this.#mutexes.delete(skey)
     this.publish(skey, undefined)
 
     const { storage } = params
-    if (!storage) return
+
+    if (!storage)
+      return
+
     await storage.delete(skey)
   }
 
@@ -150,7 +160,8 @@ export class Core extends Ortho<string, State | undefined> {
     mutator: Mutator<D>,
     params: Params<D, K> = {}
   ): Promise<State<D> | undefined> {
-    if (skey === undefined) return
+    if (skey === undefined)
+      return
 
     const {
       equals = DEFAULT_EQUALS
@@ -237,8 +248,12 @@ export class Core extends Ortho<string, State | undefined> {
     root: State<D>,
     params: Params<D, K> = {},
   ) {
-    if (root.data === undefined) return
-    if (params.normalizer === undefined) return root.data
+    if (root.data === undefined)
+      return
+
+    if (params.normalizer === undefined)
+      return root.data
+
     return await params.normalizer(root.data, { core: this, shallow, root })
   }
 
@@ -258,7 +273,8 @@ export class Core extends Ortho<string, State | undefined> {
     listener: Listener<D>,
     params: Params<D, K> = {}
   ) {
-    if (!key) return
+    if (!key)
+      return
 
     const f: Listener<D> = (x) => {
       this.off(key, f, params)
@@ -273,7 +289,8 @@ export class Core extends Ortho<string, State | undefined> {
     listener: Listener<D>,
     params: Params<D, K> = {}
   ) {
-    if (!key) return
+    if (!key)
+      return
 
     super.on(key, listener as Listener<unknown>)
 
@@ -281,7 +298,9 @@ export class Core extends Ortho<string, State | undefined> {
     this.#counts.set(key, count + 1)
 
     const timeout = this.#timeouts.get(key)
-    if (timeout === undefined) return
+
+    if (timeout === undefined)
+      return
 
     clearTimeout(timeout)
     this.#timeouts.delete(key)
@@ -292,7 +311,8 @@ export class Core extends Ortho<string, State | undefined> {
     listener: Listener<D>,
     params: Params<D, K> = {}
   ) {
-    if (!key) return
+    if (!key)
+      return
 
     super.off(key, listener as Listener<unknown>)
 
@@ -309,14 +329,20 @@ export class Core extends Ortho<string, State | undefined> {
     this.#counts.delete(key)
 
     const current = await this.get(key, params, true)
-    if (current?.expiration === undefined) return
-    if (current?.expiration === -1) return
+
+    if (current?.expiration === undefined)
+      return
+    if (current?.expiration === -1)
+      return
 
     const erase = async () => {
-      if (!this.#mounted) return
+      if (!this.#mounted)
+        return
 
       const count = this.#counts.get(key)
-      if (count !== undefined) return
+
+      if (count !== undefined)
+        return
 
       this.#timeouts.delete(key)
       await this.delete(key, params)

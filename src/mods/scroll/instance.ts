@@ -45,7 +45,8 @@ export class ScrollInstance<D = unknown, K = unknown> implements Instance<D[], K
   }
 
   async #loadAsync() {
-    if (this.ready) return
+    if (this.ready)
+      return
 
     const { core, skey, mparams } = this
 

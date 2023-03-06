@@ -12,7 +12,8 @@ export function useOnline(query: Query) {
   const fetchRef = useAutoRef(fetch)
 
   useEffect(() => {
-    if (!ready) return
+    if (!ready)
+      return
 
     const f = () => fetchRef.current()
 

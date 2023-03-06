@@ -47,6 +47,7 @@ export class SyncLocalStorage implements SyncStorage {
   ) {
     if (typeof Storage === "undefined")
       return
+
     this.onunload = () => this.collect()
     addEventListener("beforeunload", this.onunload)
   }
@@ -54,6 +55,7 @@ export class SyncLocalStorage implements SyncStorage {
   unmount() {
     if (typeof Storage === "undefined")
       return
+
     removeEventListener("beforeunload", this.onunload!);
     (async () => this.collect())().catch(console.error)
   }
@@ -61,10 +63,15 @@ export class SyncLocalStorage implements SyncStorage {
   collect() {
     if (typeof Storage === "undefined")
       return
+
     for (const key of this.keys) {
       const state = this.get<State>(key, true)
-      if (state?.expiration === undefined) continue
-      if (state.expiration > Date.now()) continue
+
+      if (state?.expiration === undefined)
+        continue
+      if (state.expiration > Date.now())
+        continue
+
       this.delete(key, false)
     }
   }
@@ -72,17 +79,25 @@ export class SyncLocalStorage implements SyncStorage {
   get<T>(key: string, ignore = false) {
     if (typeof Storage === "undefined")
       return
+
     if (!ignore && !this.keys.has(key))
       this.keys.add(key)
+
     const item = localStorage.getItem(this.prefix + key)
-    if (item) return this.serializer.parse(item) as T
+
+    if (!item)
+      return
+
+    return this.serializer.parse(item) as T
   }
 
   set<T>(key: string, value: T, ignore = false) {
     if (typeof Storage === "undefined")
       return
+
     if (!ignore && !this.keys.has(key))
       this.keys.add(key)
+
     const item = this.serializer.stringify(value)
     localStorage.setItem(this.prefix + key, item)
   }
@@ -90,8 +105,10 @@ export class SyncLocalStorage implements SyncStorage {
   delete(key: string, ignore = false) {
     if (typeof Storage === "undefined")
       return
+
     if (!ignore && this.keys.has(key))
       this.keys.delete(key)
+
     localStorage.removeItem(this.prefix + key)
   }
 }

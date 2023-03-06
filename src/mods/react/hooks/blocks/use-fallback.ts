@@ -14,7 +14,10 @@ export function useFallback<D>(
 ) {
   const { data, error } = query
 
-  if (data !== undefined) return
-  if (error !== undefined) return
+  if (data !== undefined)
+    return
+  if (error !== undefined)
+    return
+
   Object.assign(query, state)
 }

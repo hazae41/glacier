@@ -43,8 +43,10 @@ export namespace Single {
     force = false,
     ignore = false
   ): Promise<State<D> | undefined> {
-    if (key === undefined) return
-    if (skey === undefined) return
+    if (key === undefined)
+      return
+    if (skey === undefined)
+      return
 
     const {
       cooldown: dcooldown = DEFAULT_COOLDOWN,
@@ -146,8 +148,10 @@ export namespace Single {
     aborter = new AbortController(),
     params: Params<D, K> = {},
   ): Promise<State<D> | undefined> {
-    if (key === undefined) return
-    if (skey === undefined) return
+    if (key === undefined)
+      return
+    if (skey === undefined)
+      return
 
     const {
       cooldown: dcooldown = DEFAULT_COOLDOWN,

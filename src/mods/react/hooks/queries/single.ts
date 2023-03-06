@@ -74,13 +74,15 @@ export function useQuery<D = unknown, K = string>(
   const initRef = useRef<Promise<void>>()
 
   useEffect(() => {
-    if (stateRef.current !== null) return
+    if (stateRef.current !== null)
+      return
 
     initRef.current = core.get<D, K>(skey, mparamsRef.current).then(setState)
   }, [core, skey])
 
   useEffect(() => {
-    if (!skey) return
+    if (!skey)
+      return
 
     core.on(skey, setState, mparamsRef.current)
     return () => void core.off(skey, setState, mparamsRef.current)

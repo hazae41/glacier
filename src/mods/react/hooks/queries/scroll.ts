@@ -76,13 +76,15 @@ export function useScrollQuery<D = unknown, K = string>(
   const initRef = useRef<Promise<void>>()
 
   useEffect(() => {
-    if (stateRef.current !== null) return
+    if (stateRef.current !== null)
+      return
 
     initRef.current = core.get<D[], K>(skey, paramsRef.current).then(setState)
   }, [core, skey])
 
   useEffect(() => {
-    if (!skey) return
+    if (!skey)
+      return
 
     core.on(skey, setState, paramsRef.current)
     return () => void core.off(skey, setState, paramsRef.current)

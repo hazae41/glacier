@@ -53,6 +53,7 @@ export class AsyncLocalStorage implements AsyncStorage {
   ) {
     if (typeof Storage === "undefined")
       return
+
     this.onunload = () => this.collect()
     addEventListener("beforeunload", this.onunload)
   }
@@ -60,18 +61,23 @@ export class AsyncLocalStorage implements AsyncStorage {
   unmount() {
     if (typeof Storage === "undefined")
       return
-    if (this.onunload)
-      removeEventListener("beforeunload", this.onunload);
+
+    removeEventListener("beforeunload", this.onunload!);
     (async () => this.collect())().catch(console.error)
   }
 
   collect() {
     if (typeof Storage === "undefined")
       return
+
     for (const key of this.keys) {
       const state = this.getSync<State>(key, true)
-      if (state?.expiration === undefined) continue
-      if (state.expiration > Date.now()) continue
+
+      if (state?.expiration === undefined)
+        continue
+      if (state.expiration > Date.now())
+        continue
+
       this.delete(key, false)
     }
   }
@@ -79,26 +85,40 @@ export class AsyncLocalStorage implements AsyncStorage {
   getSync<T>(key: string, ignore = false) {
     if (typeof Storage === "undefined")
       return
+
     if (!ignore && !this.keys.has(key))
       this.keys.add(key)
+
     const item = localStorage.getItem(this.prefix + key)
-    if (item) return this.serializer.parse(item) as T
+
+    if (!item)
+      return
+
+    return this.serializer.parse(item) as T
   }
 
   async get<T>(key: string, ignore = false) {
     if (typeof Storage === "undefined")
       return
+
     if (!ignore && !this.keys.has(key))
       this.keys.add(key)
+
     const item = localStorage.getItem(this.prefix + key)
-    if (item) return this.serializer.parse(item) as T
+
+    if (!item)
+      return
+
+    return this.serializer.parse(item) as T
   }
 
   async set<T>(key: string, value: T, ignore = false) {
     if (typeof Storage === "undefined")
       return
+
     if (!ignore && !this.keys.has(key))
       this.keys.add(key)
+
     const item = this.serializer.stringify(value)
     localStorage.setItem(this.prefix + key, item)
   }
@@ -106,8 +126,10 @@ export class AsyncLocalStorage implements AsyncStorage {
   async delete(key: string, ignore = false) {
     if (typeof Storage === "undefined")
       return
+
     if (!ignore && this.keys.has(key))
       this.keys.delete(key)
+
     localStorage.removeItem(this.prefix + key)
   }
 }

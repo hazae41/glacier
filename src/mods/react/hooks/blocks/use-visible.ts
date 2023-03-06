@@ -12,7 +12,8 @@ export function useVisible(query: Query) {
   const fetchRef = useAutoRef(fetch)
 
   useEffect(() => {
-    if (!ready) return
+    if (!ready)
+      return
 
     const f = () => !document.hidden && fetchRef.current()
 

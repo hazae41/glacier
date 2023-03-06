@@ -32,14 +32,17 @@ export function useRetry(query: Query, options: RetryOptions = {}) {
   const refetchRef = useAutoRef(refetch)
 
   useEffect(() => {
-    if (!ready) return
+    if (!ready)
+      return
 
     if (error === undefined) {
       count.current = 0
       return
     }
 
-    if (count.current >= max) return
+    if (count.current >= max)
+      return
+
     const ratio = base ** count.current
 
     function f() {

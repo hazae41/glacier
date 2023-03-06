@@ -11,8 +11,10 @@ export function useInterval(query: Query, interval: number) {
   const { ready, fetch } = query
 
   useEffect(() => {
-    if (!ready) return
-    if (!interval) return
+    if (!ready)
+      return
+    if (!interval)
+      return
 
     const i = setInterval(fetch, interval)
     return () => clearInterval(i)

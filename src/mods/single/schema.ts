@@ -27,7 +27,8 @@ export class SingleSchema<D = unknown, K = unknown> implements Schema<D, K, Sing
   }
 
   async normalize(data: D, more: NormalizerMore) {
-    if (more.shallow) return
+    if (more.shallow)
+      return
 
     const { time, cooldown, expiration, optimistic } = more.root
     const state = { data, time, cooldown, expiration, optimistic }

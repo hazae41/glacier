@@ -43,8 +43,10 @@ export namespace Scroll {
     force = false,
     ignore = false
   ): Promise<State<D[]> | undefined> {
-    if (scroller === undefined) return
-    if (skey === undefined) return
+    if (scroller === undefined)
+      return
+    if (skey === undefined)
+      return
 
     let { current, skip, first } = await core.lock(skey, async () => {
       let current = await core.get(skey, params)
@@ -152,8 +154,10 @@ export namespace Scroll {
     force = false,
     ignore = false
   ): Promise<State<D[]> | undefined> {
-    if (scroller === undefined) return
-    if (skey === undefined) return
+    if (scroller === undefined)
+      return
+    if (skey === undefined)
+      return
 
     let { current, skip, last } = await core.lock(skey, async () => {
       let current = await core.get(skey, params)

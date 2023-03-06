@@ -34,7 +34,6 @@ export class IDBStorage implements AsyncStorage {
     this.initialization = this.#load()
 
     this.onunload = () => this.#unload()
-
     addEventListener("beforeunload", this.onunload)
   }
 
@@ -163,6 +162,7 @@ export class IDBStorage implements AsyncStorage {
   async delete(key: string, ignore = false) {
     if (typeof indexedDB === "undefined")
       return
+
     if (!ignore && this.keys.has(key))
       this.keys.delete(key)
 
