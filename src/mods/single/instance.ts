@@ -71,7 +71,7 @@ export class SingleInstance<D = unknown, K = unknown> implements Instance<D, K> 
     if (this.#state === null)
       throw new Error("Null state after init")
 
-    return this.#state = await core.mutate(storageKey, this.#state, mutator, mparams)
+    return this.#state = await core.mutate(storageKey, mutator, mparams)
   }
 
   async fetch(aborter?: AbortController) {

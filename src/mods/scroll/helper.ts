@@ -92,12 +92,9 @@ export namespace Scroll {
       if (key === undefined)
         return { skip: true, current }
 
-      const pending: State<D[]> = {
-        time: current?.time,
+      current = await core.apply(storageKey, current, {
         aborter: aborter
-      }
-
-      current = await core.mutate(storageKey, current, () => pending, params)
+      }, params)
 
       return { skip: false, current, key }
     }) as Skipable<D[], K>
@@ -145,19 +142,14 @@ export namespace Scroll {
         state.error = result.error
       }
 
-      return await core.mutate(storageKey, current, () => state, params)
+      return await core.apply(storageKey, current, state, params)
     } catch (error: unknown) {
       current = await core.get(storageKey, params)
 
-      if (current?.aborter !== aborter)
-        return current
-
-      const state: State<D[]> = {
+      return await core.apply(storageKey, current, {
         error: error,
         aborter: undefined
-      }
-
-      return await core.mutate(storageKey, current, () => state, params)
+      }, params)
     } finally {
       clearTimeout(timeout)
     }
@@ -217,12 +209,9 @@ export namespace Scroll {
       if (key === undefined)
         return { skip: true, current }
 
-      const pending: State<D[]> = {
-        time: current?.time,
+      current = await core.apply(storageKey, current, {
         aborter: aborter
-      }
-
-      current = await core.mutate(storageKey, current, () => pending, params)
+      }, params)
 
       return { skip: false, current, key }
     }) as Skipable<D[], K>
@@ -270,7 +259,7 @@ export namespace Scroll {
         state.error = result.error
       }
 
-      return await core.mutate(storageKey, current, () => state, params)
+      return await core.apply(storageKey, current, state, params)
     } catch (error: unknown) {
       current = await core.get(storageKey, params)
 
@@ -282,7 +271,7 @@ export namespace Scroll {
         aborter: undefined
       }
 
-      return await core.mutate(storageKey, current, () => state, params)
+      return await core.apply(storageKey, current, state, params)
     } finally {
       clearTimeout(timeout)
     }

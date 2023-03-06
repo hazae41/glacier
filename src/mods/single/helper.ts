@@ -10,20 +10,6 @@ import { Updater } from "mods/types/updater.js";
 
 export namespace Single {
 
-  type Skipable<D> =
-    | Skiped<D>
-    | Unskiped<D>
-
-  interface Skiped<D> {
-    skip: true,
-    current?: State<D>
-  }
-
-  interface Unskiped<D> {
-    skip?: false,
-    current?: State<D>
-  }
-
   export function getStorageKey<D, K>(key: K | undefined, params: QueryParams<D, K>) {
     if (key === undefined)
       return undefined
@@ -62,89 +48,75 @@ export namespace Single {
     if (storageKey === undefined)
       return
 
-    const {
-      cooldown: dcooldown = DEFAULT_COOLDOWN,
-      expiration: dexpiration = DEFAULT_EXPIRATION,
-      timeout: dtimeout = DEFAULT_TIMEOUT,
-    } = params
+    let current = await core.get(storageKey, params)
 
-    const skipable = await core.lock(storageKey, async () => {
-      let current = await core.get(storageKey, params)
+    if (current?.optimistic)
+      return current
 
-      if (current?.optimistic)
-        return { skip: true, current }
-
-      if (current?.aborter && !replacePending)
-        if (replacePending)
-          current.aborter.abort("Replaced")
-        else
-          return { skip: true, current }
-
-      if (Time.isAfterNow(current?.cooldown))
-        if (!ignoreCooldown)
-          return { skip: true, current }
-
-      current = await core.mutate(storageKey, current,
-        c => ({ time: c?.time, aborter }),
-        params)
-      return { skip: false, current }
-    }) as Skipable<D>
-
-    if (skipable.skip)
-      return skipable.current
-
-    let current = skipable.current
-
-    const timeout = setTimeout(() => {
-      aborter.abort("Fetch timed out")
-    }, dtimeout)
-
-    try {
-      const { signal } = aborter
-
-      const result = await fetcher(key, { signal })
-
-      if (signal.aborted)
-        throw new AbortError(signal)
-
-      const {
-        time = Date.now(),
-        cooldown = Time.fromDelay(dcooldown),
-        expiration = Time.fromDelay(dexpiration)
-      } = result
-
-      current = await core.get(storageKey, params)
-
-      const state: State<D> = {
-        time: time,
-        cooldown: cooldown,
-        expiration: expiration,
-        aborter: undefined
-      }
-
-      if ("data" in result) {
-        state.data = result.data
-        state.error = undefined
-      } else {
-        state.error = result.error
-      }
-
-      return await core.mutate(storageKey, current, () => state, params)
-    } catch (error: unknown) {
-      current = await core.get(storageKey, params)
-
-      if (current?.aborter !== aborter)
+    if (current?.aborter)
+      if (replacePending)
+        current.aborter.abort("Replaced")
+      else
         return current
 
-      const state: State<D> = {
-        error: error,
-        aborter: undefined
-      }
+    if (Time.isAfterNow(current?.cooldown))
+      if (!ignoreCooldown)
+        return current
 
-      return await core.mutate(storageKey, current, () => state, params)
-    } finally {
-      clearTimeout(timeout)
-    }
+    await core.lock(storageKey, async () => {
+      const {
+        cooldown: dcooldown = DEFAULT_COOLDOWN,
+        expiration: dexpiration = DEFAULT_EXPIRATION,
+        timeout: dtimeout = DEFAULT_TIMEOUT,
+      } = params
+
+      const timeout = setTimeout(() => {
+        aborter.abort("Fetch timed out")
+      }, dtimeout)
+
+      current = await core.apply(storageKey, current, { aborter }, params)
+
+      try {
+        const { signal } = aborter
+
+        const result = await fetcher(key, { signal })
+
+        if (signal.aborted)
+          throw new AbortError(signal)
+
+        const {
+          time = Date.now(),
+          cooldown = Time.fromDelay(dcooldown),
+          expiration = Time.fromDelay(dexpiration)
+        } = result
+
+        if ("error" in result) {
+          return await core.apply(storageKey, current, {
+            error: result.error,
+            time: time,
+            cooldown: cooldown,
+            expiration: expiration,
+            aborter: undefined
+          }, params)
+        } else {
+          return await core.apply(storageKey, current, {
+            data: result.data,
+            error: undefined,
+            time: time,
+            cooldown: cooldown,
+            expiration: expiration,
+            aborter: undefined
+          }, params)
+        }
+      } catch (error: unknown) {
+        return await core.apply(storageKey, current, {
+          error: error,
+          aborter: undefined
+        }, params)
+      } finally {
+        clearTimeout(timeout)
+      }
+    })
   }
 
   /**
@@ -172,133 +144,114 @@ export namespace Single {
     if (storageKey === undefined)
       return
 
-    const {
-      cooldown: dcooldown = DEFAULT_COOLDOWN,
-      expiration: dexpiration = DEFAULT_EXPIRATION,
-      timeout: dtimeout = DEFAULT_TIMEOUT,
-    } = params
+    let current = await core.get(storageKey, params)
 
-    const skipable = await core.lock(storageKey, async () => {
-      let current = await core.get(storageKey, params)
+    if (current?.optimistic)
+      return current
 
-      if (current?.optimistic)
-        return { skip: true, current }
+    if (current?.aborter)
+      current.aborter.abort("Replaced")
 
-      if (current?.aborter)
-        current.aborter.abort("Replaced")
+    await core.lock(storageKey, async () => {
+      const {
+        cooldown: dcooldown = DEFAULT_COOLDOWN,
+        expiration: dexpiration = DEFAULT_EXPIRATION,
+        timeout: dtimeout = DEFAULT_TIMEOUT,
+      } = params
 
-      current = await core.mutate(storageKey, current,
-        c => ({ time: c?.time, aborter, optimistic: true }),
-        params)
-      return { skip: false, current }
-    }) as Skipable<D>
+      const timeout = setTimeout(() => {
+        aborter.abort("Update timed out")
+      }, dtimeout)
 
-    if (skipable.skip)
-      return skipable.current
+      current = await core.apply(storageKey, current, {
+        aborter: aborter,
+        optimistic: true
+      }, params)
 
-    let current = skipable.current
+      try {
+        const { signal } = aborter
 
-    const timeout = setTimeout(() => {
-      aborter.abort("Update timed out")
-    }, dtimeout)
+        const generator = updater(current, { signal })
 
-    try {
-      const { signal } = aborter
+        let final: Result<D> | void
 
-      const generator = updater(current, { signal })
+        while (true) {
+          const { done, value } = await generator.next()
 
-      let result: Result<D> | void = undefined
+          if (done) {
+            final = value
+            break
+          }
 
-      while (true) {
-        const { done, value } = await generator.next()
+          if (signal.aborted)
+            throw new AbortError(signal)
 
-        if (done) {
-          result = value
-          break
+          if ("error" in value) {
+            current = await core.apply(storageKey, current, {
+              error: value.error,
+              aborter: aborter,
+              optimistic: true
+            }, params)
+          } else {
+            current = await core.apply(storageKey, current, {
+              data: value.data,
+              error: undefined,
+              aborter: aborter,
+              optimistic: true
+            }, params)
+          }
         }
+
+        if (final === undefined) {
+          if (fetcher === undefined)
+            throw new Error("Updater returned undefined and fetcher is undefined")
+
+          final = await fetcher(key, { signal, cache: "reload" })
+        }
+
+        const result = final
 
         if (signal.aborted)
           throw new AbortError(signal)
 
-        const state: State<D> = {
-          time: current?.time,
-          aborter: aborter,
-          optimistic: true
-        }
+        const {
+          time = Date.now(),
+          cooldown = Time.fromDelay(dcooldown),
+          expiration = Time.fromDelay(dexpiration)
+        } = result
 
-        if ("data" in value) {
-          state.data = value.data
-          state.error = undefined
+        if ("error" in result) {
+          return await core.apply(storageKey, current, {
+            data: current?.realData,
+            time: current?.realTime,
+            error: result.error,
+            cooldown: cooldown,
+            expiration: expiration,
+            aborter: undefined,
+            optimistic: false
+          }, params)
         } else {
-          state.error = value.error
+          return await core.apply(storageKey, current, {
+            data: result.data,
+            error: undefined,
+            time: time,
+            cooldown: cooldown,
+            expiration: expiration,
+            aborter: undefined,
+            optimistic: false
+          }, params)
         }
-
-        current = await core.mutate(storageKey, current, () => state, params)
-      }
-
-      if (result === undefined) {
-        if (fetcher === undefined)
-          throw new Error("Updater returned undefined and fetcher is undefined")
-
-        result = await fetcher(key, { signal, cache: "reload" })
-      }
-
-      const {
-        time = Date.now(),
-        cooldown = Time.fromDelay(dcooldown),
-        expiration = Time.fromDelay(dexpiration)
-      } = result
-
-      if (signal.aborted)
-        throw new AbortError(signal)
-
-      current = await core.get(storageKey, params)
-
-      if ("error" in result) {
-        if (current?.aborter !== aborter)
-          return current
-
-        const state: State<D> = {
-          data: current.realData,
-          error: result.error,
-          time: current.realTime,
-          cooldown: cooldown,
-          expiration: expiration,
+      } catch (error: unknown) {
+        return await core.apply(storageKey, current, {
+          data: current?.realData,
+          time: current?.realTime,
+          error: error,
           aborter: undefined,
           optimistic: false
-        }
-
-        return await core.mutate(storageKey, current, () => state, params)
-      } else {
-        const state: State<D> = {
-          data: result.data,
-          error: undefined,
-          time: time,
-          cooldown: cooldown,
-          expiration: expiration,
-          aborter: undefined,
-          optimistic: false
-        }
-
-        return await core.mutate(storageKey, current, () => state, params)
+        }, params)
+      } finally {
+        clearTimeout(timeout)
       }
-    } catch (error: unknown) {
-      current = await core.get(storageKey, params)
-
-      if (current?.aborter !== aborter)
-        return current
-
-      const state: State<D> = {
-        data: current.realData,
-        error: error,
-        time: current.realTime,
-        aborter: undefined,
-        optimistic: false
-      }
-
-      return await core.mutate(storageKey, current, () => state, params)
-    } finally {
-      clearTimeout(timeout)
-    }
+    })
   }
 }

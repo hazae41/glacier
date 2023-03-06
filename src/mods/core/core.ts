@@ -146,6 +146,39 @@ export class Core extends Ortho<string, State | undefined> {
     await storage.delete(storageKey)
   }
 
+  async mutate<D, K>(
+    storageKey: string | undefined,
+    mutator: Mutator<D>,
+    params: QueryParams<D, K> = {}
+  ) {
+    if (storageKey === undefined)
+      return
+
+    const current = await this.get(storageKey, params)
+
+    if (current?.optimistic)
+      return current
+
+    if (current?.aborter)
+      current.aborter.abort("Replaced")
+
+    return await this.lock(storageKey, async () => {
+      const state = mutator(current)
+
+      if (!state)
+        return await this.apply(storageKey, current, state, params)
+
+      if (state.time === undefined)
+        state.time = Date.now()
+      if (state.aborter !== undefined)
+        throw new Error(`Aborter must be undefined`)
+      if (state.optimistic)
+        throw new Error(`Optimistic must be undefined`)
+
+      return await this.apply(storageKey, current, state, params)
+    })
+  }
+
   /**
    * The most important function
    * @param storageKey 
@@ -154,10 +187,10 @@ export class Core extends Ortho<string, State | undefined> {
    * @param params 
    * @returns 
    */
-  async mutate<D, K>(
+  async apply<D, K>(
     storageKey: string | undefined,
     current: State<D> | undefined,
-    mutator: Mutator<D>,
+    mutated: State<D> | undefined,
     params: QueryParams<D, K> = {}
   ): Promise<State<D> | undefined> {
     if (storageKey === undefined)
@@ -167,15 +200,7 @@ export class Core extends Ortho<string, State | undefined> {
       equals = DEFAULT_EQUALS
     } = params
 
-    /**
-     * Apply mutator to the current state
-     */
-    const state = mutator(current)
-
-    /**
-     * Delete and return if the new state is undefined
-     */
-    if (state === undefined) {
+    if (mutated === undefined) {
       await this.delete(storageKey, params)
       return
     }
@@ -184,7 +209,7 @@ export class Core extends Ortho<string, State | undefined> {
       /**
        * Do not apply older states
        */
-      if (state.time !== undefined && current.time !== undefined && state.time < current.time)
+      if (mutated.time !== undefined && current.time !== undefined && mutated.time < current.time)
         return current
 
       /**
@@ -192,52 +217,28 @@ export class Core extends Ortho<string, State | undefined> {
        * 
        * (optimistic=false means it's the end of the optimistic mutation)
        */
-      if (current.optimistic === true && state.optimistic === undefined)
+      if (current.optimistic === true && mutated.optimistic === undefined)
         return current
     }
 
-    /**
-     * Merge the current state with the new state
-     */
     const next: State<D> = {
       ...current,
-      ...state
+      ...mutated
     }
 
-    /**
-     * Normalize the new data
-     */
     next.data = await this.normalize(false, next, params)
 
-    /**
-     * Optimization: Do not modify data if it's "equal" to the previous data
-     */
     if (equals(next.data, current?.data))
       next.data = current?.data
 
-    /**
-     * Forcefully set time if it's unset
-     */
-    if (next.time === undefined)
-      next.time = Date.now()
-
-    /**
-     * Set the data and time as real if optimistic is unset
-     */
     if (next.optimistic !== true) {
       next.realData = next.data
       next.realTime = next.time
     }
 
-    /**
-     * Do not apply if the new state if shallowly equal to the current state
-     */
     if (Equals.shallow(next, current))
       return current
 
-    /**
-     * Publish the new state
-     */
     await this.set(storageKey, next, params)
 
     return next as State<D>

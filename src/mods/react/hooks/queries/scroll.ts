@@ -96,10 +96,9 @@ export function useScrollQuery<D = unknown, K = string>(
     if (stateRef.current === null)
       throw new Error("Null state after init")
 
-    const state = stateRef.current
     const params = paramsRef.current
 
-    return await core.mutate(storageKey, state, mutator, params)
+    return await core.mutate(storageKey, mutator, params)
   }, [core, storageKey])
 
   const clear = useCallback(async () => {
