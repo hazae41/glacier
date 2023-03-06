@@ -1,4 +1,4 @@
-import { useAutoRef } from "libs/react.js"
+import { useAutoRef } from "libs/react/react.js"
 import { Query } from "mods/react/types/query.js"
 import { useEffect } from "react"
 

@@ -1,4 +1,4 @@
-import { ChildrenProps } from "libs/react.js"
+import { ChildrenProps } from "libs/react/react.js"
 import { Core } from "mods/core/core.js"
 import { GlobalParams } from "mods/types/params.js"
 import * as React from "react"
