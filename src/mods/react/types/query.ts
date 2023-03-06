@@ -10,7 +10,7 @@ export interface Query<D = unknown, K = unknown> {
   /**
    * Storage key, basically a serialized version of key
    */
-  skey?: string,
+  storageKey?: string,
 
   /**
    * Data, if any

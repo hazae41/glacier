@@ -12,7 +12,7 @@ import { Scroll } from "./helper.js";
  */
 export class ScrollInstance<D = unknown, K = unknown> implements Instance<D[], K> {
   readonly key: K | undefined
-  readonly skey: string | undefined
+  readonly storageKey: string | undefined
   readonly mparams: Params<D[], K>
 
   #init?: Promise<void>
@@ -28,7 +28,7 @@ export class ScrollInstance<D = unknown, K = unknown> implements Instance<D[], K
 
     this.key = scroller?.()
 
-    this.skey = Scroll.getStorageKey<D[], K>(this.key, this.mparams)
+    this.storageKey = Scroll.getStorageKey<D[], K>(this.key, this.mparams)
 
     this.#loadSync()
     this.#subscribe()
@@ -39,46 +39,46 @@ export class ScrollInstance<D = unknown, K = unknown> implements Instance<D[], K
   get ready() { return this.#state !== null }
 
   #loadSync() {
-    const { core, skey, mparams } = this
+    const { core, storageKey, mparams } = this
 
-    this.#state = core.getSync<D[], K>(skey, mparams)
+    this.#state = core.getSync<D[], K>(storageKey, mparams)
   }
 
   async #loadAsync() {
     if (this.ready)
       return
 
-    const { core, skey, mparams } = this
+    const { core, storageKey, mparams } = this
 
-    this.#state = await core.get(skey, mparams)
+    this.#state = await core.get(storageKey, mparams)
   }
 
   #subscribe() {
-    const { core, skey } = this
+    const { core, storageKey } = this
 
     const setter = (state?: State<D[]>) =>
       this.#state = state
 
-    core.on(skey, setter)
+    core.on(storageKey, setter)
 
     new FinalizationRegistry(() => {
-      core.off(skey, setter)
+      core.off(storageKey, setter)
     }).register(this, undefined)
   }
 
   async mutate(mutator: Mutator<D[]>) {
-    const { core, skey, mparams } = this
+    const { core, storageKey, mparams } = this
 
     if (this.#state === null)
       await (this.#init ??= this.#loadAsync())
     if (this.#state === null)
       throw new Error("Null state after init")
 
-    return this.#state = await core.mutate(skey, this.#state, mutator, mparams)
+    return this.#state = await core.mutate(storageKey, this.#state, mutator, mparams)
   }
 
   async fetch(aborter?: AbortController) {
-    const { core, scroller, skey, fetcher, mparams } = this
+    const { core, scroller, storageKey, fetcher, mparams } = this
 
     if (this.#state === null)
       await (this.#init ??= this.#loadAsync())
@@ -87,11 +87,11 @@ export class ScrollInstance<D = unknown, K = unknown> implements Instance<D[], K
     if (fetcher === undefined)
       return this.#state
 
-    return this.#state = await Scroll.first(core, scroller, skey, fetcher, aborter, mparams)
+    return this.#state = await Scroll.first(core, scroller, storageKey, fetcher, aborter, mparams)
   }
 
   async refetch(aborter?: AbortController) {
-    const { core, scroller, skey, fetcher, mparams } = this
+    const { core, scroller, storageKey, fetcher, mparams } = this
 
     if (this.#state === null)
       await (this.#init ??= this.#loadAsync())
@@ -100,11 +100,11 @@ export class ScrollInstance<D = unknown, K = unknown> implements Instance<D[], K
     if (fetcher === undefined)
       return this.#state
 
-    return this.#state = await Scroll.first(core, scroller, skey, fetcher, aborter, mparams, true, true)
+    return this.#state = await Scroll.first(core, scroller, storageKey, fetcher, aborter, mparams, true, true)
   }
 
   async scroll(aborter?: AbortController) {
-    const { core, scroller, skey, fetcher, mparams } = this
+    const { core, scroller, storageKey, fetcher, mparams } = this
 
     if (this.#state === null)
       await (this.#init ??= this.#loadAsync())
@@ -113,13 +113,13 @@ export class ScrollInstance<D = unknown, K = unknown> implements Instance<D[], K
     if (fetcher === undefined)
       return this.#state
 
-    return this.#state = await Scroll.scroll(core, scroller, skey, fetcher, aborter, mparams, true, true)
+    return this.#state = await Scroll.scroll(core, scroller, storageKey, fetcher, aborter, mparams, true, true)
   }
 
   async clear() {
-    const { core, skey, mparams } = this
+    const { core, storageKey, mparams } = this
 
-    await core.delete(skey, mparams)
+    await core.delete(storageKey, mparams)
     this.#state = undefined
   }
 }

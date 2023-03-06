@@ -37,26 +37,26 @@ export class Core extends Ortho<string, State | undefined> {
     this.#mounted = false
   }
 
-  async lock<T>(skey: string, callback: () => Promise<T>) {
-    let mutex = this.#mutexes.get(skey)
+  async lock<T>(storageKey: string, callback: () => Promise<T>) {
+    let mutex = this.#mutexes.get(storageKey)
 
     if (mutex === undefined) {
       mutex = new Mutex()
-      this.#mutexes.set(skey, mutex)
+      this.#mutexes.set(storageKey, mutex)
     }
 
     return await mutex.lock(callback)
   }
 
   getSync<D, K>(
-    skey: string | undefined,
+    storageKey: string | undefined,
     params: Params<D, K> = {}
   ): State<D> | undefined | null {
-    if (skey === undefined)
+    if (storageKey === undefined)
       return
 
-    if (this.#cache.has(skey)) {
-      const cached = this.#cache.get(skey)
+    if (this.#cache.has(storageKey)) {
+      const cached = this.#cache.get(storageKey)
       return cached as State<D>
     }
 
@@ -67,21 +67,21 @@ export class Core extends Ortho<string, State | undefined> {
     if (isAsyncStorage(storage))
       return null
 
-    const state = storage.get<State<D>>(skey)
-    this.#cache.set(skey, state)
+    const state = storage.get<State<D>>(storageKey)
+    this.#cache.set(storageKey, state)
     return state
   }
 
   async get<D, K>(
-    skey: string | undefined,
+    storageKey: string | undefined,
     params: Params<D, K> = {},
     ignore = false
   ): Promise<State<D> | undefined> {
-    if (skey === undefined)
+    if (storageKey === undefined)
       return
 
-    if (this.#cache.has(skey)) {
-      const cached = this.#cache.get(skey)
+    if (this.#cache.has(storageKey)) {
+      const cached = this.#cache.get(storageKey)
       return cached as State<D>
     }
 
@@ -90,28 +90,28 @@ export class Core extends Ortho<string, State | undefined> {
     if (!storage)
       return undefined
 
-    const state = await storage.get<State<D>>(skey, ignore)
-    this.#cache.set(skey, state)
+    const state = await storage.get<State<D>>(storageKey, ignore)
+    this.#cache.set(storageKey, state)
     return state
   }
 
   /**
    * Force set a key to a state and publish it
    * No check, no merge
-   * @param skey Key
+   * @param storageKey Key
    * @param state New state
    * @returns 
    */
   async set<D, K>(
-    skey: string | undefined,
+    storageKey: string | undefined,
     state: State<D>,
     params: Params<D, K> = {}
   ) {
-    if (skey === undefined)
+    if (storageKey === undefined)
       return
 
-    this.#cache.set(skey, state)
-    this.publish(skey, state)
+    this.#cache.set(storageKey, state)
+    this.publish(storageKey, state)
 
     const { storage } = params
 
@@ -119,48 +119,48 @@ export class Core extends Ortho<string, State | undefined> {
       return
 
     const { data, time, cooldown, expiration } = state
-    await storage.set(skey, { data, time, cooldown, expiration })
+    await storage.set(storageKey, { data, time, cooldown, expiration })
   }
 
   /**
    * Delete key and publish undefined
-   * @param skey 
+   * @param storageKey 
    * @returns 
    */
   async delete<D, K>(
-    skey: string | undefined,
+    storageKey: string | undefined,
     params: Params<D, K> = {}
   ) {
-    if (!skey)
+    if (!storageKey)
       return
 
-    this.#cache.delete(skey)
-    this.#mutexes.delete(skey)
-    this.publish(skey, undefined)
+    this.#cache.delete(storageKey)
+    this.#mutexes.delete(storageKey)
+    this.publish(storageKey, undefined)
 
     const { storage } = params
 
     if (!storage)
       return
 
-    await storage.delete(skey)
+    await storage.delete(storageKey)
   }
 
   /**
    * The most important function
-   * @param skey 
+   * @param storageKey 
    * @param current 
    * @param mutator 
    * @param params 
    * @returns 
    */
   async mutate<D, K>(
-    skey: string | undefined,
+    storageKey: string | undefined,
     current: State<D> | undefined,
     mutator: Mutator<D>,
     params: Params<D, K> = {}
   ): Promise<State<D> | undefined> {
-    if (skey === undefined)
+    if (storageKey === undefined)
       return
 
     const {
@@ -176,7 +176,7 @@ export class Core extends Ortho<string, State | undefined> {
      * Delete and return if the new state is undefined
      */
     if (state === undefined) {
-      await this.delete(skey, params)
+      await this.delete(storageKey, params)
       return
     }
 
@@ -238,7 +238,7 @@ export class Core extends Ortho<string, State | undefined> {
     /**
      * Publish the new state
      */
-    await this.set(skey, next, params)
+    await this.set(storageKey, next, params)
 
     return next as State<D>
   }

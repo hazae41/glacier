@@ -26,7 +26,7 @@ export namespace Single {
   /**
    * Fetch
    * @param key Key (passed to fetcher)
-   * @param skey Storage key
+   * @param storageKey Storage key
    * @param fetcher Resource fetcher
    * @param aborter AbortController
    * @param tparams Time parameters
@@ -36,7 +36,7 @@ export namespace Single {
   export async function fetch<D, K>(
     core: Core,
     key: K | undefined,
-    skey: string | undefined,
+    storageKey: string | undefined,
     fetcher: Fetcher<D, K>,
     aborter = new AbortController(),
     params: Params<D, K> = {},
@@ -45,7 +45,7 @@ export namespace Single {
   ): Promise<State<D> | undefined> {
     if (key === undefined)
       return
-    if (skey === undefined)
+    if (storageKey === undefined)
       return
 
     const {
@@ -54,8 +54,8 @@ export namespace Single {
       timeout: dtimeout = DEFAULT_TIMEOUT,
     } = params
 
-    let { current, skip } = await core.lock(skey, async () => {
-      let current = await core.get(skey, params)
+    let { current, skip } = await core.lock(storageKey, async () => {
+      let current = await core.get(storageKey, params)
 
       if (current?.optimistic)
         return { current, skip: true }
@@ -67,7 +67,7 @@ export namespace Single {
       if (Time.isAfterNow(current?.cooldown) && !ignore)
         return { current, skip: true }
 
-      current = await core.mutate(skey, current,
+      current = await core.mutate(storageKey, current,
         c => ({ time: c?.time, aborter }),
         params)
       return { current }
@@ -94,7 +94,7 @@ export namespace Single {
       if (signal.aborted)
         throw new AbortError(signal)
 
-      current = await core.get(skey, params)
+      current = await core.get(storageKey, params)
 
       const state: State<D> = {
         time: time,
@@ -110,9 +110,9 @@ export namespace Single {
         state.error = result.error
       }
 
-      return await core.mutate(skey, current, () => state, params)
+      return await core.mutate(storageKey, current, () => state, params)
     } catch (error: unknown) {
-      current = await core.get(skey, params)
+      current = await core.get(storageKey, params)
 
       if (current?.aborter !== aborter)
         return current
@@ -122,7 +122,7 @@ export namespace Single {
         aborter: undefined
       }
 
-      return await core.mutate(skey, current, () => state, params)
+      return await core.mutate(storageKey, current, () => state, params)
     } finally {
       clearTimeout(timeout)
     }
@@ -131,7 +131,7 @@ export namespace Single {
   /**
    * Optimistic update
    * @param key Key (:K) (passed to poster)
-   * @param skey Storage key
+   * @param storageKey Storage key
    * @param fetcher Resource poster
    * @param updater Mutation function
    * @param aborter AbortController
@@ -142,7 +142,7 @@ export namespace Single {
   export async function update<D, K>(
     core: Core,
     key: K | undefined,
-    skey: string | undefined,
+    storageKey: string | undefined,
     fetcher: Fetcher<D, K> | undefined,
     updater: Updater<D>,
     aborter = new AbortController(),
@@ -150,7 +150,7 @@ export namespace Single {
   ): Promise<State<D> | undefined> {
     if (key === undefined)
       return
-    if (skey === undefined)
+    if (storageKey === undefined)
       return
 
     const {
@@ -160,15 +160,15 @@ export namespace Single {
     } = params
 
 
-    let { current, skip } = await core.lock(skey, async () => {
-      let current = await core.get(skey, params)
+    let { current, skip } = await core.lock(storageKey, async () => {
+      let current = await core.get(storageKey, params)
 
       if (current?.optimistic)
         return { current, skip: true }
       if (current?.aborter)
         current.aborter.abort("Replaced")
 
-      current = await core.mutate(skey, current,
+      current = await core.mutate(storageKey, current,
         c => ({ time: c?.time, aborter, optimistic: true }),
         params)
       return { current }
@@ -212,7 +212,7 @@ export namespace Single {
           state.error = value.error
         }
 
-        current = await core.mutate(skey, current, () => state, params)
+        current = await core.mutate(storageKey, current, () => state, params)
       }
 
       if (result === undefined) {
@@ -230,7 +230,7 @@ export namespace Single {
       if (signal.aborted)
         throw new AbortError(signal)
 
-      current = await core.get(skey, params)
+      current = await core.get(storageKey, params)
 
       if ("error" in result) {
         if (current?.aborter !== aborter)
@@ -246,7 +246,7 @@ export namespace Single {
           optimistic: false
         }
 
-        return await core.mutate(skey, current, () => state, params)
+        return await core.mutate(storageKey, current, () => state, params)
       } else {
         const state: State<D> = {
           data: result.data,
@@ -258,10 +258,10 @@ export namespace Single {
           optimistic: false
         }
 
-        return await core.mutate(skey, current, () => state, params)
+        return await core.mutate(storageKey, current, () => state, params)
       }
     } catch (error: unknown) {
-      current = await core.get(skey, params)
+      current = await core.get(storageKey, params)
 
       if (current?.aborter !== aborter)
         return current
@@ -274,7 +274,7 @@ export namespace Single {
         optimistic: false
       }
 
-      return await core.mutate(skey, current, () => state, params)
+      return await core.mutate(storageKey, current, () => state, params)
     } finally {
       clearTimeout(timeout)
     }

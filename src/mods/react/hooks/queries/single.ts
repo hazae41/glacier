@@ -54,7 +54,7 @@ export function useQuery<D = unknown, K = string>(
   const fetcherRef = useAutoRef(fetcher)
   const mparamsRef = useAutoRef(mparams)
 
-  const skey = useMemo(() => {
+  const storageKey = useMemo(() => {
     return Single.getStorageKey<D, K>(key, mparamsRef.current)
   }, [key])
 
@@ -63,8 +63,8 @@ export function useQuery<D = unknown, K = string>(
   const stateRef = useRef<State<D> | null>()
 
   useMemo(() => {
-    stateRef.current = core.getSync<D, K>(skey, mparamsRef.current)
-  }, [core, skey])
+    stateRef.current = core.getSync<D, K>(storageKey, mparamsRef.current)
+  }, [core, storageKey])
 
   const setState = useCallback((state?: State<D>) => {
     stateRef.current = state
@@ -77,16 +77,16 @@ export function useQuery<D = unknown, K = string>(
     if (stateRef.current !== null)
       return
 
-    initRef.current = core.get<D, K>(skey, mparamsRef.current).then(setState)
-  }, [core, skey])
+    initRef.current = core.get<D, K>(storageKey, mparamsRef.current).then(setState)
+  }, [core, storageKey])
 
   useEffect(() => {
-    if (!skey)
+    if (!storageKey)
       return
 
-    core.on(skey, setState, mparamsRef.current)
-    return () => void core.off(skey, setState, mparamsRef.current)
-  }, [core, skey])
+    core.on(storageKey, setState, mparamsRef.current)
+    return () => void core.off(storageKey, setState, mparamsRef.current)
+  }, [core, storageKey])
 
   const mutate = useCallback(async (mutator: Mutator<D>) => {
     if (stateRef.current === null)
@@ -97,8 +97,8 @@ export function useQuery<D = unknown, K = string>(
     const state = stateRef.current
     const params = mparamsRef.current
 
-    return await core.mutate(skey, state, mutator, params)
-  }, [core, skey])
+    return await core.mutate(storageKey, state, mutator, params)
+  }, [core, storageKey])
 
   const clear = useCallback(async () => {
     if (stateRef.current === null)
@@ -106,8 +106,8 @@ export function useQuery<D = unknown, K = string>(
     if (stateRef.current === null)
       throw new Error("Null state after init")
 
-    await core.delete(skey, mparamsRef.current)
-  }, [core, skey])
+    await core.delete(storageKey, mparamsRef.current)
+  }, [core, storageKey])
 
   const fetch = useCallback(async (aborter?: AbortController) => {
     if (typeof window === "undefined")
@@ -123,8 +123,8 @@ export function useQuery<D = unknown, K = string>(
     const fetcher = fetcherRef.current
     const params = mparamsRef.current
 
-    return await Single.fetch(core, key, skey, fetcher, aborter, params)
-  }, [core, skey])
+    return await Single.fetch(core, key, storageKey, fetcher, aborter, params)
+  }, [core, storageKey])
 
   const refetch = useCallback(async (aborter?: AbortController) => {
     if (typeof window === "undefined")
@@ -140,8 +140,8 @@ export function useQuery<D = unknown, K = string>(
     const fetcher = fetcherRef.current
     const params = mparamsRef.current
 
-    return await Single.fetch(core, key, skey, fetcher, aborter, params, true, true)
-  }, [core, skey])
+    return await Single.fetch(core, key, storageKey, fetcher, aborter, params, true, true)
+  }, [core, storageKey])
 
   const update = useCallback(async (updater: Updater<D>, uparams: UpdaterParams = {}, aborter?: AbortController) => {
     if (typeof window === "undefined")
@@ -157,8 +157,8 @@ export function useQuery<D = unknown, K = string>(
 
     const fparams = { ...params, ...uparams }
 
-    return await Single.update(core, key, skey, fetcher, updater, aborter, fparams)
-  }, [core, skey])
+    return await Single.update(core, key, storageKey, fetcher, updater, aborter, fparams)
+  }, [core, storageKey])
 
   const suspend = useCallback(() => {
     if (typeof window === "undefined")
@@ -175,11 +175,11 @@ export function useQuery<D = unknown, K = string>(
       const fetcher = fetcherRef.current
       const params = mparamsRef.current
 
-      const background = new Promise<void>(ok => core.once(skey, () => ok(), params))
-      await Single.fetch(core, key, skey, fetcher, undefined, params, false, true)
+      const background = new Promise<void>(ok => core.once(storageKey, () => ok(), params))
+      await Single.fetch(core, key, storageKey, fetcher, undefined, params, false, true)
       await background
     })()
-  }, [core, skey])
+  }, [core, storageKey])
 
   const state = stateRef.current
 
@@ -188,5 +188,5 @@ export function useQuery<D = unknown, K = string>(
   const ready = state !== null
   const loading = Boolean(aborter)
 
-  return { key, skey, data, error, time, cooldown, expiration, aborter, optimistic, realData, loading, ready, mutate, fetch, refetch, update, clear, suspend }
+  return { key, storageKey, data, error, time, cooldown, expiration, aborter, optimistic, realData, loading, ready, mutate, fetch, refetch, update, clear, suspend }
 }
