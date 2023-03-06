@@ -154,7 +154,7 @@ export class Core extends Ortho<string, State | undefined> {
     if (storageKey === undefined)
       return
 
-    let current = await this.get(storageKey, params)
+    const current = await this.get(storageKey, params)
 
     if (current?.optimistic)
       return current
@@ -162,14 +162,16 @@ export class Core extends Ortho<string, State | undefined> {
     if (current?.aborter)
       current.aborter.abort("Replaced")
 
-    console.log(current)
-
     return await this.lock(storageKey, async () => {
-      current = await this.get(storageKey, params)
+
+      const current = await this.get(storageKey, params)
+
       const state = mutator(current)
 
-      if (!state)
-        return await this.apply(storageKey, current, state, params)
+      if (state === undefined) {
+        await this.delete(storageKey, params)
+        return
+      }
 
       state.time ??= Date.now()
 
@@ -216,8 +218,6 @@ export class Core extends Ortho<string, State | undefined> {
       ...current,
       ...mutated
     }
-
-    console.log("next", next)
 
     next.data = await this.normalize(false, next, params)
 

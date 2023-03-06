@@ -112,7 +112,6 @@ export namespace Single {
           }, params)
         }
       } catch (error: unknown) {
-        console.log("catched", error)
         return await core.apply(storageKey, current, {
           error: error,
           time: Date.now(),
