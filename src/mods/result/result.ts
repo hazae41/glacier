@@ -37,7 +37,3 @@ export namespace Result {
   }
 
 }
-
-function test(result: Result<string>) {
-  result.map(decodeURI).unwrap()
-}
