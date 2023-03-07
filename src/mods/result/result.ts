@@ -24,7 +24,7 @@ export namespace Result {
     unwrap(): D
   }
 
-  export async function rewrap<D>(wrapper: Wrapper<D>, times: Times = {}) {
+  export function rewrap<D>(wrapper: Wrapper<D>, times: Times = {}) {
     try {
       return new Data(wrapper.unwrap(), times)
     } catch (error: unknown) {
