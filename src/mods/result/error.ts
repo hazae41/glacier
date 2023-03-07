@@ -28,7 +28,7 @@ export class Error implements ErrorInit {
     return this.times.expiration
   }
 
-  unwrap() {
+  unwrap(): never {
     throw this.error
   }
 
