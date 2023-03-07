@@ -5,7 +5,7 @@ export type Normalizer<D = unknown> =
   (data: D, more: NormalizerMore) => Promise<D>
 
 export interface NormalizerMore {
-  core: Core,
-  shallow: boolean,
-  root: State
+  readonly core: Core,
+  readonly shallow: boolean,
+  readonly root: State
 }

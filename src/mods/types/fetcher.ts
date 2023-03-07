@@ -1,9 +1,9 @@
-import { Result } from "mods/types/result.js"
+import { ResultInit } from "mods/result/result.js"
 
 export type Fetcher<D = unknown, K = unknown> =
-  (key: K, more: FetcherMore) => Promise<Result<D>>
+  (key: K, more: FetcherMore) => Promise<ResultInit<D>>
 
 export interface FetcherMore {
-  signal?: AbortSignal,
-  cache?: "reload"
+  readonly signal?: AbortSignal,
+  readonly cache?: "reload"
 }

@@ -4,19 +4,19 @@ import { Normalizer } from "mods/types/normalizer.js"
 import { Serializer } from "mods/types/serializer.js"
 
 export interface GlobalParams {
-  storage?: Storage
-  equals?: Equalser,
-  cooldown?: number
-  expiration?: number
-  timeout?: number,
+  readonly storage?: Storage
+  readonly equals?: Equalser,
+  readonly cooldown?: number
+  readonly expiration?: number
+  readonly timeout?: number,
 }
 
 export interface QueryParams<D = unknown, K = unknown> {
-  storage?: Storage
-  serializer?: Serializer<K>,
-  normalizer?: Normalizer<D>
-  equals?: Equalser,
-  cooldown?: number
-  expiration?: number
-  timeout?: number,
+  readonly storage?: Storage
+  readonly serializer?: Serializer<K>,
+  readonly normalizer?: Normalizer<D>
+  readonly equals?: Equalser,
+  readonly cooldown?: number
+  readonly expiration?: number
+  readonly timeout?: number,
 }
