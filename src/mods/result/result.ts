@@ -20,6 +20,18 @@ export namespace Result {
       return Data.from(init)
   }
 
+  interface Wrapper<D> {
+    unwrap(): D
+  }
+
+  export async function rewrap<D>(wrapper: Wrapper<D>, times: Times = {}) {
+    try {
+      return new Data(wrapper.unwrap(), times)
+    } catch (error: unknown) {
+      return new Error(error, times)
+    }
+  }
+
   export async function wrap<D>(callback: () => Promiseable<D>, times: Times = {}) {
     try {
       return new Data(await callback(), times)
