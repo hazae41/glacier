@@ -140,7 +140,7 @@ export namespace Single {
     key: K | undefined,
     storageKey: string | undefined,
     fetcher: Fetcher<D, K> | undefined,
-    updater: Updater<D>,
+    updater: Updater<D> | undefined,
     aborter = new AbortController(),
     params: QueryParams<D, K> = {},
   ): Promise<State<D> | undefined> {
@@ -151,6 +151,8 @@ export namespace Single {
     if (key === undefined)
       return current
     if (fetcher === undefined)
+      return current
+    if (updater === undefined)
       return current
 
     if (current?.optimistic)

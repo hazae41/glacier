@@ -93,7 +93,6 @@ export namespace Scroll {
       timeout: dtimeout = DEFAULT_TIMEOUT,
     } = params
 
-
     await core.lock(storageKey, async () => {
 
       const timeout = setTimeout(() => {
