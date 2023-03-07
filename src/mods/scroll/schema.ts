@@ -15,6 +15,7 @@ export function getScrollSchema<D = unknown, K = string>(
 }
 
 export class ScrollSchema<D = unknown, K = unknown> implements Schema<D[], K, ScrollInstance<D, K>> {
+
   constructor(
     readonly scroller: Scroller<D, K>,
     readonly fetcher: Fetcher<D, K> | undefined,
@@ -28,11 +29,17 @@ export class ScrollSchema<D = unknown, K = unknown> implements Schema<D[], K, Sc
   }
 
   async normalize(data: D[], more: NormalizerMore) {
-    if (more.shallow)
+    const { core, shallow, root } = more
+
+    if (shallow)
       return
 
-    const { time, cooldown, expiration, optimistic } = more.root
+    const instance = this.make(core)
+    const current = await instance.init
+
+    const { time, cooldown, expiration, optimistic } = root
     const state = { data, time, cooldown, expiration, optimistic }
-    await this.make(more.core).mutate(() => state)
+
+    await more.core.apply(instance.storageKey, current, state)
   }
 }

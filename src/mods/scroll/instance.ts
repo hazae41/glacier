@@ -15,8 +15,9 @@ export class ScrollInstance<D = unknown, K = unknown> implements Instance<D[], K
   readonly storageKey: string | undefined
   readonly mparams: QueryParams<D[], K>
 
-  #init?: Promise<void>
-  #state?: State<D[]> | null
+  #init: Promise<State<D[]> | undefined>
+
+  #state?: State<D[]> | undefined | null
 
   constructor(
     readonly core: Core,
@@ -32,25 +33,32 @@ export class ScrollInstance<D = unknown, K = unknown> implements Instance<D[], K
 
     this.#loadSync()
     this.#subscribe()
+
+    this.#init = this.#load()
   }
 
-  get init() { return this.#init }
-  get state() { return this.#state }
-  get ready() { return this.#state !== null }
+  get init() {
+    return this.#init
+  }
+
+  get state() {
+    return this.#state
+  }
+
+  get ready() {
+    return this.#state !== null
+  }
+
+  async #load() {
+    const { core, storageKey, mparams } = this
+
+    return this.#state = await core.get(storageKey, mparams)
+  }
 
   #loadSync() {
     const { core, storageKey, mparams } = this
 
-    this.#state = core.getSync<D[], K>(storageKey, mparams)
-  }
-
-  async #loadAsync() {
-    if (this.ready)
-      return
-
-    const { core, storageKey, mparams } = this
-
-    this.#state = await core.get(storageKey, mparams)
+    return this.#state = core.getSync<D[], K>(storageKey, mparams)
   }
 
   #subscribe() {
@@ -69,23 +77,11 @@ export class ScrollInstance<D = unknown, K = unknown> implements Instance<D[], K
   async mutate(mutator: Mutator<D[]>) {
     const { core, storageKey, mparams } = this
 
-    if (this.#state === null)
-      await (this.#init ??= this.#loadAsync())
-    if (this.#state === null)
-      throw new Error("Null state after init")
-
     return this.#state = await core.mutate(storageKey, mutator, mparams)
   }
 
   async fetch(aborter?: AbortController) {
     const { core, scroller, storageKey, fetcher, mparams } = this
-
-    if (this.#state === null)
-      await (this.#init ??= this.#loadAsync())
-    if (this.#state === null)
-      throw new Error("Null state after init")
-    if (fetcher === undefined)
-      return this.#state
 
     return this.#state = await Scroll.first(core, scroller, storageKey, fetcher, aborter, mparams)
   }
@@ -93,25 +89,11 @@ export class ScrollInstance<D = unknown, K = unknown> implements Instance<D[], K
   async refetch(aborter?: AbortController) {
     const { core, scroller, storageKey, fetcher, mparams } = this
 
-    if (this.#state === null)
-      await (this.#init ??= this.#loadAsync())
-    if (this.#state === null)
-      throw new Error("Null state after init")
-    if (fetcher === undefined)
-      return this.#state
-
     return this.#state = await Scroll.first(core, scroller, storageKey, fetcher, aborter, mparams, true, true)
   }
 
   async scroll(aborter?: AbortController) {
     const { core, scroller, storageKey, fetcher, mparams } = this
-
-    if (this.#state === null)
-      await (this.#init ??= this.#loadAsync())
-    if (this.#state === null)
-      throw new Error("Null state after init")
-    if (fetcher === undefined)
-      return this.#state
 
     return this.#state = await Scroll.scroll(core, scroller, storageKey, fetcher, aborter, mparams, true, true)
   }
