@@ -88,7 +88,7 @@ export class Core extends Ortho<string, State | undefined> {
     const { storage } = params
 
     if (!storage)
-      return undefined
+      return
 
     const state = await storage.get<State<D>>(storageKey, ignore)
     this.#cache.set(storageKey, state)
