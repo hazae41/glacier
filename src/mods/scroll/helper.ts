@@ -198,7 +198,7 @@ export namespace Scroll {
         return current
 
     const previouses = current?.data ?? []
-    const previous = Arrays.lastOf(previouses)
+    const previous = Arrays.last(previouses)
     const key = scroller(previous)
 
     if (key === undefined)
