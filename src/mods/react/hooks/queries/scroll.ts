@@ -1,3 +1,4 @@
+import { Arrays } from "libs/arrays/arrays.js";
 import { useAutoRef } from "libs/react/ref.js";
 import { useCore } from "mods/react/contexts/core.js";
 import { Query } from "mods/react/types/query.js";
@@ -30,6 +31,11 @@ export interface ScrollQuery<D = unknown, K = unknown> extends Query<D[], K> {
    * Fetch the next page
    */
   scroll(): Promise<State<D[]> | undefined>
+
+  /**
+   * The next key to be fetched
+   */
+  peek(): K | undefined
 }
 
 /**
@@ -159,5 +165,10 @@ export function useScrollQuery<D = unknown, K = string>(
   const ready = state !== null
   const loading = Boolean(aborter)
 
-  return { key, storageKey, data, error, time, cooldown, expiration, aborter, optimistic, realData, loading, ready, mutate, fetch, refetch, scroll, clear, suspend }
+  const peek = useCallback(() => {
+    const current = Arrays.tryLast(data)
+    return scroller?.(current)
+  }, [data, scroller])
+
+  return { key, storageKey, data, error, time, cooldown, expiration, aborter, optimistic, realData, loading, ready, mutate, fetch, refetch, scroll, clear, suspend, peek }
 }

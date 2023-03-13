@@ -1,3 +1,4 @@
+import { Arrays } from "libs/arrays/arrays.js";
 import { Core } from "mods/core/core.js";
 import { Fetcher } from "mods/types/fetcher.js";
 import { Instance } from "mods/types/instance.js";
@@ -104,4 +105,10 @@ export class ScrollInstance<D = unknown, K = unknown> implements Instance<D[], K
     await core.delete(storageKey, mparams)
     this.#state = undefined
   }
+
+  peek() {
+    const current = Arrays.tryLast(this.state?.data)
+    return this.scroller?.(current)
+  }
+
 }
