@@ -78,7 +78,6 @@ export namespace Single {
       }, dtimeout)
 
       current = await core.get(storageKey, params)
-
       current = await core.apply(storageKey, current, { aborter }, params)
 
       try {
@@ -116,6 +115,8 @@ export namespace Single {
       } catch (error: unknown) {
         return await core.apply(storageKey, current, {
           error: error,
+          cooldown: dcooldown,
+          expiration: dexpiration,
           aborter: undefined
         }, params)
       } finally {
@@ -250,11 +251,12 @@ export namespace Single {
           }, params)
         }
       } catch (error: unknown) {
-        console.log("catched", error)
         return await core.apply(storageKey, current, {
           data: current?.realData,
           time: current?.realTime,
           error: error,
+          cooldown: dcooldown,
+          expiration: dexpiration,
           aborter: undefined,
           optimistic: false
         }, params)

@@ -36,7 +36,7 @@ export class ScrollSchema<D = unknown, K = unknown> implements Schema<D[], K, Sc
 
     const { init, storageKey, mparams } = this.make(core)
     const { time, cooldown, expiration, optimistic } = root
-    const state = { data, time, cooldown, expiration, optimistic }
+    const state = { data, error: undefined, time, cooldown, expiration, optimistic }
 
     await more.core.apply(storageKey, await init, state, mparams)
   }

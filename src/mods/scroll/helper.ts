@@ -10,21 +10,6 @@ import { State } from "mods/types/state.js";
 
 export namespace Scroll {
 
-  type Skipable<D, K> =
-    | Skiped<D>
-    | Unskiped<D, K>
-
-  interface Unskiped<D, K> {
-    skip?: false,
-    current?: State<D>
-    key: K
-  }
-
-  interface Skiped<D> {
-    skip: true,
-    current?: State<D>
-  }
-
   export function getStorageKey<D, K>(key: K | undefined, params: QueryParams<D, K>) {
     if (key === undefined)
       return undefined
@@ -100,10 +85,7 @@ export namespace Scroll {
       }, dtimeout)
 
       current = await core.get(storageKey, params)
-
-      current = await core.apply(storageKey, current, {
-        aborter: aborter
-      }, params)
+      current = await core.apply(storageKey, current, { aborter }, params)
 
       try {
         const { signal } = aborter
@@ -147,6 +129,8 @@ export namespace Scroll {
       } catch (error: unknown) {
         return await core.apply(storageKey, current, {
           error: error,
+          cooldown: dcooldown,
+          expiration: dexpiration,
           aborter: undefined
         }, params)
       } finally {
@@ -217,10 +201,7 @@ export namespace Scroll {
       }, dtimeout)
 
       current = await core.get(storageKey, params)
-
-      current = await core.apply(storageKey, current, {
-        aborter: aborter
-      }, params)
+      current = await core.apply(storageKey, current, { aborter }, params)
 
       try {
         const { signal } = aborter
@@ -262,6 +243,8 @@ export namespace Scroll {
       } catch (error: unknown) {
         return await core.apply(storageKey, current, {
           error: error,
+          cooldown: dcooldown,
+          expiration: dexpiration,
           aborter: undefined
         }, params)
       } finally {
