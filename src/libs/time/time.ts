@@ -11,7 +11,7 @@ export namespace Time {
 
   export function isAfterNow(time?: number) {
     if (time === undefined)
-      return false
+      return
     if (time > Date.now())
       return true
     return false

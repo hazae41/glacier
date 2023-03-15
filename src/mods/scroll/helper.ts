@@ -62,9 +62,8 @@ export namespace Scroll {
       else
         return current
 
-    if (Time.isAfterNow(current?.cooldown))
-      if (!ignoreCooldown)
-        return current
+    if (Time.isAfterNow(current?.cooldown) && !ignoreCooldown)
+      return current
 
     const key = scroller(undefined)
 
@@ -177,9 +176,8 @@ export namespace Scroll {
       else
         return current
 
-    if (Time.isAfterNow(current?.cooldown))
-      if (!ignoreCooldown)
-        return current
+    if (Time.isAfterNow(current?.cooldown) && !ignoreCooldown)
+      return current
 
     const previouses = current?.data ?? []
     const previous = Arrays.last(previouses)

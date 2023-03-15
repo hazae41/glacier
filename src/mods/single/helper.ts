@@ -61,9 +61,8 @@ export namespace Single {
       else
         return current
 
-    if (Time.isAfterNow(current?.cooldown))
-      if (!ignoreCooldown)
-        return current
+    if (Time.isAfterNow(current?.cooldown) && !ignoreCooldown)
+      return current
 
     const {
       cooldown: dcooldown = DEFAULT_COOLDOWN,

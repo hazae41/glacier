@@ -13,6 +13,8 @@ export type Listener<D> =
 export class Core extends Ortho<string, State | undefined> {
 
   readonly #cache = new Map<string, State | undefined>()
+  readonly #optimistics = new Map<string, Mutator>()
+
   readonly #counts = new Map<string, number>()
   readonly #timeouts = new Map<string, NodeJS.Timeout>()
   readonly #mutexes = new Map<string, Mutex>()
