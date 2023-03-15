@@ -4,6 +4,7 @@ import { DEFAULT_EQUALS } from "mods/defaults.js"
 import { Equals } from "mods/equals/equals.js"
 import { isAsyncStorage } from "mods/storages/storage.js"
 import { Mutator } from "mods/types/mutator.js"
+import { Optimism } from "mods/types/optimism.js"
 import { GlobalParams, QueryParams } from "mods/types/params.js"
 import { State } from "mods/types/state.js"
 
@@ -12,8 +13,8 @@ export type Listener<D> =
 
 export class Core extends Ortho<string, State | undefined> {
 
-  readonly #cache = new Map<string, State | undefined>()
-  readonly #optimistics = new Map<string, Mutator>()
+  readonly #states = new Map<string, State>()
+  readonly #optimimisms = new Map<string, Optimism>()
 
   readonly #counts = new Map<string, number>()
   readonly #timeouts = new Map<string, NodeJS.Timeout>()
@@ -39,7 +40,7 @@ export class Core extends Ortho<string, State | undefined> {
     this.#mounted = false
   }
 
-  async lock<T>(storageKey: string, callback: () => Promise<T>) {
+  async lock<D, K>(storageKey: string, callback: () => Promise<Mutator<D>>, aborter = new AbortController(), params: QueryParams<D, K> = {}) {
     let mutex = this.#mutexes.get(storageKey)
 
     if (mutex === undefined) {
@@ -47,7 +48,19 @@ export class Core extends Ortho<string, State | undefined> {
       this.#mutexes.set(storageKey, mutex)
     }
 
-    return await mutex.lock(callback)
+    return await mutex.lock(async () => {
+      await this.apply(storageKey, () => ({ aborter }), params)
+
+      return await this.apply(storageKey, async (previous) => {
+        const mutator = await callback()
+        const mutated = await mutator(previous)
+
+        if (mutated !== undefined)
+          mutated.aborter = undefined
+
+        return mutated
+      }, params)
+    })
   }
 
   getSync<D, K>(
@@ -57,8 +70,8 @@ export class Core extends Ortho<string, State | undefined> {
     if (storageKey === undefined)
       return
 
-    if (this.#cache.has(storageKey)) {
-      const cached = this.#cache.get(storageKey)
+    if (this.#states.has(storageKey)) {
+      const cached = this.#states.get(storageKey)
       return cached as State<D>
     }
 
@@ -70,7 +83,10 @@ export class Core extends Ortho<string, State | undefined> {
       return null
 
     const state = storage.get<State<D>>(storageKey)
-    this.#cache.set(storageKey, state)
+
+    if (state !== undefined)
+      this.#states.set(storageKey, state)
+
     return state
   }
 
@@ -82,8 +98,8 @@ export class Core extends Ortho<string, State | undefined> {
     if (storageKey === undefined)
       return
 
-    if (this.#cache.has(storageKey)) {
-      const cached = this.#cache.get(storageKey)
+    if (this.#states.has(storageKey)) {
+      const cached = this.#states.get(storageKey)
       return cached as State<D>
     }
 
@@ -93,7 +109,10 @@ export class Core extends Ortho<string, State | undefined> {
       return
 
     const state = await storage.get<State<D>>(storageKey, ignore)
-    this.#cache.set(storageKey, state)
+
+    if (state !== undefined)
+      this.#states.set(storageKey, state)
+
     return state
   }
 
@@ -112,7 +131,7 @@ export class Core extends Ortho<string, State | undefined> {
     if (storageKey === undefined)
       return
 
-    this.#cache.set(storageKey, state)
+    this.#states.set(storageKey, state)
     this.publish(storageKey, state)
 
     const { storage } = params
@@ -136,7 +155,7 @@ export class Core extends Ortho<string, State | undefined> {
     if (!storageKey)
       return
 
-    this.#cache.delete(storageKey)
+    this.#states.delete(storageKey)
     this.#mutexes.delete(storageKey)
     this.publish(storageKey, undefined)
 
@@ -153,37 +172,14 @@ export class Core extends Ortho<string, State | undefined> {
     mutator: Mutator<D>,
     params: QueryParams<D, K> = {}
   ) {
-    if (storageKey === undefined)
-      return
+    return await this.apply(storageKey, async (previous) => {
+      const mutated = await mutator(previous)
 
-    const current = await this.get(storageKey, params)
+      if (mutated !== undefined)
+        mutated.time ??= Date.now()
 
-    if (current?.optimistic)
-      return current
-
-    if (current?.aborter)
-      current.aborter.abort("Replaced")
-
-    return await this.lock(storageKey, async () => {
-
-      const current = await this.get(storageKey, params)
-
-      const state = mutator(current)
-
-      if (state === undefined) {
-        await this.delete(storageKey, params)
-        return
-      }
-
-      state.time ??= Date.now()
-
-      if (state.aborter !== undefined)
-        throw new Error(`Aborter must be undefined`)
-      if (state.optimistic)
-        throw new Error(`Optimistic must be undefined`)
-
-      return await this.apply(storageKey, current, state, params)
-    })
+      return mutated
+    }, params)
   }
 
   /**
@@ -196,8 +192,7 @@ export class Core extends Ortho<string, State | undefined> {
    */
   async apply<D, K>(
     storageKey: string | undefined,
-    current: State<D> | undefined,
-    mutated: State<D> | undefined,
+    mutator: Mutator<D>,
     params: QueryParams<D, K> = {}
   ): Promise<State<D> | undefined> {
     if (storageKey === undefined)
@@ -206,6 +201,9 @@ export class Core extends Ortho<string, State | undefined> {
     const {
       equals = DEFAULT_EQUALS
     } = params
+
+    const current = await this.get(storageKey, params)
+    const mutated = await mutator(current)
 
     if (mutated === undefined) {
       await this.delete(storageKey, params)

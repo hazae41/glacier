@@ -45,14 +45,12 @@ export namespace Single {
   ): Promise<State<D> | undefined> {
     if (storageKey === undefined)
       return
-    let current = await core.get(storageKey, params)
+
+    const current = await core.get(storageKey, params)
 
     if (key === undefined)
       return current
     if (fetcher === undefined)
-      return current
-
-    if (current?.optimistic)
       return current
 
     if (current?.aborter)
@@ -70,14 +68,11 @@ export namespace Single {
       timeout: dtimeout = DEFAULT_TIMEOUT,
     } = params
 
-    await core.lock(storageKey, async () => {
+    return await core.lock<D, K>(storageKey, async () => {
 
       const timeout = setTimeout(() => {
         aborter.abort("Fetch timed out")
       }, dtimeout)
-
-      current = await core.get(storageKey, params)
-      current = await core.apply(storageKey, current, { aborter }, params)
 
       try {
         const { signal } = aborter
@@ -93,35 +88,31 @@ export namespace Single {
           expiration = Time.fromDelay(dexpiration)
         } = result
 
-        if ("error" in result) {
-          return await core.apply(storageKey, current, {
+        if ("error" in result)
+          return () => ({
             error: result.error,
             time: time,
             cooldown: cooldown,
             expiration: expiration,
-            aborter: undefined
-          }, params)
-        } else {
-          return await core.apply(storageKey, current, {
-            data: result.data,
-            error: undefined,
-            time: time,
-            cooldown: cooldown,
-            expiration: expiration,
-            aborter: undefined
-          }, params)
-        }
+          })
+
+        return () => ({
+          data: result.data,
+          error: undefined,
+          time: time,
+          cooldown: cooldown,
+          expiration: expiration,
+        })
       } catch (error: unknown) {
-        return await core.apply(storageKey, current, {
+        return () => ({
           error: error,
           cooldown: dcooldown,
           expiration: dexpiration,
-          aborter: undefined
-        }, params)
+        })
       } finally {
         clearTimeout(timeout)
       }
-    })
+    }, aborter, params)
   }
 
   /**
@@ -146,7 +137,8 @@ export namespace Single {
   ): Promise<State<D> | undefined> {
     if (storageKey === undefined)
       return
-    let current = await core.get(storageKey, params)
+
+    const current = await core.get(storageKey, params)
 
     if (key === undefined)
       return current
@@ -158,110 +150,102 @@ export namespace Single {
     if (current?.optimistic)
       return current
 
-    if (current?.aborter)
-      current.aborter.abort("Replaced")
-
     const {
       cooldown: dcooldown = DEFAULT_COOLDOWN,
       expiration: dexpiration = DEFAULT_EXPIRATION,
       timeout: dtimeout = DEFAULT_TIMEOUT,
     } = params
 
-    await core.lock(storageKey, async () => {
+    await core.apply(storageKey, () => ({ optimistic: true }), params)
 
-      const timeout = setTimeout(() => {
-        aborter.abort("Update timed out")
-      }, dtimeout)
+    try {
+      const { signal } = aborter
 
-      current = await core.get(storageKey, params)
+      const generator = updater({ signal })
 
-      current = await core.apply(storageKey, current, {
-        aborter: aborter,
-        optimistic: true
-      }, params)
+      let final: ResultInit<D> | void
 
-      try {
-        const { signal } = aborter
-
-        const generator = updater(current, { signal })
-
-        let final: ResultInit<D> | void
-
-        while (true) {
-          const { done, value } = await generator.next()
-
-          if (signal.aborted)
-            throw new AbortError(signal)
-
-          if (done) {
-            final = value
-            break
-          }
-
-          if ("error" in value) {
-            current = await core.apply(storageKey, current, {
-              error: value.error,
-              aborter: aborter,
-              optimistic: true
-            }, params)
-          } else {
-            current = await core.apply(storageKey, current, {
-              data: value.data,
-              error: undefined,
-              aborter: aborter,
-              optimistic: true
-            }, params)
-          }
-        }
-
-        if (final === undefined)
-          final = await fetcher(key, { signal, cache: "reload" })
+      while (true) {
+        const { done, value } = await generator.next()
 
         if (signal.aborted)
           throw new AbortError(signal)
 
-        const result = final
-
-        const {
-          time = Date.now(),
-          cooldown = Time.fromDelay(dcooldown),
-          expiration = Time.fromDelay(dexpiration)
-        } = result
-
-        if ("error" in result) {
-          return await core.apply(storageKey, current, {
-            data: current?.realData,
-            time: current?.realTime,
-            error: result.error,
-            cooldown: cooldown,
-            expiration: expiration,
-            aborter: undefined,
-            optimistic: false
-          }, params)
-        } else {
-          return await core.apply(storageKey, current, {
-            data: result.data,
-            error: undefined,
-            time: time,
-            cooldown: cooldown,
-            expiration: expiration,
-            aborter: undefined,
-            optimistic: false
-          }, params)
+        if (done) {
+          final = value
+          break
         }
-      } catch (error: unknown) {
-        return await core.apply(storageKey, current, {
-          data: current?.realData,
-          time: current?.realTime,
-          error: error,
-          cooldown: dcooldown,
-          expiration: dexpiration,
-          aborter: undefined,
-          optimistic: false
+
+        await core.apply<D, K>(storageKey, (previous) => {
+          const optimistic = value(previous)
+
+          if ("error" in optimistic)
+            return {
+              error: optimistic.error,
+              optimistic: true
+            }
+
+          return {
+            data: optimistic.data,
+            error: undefined,
+            optimistic: true
+          }
         }, params)
-      } finally {
-        clearTimeout(timeout)
       }
-    })
+
+      if (final === undefined) {
+
+        const timeout = setTimeout(() => {
+          aborter.abort("Fetch timed out")
+        }, dtimeout)
+
+        try {
+          final = await fetcher(key, { signal, cache: "reload" })
+        } finally {
+          clearTimeout(timeout)
+        }
+
+      }
+
+
+      if (signal.aborted)
+        throw new AbortError(signal)
+
+      const result = final
+
+      const {
+        time = Date.now(),
+        cooldown = Time.fromDelay(dcooldown),
+        expiration = Time.fromDelay(dexpiration)
+      } = result
+
+      if ("error" in result)
+        return await core.apply(storageKey, (previous) => ({
+          data: previous?.realData,
+          time: previous?.realTime,
+          error: result.error,
+          cooldown: cooldown,
+          expiration: expiration,
+          optimistic: false
+        }), params)
+
+      return await core.apply(storageKey, () => ({
+        data: result.data,
+        error: undefined,
+        time: time,
+        cooldown: cooldown,
+        expiration: expiration,
+        optimistic: false
+      }), params)
+    } catch (error: unknown) {
+      return await core.apply(storageKey, (previous) => ({
+        data: previous?.realData,
+        time: previous?.realTime,
+        error: error,
+        cooldown: dcooldown,
+        expiration: dexpiration,
+        optimistic: false
+      }), params)
+    }
   }
 }

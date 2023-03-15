@@ -1,8 +1,8 @@
 import { ResultInit } from "mods/result/result.js"
-import { State } from "./state.js"
+import { Optimism } from "./optimism.js"
 
 export type Updater<D> =
-  (previous: State<D> | undefined, more: UpdaterMore) => AsyncGenerator<ResultInit<D>, ResultInit<D> | void>
+  (more: UpdaterMore) => AsyncGenerator<Optimism<D>, ResultInit<D> | void>
 
 export interface UpdaterMore {
   signal?: AbortSignal

@@ -46,14 +46,12 @@ export namespace Scroll {
   ): Promise<State<D[]> | undefined> {
     if (storageKey === undefined)
       return
-    let current = await core.get(storageKey, params)
+
+    const current = await core.get(storageKey, params)
 
     if (scroller === undefined)
       return current
     if (fetcher === undefined)
-      return current
-
-    if (current?.optimistic)
       return current
 
     if (current?.aborter)
@@ -77,14 +75,11 @@ export namespace Scroll {
       timeout: dtimeout = DEFAULT_TIMEOUT,
     } = params
 
-    await core.lock(storageKey, async () => {
+    await core.lock<D[], K>(storageKey, async () => {
 
       const timeout = setTimeout(() => {
         aborter.abort("First timed out")
       }, dtimeout)
-
-      current = await core.get(storageKey, params)
-      current = await core.apply(storageKey, current, { aborter }, params)
 
       try {
         const { signal } = aborter
@@ -100,22 +95,21 @@ export namespace Scroll {
           expiration = Time.fromDelay(dexpiration)
         } = result
 
-        if ("error" in result) {
-          return await core.apply(storageKey, current, {
+        if ("error" in result)
+          return () => ({
             error: result.error,
             time: time,
             cooldown: cooldown,
             expiration: expiration,
-            aborter: undefined
-          }, params)
-        } else {
+          })
+
+        return async (previous) => {
           const state: State<D[]> = {
             data: [result.data],
             error: undefined,
             time: time,
             cooldown: cooldown,
             expiration: expiration,
-            aborter: undefined
           }
 
           const normalized = await core.normalize(true, { data: [result.data] }, params)
@@ -123,19 +117,18 @@ export namespace Scroll {
           if (equals(normalized?.[0], current?.data?.[0]))
             state.data = current?.data
 
-          return await core.apply(storageKey, current, state, params)
+          return state
         }
       } catch (error: unknown) {
-        return await core.apply(storageKey, current, {
+        return () => ({
           error: error,
           cooldown: dcooldown,
           expiration: dexpiration,
-          aborter: undefined
-        }, params)
+        })
       } finally {
         clearTimeout(timeout)
       }
-    })
+    }, aborter, params)
   }
 
   /**
@@ -160,14 +153,12 @@ export namespace Scroll {
   ): Promise<State<D[]> | undefined> {
     if (storageKey === undefined)
       return
-    let current = await core.get(storageKey, params)
+
+    const current = await core.get(storageKey, params)
 
     if (scroller === undefined)
       return current
     if (fetcher === undefined)
-      return current
-
-    if (current?.optimistic)
       return current
 
     if (current?.aborter)
@@ -192,14 +183,11 @@ export namespace Scroll {
       timeout: dtimeout = DEFAULT_TIMEOUT,
     } = params
 
-    await core.lock(storageKey, async () => {
+    await core.lock<D[], K>(storageKey, async () => {
 
       const timeout = setTimeout(() => {
         aborter.abort("Scroll timed out")
       }, dtimeout)
-
-      current = await core.get(storageKey, params)
-      current = await core.apply(storageKey, current, { aborter }, params)
 
       try {
         const { signal } = aborter
@@ -218,36 +206,30 @@ export namespace Scroll {
         if (expiration !== undefined && current?.expiration !== undefined)
           expiration = Math.min(expiration, current?.expiration)
 
-        if ("data" in result) {
-          const previouses = current?.data ?? []
-
-          return await core.apply(storageKey, current, {
-            data: [...previouses, result.data],
-            error: undefined,
-            time: time,
-            cooldown: cooldown,
-            expiration: expiration,
-            aborter: undefined
-          }, params)
-        } else {
-          return await core.apply(storageKey, current, {
+        if ("error" in result)
+          return () => ({
             error: result.error,
             time: time,
             cooldown: cooldown,
-            expiration: expiration,
-            aborter: undefined
-          }, params)
-        }
+            expiration: expiration
+          })
+
+        return (previous) => ({
+          data: [...(previous?.data ?? []), result.data],
+          error: undefined,
+          time: time,
+          cooldown: cooldown,
+          expiration: expiration
+        })
       } catch (error: unknown) {
-        return await core.apply(storageKey, current, {
+        return () => ({
           error: error,
           cooldown: dcooldown,
-          expiration: dexpiration,
-          aborter: undefined
-        }, params)
+          expiration: dexpiration
+        })
       } finally {
         clearTimeout(timeout)
       }
-    })
+    }, aborter, params)
   }
 }

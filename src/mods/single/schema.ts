@@ -33,10 +33,16 @@ export class SingleSchema<D = unknown, K = unknown> implements Schema<D, K, Sing
     if (shallow)
       return
 
-    const { init, storageKey, mparams } = this.make(core)
+    const { storageKey, mparams } = this.make(core)
     const { time, cooldown, expiration, optimistic } = root
-    const state = { data, time, cooldown, expiration, optimistic }
 
-    await more.core.apply(storageKey, await init, state, mparams)
+    await more.core.apply(storageKey, () => ({
+      data: data,
+      error: undefined,
+      time: time,
+      cooldown: cooldown,
+      expiration: expiration,
+      optimistic: optimistic
+    }), mparams)
   }
 }
