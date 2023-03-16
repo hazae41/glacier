@@ -1,7 +1,7 @@
 {
   "type": "module",
   "name": "@hazae41/xswr",
-  "version": "1.4.2-1",
+  "version": "1.4.2-2",
   "author": "hazae41",
   "license": "MIT",
   "description": "Yet another React data (re)fetching library",
