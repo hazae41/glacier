@@ -14,5 +14,5 @@ export interface OptimisticErrorInit {
   time?: number
 }
 
-export type Optimism<D = unknown> =
+export type Optimistic<D = unknown> =
   (previous?: State<D>) => OptimisticResultInit<D>

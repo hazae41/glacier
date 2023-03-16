@@ -1,10 +1,10 @@
 import { Mutex } from "@hazae41/mutex"
 import { Ortho } from "libs/ortho/ortho.js"
+import { Time } from "libs/time/time.js"
 import { DEFAULT_EQUALS } from "mods/defaults.js"
 import { Equals } from "mods/equals/equals.js"
 import { isAsyncStorage } from "mods/storages/storage.js"
 import { Mutator } from "mods/types/mutator.js"
-import { Optimism } from "mods/types/optimism.js"
 import { GlobalParams, QueryParams } from "mods/types/params.js"
 import { State } from "mods/types/state.js"
 
@@ -14,7 +14,7 @@ export type Listener<D> =
 export class Core extends Ortho<string, State | undefined> {
 
   readonly #states = new Map<string, State>()
-  readonly #optimimisms = new Map<string, Optimism>()
+  readonly #optimisers = new Map<string, Mutator<any>>()
 
   readonly #counts = new Map<string, number>()
   readonly #timeouts = new Map<string, NodeJS.Timeout>()
@@ -204,31 +204,47 @@ export class Core extends Ortho<string, State | undefined> {
     } = params
 
     const current = await this.get(storageKey, params)
-    const mutated = await mutator(current)
+    const mutated = mutator(current)
 
-    if (mutated === undefined) {
-      await this.delete(storageKey, params)
-      return
+    let next = mutated
+      ? { ...current, ...mutated }
+      : undefined
+
+    if (next && next.optimistic === true) {
+      this.#optimisers.set(storageKey, mutator)
     }
 
-    if (mutated.time !== undefined && current?.time !== undefined)
-      if (mutated.time < current.time)
-        return current
+    if (next && next.optimistic === false) {
+      next.realData = next.data
+      next.realTime = next.time
 
-    const next: State<D> = {
-      ...current,
-      ...mutated
+      this.#optimisers.delete(storageKey)
+    }
+
+    if (next && next.optimistic === undefined) {
+      next.realData = next.data
+      next.realTime = next.time
+
+      const optimiser = this.#optimisers.get(storageKey)
+
+      if (optimiser !== undefined) {
+        const optimistic = optimiser(next)
+        next = { ...next, ...optimistic }
+      }
+    }
+
+    if (Time.isBefore(next?.time, current?.time))
+      return current
+
+    if (next === undefined) {
+      await this.delete(storageKey, params)
+      return
     }
 
     next.data = await this.normalize(false, next, params)
 
     if (equals(next.data, current?.data))
       next.data = current?.data
-
-    if (next.optimistic !== true) {
-      next.realData = next.data
-      next.realTime = next.time
-    }
 
     if (Equals.shallow(next, current))
       return current
