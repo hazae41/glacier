@@ -176,8 +176,17 @@ export class Core extends Ortho<string, State | undefined> {
     return await this.apply(storageKey, (previous) => {
       const mutated = mutator(previous)
 
-      if (mutated !== undefined)
-        mutated.time ??= Date.now()
+      if (mutated === undefined)
+        return mutated
+
+      mutated.time ??= Date.now()
+      mutated.error = mutated.error
+
+      mutated.realData = mutated.data
+      mutated.realTime = mutated.time
+
+      delete mutated.aborter
+      delete mutated.optimistic
 
       return mutated
     }, params)
