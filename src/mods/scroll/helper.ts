@@ -99,19 +99,22 @@ export namespace Scroll {
           return () => ({
             error: result.error,
             time: time,
+            realTime: time,
             cooldown: cooldown,
             expiration: expiration,
           })
 
-        const normalized = await core.normalize(true, {
-          data: [result.data]
-        }, params)
+        const data = [result.data]
+
+        const normalized = await core.normalize(true, { data }, params)
 
         return (previous) => {
           const state: State<D[]> = {
-            data: [result.data],
+            data: data,
+            realData: data,
             error: undefined,
             time: time,
+            realTime: time,
             cooldown: cooldown,
             expiration: expiration,
           }
@@ -124,6 +127,8 @@ export namespace Scroll {
       } catch (error: unknown) {
         return () => ({
           error: error,
+          time: Date.now(),
+          realTime: Date.now(),
           cooldown: dcooldown,
           expiration: dexpiration,
         })
@@ -212,20 +217,29 @@ export namespace Scroll {
           return () => ({
             error: result.error,
             time: time,
+            realTime: time,
             cooldown: cooldown,
             expiration: expiration
           })
 
-        return (previous) => ({
-          data: [...(previous?.data ?? []), result.data],
-          error: undefined,
-          time: time,
-          cooldown: cooldown,
-          expiration: expiration
-        })
+        return (previous) => {
+          const data = [...(previous?.data ?? []), result.data]
+
+          return {
+            data: data,
+            realData: data,
+            error: undefined,
+            time: time,
+            realTime: time,
+            cooldown: cooldown,
+            expiration: expiration
+          }
+        }
       } catch (error: unknown) {
         return () => ({
           error: error,
+          time: Date.now(),
+          realTime: Date.now(),
           cooldown: dcooldown,
           expiration: dexpiration
         })

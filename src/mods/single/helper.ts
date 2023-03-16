@@ -92,20 +92,25 @@ export namespace Single {
           return () => ({
             error: result.error,
             time: time,
+            realTime: time,
             cooldown: cooldown,
             expiration: expiration,
           })
 
         return () => ({
           data: result.data,
+          realData: result.data,
           error: undefined,
           time: time,
+          realTime: time,
           cooldown: cooldown,
           expiration: expiration,
         })
       } catch (error: unknown) {
         return () => ({
           error: error,
+          time: Date.now(),
+          realTime: Date.now(),
           cooldown: dcooldown,
           expiration: dexpiration,
         })
@@ -147,8 +152,7 @@ export namespace Single {
     if (updater === undefined)
       return current
 
-    if (current?.optimistic)
-      return current
+    const optimistic = Date.now()
 
     const {
       cooldown: dcooldown = DEFAULT_COOLDOWN,
@@ -156,7 +160,7 @@ export namespace Single {
       timeout: dtimeout = DEFAULT_TIMEOUT,
     } = params
 
-    await core.apply(storageKey, () => ({ optimistic: true }), params)
+    await core.apply(storageKey, () => ({ optimistic }), params)
 
     try {
       const { signal } = aborter
@@ -177,18 +181,18 @@ export namespace Single {
         }
 
         await core.apply<D, K>(storageKey, (previous) => {
-          const optimistic = value(previous)
+          const result = value(previous)
 
-          if ("error" in optimistic)
+          if ("error" in result)
             return {
-              error: optimistic.error,
-              optimistic: true
+              error: result.error,
+              optimistic: optimistic
             }
 
           return {
-            data: optimistic.data,
+            data: result.data,
             error: undefined,
-            optimistic: true
+            optimistic: optimistic
           }
         }, params)
       }
@@ -224,16 +228,18 @@ export namespace Single {
           error: result.error,
           cooldown: cooldown,
           expiration: expiration,
-          optimistic: false
+          optimistic: optimistic
         }), params)
 
       return await core.apply(storageKey, () => ({
         data: result.data,
+        realData: result.data,
         error: undefined,
         time: time,
+        realTime: time,
         cooldown: cooldown,
         expiration: expiration,
-        optimistic: false
+        optimistic: optimistic
       }), params)
     } catch (error: unknown) {
       return await core.apply(storageKey, (previous) => ({
@@ -242,7 +248,7 @@ export namespace Single {
         error: error,
         cooldown: dcooldown,
         expiration: dexpiration,
-        optimistic: false
+        optimistic: optimistic
       }), params)
     }
   }

@@ -154,10 +154,12 @@ export function useQuery<D = unknown, K = string>(
 
   const state = stateRef.current
 
-  const { data, error, time, cooldown, expiration, aborter, optimistic, realData } = state ?? {}
+  const { data, error, time, cooldown, expiration, aborter, realData } = state ?? {}
 
   const ready = state !== null
-  const loading = Boolean(aborter)
+
+  const loading = Boolean(state?.aborter)
+  const optimistic = Boolean(state?.optimistic)
 
   return { key, storageKey, data, error, time, cooldown, expiration, aborter, optimistic, realData, loading, ready, mutate, fetch, refetch, update, clear, suspend }
 }

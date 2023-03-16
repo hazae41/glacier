@@ -14,7 +14,7 @@ export type Listener<D> =
 export class Core extends Ortho<string, State | undefined> {
 
   readonly #states = new Map<string, State>()
-  readonly #optimisers = new Map<string, Mutator<any>>()
+  readonly #optimisers = new Map<string, Map<number, Mutator<any>>>()
 
   readonly #counts = new Map<string, number>()
   readonly #timeouts = new Map<string, NodeJS.Timeout>()
@@ -210,26 +210,26 @@ export class Core extends Ortho<string, State | undefined> {
       ? { ...current, ...mutated }
       : undefined
 
-    if (next && next.optimistic === true) {
-      this.#optimisers.set(storageKey, mutator)
+    let optimisers = this.#optimisers.get(storageKey)
+
+    if (!optimisers) {
+      optimisers = new Map()
+      this.#optimisers.set(storageKey, optimisers)
     }
 
-    if (next && next.optimistic === false) {
-      next.realData = next.data
-      next.realTime = next.time
-
-      this.#optimisers.delete(storageKey)
-    }
-
-    if (next && next.optimistic === undefined) {
-      next.realData = next.data
-      next.realTime = next.time
-
-      const optimiser = this.#optimisers.get(storageKey)
-
-      if (optimiser !== undefined) {
+    if (mutated?.optimistic) {
+      if (mutated.data !== mutated.realData) {
+        optimisers.set(mutated.optimistic, mutator)
+      } else {
+        optimisers.delete(mutated.optimistic)
+      }
+    } else {
+      for (const optimiser of optimisers.values()) {
         const optimistic = optimiser(next)
-        next = { ...next, ...optimistic }
+
+        next = optimistic
+          ? { ...next, ...optimistic }
+          : undefined
       }
     }
 

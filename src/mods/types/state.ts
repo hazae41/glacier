@@ -13,7 +13,7 @@ export interface State<D = unknown> {
   cooldown?: number
   expiration?: number,
   aborter?: AbortController,
-  optimistic?: boolean,
+  optimistic?: number,
   realData?: D
   realTime?: number
 }
