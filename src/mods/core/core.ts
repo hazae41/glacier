@@ -232,14 +232,16 @@ export class Core extends Ortho<string, State | undefined> {
       } else {
         optimisers.delete(mutated.optimistic)
       }
-    } else {
-      for (const optimiser of optimisers.values()) {
-        const optimistic = optimiser(next)
+    }
 
-        next = optimistic
-          ? { ...next, ...optimistic }
-          : undefined
-      }
+    for (const optimiser of optimisers.values()) {
+      if (optimiser === mutator) continue
+
+      const optimistic = optimiser(next)
+
+      next = optimistic
+        ? { ...next, ...optimistic }
+        : undefined
     }
 
     if (Time.isBefore(next?.time, current?.time))
