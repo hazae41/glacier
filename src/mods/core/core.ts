@@ -51,9 +51,10 @@ export class Core extends Ortho<string, State | undefined> {
     return await mutex.lock(async () => {
       await this.apply(storageKey, () => ({ aborter }), params)
 
-      return await this.apply(storageKey, async (previous) => {
-        const mutator = await callback()
-        const mutated = await mutator(previous)
+      const mutator = await callback()
+
+      return await this.apply(storageKey, (previous) => {
+        const mutated = mutator(previous)
 
         if (mutated !== undefined)
           mutated.aborter = undefined
@@ -172,8 +173,8 @@ export class Core extends Ortho<string, State | undefined> {
     mutator: Mutator<D>,
     params: QueryParams<D, K> = {}
   ) {
-    return await this.apply(storageKey, async (previous) => {
-      const mutated = await mutator(previous)
+    return await this.apply(storageKey, (previous) => {
+      const mutated = mutator(previous)
 
       if (mutated !== undefined)
         mutated.time ??= Date.now()

@@ -194,7 +194,6 @@ export namespace Single {
       }
 
       if (final === undefined) {
-
         const timeout = setTimeout(() => {
           aborter.abort("Fetch timed out")
         }, dtimeout)
@@ -204,7 +203,6 @@ export namespace Single {
         } finally {
           clearTimeout(timeout)
         }
-
       }
 
 
