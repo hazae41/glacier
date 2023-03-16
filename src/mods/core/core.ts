@@ -215,10 +215,6 @@ export class Core extends Ortho<string, State | undefined> {
     const current = await this.get(storageKey, params)
     const mutated = mutator(current)
 
-    let next = mutated
-      ? { ...current, ...mutated }
-      : undefined
-
     let optimisers = this.#optimisers.get(storageKey)
 
     if (!optimisers) {
@@ -226,22 +222,29 @@ export class Core extends Ortho<string, State | undefined> {
       this.#optimisers.set(storageKey, optimisers)
     }
 
+    let skipOptLoop = false
+
     if (mutated?.optimistic) {
       if (mutated.data !== mutated.realData) {
         optimisers.set(mutated.optimistic, mutator)
+        skipOptLoop = true
       } else {
         optimisers.delete(mutated.optimistic)
       }
     }
 
-    for (const optimiser of optimisers.values()) {
-      if (optimiser === mutator) continue
+    let next = mutated
+      ? { ...current, ...mutated }
+      : undefined
 
-      const optimistic = optimiser(next)
+    if (!skipOptLoop) {
+      for (const optimiser of optimisers.values()) {
+        const optimistic = optimiser(next)
 
-      next = optimistic
-        ? { ...next, ...optimistic }
-        : undefined
+        next = optimistic
+          ? { ...next, ...optimistic }
+          : undefined
+      }
     }
 
     if (Time.isBefore(next?.time, current?.time))
