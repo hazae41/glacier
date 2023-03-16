@@ -183,11 +183,11 @@ export namespace Single {
         await core.apply<D, K>(storageKey, (previous) => {
           const result = value(previous)
 
-          if ("error" in result)
-            return {
-              error: result.error,
-              optimistic: optimistic
-            }
+          // if ("error" in result)
+          //   return {
+          //     error: result.error,
+          //     optimistic: optimistic
+          //   }
 
           return {
             data: result.data,
@@ -209,7 +209,6 @@ export namespace Single {
         }
       }
 
-
       if (signal.aborted)
         throw new AbortError(signal)
 
@@ -222,14 +221,7 @@ export namespace Single {
       } = result
 
       if ("error" in result)
-        return await core.apply(storageKey, (previous) => ({
-          data: previous?.realData,
-          time: previous?.realTime,
-          error: result.error,
-          cooldown: cooldown,
-          expiration: expiration,
-          optimistic: optimistic
-        }), params)
+        throw result.error
 
       return await core.apply(storageKey, () => ({
         data: result.data,
@@ -242,14 +234,15 @@ export namespace Single {
         optimistic: optimistic
       }), params)
     } catch (error: unknown) {
-      return await core.apply(storageKey, (previous) => ({
+      await core.apply(storageKey, (previous) => ({
         data: previous?.realData,
         time: previous?.realTime,
-        error: error,
         cooldown: dcooldown,
         expiration: dexpiration,
         optimistic: optimistic
       }), params)
+
+      throw error
     }
   }
 }
