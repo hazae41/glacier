@@ -16,7 +16,6 @@ export class Core extends Ortho<string, State | undefined> {
 
   readonly #states = new Map<string, State>()
 
-  readonly #keysByOptimiser = new Map<string, Set<string>>()
   readonly #optimisersByKey = new Map<string, Map<string, Mutator<any>>>()
 
   readonly #counts = new Map<string, number>()
@@ -281,33 +280,10 @@ export class Core extends Ortho<string, State | undefined> {
       this.#optimisersByKey.set(storageKey, optimisers)
     }
 
-    if (optimistic) {
-      let keys = this.#keysByOptimiser.get(optimistic.uuid)
-
-      if (optimistic.action === "set") {
-        optimisers.set(optimistic.uuid, mutator)
-
-        if (!keys) {
-          keys = new Set()
-          this.#keysByOptimiser.set(optimistic.uuid, keys)
-        }
-
-        keys.add(storageKey)
-      }
-
-      if (optimistic.action === "unset") {
-        optimisers.delete(optimistic.uuid)
-
-        if (keys) {
-          for (const key of keys) {
-            const suboptimisers = this.#optimisersByKey.get(key)
-            suboptimisers?.delete(optimistic.uuid)
-          }
-
-          this.#keysByOptimiser.delete(optimistic.uuid)
-        }
-      }
-    }
+    if (optimistic?.action === "set")
+      optimisers.set(optimistic.uuid, mutator)
+    if (optimistic?.action === "unset")
+      optimisers.delete(optimistic.uuid)
 
     const mutated = mutator(current)
     let next = { ...current, ...mutated }
