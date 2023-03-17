@@ -122,8 +122,6 @@ export namespace Scroll {
         } catch (error: unknown) {
           return () => ({
             error: error,
-            time: Date.now(),
-            realTime: Date.now(),
             cooldown: dcooldown,
             expiration: dexpiration,
           })
@@ -229,8 +227,6 @@ export namespace Scroll {
         } catch (error: unknown) {
           return () => ({
             error: error,
-            time: Date.now(),
-            realTime: Date.now(),
             cooldown: dcooldown,
             expiration: dexpiration
           })
