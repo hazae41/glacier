@@ -29,7 +29,7 @@ export class ScrollSchema<D = unknown, K = unknown> implements Schema<D[], K, Sc
   }
 
   async normalize(data: D[], more: NormalizerMore) {
-    const { core, parent, optimistic, shallow } = more
+    const { core, parent, shallow } = more
 
     if (shallow)
       return
@@ -43,6 +43,6 @@ export class ScrollSchema<D = unknown, K = unknown> implements Schema<D[], K, Sc
       time: time,
       cooldown: cooldown,
       expiration: expiration,
-    }), mparams, optimistic)
+    }), mparams)
   }
 }

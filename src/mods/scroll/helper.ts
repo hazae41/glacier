@@ -100,7 +100,7 @@ export namespace Scroll {
 
           const data = [result.data]
 
-          const prenormalized = await core.normalize({ data }, params, undefined, { shallow: true })
+          const prenormalized = await core.normalize({ data }, params, { shallow: true })
 
           return (previous) => {
             const state: State<D[]> = {

@@ -322,7 +322,8 @@ export class Core extends Ortho<string, State | undefined> {
     if (Time.isBefore(next.time, current?.time))
       return current
 
-    next.data = await this.normalize(next, params, optimistic)
+    if (!optimistic)
+      next.data = await this.normalize(next, params)
 
     if (equals(next.data, current?.data))
       next.data = current?.data
@@ -340,7 +341,6 @@ export class Core extends Ortho<string, State | undefined> {
   async normalize<D, K>(
     parent: State<D>,
     params: QueryParams<D, K> = {},
-    optimistic?: OptimisticParams,
     more: { shallow?: boolean } = {}
   ) {
     const { shallow } = more
@@ -351,7 +351,7 @@ export class Core extends Ortho<string, State | undefined> {
     if (params.normalizer === undefined)
       return parent.data
 
-    return await params.normalizer(parent.data, { core: this, parent, optimistic, shallow })
+    return await params.normalizer(parent.data, { core: this, parent, shallow })
   }
 
   once<D, K>(
