@@ -294,13 +294,13 @@ export class Core extends Ortho<string, State | undefined> {
         : undefined
     }
 
-    if (Time.isBefore(next?.time, current?.time))
-      return current
-
     if (next === undefined) {
       await this.delete(storageKey, params)
       return
     }
+
+    if (Time.isBefore(next?.time, current?.time))
+      return current
 
     next.data = await this.normalize(false, next, params, optimistic)
 
