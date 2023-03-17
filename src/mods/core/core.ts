@@ -44,20 +44,6 @@ export class Core extends Ortho<string, State | undefined> {
     this.#mounted = false
   }
 
-  aborter(storageKey?: string) {
-    if (!storageKey) return
-
-    return this.#aborters.get(storageKey)
-  }
-
-  optimistic(storageKey?: string) {
-    if (!storageKey) return
-
-    const optimisers = this.#optimisersByKey.get(storageKey)
-
-    return Boolean(optimisers?.size)
-  }
-
   async lock<T>(
     storageKey: string,
     callback: () => Promise<T>,
