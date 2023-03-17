@@ -281,6 +281,8 @@ export class Core extends Ortho<string, State | undefined> {
       }
     }
 
+    next.optimistic = Boolean(optimisers.size)
+
     if (Time.isBefore(next.time, current?.time))
       return current
 
@@ -289,8 +291,6 @@ export class Core extends Ortho<string, State | undefined> {
 
     if (equals(next.data, current?.data))
       next.data = current?.data
-
-    next.optimistic = Boolean(optimisers.size)
 
     if (Equals.shallow(next, current))
       return current
