@@ -18,7 +18,9 @@ export class Core extends Ortho<string, State | undefined> {
 
   readonly #counts = new Map<string, number>()
   readonly #timeouts = new Map<string, NodeJS.Timeout>()
+
   readonly #mutexes = new Map<string, Mutex>()
+  readonly #aborters = new Map<string, AbortController>()
 
   #mounted = true
 
@@ -40,7 +42,12 @@ export class Core extends Ortho<string, State | undefined> {
     this.#mounted = false
   }
 
-  async lock<D, K>(storageKey: string, callback: () => Promise<Mutator<D>>, aborter = new AbortController(), params: QueryParams<D, K> = {}) {
+  async lock<T>(
+    storageKey: string,
+    callback: () => Promise<T>,
+    aborter = new AbortController(),
+    replacePending = false
+  ) {
     let mutex = this.#mutexes.get(storageKey)
 
     if (mutex === undefined) {
@@ -48,20 +55,43 @@ export class Core extends Ortho<string, State | undefined> {
       this.#mutexes.set(storageKey, mutex)
     }
 
+    const pending = this.#aborters.get(storageKey)
+
+    if (pending)
+      if (replacePending)
+        pending.abort(`Replaced`)
+      else
+        return
+
     return await mutex.lock(async () => {
-      await this.apply(storageKey, () => ({ aborter }), params)
+      this.#aborters.set(storageKey, aborter)
 
-      const mutator = await callback()
+      const result = await callback()
 
-      return await this.apply(storageKey, (previous) => {
-        const mutated = mutator(previous)
+      this.#aborters.delete(storageKey)
 
-        if (mutated !== undefined)
-          mutated.aborter = undefined
-
-        return mutated
-      }, params)
+      return result
     })
+  }
+
+  async run<D, K>(
+    storageKey: string,
+    callback: () => Promise<Mutator<D>>,
+    aborter = new AbortController(),
+    params: QueryParams<D, K> = {},
+  ) {
+    await this.apply(storageKey, () => ({ aborter }), params)
+
+    const mutator = await callback()
+
+    return await this.apply(storageKey, (previous) => {
+      const mutated = mutator(previous)
+
+      if (mutated !== undefined)
+        mutated.aborter = undefined
+
+      return mutated
+    }, params)
   }
 
   getSync<D, K>(

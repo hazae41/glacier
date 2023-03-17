@@ -46,78 +46,74 @@ export namespace Single {
     if (storageKey === undefined)
       return
 
-    const current = await core.get(storageKey, params)
-
-    if (key === undefined)
-      return current
-    if (fetcher === undefined)
-      return current
-
-    if (current?.aborter)
-      if (replacePending)
-        current.aborter.abort("Replaced")
-      else
-        return current
-
-    if (Time.isAfterNow(current?.cooldown) && !ignoreCooldown)
-      return current
-
     const {
       cooldown: dcooldown = DEFAULT_COOLDOWN,
       expiration: dexpiration = DEFAULT_EXPIRATION,
       timeout: dtimeout = DEFAULT_TIMEOUT,
     } = params
 
-    return await core.lock<D, K>(storageKey, async () => {
+    return await core.lock(storageKey, async () => {
+      const current = await core.get(storageKey, params)
 
-      const timeout = setTimeout(() => {
-        aborter.abort("Fetch timed out")
-      }, dtimeout)
+      if (key === undefined)
+        return current
+      if (fetcher === undefined)
+        return current
 
-      try {
-        const { signal } = aborter
+      if (Time.isAfterNow(current?.cooldown) && !ignoreCooldown)
+        return current
 
-        const result = await fetcher(key, { signal })
+      return await core.run<D, K>(storageKey, async () => {
 
-        if (signal.aborted)
-          throw new AbortError(signal)
+        const timeout = setTimeout(() => {
+          aborter.abort("Fetch timed out")
+        }, dtimeout)
 
-        const {
-          time = Date.now(),
-          cooldown = Time.fromDelay(dcooldown),
-          expiration = Time.fromDelay(dexpiration)
-        } = result
+        try {
+          const { signal } = aborter
 
-        if ("error" in result)
+          const result = await fetcher(key, { signal })
+
+          if (signal.aborted)
+            throw new AbortError(signal)
+
+          const {
+            time = Date.now(),
+            cooldown = Time.fromDelay(dcooldown),
+            expiration = Time.fromDelay(dexpiration)
+          } = result
+
+          if ("error" in result)
+            return () => ({
+              error: result.error,
+              time: time,
+              realTime: time,
+              cooldown: cooldown,
+              expiration: expiration,
+            })
+
           return () => ({
-            error: result.error,
+            data: result.data,
+            realData: result.data,
+            error: undefined,
             time: time,
             realTime: time,
             cooldown: cooldown,
             expiration: expiration,
           })
-
-        return () => ({
-          data: result.data,
-          realData: result.data,
-          error: undefined,
-          time: time,
-          realTime: time,
-          cooldown: cooldown,
-          expiration: expiration,
-        })
-      } catch (error: unknown) {
-        return () => ({
-          error: error,
-          time: Date.now(),
-          realTime: Date.now(),
-          cooldown: dcooldown,
-          expiration: dexpiration,
-        })
-      } finally {
-        clearTimeout(timeout)
-      }
-    }, aborter, params)
+        } catch (error: unknown) {
+          return () => ({
+            error: error,
+            time: Date.now(),
+            realTime: Date.now(),
+            cooldown: dcooldown,
+            expiration: dexpiration,
+          })
+        } finally {
+          clearTimeout(timeout)
+        }
+      }, aborter, params)
+    }, aborter, replacePending)
   }
 
   /**
