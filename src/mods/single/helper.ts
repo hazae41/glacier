@@ -87,17 +87,13 @@ export namespace Single {
             return () => ({
               error: result.error,
               time: time,
-              realTime: time,
               cooldown: cooldown,
               expiration: expiration,
             })
 
           return () => ({
             data: result.data,
-            realData: result.data,
-            error: undefined,
             time: time,
-            realTime: time,
             cooldown: cooldown,
             expiration: expiration,
           })
@@ -185,7 +181,7 @@ export namespace Single {
             data: result.data,
             error: undefined
           }
-        }, params, undefined, {
+        }, params, {
           action: "set",
           value: optimistic
         })
@@ -225,7 +221,7 @@ export namespace Single {
         realTime: time,
         cooldown: cooldown,
         expiration: expiration
-      }), params, undefined, {
+      }), params, {
         action: "unset",
         value: optimistic
       })
@@ -235,7 +231,7 @@ export namespace Single {
         time: previous?.realTime,
         cooldown: dcooldown,
         expiration: dexpiration
-      }), params, undefined, {
+      }), params, {
         action: "unset",
         value: optimistic
       })

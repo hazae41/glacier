@@ -1,11 +1,9 @@
-export interface StateInit<D = unknown> {
+export interface MutateState<D = unknown> {
   data?: D
   error?: unknown
   time?: number,
   cooldown?: number
-  expiration?: number,
-  realData?: D
-  realTime?: number
+  expiration?: number
 }
 
 export interface State<D = unknown> {

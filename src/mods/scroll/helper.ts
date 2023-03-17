@@ -94,7 +94,6 @@ export namespace Scroll {
             return () => ({
               error: result.error,
               time: time,
-              realTime: time,
               cooldown: cooldown,
               expiration: expiration,
             })
@@ -106,10 +105,7 @@ export namespace Scroll {
           return (previous) => {
             const state: State<D[]> = {
               data: data,
-              realData: data,
-              error: undefined,
               time: time,
-              realTime: time,
               cooldown: cooldown,
               expiration: expiration,
             }
@@ -206,7 +202,6 @@ export namespace Scroll {
             return () => ({
               error: result.error,
               time: time,
-              realTime: time,
               cooldown: cooldown,
               expiration: expiration
             })
@@ -216,10 +211,7 @@ export namespace Scroll {
 
             return {
               data: data,
-              realData: data,
-              error: undefined,
               time: time,
-              realTime: time,
               cooldown: cooldown,
               expiration: expiration
             }

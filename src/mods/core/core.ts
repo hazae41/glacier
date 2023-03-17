@@ -4,7 +4,7 @@ import { Time } from "libs/time/time.js"
 import { DEFAULT_EQUALS } from "mods/defaults.js"
 import { Equals } from "mods/equals/equals.js"
 import { isAsyncStorage } from "mods/storages/storage.js"
-import { Mutator } from "mods/types/mutator.js"
+import { FullMutator, Mutator } from "mods/types/mutator.js"
 import { OptimisticParams } from "mods/types/optimism.js"
 import { GlobalParams, QueryParams } from "mods/types/params.js"
 import { State } from "mods/types/state.js"
@@ -95,11 +95,25 @@ export class Core extends Ortho<string, State | undefined> {
     aborter: AbortController,
     params: QueryParams<D, K> = {},
   ) {
-    await this.apply(storageKey, () => ({}), params, { aborter })
+    await this.apply(storageKey, () => ({ aborter }), params)
 
     const mutator = await callback()
 
-    return await this.apply(storageKey, mutator, params, { aborter: undefined })
+    return await this.apply(storageKey, (previous) => {
+      const mutated: State<D> | undefined = mutator(previous)
+
+      if (mutated === undefined)
+        return mutated
+
+      mutated.error = mutated.error
+
+      mutated.realData = mutated.data
+      mutated.realTime = mutated.time
+
+      mutated.aborter = undefined
+
+      return mutated
+    }, params)
   }
 
   getSync<D, K>(
@@ -212,7 +226,7 @@ export class Core extends Ortho<string, State | undefined> {
     params: QueryParams<D, K> = {}
   ) {
     return await this.apply(storageKey, (previous) => {
-      const mutated = mutator(previous)
+      const mutated: State<D> | undefined = mutator(previous)
 
       if (mutated === undefined)
         return mutated
@@ -237,9 +251,8 @@ export class Core extends Ortho<string, State | undefined> {
    */
   async apply<D, K>(
     storageKey: string | undefined,
-    mutator: Mutator<D>,
+    mutator: FullMutator<D>,
     params: QueryParams<D, K> = {},
-    override?: { aborter?: AbortController },
     optimistic?: OptimisticParams
   ): Promise<State<D> | undefined> {
     if (storageKey === undefined)
@@ -294,7 +307,6 @@ export class Core extends Ortho<string, State | undefined> {
     if (equals(next.data, current?.data))
       next.data = current?.data
 
-    next = { ...next, ...override }
     next.optimistic = Boolean(optimisers.size)
 
     if (Equals.shallow(next, current))

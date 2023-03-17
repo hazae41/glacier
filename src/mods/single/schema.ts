@@ -42,6 +42,6 @@ export class SingleSchema<D = unknown, K = unknown> implements Schema<D, K, Sing
       time: time,
       cooldown: cooldown,
       expiration: expiration
-    }), mparams, undefined, optimistic)
+    }), mparams, optimistic)
   }
 }

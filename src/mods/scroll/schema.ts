@@ -43,6 +43,6 @@ export class ScrollSchema<D = unknown, K = unknown> implements Schema<D[], K, Sc
       time: time,
       cooldown: cooldown,
       expiration: expiration,
-    }), mparams, undefined, optimistic)
+    }), mparams, optimistic)
   }
 }
