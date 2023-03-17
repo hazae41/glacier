@@ -272,6 +272,12 @@ export class Core extends Ortho<string, State | undefined> {
       optimisers.delete(optimistic.uuid)
 
     const mutated = mutator(current)
+
+    if (mutated === undefined) {
+      await this.delete(storageKey, params)
+      return
+    }
+
     let next = { ...current, ...mutated }
 
     if (optimistic?.action !== "set") {

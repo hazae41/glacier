@@ -185,6 +185,7 @@ export namespace Single {
       }
 
       if (final === undefined) {
+
         const timeout = setTimeout(() => {
           aborter.abort("Fetch timed out")
         }, dtimeout)
@@ -220,11 +221,9 @@ export namespace Single {
         expiration: expiration
       }), params, { action: "unset", uuid })
     } catch (error: unknown) {
-      await core.apply(storageKey, (previous) => ({
-        data: previous?.realData,
-        time: previous?.realTime,
-        cooldown: dcooldown,
-        expiration: dexpiration
+      await core.apply(storageKey, (previous) => previous && ({
+        data: previous.realData,
+        time: previous.realTime
       }), params, { action: "unset", uuid })
 
       throw error
