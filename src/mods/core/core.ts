@@ -5,6 +5,7 @@ import { DEFAULT_EQUALS } from "mods/defaults.js"
 import { Equals } from "mods/equals/equals.js"
 import { isAsyncStorage } from "mods/storages/storage.js"
 import { Mutator } from "mods/types/mutator.js"
+import { OptimisticParams } from "mods/types/optimism.js"
 import { GlobalParams, QueryParams } from "mods/types/params.js"
 import { State } from "mods/types/state.js"
 
@@ -42,6 +43,20 @@ export class Core extends Ortho<string, State | undefined> {
     this.#mounted = false
   }
 
+  aborter(storageKey?: string) {
+    if (!storageKey) return
+
+    return this.#aborters.get(storageKey)
+  }
+
+  optimistic(storageKey?: string) {
+    if (!storageKey) return
+
+    const optimisers = this.#optimisers.get(storageKey)
+
+    return Boolean(optimisers?.size)
+  }
+
   async lock<T>(
     storageKey: string,
     callback: () => Promise<T>,
@@ -77,21 +92,14 @@ export class Core extends Ortho<string, State | undefined> {
   async run<D, K>(
     storageKey: string,
     callback: () => Promise<Mutator<D>>,
-    aborter = new AbortController(),
+    aborter: AbortController,
     params: QueryParams<D, K> = {},
   ) {
-    await this.apply(storageKey, () => ({ aborter }), params)
+    await this.apply(storageKey, () => ({}), params, { aborter })
 
     const mutator = await callback()
 
-    return await this.apply(storageKey, (previous) => {
-      const mutated = mutator(previous)
-
-      if (mutated !== undefined)
-        mutated.aborter = undefined
-
-      return mutated
-    }, params)
+    return await this.apply(storageKey, mutator, params, { aborter: undefined })
   }
 
   getSync<D, K>(
@@ -215,9 +223,6 @@ export class Core extends Ortho<string, State | undefined> {
       mutated.realData = mutated.data
       mutated.realTime = mutated.time
 
-      delete mutated.aborter
-      delete mutated.optimistic
-
       return mutated
     }, params)
   }
@@ -233,7 +238,9 @@ export class Core extends Ortho<string, State | undefined> {
   async apply<D, K>(
     storageKey: string | undefined,
     mutator: Mutator<D>,
-    params: QueryParams<D, K> = {}
+    params: QueryParams<D, K> = {},
+    override?: { aborter?: AbortController },
+    optimistic?: OptimisticParams
   ): Promise<State<D> | undefined> {
     if (storageKey === undefined)
       return
@@ -243,7 +250,6 @@ export class Core extends Ortho<string, State | undefined> {
     } = params
 
     const current = await this.get(storageKey, params)
-    const mutated = mutator(current)
 
     let optimisers = this.#optimisers.get(storageKey)
 
@@ -252,29 +258,27 @@ export class Core extends Ortho<string, State | undefined> {
       this.#optimisers.set(storageKey, optimisers)
     }
 
-    let skipOptLoop = false
+    if (optimistic?.action === "set")
+      optimisers.set(optimistic.value, mutator)
+    if (optimistic?.action === "unset")
+      optimisers.delete(optimistic.value)
 
-    if (mutated?.optimistic) {
-      if (mutated.data !== mutated.realData) {
-        optimisers.set(mutated.optimistic, mutator)
-        skipOptLoop = true
-      } else {
-        optimisers.delete(mutated.optimistic)
-      }
+    let next = current
+
+    if (optimistic?.action !== "set") {
+      const mutated = mutator(current)
+
+      next = mutated
+        ? { ...next, ...mutated }
+        : undefined
     }
 
-    let next = mutated
-      ? { ...current, ...mutated }
-      : undefined
+    for (const optimiser of optimisers.values()) {
+      const optimistic = optimiser(next)
 
-    if (!skipOptLoop) {
-      for (const optimiser of optimisers.values()) {
-        const optimistic = optimiser(next)
-
-        next = optimistic
-          ? { ...next, ...optimistic }
-          : undefined
-      }
+      next = optimistic
+        ? { ...next, ...optimistic }
+        : undefined
     }
 
     if (Time.isBefore(next?.time, current?.time))
@@ -285,10 +289,13 @@ export class Core extends Ortho<string, State | undefined> {
       return
     }
 
-    next.data = await this.normalize(false, next, params)
+    next.data = await this.normalize(false, next, params, optimistic)
 
     if (equals(next.data, current?.data))
       next.data = current?.data
+
+    next = { ...next, ...override }
+    next.optimistic = Boolean(optimisers.size)
 
     if (Equals.shallow(next, current))
       return current
@@ -302,6 +309,7 @@ export class Core extends Ortho<string, State | undefined> {
     shallow: boolean,
     root: State<D>,
     params: QueryParams<D, K> = {},
+    optimistic?: OptimisticParams
   ) {
     if (root.data === undefined)
       return
@@ -309,7 +317,7 @@ export class Core extends Ortho<string, State | undefined> {
     if (params.normalizer === undefined)
       return root.data
 
-    return await params.normalizer(root.data, { core: this, shallow, root })
+    return await params.normalizer(root.data, { core: this, shallow, root, optimistic })
   }
 
   once<D, K>(

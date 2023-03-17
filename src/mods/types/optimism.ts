@@ -1,5 +1,8 @@
 import { State } from "./state.js"
 
+export type OptimisticYield<D = unknown> =
+  (previous?: State<D>) => OptimisticDataInit<D>
+
 // export type OptimisticResultInit<D = unknown> =
 //   | OptimisticDataInit<D>
 //   | OptimisticErrorInit
@@ -14,5 +17,7 @@ export interface OptimisticDataInit<D = unknown> {
 //   time?: number
 // }
 
-export type Optimistic<D = unknown> =
-  (previous?: State<D>) => OptimisticDataInit<D>
+export interface OptimisticParams {
+  action: "set" | "unset",
+  value: number
+}

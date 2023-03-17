@@ -154,8 +154,6 @@ export namespace Single {
       timeout: dtimeout = DEFAULT_TIMEOUT,
     } = params
 
-    await core.apply(storageKey, () => ({ optimistic }), params)
-
     try {
       const { signal } = aborter
 
@@ -185,10 +183,12 @@ export namespace Single {
 
           return {
             data: result.data,
-            error: undefined,
-            optimistic: optimistic
+            error: undefined
           }
-        }, params)
+        }, params, undefined, {
+          action: "set",
+          value: optimistic
+        })
       }
 
       if (final === undefined) {
@@ -224,17 +224,21 @@ export namespace Single {
         time: time,
         realTime: time,
         cooldown: cooldown,
-        expiration: expiration,
-        optimistic: optimistic
-      }), params)
+        expiration: expiration
+      }), params, undefined, {
+        action: "unset",
+        value: optimistic
+      })
     } catch (error: unknown) {
       await core.apply(storageKey, (previous) => ({
         data: previous?.realData,
         time: previous?.realTime,
         cooldown: dcooldown,
-        expiration: dexpiration,
-        optimistic: optimistic
-      }), params)
+        expiration: dexpiration
+      }), params, undefined, {
+        action: "unset",
+        value: optimistic
+      })
 
       throw error
     }

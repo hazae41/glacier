@@ -1,10 +1,12 @@
-// export interface StateInit<D = unknown> {
-//   data?: D
-//   error?: unknown
-//   time?: number,
-//   cooldown?: number
-//   expiration?: number,
-// }
+export interface StateInit<D = unknown> {
+  data?: D
+  error?: unknown
+  time?: number,
+  cooldown?: number
+  expiration?: number,
+  realData?: D
+  realTime?: number
+}
 
 export interface State<D = unknown> {
   data?: D
@@ -12,8 +14,8 @@ export interface State<D = unknown> {
   time?: number,
   cooldown?: number
   expiration?: number,
-  aborter?: AbortController,
-  optimistic?: number,
   realData?: D
   realTime?: number
+  optimistic?: boolean,
+  aborter?: AbortController
 }

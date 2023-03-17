@@ -28,21 +28,20 @@ export class SingleSchema<D = unknown, K = unknown> implements Schema<D, K, Sing
   }
 
   async normalize(data: D, more: NormalizerMore) {
-    const { core, shallow, root } = more
+    const { core, shallow, root, optimistic } = more
 
     if (shallow)
       return
 
     const { storageKey, mparams } = this.make(core)
-    const { time, cooldown, expiration, optimistic } = root
+    const { time, cooldown, expiration } = root
 
     await more.core.apply(storageKey, () => ({
       data: data,
       error: undefined,
       time: time,
       cooldown: cooldown,
-      expiration: expiration,
-      optimistic: optimistic
-    }), mparams)
+      expiration: expiration
+    }), mparams, undefined, optimistic)
   }
 }

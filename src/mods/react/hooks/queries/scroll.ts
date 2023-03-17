@@ -160,17 +160,34 @@ export function useScrollQuery<D = unknown, K = string>(
 
   const state = stateRef.current
 
-  const { data, error, time, cooldown, expiration, aborter, realData } = state ?? {}
+  const { data, realData, error, time, cooldown, expiration, aborter, optimistic } = state ?? {}
 
   const ready = state !== null
-
-  const loading = Boolean(state?.aborter)
-  const optimistic = Boolean(state?.optimistic)
 
   const peek = useCallback(() => {
     const current = Arrays.tryLast(data)
     return scroller?.(current)
   }, [data, scroller])
 
-  return { key, storageKey, data, error, time, cooldown, expiration, aborter, optimistic, realData, loading, ready, mutate, fetch, refetch, scroll, clear, suspend, peek }
+  return {
+    key,
+    storageKey,
+    data,
+    realData,
+    error,
+    time,
+    cooldown,
+    expiration,
+    ready,
+    mutate,
+    fetch,
+    refetch,
+    scroll,
+    clear,
+    suspend,
+    peek,
+    aborter,
+    optimistic,
+    get loading() { return Boolean(this.aborter) },
+  }
 }
