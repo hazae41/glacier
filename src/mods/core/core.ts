@@ -15,7 +15,9 @@ export type Listener<D> =
 export class Core extends Ortho<string, State | undefined> {
 
   readonly #states = new Map<string, State>()
-  readonly #optimisers = new Map<string, Map<number, Mutator<any>>>()
+
+  readonly #keysByOptimiser = new Map<string, Set<string>>()
+  readonly #optimisersByKey = new Map<string, Map<string, Mutator<any>>>()
 
   readonly #counts = new Map<string, number>()
   readonly #timeouts = new Map<string, NodeJS.Timeout>()
@@ -52,7 +54,7 @@ export class Core extends Ortho<string, State | undefined> {
   optimistic(storageKey?: string) {
     if (!storageKey) return
 
-    const optimisers = this.#optimisers.get(storageKey)
+    const optimisers = this.#optimisersByKey.get(storageKey)
 
     return Boolean(optimisers?.size)
   }
@@ -210,6 +212,7 @@ export class Core extends Ortho<string, State | undefined> {
 
     this.#states.delete(storageKey)
     this.#mutexes.delete(storageKey)
+    this.#optimisersByKey.delete(storageKey)
     this.publish(storageKey, undefined)
 
     const { storage } = params
@@ -264,45 +267,55 @@ export class Core extends Ortho<string, State | undefined> {
 
     const current = await this.get(storageKey, params)
 
-    let optimisers = this.#optimisers.get(storageKey)
+    let optimisers = this.#optimisersByKey.get(storageKey)
 
     if (!optimisers) {
       optimisers = new Map()
-      this.#optimisers.set(storageKey, optimisers)
+      this.#optimisersByKey.set(storageKey, optimisers)
     }
 
-    if (optimistic?.action === "set")
-      optimisers.set(optimistic.value, mutator)
-    if (optimistic?.action === "unset")
-      optimisers.delete(optimistic.value)
+    if (optimistic) {
+      let keys = this.#keysByOptimiser.get(optimistic.uuid)
 
-    let next = current
+      if (optimistic.action === "set") {
+        optimisers.set(optimistic.uuid, mutator)
+
+        if (!keys) {
+          keys = new Set()
+          this.#keysByOptimiser.set(optimistic.uuid, keys)
+        }
+
+        keys.add(storageKey)
+      }
+
+      if (optimistic.action === "unset") {
+        optimisers.delete(optimistic.uuid)
+
+        if (keys) {
+          for (const key of keys) {
+            const suboptimisers = this.#optimisersByKey.get(key)
+            suboptimisers?.delete(optimistic.uuid)
+          }
+
+          this.#keysByOptimiser.delete(optimistic.uuid)
+        }
+      }
+    }
+
+    const mutated = mutator(current)
+    let next = { ...current, ...mutated }
 
     if (optimistic?.action !== "set") {
-      const mutated = mutator(current)
-
-      next = mutated
-        ? { ...next, ...mutated }
-        : undefined
+      for (const optimiser of optimisers.values()) {
+        const optimistic = optimiser(next)
+        next = { ...next, ...optimistic }
+      }
     }
 
-    for (const optimiser of optimisers.values()) {
-      const optimistic = optimiser(next)
-
-      next = optimistic
-        ? { ...next, ...optimistic }
-        : undefined
-    }
-
-    if (next === undefined) {
-      await this.delete(storageKey, params)
-      return
-    }
-
-    if (Time.isBefore(next?.time, current?.time))
+    if (Time.isBefore(next.time, current?.time))
       return current
 
-    next.data = await this.normalize(false, next, params, optimistic)
+    next.data = await this.normalize(next, params, optimistic)
 
     if (equals(next.data, current?.data))
       next.data = current?.data
@@ -318,18 +331,20 @@ export class Core extends Ortho<string, State | undefined> {
   }
 
   async normalize<D, K>(
-    shallow: boolean,
-    root: State<D>,
+    parent: State<D>,
     params: QueryParams<D, K> = {},
-    optimistic?: OptimisticParams
+    optimistic?: OptimisticParams,
+    more: { shallow?: boolean } = {}
   ) {
-    if (root.data === undefined)
+    const { shallow } = more
+
+    if (parent.data === undefined)
       return
 
     if (params.normalizer === undefined)
-      return root.data
+      return parent.data
 
-    return await params.normalizer(root.data, { core: this, shallow, root, optimistic })
+    return await params.normalizer(parent.data, { core: this, parent, optimistic, shallow })
   }
 
   once<D, K>(

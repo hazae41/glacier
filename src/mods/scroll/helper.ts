@@ -100,7 +100,7 @@ export namespace Scroll {
 
           const data = [result.data]
 
-          const normalized = await core.normalize(true, { data }, params)
+          const prenormalized = await core.normalize({ data }, params, undefined, { shallow: true })
 
           return (previous) => {
             const state: State<D[]> = {
@@ -110,7 +110,7 @@ export namespace Scroll {
               expiration: expiration,
             }
 
-            if (equals(normalized?.[0], previous?.data?.[0]))
+            if (equals(prenormalized?.[0], previous?.data?.[0]))
               state.data = current?.data
 
             return state

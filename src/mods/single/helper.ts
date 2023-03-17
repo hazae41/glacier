@@ -142,7 +142,7 @@ export namespace Single {
     if (updater === undefined)
       return current
 
-    const optimistic = Date.now()
+    const uuid = crypto.randomUUID()
 
     const {
       cooldown: dcooldown = DEFAULT_COOLDOWN,
@@ -181,10 +181,7 @@ export namespace Single {
             data: result.data,
             error: undefined
           }
-        }, params, {
-          action: "set",
-          value: optimistic
-        })
+        }, params, { action: "set", uuid })
       }
 
       if (final === undefined) {
@@ -221,20 +218,14 @@ export namespace Single {
         realTime: time,
         cooldown: cooldown,
         expiration: expiration
-      }), params, {
-        action: "unset",
-        value: optimistic
-      })
+      }), params, { action: "unset", uuid })
     } catch (error: unknown) {
       await core.apply(storageKey, (previous) => ({
         data: previous?.realData,
         time: previous?.realTime,
         cooldown: dcooldown,
         expiration: dexpiration
-      }), params, {
-        action: "unset",
-        value: optimistic
-      })
+      }), params, { action: "unset", uuid })
 
       throw error
     }

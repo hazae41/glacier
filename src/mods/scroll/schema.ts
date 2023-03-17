@@ -29,13 +29,13 @@ export class ScrollSchema<D = unknown, K = unknown> implements Schema<D[], K, Sc
   }
 
   async normalize(data: D[], more: NormalizerMore) {
-    const { core, shallow, root, optimistic } = more
+    const { core, parent, optimistic, shallow } = more
 
     if (shallow)
       return
 
     const { storageKey, mparams } = this.make(core)
-    const { time, cooldown, expiration } = root
+    const { time, cooldown, expiration } = parent
 
     await more.core.apply(storageKey, () => ({
       data: data,

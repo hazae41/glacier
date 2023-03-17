@@ -7,7 +7,7 @@ export type Normalizer<D = unknown> =
 
 export interface NormalizerMore {
   readonly core: Core,
-  readonly shallow: boolean,
-  readonly root: State,
+  readonly parent: State,
   readonly optimistic?: OptimisticParams
+  readonly shallow?: boolean,
 }

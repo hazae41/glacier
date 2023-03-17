@@ -19,5 +19,5 @@ export interface OptimisticDataInit<D = unknown> {
 
 export interface OptimisticParams {
   action: "set" | "unset",
-  value: number
+  uuid: string
 }
