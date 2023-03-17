@@ -107,10 +107,13 @@ export class Core extends Ortho<string, State | undefined> {
       if (mutated === undefined)
         return mutated
 
-      mutated.error = mutated.error
-
-      mutated.realData = mutated.data
-      mutated.realTime = mutated.time
+      if ("error" in mutated) {
+        mutated.error = mutated.error
+      } else {
+        mutated.realData = mutated.data
+        mutated.realTime = mutated.time
+        mutated.error = undefined
+      }
 
       mutated.aborter = undefined
 
@@ -235,10 +238,14 @@ export class Core extends Ortho<string, State | undefined> {
         return mutated
 
       mutated.time ??= Date.now()
-      mutated.error = mutated.error
 
-      mutated.realData = mutated.data
-      mutated.realTime = mutated.time
+      if ("error" in mutated) {
+        mutated.error = mutated.error
+      } else {
+        mutated.realData = mutated.data
+        mutated.realTime = mutated.time
+        mutated.error = undefined
+      }
 
       return mutated
     }, params)
