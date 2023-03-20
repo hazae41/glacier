@@ -32,7 +32,7 @@ export class Error implements ErrorInit {
     throw this.error
   }
 
-  map<M>(mutator: (data: any) => M) {
+  map(mutator: unknown) {
     return new Error(this.error, this.times)
   }
 
