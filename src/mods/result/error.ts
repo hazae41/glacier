@@ -1,13 +1,13 @@
 import { Times } from "./times.js"
 
-export interface ErrorInit extends Times {
-  readonly error: unknown
+export interface ErrorInit<E = unknown> extends Times {
+  readonly error: E
 }
 
-export class Error implements ErrorInit {
+export class Error<E = unknown> implements ErrorInit<E> {
 
   constructor(
-    readonly error: unknown,
+    readonly error: E,
     readonly times: Times = {}
   ) { }
 
@@ -32,8 +32,20 @@ export class Error implements ErrorInit {
     throw this.error
   }
 
-  map(mutator: unknown) {
-    return new Error(this.error, this.times)
+  map(mapper: unknown) {
+    return this
+  }
+
+  tryMap(mapper: unknown) {
+    return this
+  }
+
+  mapSync(mapper: unknown) {
+    return this
+  }
+
+  tryMapSync(mapper: unknown) {
+    return this
   }
 
 }

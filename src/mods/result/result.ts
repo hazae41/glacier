@@ -3,13 +3,13 @@ import { Data, DataInit } from "./data.js"
 import { Error, ErrorInit } from "./error.js"
 import { Times } from "./times.js"
 
-export type ResultInit<D> =
+export type ResultInit<D = unknown, E = unknown> =
   | DataInit<D>
-  | ErrorInit
+  | ErrorInit<E>
 
-export type Result<D> =
+export type Result<D = unknown, E = unknown> =
   | Data<D>
-  | Error
+  | Error<E>
 
 export namespace Result {
 
@@ -33,16 +33,24 @@ export namespace Result {
   }
 
   export async function wrap<D>(callback: () => Promiseable<D>, times: Times = {}) {
+    return new Data(await callback(), times)
+  }
+
+  export async function tryWrap<D>(callback: () => Promiseable<D>, times: Times = {}) {
     try {
-      return new Data(await callback(), times)
+      return await wrap(callback, times)
     } catch (error: unknown) {
       return new Error(error, times)
     }
   }
 
   export function wrapSync<D>(callback: () => D, times: Times = {}) {
+    return new Data(callback(), times)
+  }
+
+  export function tryWrapSync<D>(callback: () => D, times: Times = {}) {
     try {
-      return new Data(callback(), times)
+      return wrapSync(callback, times)
     } catch (error: unknown) {
       return new Error(error, times)
     }
