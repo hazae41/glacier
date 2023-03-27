@@ -1,5 +1,4 @@
 import { AsyncStorage } from "mods/storages/storage.js"
-import { Serializer } from "mods/types/serializer.js"
 import { State } from "mods/types/state.js"
 import { useEffect, useRef } from "react"
 
@@ -16,11 +15,11 @@ import { useEffect, useRef } from "react"
  * @see SyncLocalStorage
  * @see useFallback
  */
-export function useAsyncLocalStorage(prefix?: string, serializer?: Serializer) {
+export function useAsyncLocalStorage(prefix?: string) {
   const storage = useRef<AsyncLocalStorage>()
 
   if (storage.current === undefined)
-    storage.current = AsyncLocalStorage.create(prefix, serializer)
+    storage.current = AsyncLocalStorage.create(prefix)
 
   useEffect(() => () => {
     storage.current?.unmount().catch(console.error)
@@ -51,18 +50,17 @@ export class AsyncLocalStorage implements AsyncStorage {
   readonly #onunload: () => void
 
   constructor(
-    readonly prefix = "xswr:",
-    readonly serializer: Serializer = JSON
+    readonly prefix = "xswr:"
   ) {
     this.#onunload = () => this.collectSync()
     addEventListener("beforeunload", this.#onunload)
   }
 
-  static create(prefix?: string, serializer?: Serializer) {
+  static create(prefix?: string) {
     if (typeof Storage === "undefined")
       return
 
-    return new this(prefix, serializer)
+    return new this(prefix)
   }
 
   async unmount() {
@@ -86,7 +84,7 @@ export class AsyncLocalStorage implements AsyncStorage {
 
   async collect() {
     for (const key of this.keys) {
-      const state = await this.get<State>(key, true)
+      const state = await this.get(key, true)
 
       if (state?.expiration === undefined)
         continue
@@ -106,10 +104,10 @@ export class AsyncLocalStorage implements AsyncStorage {
     if (item === null)
       return
 
-    return this.serializer.parse(item) as T
+    return JSON.parse(item) as T
   }
 
-  async get<T>(key: string, shallow = false) {
+  async get<D>(key: string, shallow = false) {
     if (!shallow)
       this.keys.add(key)
 
@@ -118,14 +116,14 @@ export class AsyncLocalStorage implements AsyncStorage {
     if (item === null)
       return
 
-    return this.serializer.parse(item) as T
+    return JSON.parse(item) as State<D>
   }
 
-  async set<T>(key: string, value: T, shallow = false) {
+  async set<D>(key: string, value: State<D>, shallow = false) {
     if (!shallow)
       this.keys.add(key)
 
-    const item = this.serializer.stringify(value)
+    const item = JSON.stringify(value)
     localStorage.setItem(this.prefix + key, item)
   }
 

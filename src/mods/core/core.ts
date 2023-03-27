@@ -121,10 +121,10 @@ export class Core extends Ortho<string, State | undefined> {
 
     if (!storage)
       return undefined
-    if (storage.async)
+    if (storage.storage.async)
       return null
 
-    const state = storage.get<State<D>>(storageKey)
+    const state = storage.storage.get<D>(storageKey)
 
     if (state !== undefined)
       this.#states.set(storageKey, state)
@@ -150,12 +150,17 @@ export class Core extends Ortho<string, State | undefined> {
     if (!storage)
       return
 
-    const state = await storage.get<State<D>>(storageKey, ignore)
+    const state = await storage.storage.get<D>(storageKey, ignore)
 
-    if (state !== undefined)
-      this.#states.set(storageKey, state)
+    if (state === undefined)
+      return
 
-    return state
+    const { realData, realTime, cooldown, expiration } = state
+    const state2 = { realData, realTime, cooldown, expiration, data: realData, time: realTime }
+
+    this.#states.set(storageKey, state2)
+
+    return state2
   }
 
   /**
@@ -181,8 +186,8 @@ export class Core extends Ortho<string, State | undefined> {
     if (!storage)
       return
 
-    const { data, time, cooldown, expiration } = state
-    await storage.set(storageKey, { data, time, cooldown, expiration })
+    const { realData, realTime, cooldown, expiration } = state
+    await storage.storage.set(storageKey, { realData, realTime, cooldown, expiration })
   }
 
   /**
@@ -207,7 +212,7 @@ export class Core extends Ortho<string, State | undefined> {
     if (!storage)
       return
 
-    await storage.delete(storageKey)
+    await storage.storage.delete(storageKey)
   }
 
   async mutate<D, K>(

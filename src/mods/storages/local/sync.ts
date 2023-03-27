@@ -1,5 +1,4 @@
 import { SyncStorage } from "mods/storages/storage.js"
-import { Serializer } from "mods/types/serializer.js"
 import { State } from "mods/types/state.js"
 import { useEffect, useRef } from "react"
 
@@ -13,11 +12,11 @@ import { useEffect, useRef } from "react"
  * 
  * @see AsyncLocalStorage
  */
-export function useSyncLocalStorage(prefix?: string, serializer?: Serializer) {
+export function useSyncLocalStorage(prefix?: string) {
   const storage = useRef<SyncLocalStorage>()
 
   if (!storage.current)
-    storage.current = SyncLocalStorage.create(prefix, serializer)
+    storage.current = SyncLocalStorage.create(prefix)
 
   useEffect(() => () => {
     storage.current?.unmount().catch(console.error)
@@ -45,18 +44,17 @@ export class SyncLocalStorage implements SyncStorage {
   readonly #onunload: () => void
 
   constructor(
-    readonly prefix = "xswr:",
-    readonly serializer: Serializer = JSON
+    readonly prefix = "xswr:"
   ) {
     this.#onunload = () => this.collectSync()
     addEventListener("beforeunload", this.#onunload)
   }
 
-  static create(prefix?: string, serializer?: Serializer) {
+  static create(prefix?: string) {
     if (typeof Storage === "undefined")
       return
 
-    return new this(prefix, serializer)
+    return new this(prefix)
   }
 
   async unmount() {
@@ -91,7 +89,7 @@ export class SyncLocalStorage implements SyncStorage {
     }
   }
 
-  get<T>(key: string, shallow = false) {
+  get<D>(key: string, shallow = false) {
     if (!shallow)
       this.keys.add(key)
 
@@ -100,14 +98,14 @@ export class SyncLocalStorage implements SyncStorage {
     if (item === null)
       return
 
-    return this.serializer.parse(item) as T
+    return JSON.parse(item) as State<D>
   }
 
-  set<T>(key: string, value: T, shallow = false) {
+  set<D>(key: string, value: State<D>, shallow = false) {
     if (!shallow)
       this.keys.add(key)
 
-    const item = this.serializer.stringify(value)
+    const item = JSON.stringify(value)
     localStorage.setItem(this.prefix + key, item)
   }
 

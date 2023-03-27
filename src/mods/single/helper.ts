@@ -17,10 +17,10 @@ export namespace Single {
       return key
 
     const {
-      serializer = DEFAULT_SERIALIZER
+      keySerializer = DEFAULT_SERIALIZER
     } = params
 
-    return serializer.stringify(key)
+    return keySerializer.stringify(key)
   }
 
   /**

@@ -17,10 +17,10 @@ export namespace Scroll {
       return key
 
     const {
-      serializer = DEFAULT_SERIALIZER
+      keySerializer = DEFAULT_SERIALIZER
     } = params
 
-    return `scroll:${serializer.stringify(key)}`
+    return `scroll:${keySerializer.stringify(key)}`
   }
 
   /**

@@ -1,3 +1,6 @@
+import { Promiseable } from "libs/promises/promises.js"
+import { State } from "mods/types/state.js"
+
 export type Storage =
   | SyncStorage
   | AsyncStorage
@@ -21,7 +24,7 @@ export interface SyncStorage {
    * @param shallow true = won't add this key to the garbage collector
    * @returns 
    */
-  get<T>(key: string, shallow?: boolean): T | undefined
+  get<D>(key: string, shallow?: boolean): State<D> | undefined
 
   /**
    * Set the given data to the given key
@@ -30,7 +33,7 @@ export interface SyncStorage {
    * @param shallow true = won't add this key to the garbage collector
    * @returns 
    */
-  set<T>(key: string, value: T, shallow?: boolean): void
+  set<D>(key: string, value: State<D>, shallow?: boolean): void
 
   /**
    * Delete the given data from the given key
@@ -60,7 +63,7 @@ export interface AsyncStorage {
    * @param shallow true = won't add this key to the garbage collector
    * @returns 
    */
-  get<T>(key: string, shallow?: boolean): Promise<T | undefined>
+  get<D>(key: string, shallow?: boolean): Promiseable<State<D> | undefined>
 
   /**
    * Set the given data to the given key
@@ -69,7 +72,7 @@ export interface AsyncStorage {
    * @param shallow true = won't add this key to the garbage collector
    * @returns 
    */
-  set<T>(key: string, value: T, shallow?: boolean): Promise<void>
+  set<D>(key: string, value: State<D>, shallow?: boolean): Promiseable<void>
 
   /**
    * Delete the given data from the given key
@@ -77,5 +80,5 @@ export interface AsyncStorage {
    * @param shallow true = won't add this key to the garbage collector
    * @returns 
    */
-  delete(key: string, shallow?: boolean): Promise<void>
+  delete(key: string, shallow?: boolean): Promiseable<void>
 }

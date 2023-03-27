@@ -113,12 +113,12 @@ export class IDBStorage implements AsyncStorage {
     })
   }
 
-  async get<T>(key: string, shallow = false) {
+  async get<D>(key: string, shallow = false) {
     if (!shallow)
       this.keys.add(key)
 
     return await this.#transact(async (store) => {
-      return await new Promise<T>((ok, err) => {
+      return await new Promise<State<D>>((ok, err) => {
         const req = store.get(key)
 
         req.onerror = () => err(req.error)
@@ -127,7 +127,7 @@ export class IDBStorage implements AsyncStorage {
     }, "readonly")
   }
 
-  async set<T>(key: string, value: T, shallow = false) {
+  async set<D>(key: string, value: State<D>, shallow = false) {
     if (!shallow)
       this.keys.add(key)
 
