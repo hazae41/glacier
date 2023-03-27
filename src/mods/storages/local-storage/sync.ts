@@ -17,10 +17,10 @@ export function useSyncLocalStorage(prefix?: string, serializer?: Serializer) {
   const storage = useRef<SyncLocalStorage>()
 
   if (!storage.current)
-    storage.current = new SyncLocalStorage(prefix, serializer)
+    storage.current = SyncLocalStorage.create(prefix, serializer)
 
   useEffect(() => () => {
-    storage.current?.unmount()
+    storage.current?.unmount().catch(console.error)
   }, [])
 
   return storage.current
@@ -37,33 +37,35 @@ export function useSyncLocalStorage(prefix?: string, serializer?: Serializer) {
  * @see AsyncLocalStorage
  */
 export class SyncLocalStorage implements SyncStorage {
-  readonly async = false
+
+  readonly async = false as const
+
   readonly keys = new Set<string>()
-  readonly onunload?: () => void
+
+  readonly #onunload: () => void
 
   constructor(
     readonly prefix = "xswr:",
     readonly serializer: Serializer = JSON
   ) {
-    if (typeof Storage === "undefined")
-      return
-
-    this.onunload = () => this.collect()
-    addEventListener("beforeunload", this.onunload)
+    this.#onunload = () => this.collectSync()
+    addEventListener("beforeunload", this.#onunload)
   }
 
-  unmount() {
+  static create(prefix?: string, serializer?: Serializer) {
     if (typeof Storage === "undefined")
       return
 
-    removeEventListener("beforeunload", this.onunload!);
-    (async () => this.collect())().catch(console.error)
+    return new this(prefix, serializer)
   }
 
-  collect() {
-    if (typeof Storage === "undefined")
-      return
+  async unmount() {
+    removeEventListener("beforeunload", this.#onunload)
 
+    await this.collect()
+  }
+
+  collectSync() {
     for (const key of this.keys) {
       const state = this.get<State>(key, true)
 
@@ -72,41 +74,45 @@ export class SyncLocalStorage implements SyncStorage {
       if (state.expiration > Date.now())
         continue
 
-      this.delete(key, false)
+      this.delete(key)
     }
   }
 
-  get<T>(key: string, ignore = false) {
-    if (typeof Storage === "undefined")
-      return
+  async collect() {
+    for (const key of this.keys) {
+      const state = this.get<State>(key, true)
 
-    if (!ignore && !this.keys.has(key))
+      if (state?.expiration === undefined)
+        continue
+      if (state.expiration > Date.now())
+        continue
+
+      this.delete(key)
+    }
+  }
+
+  get<T>(key: string, shallow = false) {
+    if (!shallow)
       this.keys.add(key)
 
     const item = localStorage.getItem(this.prefix + key)
 
-    if (!item)
+    if (item === null)
       return
 
     return this.serializer.parse(item) as T
   }
 
-  set<T>(key: string, value: T, ignore = false) {
-    if (typeof Storage === "undefined")
-      return
-
-    if (!ignore && !this.keys.has(key))
+  set<T>(key: string, value: T, shallow = false) {
+    if (!shallow)
       this.keys.add(key)
 
     const item = this.serializer.stringify(value)
     localStorage.setItem(this.prefix + key, item)
   }
 
-  delete(key: string, ignore = false) {
-    if (typeof Storage === "undefined")
-      return
-
-    if (!ignore && this.keys.has(key))
+  delete(key: string, shallow = false) {
+    if (!shallow)
       this.keys.delete(key)
 
     localStorage.removeItem(this.prefix + key)

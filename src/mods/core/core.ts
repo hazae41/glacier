@@ -3,7 +3,6 @@ import { Ortho } from "libs/ortho/ortho.js"
 import { Time } from "libs/time/time.js"
 import { DEFAULT_EQUALS } from "mods/defaults.js"
 import { Equals } from "mods/equals/equals.js"
-import { isAsyncStorage } from "mods/storages/storage.js"
 import { FullMutator, Mutator } from "mods/types/mutator.js"
 import { OptimisticParams } from "mods/types/optimism.js"
 import { GlobalParams, QueryParams } from "mods/types/params.js"
@@ -122,7 +121,7 @@ export class Core extends Ortho<string, State | undefined> {
 
     if (!storage)
       return undefined
-    if (isAsyncStorage(storage))
+    if (storage.async)
       return null
 
     const state = storage.get<State<D>>(storageKey)
