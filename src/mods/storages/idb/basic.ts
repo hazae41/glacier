@@ -36,6 +36,8 @@ export class IDBStorage implements AsyncStorage {
   }
 
   static create(name?: string) {
+    if (typeof window === "undefined")
+      return
     if (typeof indexedDB === "undefined")
       return
 

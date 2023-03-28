@@ -52,6 +52,8 @@ export class SyncLocalStorage implements SyncStorage {
   }
 
   static create(prefix?: string) {
+    if (typeof window === "undefined")
+      return
     if (typeof Storage === "undefined")
       return
 

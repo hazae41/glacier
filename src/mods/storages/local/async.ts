@@ -58,6 +58,8 @@ export class AsyncLocalStorage implements AsyncStorage {
   }
 
   static create(prefix?: string) {
+    if (typeof window === "undefined")
+      return
     if (typeof Storage === "undefined")
       return
 
