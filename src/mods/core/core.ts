@@ -6,7 +6,7 @@ import { Equals } from "mods/equals/equals.js"
 import { FullMutator, Mutator } from "mods/types/mutator.js"
 import { OptimisticParams } from "mods/types/optimism.js"
 import { GlobalParams, QueryParams } from "mods/types/params.js"
-import { AsyncSerializer, SyncSerializer } from "mods/types/serializer.js"
+import { SyncSerializer } from "mods/types/serializer.js"
 import { State } from "mods/types/state.js"
 
 export type Listener<D> =
@@ -152,7 +152,7 @@ export class Core extends Ortho<string, State | undefined> {
       return
 
     const storedState = storage.storage.async
-      ? await storage.storage.get<D>(storageKey, storage.serializer as AsyncSerializer<State<D>>, ignore)
+      ? await storage.storage.get<D>(storageKey, storage.serializer, ignore)
       : storage.storage.get<D>(storageKey, storage.serializer as SyncSerializer<State<D>>, ignore)
 
     if (storedState === undefined)
@@ -193,9 +193,9 @@ export class Core extends Ortho<string, State | undefined> {
     const storageState = { realData, realTime, cooldown, expiration }
 
     if (storage.storage.async)
-      await storage.storage.set(storageKey, storageState, storage.serializer as AsyncSerializer<State<D>>);
+      await storage.storage.set(storageKey, storageState, storage.serializer)
     else
-      storage.storage.set(storageKey, storageState, storage.serializer as SyncSerializer<State<D>>);
+      storage.storage.set(storageKey, storageState, storage.serializer as SyncSerializer<State<D>>)
   }
 
   /**
