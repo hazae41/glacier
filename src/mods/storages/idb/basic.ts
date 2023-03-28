@@ -1,9 +1,9 @@
+import { AsyncSerializer } from "mods/serializers/serializer.js"
 import { AsyncStorage } from "mods/storages/storage.js"
-import { AsyncSerializer } from "mods/types/serializer.js"
 import { State } from "mods/types/state.js"
 import { useEffect, useRef } from "react"
 
-export function useIDBStorage(name: string) {
+export function useIDBStorage(name?: string) {
   const storage = useRef<IDBStorage>()
 
   if (storage.current === undefined)
@@ -26,14 +26,16 @@ export class IDBStorage implements AsyncStorage {
 
   #keys = new Map<string, number>()
 
-  constructor(readonly name: string) {
+  constructor(
+    readonly name = "xswr"
+  ) {
     this.#init = this.#load()
 
     this.#onunload = () => this.#unload()
     addEventListener("beforeunload", this.#onunload)
   }
 
-  static create(name: string) {
+  static create(name?: string) {
     if (typeof indexedDB === "undefined")
       return
 

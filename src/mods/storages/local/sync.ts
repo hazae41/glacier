@@ -1,5 +1,5 @@
+import { SyncSerializer } from "mods/serializers/serializer.js"
 import { SyncStorage } from "mods/storages/storage.js"
-import { SyncSerializer } from "mods/types/serializer.js"
 import { State } from "mods/types/state.js"
 import { useEffect, useRef } from "react"
 

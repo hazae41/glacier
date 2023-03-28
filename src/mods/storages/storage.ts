@@ -1,5 +1,5 @@
 import { Promiseable } from "libs/promises/promises.js"
-import { AsyncSerializer, SyncSerializer } from "mods/types/serializer.js"
+import { AsyncSerializer, SyncSerializer } from "mods/serializers/serializer.js"
 import { State } from "mods/types/state.js"
 
 export type Storage =

@@ -3,10 +3,10 @@ import { Ortho } from "libs/ortho/ortho.js"
 import { Time } from "libs/time/time.js"
 import { DEFAULT_EQUALS } from "mods/defaults.js"
 import { Equals } from "mods/equals/equals.js"
+import { SyncSerializer } from "mods/serializers/serializer.js"
 import { FullMutator, Mutator } from "mods/types/mutator.js"
 import { OptimisticParams } from "mods/types/optimism.js"
 import { GlobalParams, QueryParams } from "mods/types/params.js"
-import { SyncSerializer } from "mods/types/serializer.js"
 import { State } from "mods/types/state.js"
 
 export type Listener<D> =

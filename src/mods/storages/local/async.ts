@@ -1,4 +1,4 @@
-import { AsyncSerializer } from "mods/types/serializer.js"
+import { AsyncSerializer } from "mods/serializers/serializer.js"
 import { State } from "mods/types/state.js"
 import { useEffect, useRef } from "react"
 import { AsyncStorage } from "../storage.js"
