@@ -20,7 +20,7 @@ export class AesGcmSerializer {
       salt: salt,
       iterations: iterations,
       hash: "SHA-256"
-    }, hkdf, { name: "AES-GCM", length: 256 }, true, ["encrypt", "decrypt"])
+    }, hkdf, { name: "AES-GCM", length: 256 }, false, ["encrypt", "decrypt"])
 
     return new this(key)
   }
