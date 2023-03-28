@@ -397,7 +397,7 @@ export class Core extends Ortho<string, State | undefined> {
 
     if (current?.expiration === undefined)
       return
-    if (current?.expiration < 0)
+    if (current.expiration < 0)
       return
 
     const erase = async () => {
