@@ -125,6 +125,9 @@ export class IDBStorage implements AsyncStorage {
       })
     }, "readonly")
 
+    if (text === undefined)
+      return
+
     const state = await serializer.parse(text)
 
     if (state.expiration !== undefined)
