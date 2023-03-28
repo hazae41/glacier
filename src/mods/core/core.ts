@@ -151,19 +151,19 @@ export class Core extends Ortho<string, State | undefined> {
     if (!storage)
       return
 
-    const state = storage.storage.async
+    const storedState = storage.storage.async
       ? await storage.storage.get<D>(storageKey, storage.serializer as AsyncSerializer<State<D>>, ignore)
       : storage.storage.get<D>(storageKey, storage.serializer as SyncSerializer<State<D>>, ignore)
 
-    if (state === undefined)
+    if (storedState === undefined)
       return
 
-    const { realData, realTime, cooldown, expiration } = state
-    const state2 = { realData, realTime, cooldown, expiration, data: realData, time: realTime }
+    const { realData, realTime, cooldown, expiration } = storedState
+    const state = { data: realData, time: realTime, realData, realTime, cooldown, expiration }
 
-    this.#states.set(storageKey, state2)
+    this.#states.set(storageKey, state)
 
-    return state2
+    return state
   }
 
   /**
