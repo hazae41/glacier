@@ -1,7 +1,7 @@
-import { AsyncLocalStorage, AsyncSerializer, AsyncStringSerializer, SyncLocalStorage, SyncStringSerializer } from "index.js"
 import { Equalser } from "mods/equals/equals.js"
-import { IDBStorage } from "mods/storages/idb/basic.js"
+import { AsyncStorage, SyncStorage } from "mods/storages/storage.js"
 import { Normalizer } from "mods/types/normalizer.js"
+import { AsyncSerializer, SyncSerializer } from "./serializer.js"
 import { State } from "./state.js"
 
 export interface GlobalParams {
@@ -13,23 +13,17 @@ export interface GlobalParams {
 }
 
 export type StorageParams<D> =
-  | IDBStorageParams<D>
-  | AsyncLocalStorageParams<D>
-  | SyncLocalStorageParams<D>
+  | AsyncStorageParams<D>
+  | SyncStorageParams<D>
 
-export interface AsyncLocalStorageParams<D> {
-  readonly storage: AsyncLocalStorage
-  readonly serializer: AsyncStringSerializer<State<D>>
+export interface AsyncStorageParams<D> {
+  readonly storage: AsyncStorage
+  readonly serializer: AsyncSerializer<State<D>>
 }
 
-export interface SyncLocalStorageParams<D> {
-  readonly storage: SyncLocalStorage
-  readonly serializer: SyncStringSerializer<State<D>>
-}
-
-export interface IDBStorageParams<D> {
-  readonly storage: IDBStorage
-  readonly serializer: AsyncSerializer<State<D>, unknown>
+export interface SyncStorageParams<D> {
+  readonly storage: SyncStorage
+  readonly serializer: SyncSerializer<State<D>>
 }
 
 export interface QueryParams<D = unknown, K = unknown> {
@@ -38,7 +32,7 @@ export interface QueryParams<D = unknown, K = unknown> {
   readonly timeout?: number,
 
   readonly storage?: StorageParams<D>
-  readonly keySerializer?: SyncStringSerializer<K>,
+  readonly keySerializer?: SyncSerializer<K>,
   readonly normalizer?: Normalizer<D>
   readonly equals?: Equalser,
 }

@@ -1,4 +1,5 @@
 import { Promiseable } from "libs/promises/promises.js"
+import { AsyncSerializer, SyncSerializer } from "mods/types/serializer.js"
 import { State } from "mods/types/state.js"
 
 export type Storage =
@@ -24,7 +25,7 @@ export interface SyncStorage {
    * @param shallow true = won't add this key to the garbage collector
    * @returns 
    */
-  get<D>(key: string, shallow?: boolean): State<D> | undefined
+  get<D>(key: string, serializer: SyncSerializer<State<D>>, shallow?: boolean): State<D> | undefined
 
   /**
    * Set the given data to the given key
@@ -33,7 +34,7 @@ export interface SyncStorage {
    * @param shallow true = won't add this key to the garbage collector
    * @returns 
    */
-  set<D>(key: string, value: State<D>, shallow?: boolean): void
+  set<D>(key: string, value: State<D>, serializer: SyncSerializer<State<D>>, shallow?: boolean): void
 
   /**
    * Delete the given data from the given key
@@ -63,7 +64,7 @@ export interface AsyncStorage {
    * @param shallow true = won't add this key to the garbage collector
    * @returns 
    */
-  get<D>(key: string, shallow?: boolean): Promiseable<State<D> | undefined>
+  get<D>(key: string, serializer: AsyncSerializer<State<D>>, shallow?: boolean): Promiseable<State<D> | undefined>
 
   /**
    * Set the given data to the given key
@@ -72,7 +73,7 @@ export interface AsyncStorage {
    * @param shallow true = won't add this key to the garbage collector
    * @returns 
    */
-  set<D>(key: string, value: State<D>, shallow?: boolean): Promiseable<void>
+  set<D>(key: string, value: State<D>, serializer: AsyncSerializer<State<D>>, shallow?: boolean): Promiseable<void>
 
   /**
    * Delete the given data from the given key

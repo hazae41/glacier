@@ -1,6 +1,7 @@
-import { AsyncStorage } from "mods/storages/storage.js"
+import { AsyncSerializer } from "mods/types/serializer.js"
 import { State } from "mods/types/state.js"
 import { useEffect, useRef } from "react"
+import { AsyncStorage } from "../storage.js"
 
 /**
  * Asynchronous local storage
@@ -45,9 +46,9 @@ export class AsyncLocalStorage implements AsyncStorage {
 
   readonly async = true as const
 
-  readonly keys = new Set<string>()
-
   readonly #onunload: () => void
+
+  #keys = new Map<string, number>()
 
   constructor(
     readonly prefix = "xswr:"
@@ -69,67 +70,43 @@ export class AsyncLocalStorage implements AsyncStorage {
     await this.collect()
   }
 
-  collectSync() {
-    for (const key of this.keys) {
-      const state = this.getSync<State>(key, true)
-
-      if (state?.expiration === undefined)
-        continue
-      if (state.expiration > Date.now())
-        continue
-
-      this.delete(key)
-    }
-  }
-
   async collect() {
-    for (const key of this.keys) {
-      const state = await this.get(key, true)
+    this.collectSync()
+  }
 
-      if (state?.expiration === undefined)
+  collectSync() {
+    for (const [key, expiration] of this.#keys) {
+      if (expiration > Date.now())
         continue
-      if (state.expiration > Date.now())
-        continue
-
       this.delete(key)
     }
   }
 
-  getSync<T>(key: string, shallow = false) {
-    if (!shallow)
-      this.keys.add(key)
-
+  async get<D>(key: string, serializer: AsyncSerializer<State<D>>, shallow = false) {
     const item = localStorage.getItem(this.prefix + key)
 
     if (item === null)
       return
 
-    return JSON.parse(item) as T
+    const state = await serializer.parse(item)
+
+    if (!shallow && state.expiration !== undefined)
+      this.#keys.set(key, state.expiration)
+
+    return state
   }
 
-  async get<D>(key: string, shallow = false) {
-    if (!shallow)
-      this.keys.add(key)
+  async set<D>(key: string, state: State<D>, serializer: AsyncSerializer<State<D>>, shallow = false) {
+    if (!shallow && state.expiration !== undefined)
+      this.#keys.set(key, state.expiration)
 
-    const item = localStorage.getItem(this.prefix + key)
-
-    if (item === null)
-      return
-
-    return JSON.parse(item) as State<D>
-  }
-
-  async set<D>(key: string, value: State<D>, shallow = false) {
-    if (!shallow)
-      this.keys.add(key)
-
-    const item = JSON.stringify(value)
+    const item = await serializer.stringify(state)
     localStorage.setItem(this.prefix + key, item)
   }
 
   async delete(key: string, shallow = false) {
     if (!shallow)
-      this.keys.delete(key)
+      this.#keys.delete(key)
 
     localStorage.removeItem(this.prefix + key)
   }
