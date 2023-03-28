@@ -18,12 +18,12 @@ export type StorageParams<D> =
 
 export interface AsyncStorageParams<D> {
   readonly storage: AsyncStorage
-  readonly serializer: AsyncSerializer<State<D>>
+  readonly serializer?: AsyncSerializer<State<D>>
 }
 
 export interface SyncStorageParams<D> {
   readonly storage: SyncStorage
-  readonly serializer: SyncSerializer<State<D>>
+  readonly serializer?: SyncSerializer<State<D>>
 }
 
 export interface QueryParams<D = unknown, K = unknown> {

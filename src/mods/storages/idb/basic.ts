@@ -111,9 +111,9 @@ export class IDBStorage implements AsyncStorage {
     })
   }
 
-  async get<D>(key: string, serializer: AsyncSerializer<State<D>>, shallow = false) {
-    const state = await this.#transact(async (store) => {
-      return await new Promise<State<D>>((ok, err) => {
+  async get<D>(key: string, serializer: AsyncSerializer<State<D>> = JSON, shallow = false) {
+    const text = await this.#transact(async (store) => {
+      return await new Promise<string>((ok, err) => {
         const req = store.get(key)
 
         req.onerror = () => err(req.error)
@@ -121,19 +121,23 @@ export class IDBStorage implements AsyncStorage {
       })
     }, "readonly")
 
+    const state = await serializer.parse(text)
+
     if (!shallow && state.expiration !== undefined)
       this.#keys.set(key, state.expiration)
 
     return state
   }
 
-  async set<D>(key: string, state: State<D>, serializer: AsyncSerializer<State<D>>, shallow = false) {
+  async set<D>(key: string, state: State<D>, serializer: AsyncSerializer<State<D>> = JSON, shallow = false) {
     if (!shallow && state.expiration !== undefined)
       this.#keys.set(key, state.expiration)
 
+    const text = await serializer.stringify(state)
+
     return await this.#transact(async (store) => {
       return await new Promise<void>((ok, err) => {
-        const req = store.put(state, key)
+        const req = store.put(text, key)
 
         req.onerror = () => err(req.error)
         req.onsuccess = () => ok()

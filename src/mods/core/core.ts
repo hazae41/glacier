@@ -136,7 +136,7 @@ export class Core extends Ortho<string, State | undefined> {
   async get<D, K>(
     storageKey: string | undefined,
     params: QueryParams<D, K> = {},
-    ignore = false
+    shallow = false
   ): Promise<State<D> | undefined> {
     if (storageKey === undefined)
       return
@@ -152,8 +152,8 @@ export class Core extends Ortho<string, State | undefined> {
       return
 
     const storedState = storage.storage.async
-      ? await storage.storage.get<D>(storageKey, storage.serializer, ignore)
-      : storage.storage.get<D>(storageKey, storage.serializer as SyncSerializer<State<D>>, ignore)
+      ? await storage.storage.get<D>(storageKey, storage.serializer, shallow)
+      : storage.storage.get<D>(storageKey, storage.serializer as SyncSerializer<State<D>>, shallow)
 
     if (storedState === undefined)
       return

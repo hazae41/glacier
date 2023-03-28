@@ -76,7 +76,7 @@ export class SyncLocalStorage implements SyncStorage {
     }
   }
 
-  get<D>(key: string, serializer: SyncSerializer<State<D>>, shallow = false) {
+  get<D>(key: string, serializer: SyncSerializer<State<D>> = JSON, shallow = false) {
     const item = localStorage.getItem(this.prefix + key)
 
     if (item === null)
@@ -90,7 +90,7 @@ export class SyncLocalStorage implements SyncStorage {
     return state
   }
 
-  set<D>(key: string, state: State<D>, serializer: SyncSerializer<State<D>>, shallow = false) {
+  set<D>(key: string, state: State<D>, serializer: SyncSerializer<State<D>> = JSON, shallow = false) {
     if (!shallow && state.expiration !== undefined)
       this.#keys.set(key, state.expiration)
 

@@ -82,7 +82,7 @@ export class AsyncLocalStorage implements AsyncStorage {
     }
   }
 
-  async get<D>(key: string, serializer: AsyncSerializer<State<D>>, shallow = false) {
+  async get<D>(key: string, serializer: AsyncSerializer<State<D>> = JSON, shallow = false) {
     const item = localStorage.getItem(this.prefix + key)
 
     if (item === null)
@@ -96,7 +96,7 @@ export class AsyncLocalStorage implements AsyncStorage {
     return state
   }
 
-  async set<D>(key: string, state: State<D>, serializer: AsyncSerializer<State<D>>, shallow = false) {
+  async set<D>(key: string, state: State<D>, serializer: AsyncSerializer<State<D>> = JSON, shallow = false) {
     if (!shallow && state.expiration !== undefined)
       this.#keys.set(key, state.expiration)
 
