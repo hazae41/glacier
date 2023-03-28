@@ -135,8 +135,7 @@ export class Core extends Ortho<string, State | undefined> {
 
   async get<D, K>(
     storageKey: string | undefined,
-    params: QueryParams<D, K> = {},
-    shallow = false
+    params: QueryParams<D, K> = {}
   ): Promise<State<D> | undefined> {
     if (storageKey === undefined)
       return
@@ -152,8 +151,8 @@ export class Core extends Ortho<string, State | undefined> {
       return
 
     const storedState = storage.storage.async
-      ? await storage.storage.get<D>(storageKey, storage.serializer, shallow)
-      : storage.storage.get<D>(storageKey, storage.serializer as SyncSerializer<State<D>>, shallow)
+      ? await storage.storage.get<D>(storageKey, storage.serializer)
+      : storage.storage.get<D>(storageKey, storage.serializer as SyncSerializer<State<D>>)
 
     if (storedState === undefined)
       return
@@ -351,50 +350,50 @@ export class Core extends Ortho<string, State | undefined> {
   }
 
   on<D, K>(
-    key: string | undefined,
+    storageKey: string | undefined,
     listener: Listener<D>,
     params: QueryParams<D, K> = {}
   ) {
-    if (!key)
+    if (!storageKey)
       return
 
-    super.on(key, listener as Listener<unknown>)
+    super.on(storageKey, listener as Listener<unknown>)
 
-    const count = this.#counts.get(key) ?? 0
-    this.#counts.set(key, count + 1)
+    const count = this.#counts.get(storageKey) ?? 0
+    this.#counts.set(storageKey, count + 1)
 
-    const timeout = this.#timeouts.get(key)
+    const timeout = this.#timeouts.get(storageKey)
 
     if (timeout === undefined)
       return
 
     clearTimeout(timeout)
-    this.#timeouts.delete(key)
+    this.#timeouts.delete(storageKey)
   }
 
   async off<D, K>(
-    key: string | undefined,
+    storageKey: string | undefined,
     listener: Listener<D>,
     params: QueryParams<D, K> = {}
   ) {
-    if (!key)
+    if (!storageKey)
       return
 
-    super.off(key, listener as Listener<unknown>)
+    super.off(storageKey, listener as Listener<unknown>)
 
-    const count = this.#counts.get(key)
+    const count = this.#counts.get(storageKey)
 
     if (count === undefined)
       throw new Error("Undefined count")
 
     if (count > 1) {
-      this.#counts.set(key, count - 1)
+      this.#counts.set(storageKey, count - 1)
       return
     }
 
-    this.#counts.delete(key)
+    this.#counts.delete(storageKey)
 
-    const current = await this.get(key, params, true)
+    const current = this.#states.get(storageKey)
 
     if (current?.expiration === undefined)
       return
@@ -405,13 +404,13 @@ export class Core extends Ortho<string, State | undefined> {
       if (!this.#mounted)
         return
 
-      const count = this.#counts.get(key)
+      const count = this.#counts.get(storageKey)
 
       if (count !== undefined)
         return
 
-      this.#timeouts.delete(key)
-      await this.delete(key, params)
+      this.#timeouts.delete(storageKey)
+      await this.delete(storageKey, params)
     }
 
     if (Date.now() > current.expiration) {
@@ -421,6 +420,6 @@ export class Core extends Ortho<string, State | undefined> {
 
     const delay = current.expiration - Date.now()
     const timeout = setTimeout(erase, delay)
-    this.#timeouts.set(key, timeout)
+    this.#timeouts.set(storageKey, timeout)
   }
 }

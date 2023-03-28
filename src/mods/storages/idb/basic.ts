@@ -111,7 +111,7 @@ export class IDBStorage implements AsyncStorage {
     })
   }
 
-  async get<D>(key: string, serializer: AsyncSerializer<State<D>> = JSON, shallow = false) {
+  async get<D>(key: string, serializer: AsyncSerializer<State<D>> = JSON) {
     const text = await this.#transact(async (store) => {
       return await new Promise<string>((ok, err) => {
         const req = store.get(key)
@@ -123,14 +123,14 @@ export class IDBStorage implements AsyncStorage {
 
     const state = await serializer.parse(text)
 
-    if (!shallow && state.expiration !== undefined)
+    if (state.expiration !== undefined)
       this.#keys.set(key, state.expiration)
 
     return state
   }
 
-  async set<D>(key: string, state: State<D>, serializer: AsyncSerializer<State<D>> = JSON, shallow = false) {
-    if (!shallow && state.expiration !== undefined)
+  async set<D>(key: string, state: State<D>, serializer: AsyncSerializer<State<D>> = JSON) {
+    if (state.expiration !== undefined)
       this.#keys.set(key, state.expiration)
 
     const text = await serializer.stringify(state)
@@ -145,9 +145,8 @@ export class IDBStorage implements AsyncStorage {
     }, "readwrite")
   }
 
-  async delete(key: string, shallow = false) {
-    if (!shallow)
-      this.#keys.delete(key)
+  async delete(key: string) {
+    this.#keys.delete(key)
 
     return await this.#transact(async (store) => {
       return await new Promise<void>((ok, err) => {
