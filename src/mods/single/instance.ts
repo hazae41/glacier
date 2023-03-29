@@ -14,7 +14,7 @@ export class SingleInstance<D = unknown, K = unknown> implements Instance<D, K> 
 
   readonly mparams: QueryParams<D, K>
 
-  readonly storageKey: string | undefined
+  readonly cacheKey: string | undefined
 
   #init: Promise<State<D> | undefined>
 
@@ -28,7 +28,7 @@ export class SingleInstance<D = unknown, K = unknown> implements Instance<D, K> 
   ) {
     this.mparams = { ...core.params, ...this.params }
 
-    this.storageKey = Single.getStorageKey<D, K>(key, this.params)
+    this.cacheKey = Single.getCacheKey<D, K>(key, this.params)
 
     this.#loadSync()
     this.#subscribe()
@@ -49,60 +49,60 @@ export class SingleInstance<D = unknown, K = unknown> implements Instance<D, K> 
   }
 
   async #load() {
-    const { core, storageKey, mparams } = this
+    const { core, cacheKey, mparams } = this
 
-    return this.#state = await core.get(storageKey, mparams)
+    return this.#state = await core.get(cacheKey, mparams)
   }
 
   #loadSync() {
-    const { core, storageKey, mparams } = this
+    const { core, cacheKey, mparams } = this
 
-    return this.#state = core.getSync<D, K>(storageKey, mparams)
+    return this.#state = core.getSync<D, K>(cacheKey, mparams)
   }
 
   #subscribe() {
-    const { core, storageKey } = this
+    const { core, cacheKey } = this
 
     const setter = (state?: State<D>) =>
       this.#state = state
 
-    core.on(this.storageKey, setter)
+    core.on(this.cacheKey, setter)
 
     new FinalizationRegistry(() => {
-      core.off(storageKey, setter)
+      core.off(cacheKey, setter)
     }).register(this, undefined)
   }
 
   async mutate(mutator: Mutator<D>) {
-    const { core, storageKey, mparams } = this
+    const { core, cacheKey, mparams } = this
 
-    return this.#state = await core.mutate(storageKey, mutator, mparams)
+    return this.#state = await core.mutate(cacheKey, mutator, mparams)
   }
 
   async fetch(aborter?: AbortController) {
-    const { core, key, storageKey, fetcher, mparams } = this
+    const { core, key, cacheKey, fetcher, mparams } = this
 
-    return this.#state = await Single.fetch(core, key, storageKey, fetcher, aborter, mparams)
+    return this.#state = await Single.fetch(core, key, cacheKey, fetcher, aborter, mparams)
   }
 
   async refetch(aborter?: AbortController) {
-    const { core, key, storageKey, fetcher, mparams } = this
+    const { core, key, cacheKey, fetcher, mparams } = this
 
-    return this.#state = await Single.fetch(core, key, storageKey, fetcher, aborter, mparams, true, true)
+    return this.#state = await Single.fetch(core, key, cacheKey, fetcher, aborter, mparams, true, true)
   }
 
   async update(updater: Updater<D>, uparams: UpdaterParams = {}, aborter?: AbortController) {
-    const { core, key, storageKey, fetcher, mparams } = this
+    const { core, key, cacheKey, fetcher, mparams } = this
 
     const fparams = { ...mparams, ...uparams }
 
-    return this.#state = await Single.update(core, key, storageKey, fetcher, updater, aborter, fparams)
+    return this.#state = await Single.update(core, key, cacheKey, fetcher, updater, aborter, fparams)
   }
 
   async clear() {
-    const { core, storageKey, mparams } = this
+    const { core, cacheKey, mparams } = this
 
-    await core.delete(storageKey, mparams)
+    await core.delete(cacheKey, mparams)
     this.#state = undefined
   }
 }

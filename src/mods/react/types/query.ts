@@ -8,9 +8,9 @@ export interface Query<D = unknown, K = unknown> {
   key?: K
 
   /**
-   * Storage key, basically a serialized version of key
+   * Cache key, the serialized version of key
    */
-  storageKey?: string,
+  cacheKey?: string,
 
   /**
    * Data, if any

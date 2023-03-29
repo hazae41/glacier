@@ -1,10 +1,20 @@
 import { Promiseable } from "libs/promises/promises.js"
-import { AsyncSerializer, SyncSerializer } from "mods/serializers/serializer.js"
+import { AsyncCoder, AsyncEncoder, SyncCoder, SyncEncoder } from "mods/serializers/serializer.js"
 import { State } from "mods/types/state.js"
 
 export type Storage =
   | SyncStorage
   | AsyncStorage
+
+export interface SyncStorageParams<D> {
+  readonly keySerializer?: SyncEncoder<string>,
+  readonly valueSerializer?: SyncCoder<State<D>>
+}
+
+export interface AsyncStorageParams<D> {
+  readonly keySerializer?: AsyncEncoder<string>,
+  readonly valueSerializer?: AsyncCoder<State<D>>
+}
 
 export interface SyncStorage {
   async: false
@@ -25,7 +35,7 @@ export interface SyncStorage {
    * @param shallow true = won't add this key to the garbage collector
    * @returns 
    */
-  get<D>(key: string, serializer?: SyncSerializer<State<D>>): State<D> | undefined
+  get<D>(key: string, params?: SyncStorageParams<D>): State<D> | undefined
 
   /**
    * Set the given data to the given key
@@ -34,7 +44,7 @@ export interface SyncStorage {
    * @param shallow true = won't add this key to the garbage collector
    * @returns 
    */
-  set<D>(key: string, value: State<D>, serializer?: SyncSerializer<State<D>>): void
+  set<D>(key: string, value: State<D>, params?: SyncStorageParams<D>): void
 
   /**
    * Delete the given data from the given key
@@ -42,7 +52,7 @@ export interface SyncStorage {
    * @param shallow true = won't add this key to the garbage collector
    * @returns 
    */
-  delete(key: string): void
+  delete<D>(key: string, params?: SyncStorageParams<D>): void
 }
 
 export interface AsyncStorage {
@@ -64,7 +74,7 @@ export interface AsyncStorage {
    * @param shallow true = won't add this key to the garbage collector
    * @returns 
    */
-  get<D>(key: string, serializer?: AsyncSerializer<State<D>>): Promiseable<State<D> | undefined>
+  get<D>(key: string, params?: AsyncStorageParams<D>): Promiseable<State<D> | undefined>
 
   /**
    * Set the given data to the given key
@@ -73,7 +83,7 @@ export interface AsyncStorage {
    * @param shallow true = won't add this key to the garbage collector
    * @returns 
    */
-  set<D>(key: string, value: State<D>, serializer?: AsyncSerializer<State<D>>): Promiseable<void>
+  set<D>(key: string, value: State<D>, params?: AsyncStorageParams<D>): Promiseable<void>
 
   /**
    * Delete the given data from the given key
@@ -81,5 +91,5 @@ export interface AsyncStorage {
    * @param shallow true = won't add this key to the garbage collector
    * @returns 
    */
-  delete(key: string): Promiseable<void>
+  delete<D>(key: string, params?: AsyncStorageParams<D>): Promiseable<void>
 }

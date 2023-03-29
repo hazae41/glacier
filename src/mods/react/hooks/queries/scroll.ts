@@ -62,8 +62,8 @@ export function useScrollQuery<D = unknown, K = string>(
     return scroller?.()
   }, [scroller])
 
-  const storageKey = useMemo(() => {
-    return Scroll.getStorageKey<D[], K>(key, paramsRef.current)
+  const cacheKey = useMemo(() => {
+    return Scroll.getCacheKey<D[], K>(key, paramsRef.current)
   }, [key])
 
   const [, setCounter] = useState(0)
@@ -71,8 +71,8 @@ export function useScrollQuery<D = unknown, K = string>(
   const stateRef = useRef<State<D[]> | null>()
 
   useMemo(() => {
-    stateRef.current = core.getSync<D[], K>(storageKey, paramsRef.current)
-  }, [core, storageKey])
+    stateRef.current = core.getSync<D[], K>(cacheKey, paramsRef.current)
+  }, [core, cacheKey])
 
   const setState = useCallback((state?: State<D[]>) => {
     stateRef.current = state
@@ -83,16 +83,16 @@ export function useScrollQuery<D = unknown, K = string>(
     if (stateRef.current !== null)
       return
 
-    core.get<D[], K>(storageKey, paramsRef.current).then(setState)
-  }, [core, storageKey])
+    core.get<D[], K>(cacheKey, paramsRef.current).then(setState)
+  }, [core, cacheKey])
 
   useEffect(() => {
-    if (!storageKey)
+    if (!cacheKey)
       return
 
-    core.on(storageKey, setState, paramsRef.current)
-    return () => void core.off(storageKey, setState, paramsRef.current)
-  }, [core, storageKey])
+    core.on(cacheKey, setState, paramsRef.current)
+    return () => void core.off(cacheKey, setState, paramsRef.current)
+  }, [core, cacheKey])
 
   const mutate = useCallback(async (mutator: Mutator<D[]>) => {
     if (typeof window === "undefined")
@@ -100,15 +100,15 @@ export function useScrollQuery<D = unknown, K = string>(
 
     const params = paramsRef.current
 
-    return await core.mutate(storageKey, mutator, params)
-  }, [core, storageKey])
+    return await core.mutate(cacheKey, mutator, params)
+  }, [core, cacheKey])
 
   const clear = useCallback(async () => {
     if (typeof window === "undefined")
       throw new Error("Can't clear on SSR")
 
-    await core.delete(storageKey, paramsRef.current)
-  }, [core, storageKey])
+    await core.delete(cacheKey, paramsRef.current)
+  }, [core, cacheKey])
 
   const fetch = useCallback(async (aborter?: AbortController) => {
     if (typeof window === "undefined")
@@ -118,8 +118,8 @@ export function useScrollQuery<D = unknown, K = string>(
     const fetcher = fetcherRef.current
     const params = paramsRef.current
 
-    return await Scroll.first(core, scroller, storageKey, fetcher, aborter, params)
-  }, [core, storageKey])
+    return await Scroll.first(core, scroller, cacheKey, fetcher, aborter, params)
+  }, [core, cacheKey])
 
   const refetch = useCallback(async (aborter?: AbortController) => {
     if (typeof window === "undefined")
@@ -129,8 +129,8 @@ export function useScrollQuery<D = unknown, K = string>(
     const fetcher = fetcherRef.current
     const params = paramsRef.current
 
-    return await Scroll.first(core, scroller, storageKey, fetcher, aborter, params, true, true)
-  }, [core, storageKey])
+    return await Scroll.first(core, scroller, cacheKey, fetcher, aborter, params, true, true)
+  }, [core, cacheKey])
 
   const scroll = useCallback(async (aborter?: AbortController) => {
     if (typeof window === "undefined")
@@ -140,8 +140,8 @@ export function useScrollQuery<D = unknown, K = string>(
     const fetcher = fetcherRef.current
     const params = paramsRef.current
 
-    return await Scroll.scroll(core, scroller, storageKey, fetcher, aborter, params, true, true)
-  }, [core, storageKey])
+    return await Scroll.scroll(core, scroller, cacheKey, fetcher, aborter, params, true, true)
+  }, [core, cacheKey])
 
   const suspend = useCallback(() => {
     if (typeof window === "undefined")
@@ -152,11 +152,11 @@ export function useScrollQuery<D = unknown, K = string>(
       const fetcher = fetcherRef.current
       const params = paramsRef.current
 
-      const background = new Promise<void>(ok => core.once(storageKey, () => ok(), params))
-      await Scroll.first(core, scroller, storageKey, fetcher, undefined, params, false, true)
+      const background = new Promise<void>(ok => core.once(cacheKey, () => ok(), params))
+      await Scroll.first(core, scroller, cacheKey, fetcher, undefined, params, false, true)
       await background
     })()
-  }, [core, storageKey])
+  }, [core, cacheKey])
 
   const state = stateRef.current
 
@@ -171,7 +171,7 @@ export function useScrollQuery<D = unknown, K = string>(
 
   return {
     key,
-    storageKey,
+    cacheKey,
     data,
     realData,
     error,

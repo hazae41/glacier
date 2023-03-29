@@ -10,7 +10,7 @@ import { State } from "mods/types/state.js";
 
 export namespace Scroll {
 
-  export function getStorageKey<D, K>(key: K | undefined, params: QueryParams<D, K>) {
+  export function getCacheKey<D, K>(key: K | undefined, params: QueryParams<D, K>) {
     if (key === undefined)
       return undefined
     if (typeof key === "string")
@@ -25,7 +25,7 @@ export namespace Scroll {
 
   /**
    * Fetch first page
-   * @param storageKey Storage key
+   * @param cacheKey Storage key
    * @param scroller Key scroller
    * @param fetcher Resource fetcher
    * @param aborter AbortController
@@ -37,14 +37,14 @@ export namespace Scroll {
   export async function first<D, K>(
     core: Core,
     scroller: Scroller<D, K> | undefined,
-    storageKey: string | undefined,
+    cacheKey: string | undefined,
     fetcher: Fetcher<D, K> | undefined,
     aborter = new AbortController(),
     params: QueryParams<D[], K> = {},
     replacePending = false,
     ignoreCooldown = false
   ): Promise<State<D[]> | undefined> {
-    if (storageKey === undefined)
+    if (cacheKey === undefined)
       return
 
     const {
@@ -54,8 +54,8 @@ export namespace Scroll {
       timeout: dtimeout = DEFAULT_TIMEOUT,
     } = params
 
-    return await core.lock(storageKey, async () => {
-      const current = await core.get(storageKey, params)
+    return await core.lock(cacheKey, async () => {
+      const current = await core.get(cacheKey, params)
 
       if (scroller === undefined)
         return current
@@ -70,7 +70,7 @@ export namespace Scroll {
       if (key === undefined)
         return current
 
-      return await core.run<D[], K>(storageKey, async () => {
+      return await core.run<D[], K>(cacheKey, async () => {
 
         const timeout = setTimeout(() => {
           aborter.abort("First timed out")
@@ -130,7 +130,7 @@ export namespace Scroll {
 
   /**
    * Scroll to the next page
-   * @param storageKey Storage key
+   * @param cacheKey Storage key
    * @param scroller Key scroller
    * @param fetcher Resource fetcher
    * @param aborter AbortController
@@ -141,14 +141,14 @@ export namespace Scroll {
   export async function scroll<D, K>(
     core: Core,
     scroller: Scroller<D, K> | undefined,
-    storageKey: string | undefined,
+    cacheKey: string | undefined,
     fetcher: Fetcher<D, K> | undefined,
     aborter = new AbortController(),
     params: QueryParams<D[], K> = {},
     replacePending = false,
     ignoreCooldown = false
   ): Promise<State<D[]> | undefined> {
-    if (storageKey === undefined)
+    if (cacheKey === undefined)
       return
 
     const {
@@ -157,8 +157,8 @@ export namespace Scroll {
       timeout: dtimeout = DEFAULT_TIMEOUT,
     } = params
 
-    return await core.lock(storageKey, async () => {
-      const current = await core.get(storageKey, params)
+    return await core.lock(cacheKey, async () => {
+      const current = await core.get(cacheKey, params)
 
       if (scroller === undefined)
         return current
@@ -175,7 +175,7 @@ export namespace Scroll {
       if (Time.isAfterNow(current?.cooldown) && !ignoreCooldown)
         return current
 
-      return await core.run<D[], K>(storageKey, async () => {
+      return await core.run<D[], K>(cacheKey, async () => {
 
         const timeout = setTimeout(() => {
           aborter.abort("Scroll timed out")

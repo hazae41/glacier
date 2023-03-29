@@ -3,10 +3,9 @@ import { Ortho } from "libs/ortho/ortho.js"
 import { Time } from "libs/time/time.js"
 import { DEFAULT_EQUALS } from "mods/defaults.js"
 import { Equals } from "mods/equals/equals.js"
-import { SyncSerializer } from "mods/serializers/serializer.js"
 import { FullMutator, Mutator } from "mods/types/mutator.js"
 import { OptimisticParams } from "mods/types/optimism.js"
-import { GlobalParams, QueryParams } from "mods/types/params.js"
+import { GlobalParams, QueryParams, SyncStorageQueryParams } from "mods/types/params.js"
 import { State } from "mods/types/state.js"
 
 export type Listener<D> =
@@ -45,19 +44,19 @@ export class Core extends Ortho<string, State | undefined> {
   }
 
   async lock<T>(
-    storageKey: string,
+    cacheKey: string,
     callback: () => Promise<T>,
     aborter = new AbortController(),
     replacePending = false
   ) {
-    let mutex = this.#mutexes.get(storageKey)
+    let mutex = this.#mutexes.get(cacheKey)
 
     if (mutex === undefined) {
       mutex = new Mutex()
-      this.#mutexes.set(storageKey, mutex)
+      this.#mutexes.set(cacheKey, mutex)
     }
 
-    const pending = this.#aborters.get(storageKey)
+    const pending = this.#aborters.get(cacheKey)
 
     if (pending)
       if (replacePending)
@@ -66,27 +65,27 @@ export class Core extends Ortho<string, State | undefined> {
         return
 
     return await mutex.lock(async () => {
-      this.#aborters.set(storageKey, aborter)
+      this.#aborters.set(cacheKey, aborter)
 
       const result = await callback()
 
-      this.#aborters.delete(storageKey)
+      this.#aborters.delete(cacheKey)
 
       return result
     })
   }
 
   async run<D, K>(
-    storageKey: string,
+    cacheKey: string,
     callback: () => Promise<Mutator<D>>,
     aborter: AbortController,
     params: QueryParams<D, K> = {},
   ) {
-    await this.apply(storageKey, () => ({ aborter }), params)
+    await this.apply(cacheKey, () => ({ aborter }), params)
 
     const mutator = await callback()
 
-    return await this.apply(storageKey, (previous) => {
+    return await this.apply(cacheKey, (previous) => {
       const mutated: State<D> | undefined = mutator(previous)
 
       if (mutated === undefined)
@@ -107,14 +106,14 @@ export class Core extends Ortho<string, State | undefined> {
   }
 
   getSync<D, K>(
-    storageKey: string | undefined,
+    cacheKey: string | undefined,
     params: QueryParams<D, K> = {}
   ): State<D> | undefined | null {
-    if (storageKey === undefined)
+    if (cacheKey === undefined)
       return
 
-    if (this.#states.has(storageKey)) {
-      const cached = this.#states.get(storageKey)
+    if (this.#states.has(cacheKey)) {
+      const cached = this.#states.get(cacheKey)
       return cached as State<D>
     }
 
@@ -125,23 +124,23 @@ export class Core extends Ortho<string, State | undefined> {
     if (storage.storage.async)
       return null
 
-    const state = storage.storage.get<D>(storageKey, storage.serializer as SyncSerializer<State<D>>)
+    const state = storage.storage.get<D>(cacheKey, storage as SyncStorageQueryParams<D>)
 
     if (state !== undefined)
-      this.#states.set(storageKey, state)
+      this.#states.set(cacheKey, state)
 
     return state
   }
 
   async get<D, K>(
-    storageKey: string | undefined,
+    cacheKey: string | undefined,
     params: QueryParams<D, K> = {}
   ): Promise<State<D> | undefined> {
-    if (storageKey === undefined)
+    if (cacheKey === undefined)
       return
 
-    if (this.#states.has(storageKey)) {
-      const cached = this.#states.get(storageKey)
+    if (this.#states.has(cacheKey)) {
+      const cached = this.#states.get(cacheKey)
       return cached as State<D>
     }
 
@@ -151,8 +150,8 @@ export class Core extends Ortho<string, State | undefined> {
       return
 
     const storedState = storage.storage.async
-      ? await storage.storage.get<D>(storageKey, storage.serializer)
-      : storage.storage.get<D>(storageKey, storage.serializer as SyncSerializer<State<D>>)
+      ? await storage.storage.get<D>(cacheKey, storage)
+      : storage.storage.get<D>(cacheKey, storage as SyncStorageQueryParams<D>)
 
     if (storedState === undefined)
       return
@@ -160,7 +159,7 @@ export class Core extends Ortho<string, State | undefined> {
     const { realData, realTime, cooldown, expiration } = storedState
     const state = { data: realData, time: realTime, realData, realTime, cooldown, expiration }
 
-    this.#states.set(storageKey, state)
+    this.#states.set(cacheKey, state)
 
     return state
   }
@@ -168,20 +167,20 @@ export class Core extends Ortho<string, State | undefined> {
   /**
    * Force set a key to a state and publish it
    * No check, no merge
-   * @param storageKey Key
+   * @param cacheKey Key
    * @param state New state
    * @returns 
    */
   async set<D, K>(
-    storageKey: string | undefined,
+    cacheKey: string | undefined,
     state: State<D>,
     params: QueryParams<D, K> = {}
   ) {
-    if (storageKey === undefined)
+    if (cacheKey === undefined)
       return
 
-    this.#states.set(storageKey, state)
-    this.publish(storageKey, state)
+    this.#states.set(cacheKey, state)
+    this.publish(cacheKey, state)
 
     const { storage } = params
 
@@ -192,42 +191,42 @@ export class Core extends Ortho<string, State | undefined> {
     const storageState = { realData, realTime, cooldown, expiration }
 
     if (storage.storage.async)
-      await storage.storage.set(storageKey, storageState, storage.serializer)
+      await storage.storage.set(cacheKey, storageState, storage)
     else
-      storage.storage.set(storageKey, storageState, storage.serializer as SyncSerializer<State<D>>)
+      storage.storage.set(cacheKey, storageState, storage as SyncStorageQueryParams<D>)
   }
 
   /**
    * Delete key and publish undefined
-   * @param storageKey 
+   * @param cacheKey 
    * @returns 
    */
   async delete<D, K>(
-    storageKey: string | undefined,
+    cacheKey: string | undefined,
     params: QueryParams<D, K> = {}
   ) {
-    if (!storageKey)
+    if (!cacheKey)
       return
 
-    this.#states.delete(storageKey)
-    this.#mutexes.delete(storageKey)
-    this.#optimisersByKey.delete(storageKey)
-    this.publish(storageKey, undefined)
+    this.#states.delete(cacheKey)
+    this.#mutexes.delete(cacheKey)
+    this.#optimisersByKey.delete(cacheKey)
+    this.publish(cacheKey, undefined)
 
     const { storage } = params
 
     if (!storage)
       return
 
-    await storage.storage.delete(storageKey)
+    await storage.storage.delete(cacheKey)
   }
 
   async mutate<D, K>(
-    storageKey: string | undefined,
+    cacheKey: string | undefined,
     mutator: Mutator<D>,
     params: QueryParams<D, K> = {}
   ) {
-    return await this.apply(storageKey, (previous) => {
+    return await this.apply(cacheKey, (previous) => {
       const mutated: State<D> | undefined = mutator(previous)
 
       if (mutated === undefined)
@@ -249,32 +248,32 @@ export class Core extends Ortho<string, State | undefined> {
 
   /**
    * The most important function
-   * @param storageKey 
+   * @param cacheKey 
    * @param current 
    * @param mutator 
    * @param params 
    * @returns 
    */
   async apply<D, K>(
-    storageKey: string | undefined,
+    cacheKey: string | undefined,
     mutator: FullMutator<D>,
     params: QueryParams<D, K> = {},
     optimistic?: OptimisticParams
   ): Promise<State<D> | undefined> {
-    if (storageKey === undefined)
+    if (cacheKey === undefined)
       return
 
     const {
       equals = DEFAULT_EQUALS
     } = params
 
-    const current = await this.get(storageKey, params)
+    const current = await this.get(cacheKey, params)
 
-    let optimisers = this.#optimisersByKey.get(storageKey)
+    let optimisers = this.#optimisersByKey.get(cacheKey)
 
     if (!optimisers) {
       optimisers = new Map()
-      this.#optimisersByKey.set(storageKey, optimisers)
+      this.#optimisersByKey.set(cacheKey, optimisers)
     }
 
     if (optimistic?.action === "set")
@@ -285,7 +284,7 @@ export class Core extends Ortho<string, State | undefined> {
     const mutated = mutator(current)
 
     if (mutated === undefined) {
-      await this.delete(storageKey, params)
+      await this.delete(cacheKey, params)
       return
     }
 
@@ -312,7 +311,7 @@ export class Core extends Ortho<string, State | undefined> {
     if (Equals.shallow(next, current))
       return current
 
-    await this.set(storageKey, next, params)
+    await this.set(cacheKey, next, params)
 
     return next as State<D>
   }
@@ -350,50 +349,50 @@ export class Core extends Ortho<string, State | undefined> {
   }
 
   on<D, K>(
-    storageKey: string | undefined,
+    cacheKey: string | undefined,
     listener: Listener<D>,
     params: QueryParams<D, K> = {}
   ) {
-    if (!storageKey)
+    if (!cacheKey)
       return
 
-    super.on(storageKey, listener as Listener<unknown>)
+    super.on(cacheKey, listener as Listener<unknown>)
 
-    const count = this.#counts.get(storageKey) ?? 0
-    this.#counts.set(storageKey, count + 1)
+    const count = this.#counts.get(cacheKey) ?? 0
+    this.#counts.set(cacheKey, count + 1)
 
-    const timeout = this.#timeouts.get(storageKey)
+    const timeout = this.#timeouts.get(cacheKey)
 
     if (timeout === undefined)
       return
 
     clearTimeout(timeout)
-    this.#timeouts.delete(storageKey)
+    this.#timeouts.delete(cacheKey)
   }
 
   async off<D, K>(
-    storageKey: string | undefined,
+    cacheKey: string | undefined,
     listener: Listener<D>,
     params: QueryParams<D, K> = {}
   ) {
-    if (!storageKey)
+    if (!cacheKey)
       return
 
-    super.off(storageKey, listener as Listener<unknown>)
+    super.off(cacheKey, listener as Listener<unknown>)
 
-    const count = this.#counts.get(storageKey)
+    const count = this.#counts.get(cacheKey)
 
     if (count === undefined)
       throw new Error("Undefined count")
 
     if (count > 1) {
-      this.#counts.set(storageKey, count - 1)
+      this.#counts.set(cacheKey, count - 1)
       return
     }
 
-    this.#counts.delete(storageKey)
+    this.#counts.delete(cacheKey)
 
-    const current = this.#states.get(storageKey)
+    const current = this.#states.get(cacheKey)
 
     if (current?.expiration === undefined)
       return
@@ -404,13 +403,13 @@ export class Core extends Ortho<string, State | undefined> {
       if (!this.#mounted)
         return
 
-      const count = this.#counts.get(storageKey)
+      const count = this.#counts.get(cacheKey)
 
       if (count !== undefined)
         return
 
-      this.#timeouts.delete(storageKey)
-      await this.delete(storageKey, params)
+      this.#timeouts.delete(cacheKey)
+      await this.delete(cacheKey, params)
     }
 
     if (Date.now() > current.expiration) {
@@ -420,6 +419,6 @@ export class Core extends Ortho<string, State | undefined> {
 
     const delay = current.expiration - Date.now()
     const timeout = setTimeout(erase, delay)
-    this.#timeouts.set(storageKey, timeout)
+    this.#timeouts.set(cacheKey, timeout)
   }
 }

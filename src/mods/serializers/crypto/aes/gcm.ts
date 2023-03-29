@@ -13,14 +13,14 @@ export class AesGcmSerializer {
   }
 
   static async fromPBKDF2(password: string, salt: Uint8Array, iterations = 100_000) {
-    const hkdf = await crypto.subtle.importKey("raw", Bytes.fromUtf8(password), { name: "PBKDF2" }, false, ["deriveBits", "deriveKey"])
+    const pbkdf2 = await crypto.subtle.importKey("raw", Bytes.fromUtf8(password), { name: "PBKDF2" }, false, ["deriveBits", "deriveKey"])
 
     const key = await crypto.subtle.deriveKey({
       name: "PBKDF2",
       salt: salt,
       iterations: iterations,
       hash: "SHA-256"
-    }, hkdf, { name: "AES-GCM", length: 256 }, false, ["encrypt", "decrypt"])
+    }, pbkdf2, { name: "AES-GCM", length: 256 }, false, ["encrypt", "decrypt"])
 
     return new this(key)
   }
@@ -35,11 +35,11 @@ export class AesGcmSerializer {
     const cipher = await crypto.subtle.encrypt({ name: "AES-GCM", iv }, this.key, plain)
     const ciphertext = Bytes.toBase64(new Uint8Array(cipher))
 
-    return JSON.stringify({ ivtext, ciphertext })
+    return ivtext + "." + ciphertext
   }
 
   async parse(text: string) {
-    const { ivtext, ciphertext } = JSON.parse(text) as { ivtext: string, ciphertext: string }
+    const [ivtext, ciphertext] = text.split(".")
 
     const iv = Bytes.fromBase64(ivtext)
     const cipher = Bytes.fromBase64(ciphertext)

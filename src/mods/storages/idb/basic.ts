@@ -1,5 +1,4 @@
-import { AsyncSerializer } from "mods/serializers/serializer.js"
-import { AsyncStorage } from "mods/storages/storage.js"
+import { AsyncStorage, AsyncStorageParams } from "mods/storages/storage.js"
 import { State } from "mods/types/state.js"
 import { useEffect, useRef } from "react"
 
@@ -93,9 +92,8 @@ export class IDBStorage implements AsyncStorage {
     for (const [key, expiration] of this.#keys) {
       if (expiration > Date.now())
         continue
-      this.delete(key)
+      this.#delete(key)
     }
-
   }
 
   async #transact<T>(callback: (store: IDBObjectStore) => Promise<T>, mode: IDBTransactionMode) {
@@ -115,9 +113,15 @@ export class IDBStorage implements AsyncStorage {
     })
   }
 
-  async get<D>(key: string, serializer: AsyncSerializer<State<D>> = JSON) {
-    const text = await this.#transact(async (store) => {
-      return await new Promise<string>((ok, err) => {
+  async get<D>(cacheKey: string, params: AsyncStorageParams<D> = {}) {
+    const { keySerializer, valueSerializer } = params
+
+    const key = keySerializer
+      ? await keySerializer.stringify(cacheKey)
+      : cacheKey
+
+    const value = await this.#transact(async (store) => {
+      return await new Promise<unknown>((ok, err) => {
         const req = store.get(key)
 
         req.onerror = () => err(req.error)
@@ -125,10 +129,12 @@ export class IDBStorage implements AsyncStorage {
       })
     }, "readonly")
 
-    if (text === undefined)
+    if (value === undefined)
       return
 
-    const state = await serializer.parse(text)
+    const state = valueSerializer
+      ? await valueSerializer.parse(value as string)
+      : value as State<D>
 
     if (state.expiration !== undefined)
       this.#keys.set(key, state.expiration)
@@ -136,15 +142,23 @@ export class IDBStorage implements AsyncStorage {
     return state
   }
 
-  async set<D>(key: string, state: State<D>, serializer: AsyncSerializer<State<D>> = JSON) {
+  async set<D>(cacheKey: string, state: State<D>, params: AsyncStorageParams<D> = {}) {
+    const { keySerializer, valueSerializer } = params
+
+    const key = keySerializer
+      ? await keySerializer.stringify(cacheKey)
+      : cacheKey
+
+    const value = valueSerializer
+      ? await valueSerializer.stringify(state)
+      : state
+
     if (state.expiration !== undefined)
       this.#keys.set(key, state.expiration)
 
-    const text = await serializer.stringify(state)
-
     return await this.#transact(async (store) => {
       return await new Promise<void>((ok, err) => {
-        const req = store.put(text, key)
+        const req = store.put(value, key)
 
         req.onerror = () => err(req.error)
         req.onsuccess = () => ok()
@@ -152,7 +166,17 @@ export class IDBStorage implements AsyncStorage {
     }, "readwrite")
   }
 
-  async delete(key: string) {
+  async delete<D>(cacheKey: string, params: AsyncStorageParams<D> = {}) {
+    const { keySerializer } = params
+
+    const key = keySerializer
+      ? await keySerializer.stringify(cacheKey)
+      : cacheKey
+
+    this.#delete(key)
+  }
+
+  async #delete(key: string) {
     this.#keys.delete(key)
 
     return await this.#transact(async (store) => {

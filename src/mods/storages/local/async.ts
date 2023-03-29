@@ -1,7 +1,6 @@
-import { AsyncSerializer } from "mods/serializers/serializer.js"
 import { State } from "mods/types/state.js"
 import { useEffect, useRef } from "react"
-import { AsyncStorage } from "../storage.js"
+import { AsyncStorage, AsyncStorageParams } from "../storage.js"
 
 /**
  * Asynchronous local storage
@@ -80,17 +79,25 @@ export class AsyncLocalStorage implements AsyncStorage {
     for (const [key, expiration] of this.#keys) {
       if (expiration > Date.now())
         continue
-      this.delete(key)
+      this.#delete(key)
     }
   }
 
-  async get<D>(key: string, serializer: AsyncSerializer<State<D>> = JSON) {
+  async get<D>(cacheKey: string, params: AsyncStorageParams<D> = {}) {
+    const { keySerializer, valueSerializer } = params
+
+    const key = keySerializer
+      ? await keySerializer.stringify(cacheKey)
+      : cacheKey
+
     const item = localStorage.getItem(this.prefix + key)
 
     if (item === null)
       return
 
-    const state = await serializer.parse(item)
+    const state = valueSerializer
+      ? await valueSerializer.parse(item)
+      : JSON.parse(item) as State<D>
 
     if (state.expiration !== undefined)
       this.#keys.set(key, state.expiration)
@@ -98,15 +105,34 @@ export class AsyncLocalStorage implements AsyncStorage {
     return state
   }
 
-  async set<D>(key: string, state: State<D>, serializer: AsyncSerializer<State<D>> = JSON) {
+  async set<D>(cacheKey: string, state: State<D>, params: AsyncStorageParams<D> = {}) {
+    const { keySerializer, valueSerializer } = params
+
+    const key = keySerializer
+      ? await keySerializer.stringify(cacheKey)
+      : cacheKey
+
+    const item = valueSerializer
+      ? await valueSerializer.stringify(state)
+      : JSON.stringify(state)
+
     if (state.expiration !== undefined)
       this.#keys.set(key, state.expiration)
 
-    const item = await serializer.stringify(state)
     localStorage.setItem(this.prefix + key, item)
   }
 
-  async delete(key: string) {
+  async delete<D>(cacheKey: string, params: AsyncStorageParams<D> = {}) {
+    const { keySerializer } = params
+
+    const key = keySerializer
+      ? await keySerializer.stringify(cacheKey)
+      : cacheKey
+
+    await this.#delete(key)
+  }
+
+  async #delete(key: string) {
     this.#keys.delete(key)
 
     localStorage.removeItem(this.prefix + key)

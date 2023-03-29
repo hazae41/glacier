@@ -1,5 +1,4 @@
-import { SyncSerializer } from "mods/serializers/serializer.js"
-import { SyncStorage } from "mods/storages/storage.js"
+import { SyncStorage, SyncStorageParams } from "mods/storages/storage.js"
 import { State } from "mods/types/state.js"
 import { useEffect, useRef } from "react"
 
@@ -74,17 +73,25 @@ export class SyncLocalStorage implements SyncStorage {
     for (const [key, expiration] of this.#keys) {
       if (expiration > Date.now())
         continue
-      this.delete(key)
+      this.#delete(key)
     }
   }
 
-  get<D>(key: string, serializer: SyncSerializer<State<D>> = JSON) {
+  get<D>(cacheKey: string, params: SyncStorageParams<D> = {}) {
+    const { keySerializer, valueSerializer } = params
+
+    const key = keySerializer
+      ? keySerializer.stringify(cacheKey)
+      : cacheKey
+
     const item = localStorage.getItem(this.prefix + key)
 
     if (item === null)
       return
 
-    const state = serializer.parse(item)
+    const state = valueSerializer
+      ? valueSerializer.parse(item)
+      : JSON.parse(item) as State<D>
 
     if (state.expiration !== undefined)
       this.#keys.set(key, state.expiration)
@@ -92,15 +99,34 @@ export class SyncLocalStorage implements SyncStorage {
     return state
   }
 
-  set<D>(key: string, state: State<D>, serializer: SyncSerializer<State<D>> = JSON) {
+  set<D>(cacheKey: string, state: State<D>, params: SyncStorageParams<D> = {}) {
+    const { keySerializer, valueSerializer } = params
+
+    const key = keySerializer
+      ? keySerializer.stringify(cacheKey)
+      : cacheKey
+
+    const item = valueSerializer
+      ? valueSerializer.stringify(state)
+      : JSON.stringify(state)
+
     if (state.expiration !== undefined)
       this.#keys.set(key, state.expiration)
 
-    const item = serializer.stringify(state)
     localStorage.setItem(this.prefix + key, item)
   }
 
-  delete(key: string) {
+  delete<D>(cacheKey: string, params: SyncStorageParams<D> = {}) {
+    const { keySerializer } = params
+
+    const key = keySerializer
+      ? keySerializer.stringify(cacheKey)
+      : cacheKey
+
+    this.#delete(key)
+  }
+
+  #delete(key: string) {
     this.#keys.delete(key)
 
     localStorage.removeItem(this.prefix + key)

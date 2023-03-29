@@ -10,7 +10,7 @@ import { Updater } from "mods/types/updater.js";
 
 export namespace Single {
 
-  export function getStorageKey<D, K>(key: K | undefined, params: QueryParams<D, K>) {
+  export function getCacheKey<D, K>(key: K | undefined, params: QueryParams<D, K>) {
     if (key === undefined)
       return undefined
     if (typeof key === "string")
@@ -26,7 +26,7 @@ export namespace Single {
   /**
    * Fetch
    * @param key Key (passed to fetcher)
-   * @param storageKey Storage key
+   * @param cacheKey Storage key
    * @param fetcher Resource fetcher
    * @param aborter AbortController
    * @param tparams Time parameters
@@ -36,14 +36,14 @@ export namespace Single {
   export async function fetch<D, K>(
     core: Core,
     key: K | undefined,
-    storageKey: string | undefined,
+    cacheKey: string | undefined,
     fetcher: Fetcher<D, K> | undefined,
     aborter = new AbortController(),
     params: QueryParams<D, K> = {},
     replacePending = false,
     ignoreCooldown = false
   ): Promise<State<D> | undefined> {
-    if (storageKey === undefined)
+    if (cacheKey === undefined)
       return
 
     const {
@@ -52,8 +52,8 @@ export namespace Single {
       timeout: dtimeout = DEFAULT_TIMEOUT,
     } = params
 
-    return await core.lock(storageKey, async () => {
-      const current = await core.get(storageKey, params)
+    return await core.lock(cacheKey, async () => {
+      const current = await core.get(cacheKey, params)
 
       if (key === undefined)
         return current
@@ -63,7 +63,7 @@ export namespace Single {
       if (Time.isAfterNow(current?.cooldown) && !ignoreCooldown)
         return current
 
-      return await core.run<D, K>(storageKey, async () => {
+      return await core.run<D, K>(cacheKey, async () => {
 
         const timeout = setTimeout(() => {
           aborter.abort("Fetch timed out")
@@ -113,7 +113,7 @@ export namespace Single {
   /**
    * Optimistic update
    * @param key Key (:K) (passed to poster)
-   * @param storageKey Storage key
+   * @param cacheKey Storage key
    * @param fetcher Resource poster
    * @param updater Mutation function
    * @param aborter AbortController
@@ -124,16 +124,16 @@ export namespace Single {
   export async function update<D, K>(
     core: Core,
     key: K | undefined,
-    storageKey: string | undefined,
+    cacheKey: string | undefined,
     fetcher: Fetcher<D, K> | undefined,
     updater: Updater<D> | undefined,
     aborter = new AbortController(),
     params: QueryParams<D, K> = {},
   ): Promise<State<D> | undefined> {
-    if (storageKey === undefined)
+    if (cacheKey === undefined)
       return
 
-    const current = await core.get(storageKey, params)
+    const current = await core.get(cacheKey, params)
 
     if (key === undefined)
       return current
@@ -168,7 +168,7 @@ export namespace Single {
           break
         }
 
-        await core.apply<D, K>(storageKey, (previous) => {
+        await core.apply<D, K>(cacheKey, (previous) => {
           const result = value(previous)
 
           // if ("error" in result)
@@ -211,7 +211,7 @@ export namespace Single {
       if ("error" in result)
         throw result.error
 
-      return await core.apply(storageKey, () => ({
+      return await core.apply(cacheKey, () => ({
         data: result.data,
         realData: result.data,
         error: undefined,
@@ -221,7 +221,7 @@ export namespace Single {
         expiration: expiration
       }), params, { action: "unset", uuid })
     } catch (error: unknown) {
-      await core.apply(storageKey, (previous) => previous && ({
+      await core.apply(cacheKey, (previous) => previous && ({
         data: previous.realData,
         time: previous.realTime
       }), params, { action: "unset", uuid })

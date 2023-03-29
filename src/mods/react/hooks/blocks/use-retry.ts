@@ -20,14 +20,14 @@ export interface RetryOptions {
  * @see https://en.wikipedia.org/wiki/Geometric_progression
  */
 export function useRetry(query: Query, options: RetryOptions = {}) {
-  const { ready, storageKey, refetch, error } = query
+  const { ready, cacheKey, refetch, error } = query
   const { init = 1000, base = 2, max = 3 } = options
 
   const count = useRef(0)
 
   useEffect(() => {
     count.current = 0
-  }, [storageKey])
+  }, [cacheKey])
 
   const refetchRef = useAutoRef(refetch)
 

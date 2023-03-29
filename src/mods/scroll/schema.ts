@@ -34,10 +34,10 @@ export class ScrollSchema<D = unknown, K = unknown> implements Schema<D[], K, Sc
     if (shallow)
       return
 
-    const { storageKey, mparams } = this.make(core)
+    const { cacheKey, mparams } = this.make(core)
     const { time, cooldown, expiration } = parent
 
-    await more.core.apply(storageKey, () => ({
+    await more.core.apply(cacheKey, () => ({
       data: data,
       error: undefined,
       time: time,
