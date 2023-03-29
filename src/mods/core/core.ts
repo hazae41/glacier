@@ -110,7 +110,7 @@ export class Core extends Ortho<string, State | undefined> {
     params: QueryParams<D, K> = {}
   ): State<D> | undefined | null {
     if (cacheKey === undefined)
-      return
+      return undefined
 
     if (this.#states.has(cacheKey)) {
       const cached = this.#states.get(cacheKey)
@@ -119,7 +119,7 @@ export class Core extends Ortho<string, State | undefined> {
 
     const { storage } = params
 
-    if (!storage)
+    if (!storage?.storage)
       return undefined
     if (storage.storage.async)
       return null
@@ -137,7 +137,7 @@ export class Core extends Ortho<string, State | undefined> {
     params: QueryParams<D, K> = {}
   ): Promise<State<D> | undefined> {
     if (cacheKey === undefined)
-      return
+      return undefined
 
     if (this.#states.has(cacheKey)) {
       const cached = this.#states.get(cacheKey)
@@ -146,15 +146,15 @@ export class Core extends Ortho<string, State | undefined> {
 
     const { storage } = params
 
-    if (!storage)
-      return
+    if (!storage?.storage)
+      return undefined
 
     const storedState = storage.storage.async
       ? await storage.storage.get<D>(cacheKey, storage)
       : storage.storage.get<D>(cacheKey, storage as SyncStorageQueryParams<D>)
 
     if (storedState === undefined)
-      return
+      return undefined
 
     const { realData, realTime, cooldown, expiration } = storedState
     const state = { data: realData, time: realTime, realData, realTime, cooldown, expiration }
@@ -184,7 +184,7 @@ export class Core extends Ortho<string, State | undefined> {
 
     const { storage } = params
 
-    if (!storage)
+    if (!storage?.storage)
       return
 
     const { realData, realTime, cooldown, expiration } = state
@@ -215,7 +215,7 @@ export class Core extends Ortho<string, State | undefined> {
 
     const { storage } = params
 
-    if (!storage)
+    if (!storage?.storage)
       return
 
     await storage.storage.delete(cacheKey)

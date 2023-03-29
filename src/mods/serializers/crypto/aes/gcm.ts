@@ -1,20 +1,12 @@
 import { Bytes } from "@hazae41/bytes";
 
-export class AesGcmSerializer {
+export class AesGcmCoder {
 
   constructor(
     readonly key: CryptoKey
   ) { }
 
-  static async from(data: Uint8Array) {
-    const key = await crypto.subtle.importKey("raw", data, { name: "AES-GCM", length: 256 }, false, ["encrypt", "decrypt"])
-
-    return new this(key)
-  }
-
-  static async fromPBKDF2(password: string, salt: Uint8Array, iterations = 100_000) {
-    const pbkdf2 = await crypto.subtle.importKey("raw", Bytes.fromUtf8(password), { name: "PBKDF2" }, false, ["deriveBits", "deriveKey"])
-
+  static async fromPBKDF2(pbkdf2: CryptoKey, salt: Uint8Array, iterations = 100_000) {
     const key = await crypto.subtle.deriveKey({
       name: "PBKDF2",
       salt: salt,
