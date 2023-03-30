@@ -48,14 +48,12 @@ export function useQuery<D = unknown, K = string>(
 ): SingleQuery<D, K> {
   const core = useCore()
 
-  const mparams = { ...core.params, ...params }
-
   const keyRef = useAutoRef(key)
   const fetcherRef = useAutoRef(fetcher)
-  const mparamsRef = useAutoRef(mparams)
+  const paramsRef = useAutoRef({ ...core.params, ...params })
 
   const cacheKey = useMemo(() => {
-    return Single.getCacheKey<D, K>(key, mparamsRef.current)
+    return Single.getCacheKey<D, K>(key, paramsRef.current)
   }, [key])
 
   const [, setCounter] = useState(0)
@@ -63,7 +61,7 @@ export function useQuery<D = unknown, K = string>(
   const stateRef = useRef<State<D> | null>()
 
   useMemo(() => {
-    stateRef.current = core.getSync<D, K>(cacheKey, mparamsRef.current)
+    stateRef.current = core.getSync<D, K>(cacheKey, paramsRef.current)
   }, [core, cacheKey])
 
   const setState = useCallback((state?: State<D>) => {
@@ -75,22 +73,22 @@ export function useQuery<D = unknown, K = string>(
     if (stateRef.current !== null)
       return
 
-    core.get<D, K>(cacheKey, mparamsRef.current).then(setState)
-  }, [core, cacheKey])
+    core.get<D, K>(cacheKey, paramsRef.current).then(setState)
+  }, [core, cacheKey, params])
 
   useEffect(() => {
     if (!cacheKey)
       return
 
-    core.on(cacheKey, setState, mparamsRef.current)
-    return () => void core.off(cacheKey, setState, mparamsRef.current)
+    core.on(cacheKey, setState, paramsRef.current)
+    return () => void core.off(cacheKey, setState, paramsRef.current)
   }, [core, cacheKey])
 
   const mutate = useCallback(async (mutator: Mutator<D>) => {
     if (typeof window === "undefined")
       throw new Error("Can't mutate on SSR")
 
-    const params = mparamsRef.current
+    const params = paramsRef.current
 
     return await core.mutate(cacheKey, mutator, params)
   }, [core, cacheKey])
@@ -99,7 +97,7 @@ export function useQuery<D = unknown, K = string>(
     if (typeof window === "undefined")
       throw new Error("Can't clear on SSR")
 
-    await core.delete(cacheKey, mparamsRef.current)
+    await core.delete(cacheKey, paramsRef.current)
   }, [core, cacheKey])
 
   const fetch = useCallback(async (aborter?: AbortController) => {
@@ -108,7 +106,7 @@ export function useQuery<D = unknown, K = string>(
 
     const key = keyRef.current
     const fetcher = fetcherRef.current
-    const params = mparamsRef.current
+    const params = paramsRef.current
 
     return await Single.fetch(core, key, cacheKey, fetcher, aborter, params)
   }, [core, cacheKey])
@@ -119,7 +117,7 @@ export function useQuery<D = unknown, K = string>(
 
     const key = keyRef.current
     const fetcher = fetcherRef.current
-    const params = mparamsRef.current
+    const params = paramsRef.current
 
     return await Single.fetch(core, key, cacheKey, fetcher, aborter, params, true, true)
   }, [core, cacheKey])
@@ -130,7 +128,7 @@ export function useQuery<D = unknown, K = string>(
 
     const key = keyRef.current
     const fetcher = fetcherRef.current
-    const params = mparamsRef.current
+    const params = paramsRef.current
 
     const fparams = { ...params, ...uparams }
 
@@ -144,7 +142,7 @@ export function useQuery<D = unknown, K = string>(
     return (async () => {
       const key = keyRef.current
       const fetcher = fetcherRef.current
-      const params = mparamsRef.current
+      const params = paramsRef.current
 
       const background = new Promise<void>(ok => core.once(cacheKey, () => ok(), params))
       await Single.fetch(core, key, cacheKey, fetcher, undefined, params, false, true)

@@ -52,11 +52,9 @@ export function useScrollQuery<D = unknown, K = string>(
 ): ScrollQuery<D, K> {
   const core = useCore()
 
-  const mparams = { ...core.params, ...params }
-
   const scrollerRef = useAutoRef(scroller)
   const fetcherRef = useAutoRef(fetcher)
-  const paramsRef = useAutoRef(mparams)
+  const paramsRef = useAutoRef({ ...core.params, ...params })
 
   const key = useMemo(() => {
     return scroller?.()
@@ -84,7 +82,7 @@ export function useScrollQuery<D = unknown, K = string>(
       return
 
     core.get<D[], K>(cacheKey, paramsRef.current).then(setState)
-  }, [core, cacheKey])
+  }, [core, cacheKey, params])
 
   useEffect(() => {
     if (!cacheKey)
