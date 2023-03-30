@@ -94,8 +94,7 @@ export class Core extends Ortho<string, State | undefined> {
       if ("error" in mutated) {
         mutated.error = mutated.error
       } else {
-        mutated.realData = mutated.data
-        mutated.realTime = mutated.time
+        mutated.data = mutated.data
         mutated.error = undefined
       }
 
@@ -139,24 +138,24 @@ export class Core extends Ortho<string, State | undefined> {
     if (cacheKey === undefined)
       return undefined
 
-    if (this.#states.has(cacheKey)) {
-      const cached = this.#states.get(cacheKey)
+    const cached = this.#states.get(cacheKey)
+
+    if (cached !== undefined)
       return cached as State<D>
-    }
 
     const { storage } = params
 
     if (!storage?.storage)
       return undefined
 
-    const storedState = storage.storage.async
+    const stored = storage.storage.async
       ? await storage.storage.get<D>(cacheKey, storage)
       : storage.storage.get<D>(cacheKey, storage as SyncStorageQueryParams<D>)
 
-    if (storedState === undefined)
+    if (stored === undefined)
       return undefined
 
-    const { realData, realTime, cooldown, expiration } = storedState
+    const { realData, realTime, cooldown, expiration } = stored
     const state = { data: realData, time: realTime, realData, realTime, cooldown, expiration }
 
     this.#states.set(cacheKey, state)
@@ -188,12 +187,12 @@ export class Core extends Ortho<string, State | undefined> {
       return
 
     const { realData, realTime, cooldown, expiration } = state
-    const storageState = { realData, realTime, cooldown, expiration }
+    const stored = { realData, realTime, cooldown, expiration }
 
     if (storage.storage.async)
-      await storage.storage.set(cacheKey, storageState, storage)
+      await storage.storage.set(cacheKey, stored, storage)
     else
-      storage.storage.set(cacheKey, storageState, storage as SyncStorageQueryParams<D>)
+      storage.storage.set(cacheKey, stored, storage as SyncStorageQueryParams<D>)
   }
 
   /**
@@ -237,8 +236,7 @@ export class Core extends Ortho<string, State | undefined> {
       if ("error" in mutated) {
         mutated.error = mutated.error
       } else {
-        mutated.realData = mutated.data
-        mutated.realTime = mutated.time
+        mutated.data = mutated.data
         mutated.error = undefined
       }
 
@@ -269,6 +267,32 @@ export class Core extends Ortho<string, State | undefined> {
 
     const current = await this.get(cacheKey, params)
 
+    const mutated = mutator(current)
+
+    if (mutated === undefined) {
+      await this.delete(cacheKey, params)
+      return
+    }
+
+    let next = { ...current, ...mutated }
+
+    if (optimistic?.action !== "set") {
+      if (Time.isBefore(next.time, current?.realTime))
+        return current
+
+      next.data = await this.normalize(next, params)
+
+      if (equals(next.data, current?.data))
+        next.data = current?.data
+
+      next.realData = next.data
+      next.realTime = next.time
+    }
+
+    /**
+     * OPTIMISTIC
+     */
+
     let optimisers = this.#optimisersByKey.get(cacheKey)
 
     if (!optimisers) {
@@ -281,15 +305,6 @@ export class Core extends Ortho<string, State | undefined> {
     if (optimistic?.action === "unset")
       optimisers.delete(optimistic.uuid)
 
-    const mutated = mutator(current)
-
-    if (mutated === undefined) {
-      await this.delete(cacheKey, params)
-      return
-    }
-
-    let next = { ...current, ...mutated }
-
     if (optimistic?.action !== "set") {
       for (const optimiser of optimisers.values()) {
         const optimistic = optimiser(next)
@@ -299,14 +314,9 @@ export class Core extends Ortho<string, State | undefined> {
 
     next.optimistic = Boolean(optimisers.size)
 
-    if (Time.isBefore(next.time, current?.time))
-      return current
-
-    if (!optimistic)
-      next.data = await this.normalize(next, params)
-
-    if (equals(next.data, current?.data))
-      next.data = current?.data
+    /**
+     * DONE
+     */
 
     if (Equals.shallow(next, current))
       return current

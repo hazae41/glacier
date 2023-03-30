@@ -213,10 +213,8 @@ export namespace Single {
 
       return await core.apply(cacheKey, () => ({
         data: result.data,
-        realData: result.data,
         error: undefined,
         time: time,
-        realTime: time,
         cooldown: cooldown,
         expiration: expiration
       }), params, { action: "unset", uuid })

@@ -1,6 +1,7 @@
 import { Bytes } from "@hazae41/bytes";
+import { AsyncCoder } from "mods/serializers/serializer.js";
 
-export class AesGcmCoder {
+export class AesGcmCoder implements AsyncCoder<unknown> {
 
   constructor(
     readonly key: CryptoKey
@@ -17,7 +18,7 @@ export class AesGcmCoder {
     return new this(key)
   }
 
-  async stringify(value: any) {
+  async stringify<T>(value: T) {
     const iv = Bytes.random(12)
     const ivtext = Bytes.toBase64(iv)
 
@@ -30,7 +31,7 @@ export class AesGcmCoder {
     return ivtext + "." + ciphertext
   }
 
-  async parse(text: string) {
+  async parse<T>(text: string) {
     const [ivtext, ciphertext] = text.split(".")
 
     const iv = Bytes.fromBase64(ivtext)
@@ -39,6 +40,6 @@ export class AesGcmCoder {
     const plain = await crypto.subtle.decrypt({ name: "AES-GCM", iv }, this.key, cipher)
     const plaintext = Bytes.toUtf8(new Uint8Array(plain))
 
-    return JSON.parse(plaintext)
+    return JSON.parse(plaintext) as T
   }
 }
