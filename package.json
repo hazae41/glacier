@@ -23,7 +23,8 @@
   },
   "dependencies": {
     "@hazae41/bytes": "^1.0.4",
-    "@hazae41/mutex": "^1.2.1"
+    "@hazae41/mutex": "^1.2.1",
+    "@hazae41/result": "^1.0.0"
   },
   "peerDependencies": {
     "react": ">=17"

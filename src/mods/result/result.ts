@@ -1,3 +1,4 @@
+import { Wrapper } from "@hazae41/result"
 import { Promiseable } from "libs/promises/promises.js"
 import { Data, DataInit } from "./data.js"
 import { Error, ErrorInit } from "./error.js"
@@ -18,10 +19,6 @@ export namespace Result {
       return Error.from(init)
     else
       return Data.from(init)
-  }
-
-  interface Wrapper<D> {
-    unwrap(): D
   }
 
   export function rewrap<D>(wrapper: Wrapper<D>, times: Times = {}) {
