@@ -20,7 +20,7 @@ export class Core extends Ortho<string, State | undefined> {
   readonly #counts = new Map<string, number>()
   readonly #timeouts = new Map<string, NodeJS.Timeout>()
 
-  readonly #mutexes = new Map<string, Mutex>()
+  readonly #mutexes = new Map<string, Mutex<undefined>>()
   readonly #aborters = new Map<string, AbortController>()
 
   #mounted = true
@@ -52,7 +52,7 @@ export class Core extends Ortho<string, State | undefined> {
     let mutex = this.#mutexes.get(cacheKey)
 
     if (mutex === undefined) {
-      mutex = new Mutex()
+      mutex = new Mutex(undefined)
       this.#mutexes.set(cacheKey, mutex)
     }
 
