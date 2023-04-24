@@ -1,4 +1,4 @@
-import { Err, Ok, Result, Wrapper } from "@hazae41/result"
+import { Err, ErrInner, Ok, OkInner, Result, Wrapper } from "@hazae41/result"
 import { Data, DataInit } from "./data.js"
 import { Error, ErrorInit } from "./error.js"
 import { Times } from "./times.js"
@@ -24,15 +24,15 @@ export namespace FetchResult {
       return Data.from(init)
   }
 
-  export function rewrap<D>(wrapper: Ok<D>, times?: Times): Data<D>
+  export function rewrap<T extends Ok>(wrapper: T, times?: Times): Data<OkInner<T>>
 
-  export function rewrap<E>(wrapper: Err<E>, times?: Times): Error<E>
+  export function rewrap<T extends Err>(wrapper: T, times?: Times): Error<ErrInner<T>>
 
-  export function rewrap<D, E>(wrapper: Result<D, E>, times?: Times): FetchResult<D, E>
+  export function rewrap<T extends Result>(wrapper: T, times?: Times): FetchResult<OkInner<T>, ErrInner<T>>
 
-  export function rewrap<D>(wrapper: Wrapper<D>, times?: Times): FetchResult<D>
+  export function rewrap<T>(wrapper: Wrapper<T>, times?: Times): FetchResult<T>
 
-  export function rewrap<D>(wrapper: Wrapper<D>, times: Times = {}) {
+  export function rewrap<T>(wrapper: Wrapper<T>, times: Times = {}) {
     try {
       return new Data(wrapper.unwrap(), times)
     } catch (error: unknown) {
