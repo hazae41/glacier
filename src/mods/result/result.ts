@@ -15,9 +15,9 @@ export namespace FetchResult {
 
   export function from<D>(init: DataInit<D>): Data<D>
 
-  export function from(init: ErrorInit): Error
+  export function from<E>(init: ErrorInit<E>): Error<E>
 
-  export function from<D>(init: FetchResultInit<D>) {
+  export function from<D, E>(init: FetchResultInit<D, E>) {
     if ("error" in init)
       return Error.from(init)
     else
