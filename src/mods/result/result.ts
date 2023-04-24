@@ -13,6 +13,10 @@ export type FetchResult<D = unknown, E = unknown> =
 
 export namespace FetchResult {
 
+  export function from<D>(init: DataInit<D>): Data<D>
+
+  export function from(init: ErrorInit): Error
+
   export function from<D>(init: FetchResultInit<D>) {
     if ("error" in init)
       return Error.from(init)
