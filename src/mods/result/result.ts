@@ -28,7 +28,7 @@ export namespace FetchResult {
 
   export function rewrap<E>(wrapper: Err<E>, times?: Times): Error<E>
 
-  export function rewrap<D, E>(wrapper: Result<D, E>, times?: Times): Result<D, E>
+  export function rewrap<D, E>(wrapper: Result<D, E>, times?: Times): FetchResult<D, E>
 
   export function rewrap<D>(wrapper: Wrapper<D>, times?: Times): FetchResult<D>
 
