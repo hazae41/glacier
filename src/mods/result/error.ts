@@ -1,15 +1,18 @@
+import { Err } from "@hazae41/result"
 import { Times } from "./times.js"
 
-export interface ErrorInit<E = unknown> extends Times {
-  readonly error: E
+export interface ErrorInit<T = unknown> extends Times {
+  readonly error: T
 }
 
-export class Error<E = unknown> implements ErrorInit<E> {
+export class Error<T = unknown> extends Err<T> implements ErrorInit<T> {
 
   constructor(
-    readonly error: E,
+    readonly error: T,
     readonly times: Times = {}
-  ) { }
+  ) {
+    super(error)
+  }
 
   static from(init: ErrorInit) {
     const { error, time, cooldown, expiration } = init
@@ -28,24 +31,12 @@ export class Error<E = unknown> implements ErrorInit<E> {
     return this.times.expiration
   }
 
-  unwrap(): never {
-    throw this.error
+  isData(): false {
+    return false
   }
 
-  map(mapper: unknown) {
-    return this
-  }
-
-  tryMap(mapper: unknown) {
-    return this
-  }
-
-  mapSync(mapper: unknown) {
-    return this
-  }
-
-  tryMapSync(mapper: unknown) {
-    return this
+  isError(): this is Error<T> {
+    return true
   }
 
 }

@@ -1,19 +1,22 @@
+import { Ok } from "@hazae41/result"
 import { Promiseable } from "libs/promises/promises.js"
 import { Error } from "./error.js"
 import { Times } from "./times.js"
 
-export interface DataInit<D> extends Times {
-  readonly data: D
+export interface DataInit<T> extends Times {
+  readonly data: T
 }
 
-export class Data<D> implements DataInit<D> {
+export class Data<T> extends Ok<T> implements DataInit<T> {
 
   constructor(
-    readonly data: D,
+    readonly data: T,
     readonly times: Times = {}
-  ) { }
+  ) {
+    super(data)
+  }
 
-  static from<D>(init: DataInit<D>) {
+  static from<T>(init: DataInit<T>) {
     const { data, time, cooldown, expiration } = init
     return new this(data, { time, cooldown, expiration })
   }
@@ -30,25 +33,19 @@ export class Data<D> implements DataInit<D> {
     return this.times.expiration
   }
 
-  unwrap() {
-    return this.data
+  isData(): this is Data<T> {
+    return true
   }
 
-  /**
-   * Map this data into another, throwing if mapper throws
-   * @param mutator 
-   * @returns 
-   */
-  async map<M>(mapper: (data: D) => Promiseable<M>) {
+  isError(): false {
+    return false
+  }
+
+  async map<M>(mapper: (data: T) => Promiseable<M>) {
     return new Data<M>(await mapper(this.data), this.times)
   }
 
-  /**
-   * Try to map this data into another, returning Error if mapper throws
-   * @param mapper 
-   * @returns 
-   */
-  async tryMap<M>(mapper: (data: D) => Promiseable<M>) {
+  async tryMap<M>(mapper: (data: T) => Promiseable<M>) {
     try {
       return await this.map(mapper)
     } catch (error: unknown) {
@@ -56,21 +53,11 @@ export class Data<D> implements DataInit<D> {
     }
   }
 
-  /**
-   * Map this data into another, throwing if mapper throws
-   * @param mutator 
-   * @returns 
-   */
-  mapSync<M>(mapper: (data: D) => M) {
+  mapSync<M>(mapper: (data: T) => M) {
     return new Data<M>(mapper(this.data), this.times)
   }
 
-  /**
-   * Try to map this data into another, returning Error if mapper throws
-   * @param mapper 
-   * @returns 
-   */
-  tryMapSync<M>(mapper: (data: D) => M) {
+  tryMapSync<M>(mapper: (data: T) => M) {
     try {
       return this.mapSync(mapper)
     } catch (error: unknown) {

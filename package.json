@@ -23,22 +23,22 @@
   },
   "dependencies": {
     "@hazae41/bytes": "^1.0.4",
-    "@hazae41/mutex": "^1.2.1",
-    "@hazae41/result": "^1.0.0"
+    "@hazae41/mutex": "^1.2.5",
+    "@hazae41/result": "^1.0.2"
   },
   "peerDependencies": {
     "react": ">=17"
   },
   "devDependencies": {
     "@hazae41/phobos": "^1.0.10",
-    "@rollup/plugin-typescript": "^11.0.0",
-    "@types/node": "^18.11.18",
-    "@types/react": "^18.0.26",
-    "rimraf": "^4.1.0",
-    "rollup": "^3.10.0",
-    "rollup-plugin-dts": "^5.1.1",
-    "rollup-plugin-node-externals": "^5.1.0",
-    "typescript": "^4.9.4"
+    "@rollup/plugin-typescript": "^11.1.0",
+    "@types/node": "^18.16.0",
+    "@types/react": "^18.0.38",
+    "rimraf": "^5.0.0",
+    "rollup": "^3.21.0",
+    "rollup-plugin-dts": "^5.3.0",
+    "rollup-plugin-node-externals": "^5.1.2",
+    "typescript": "^5.0.4"
   },
   "exports": {
     ".": {

@@ -2,7 +2,7 @@ import { Time } from "libs/time/time.js";
 import { Core } from "mods/core/core.js";
 import { DEFAULT_COOLDOWN, DEFAULT_EXPIRATION, DEFAULT_SERIALIZER, DEFAULT_TIMEOUT } from "mods/defaults.js";
 import { AbortError } from "mods/errors/abort.js";
-import { ResultInit } from "mods/result/result.js";
+import { FetchResultInit } from "mods/result/result.js";
 import { Fetcher } from "mods/types/fetcher.js";
 import { QueryParams } from "mods/types/params.js";
 import { State } from "mods/types/state.js";
@@ -155,7 +155,7 @@ export namespace Single {
 
       const generator = updater({ signal })
 
-      let final: ResultInit<D> | void
+      let final: FetchResultInit<D> | void
 
       while (true) {
         const { done, value } = await generator.next()
