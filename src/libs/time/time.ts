@@ -4,7 +4,7 @@ export namespace Time {
     if (delay === undefined)
       return
     if (delay < 0)
-      return
+      return delay
     return Date.now() + delay
   }
 
