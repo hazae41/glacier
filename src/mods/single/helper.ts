@@ -68,8 +68,6 @@ export namespace Single {
 
           const result = await fetcher(key, { signal })
 
-          console.log("result", result)
-
           if (signal.aborted)
             throw new AbortError(signal)
 
@@ -84,8 +82,6 @@ export namespace Single {
           const expiration = "expiration" in result
             ? result.expiration
             : Time.fromDelay(params.expiration)
-
-          console.log("times", time, cooldown, expiration)
 
           if ("error" in result)
             return () => ({
