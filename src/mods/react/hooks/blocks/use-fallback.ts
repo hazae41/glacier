@@ -1,5 +1,5 @@
 import { Query } from "mods/react/types/query.js"
-import { State } from "mods/types/state.js"
+import { FullState } from "mods/types/state.js"
 
 /**
  * Fallback to given data/error if there is no data/error
@@ -10,7 +10,7 @@ import { State } from "mods/types/state.js"
  */
 export function useFallback<D>(
   query: Query<D>,
-  state?: State<D>
+  state?: FullState<D>
 ) {
   const { data, error } = query
 

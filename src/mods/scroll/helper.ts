@@ -1,12 +1,12 @@
 import { Arrays } from "libs/arrays/arrays.js";
 import { Time } from "libs/time/time.js";
 import { Core } from "mods/core/core.js";
-import { DEFAULT_COOLDOWN, DEFAULT_EQUALS, DEFAULT_EXPIRATION, DEFAULT_SERIALIZER, DEFAULT_TIMEOUT } from "mods/defaults.js";
+import { DEFAULT_EQUALS, DEFAULT_SERIALIZER } from "mods/defaults.js";
 import { AbortError } from "mods/errors/abort.js";
 import { Fetcher } from "mods/types/fetcher.js";
 import { QueryParams } from "mods/types/params.js";
 import { Scroller } from "mods/types/scroller.js";
-import { State } from "mods/types/state.js";
+import { FullState } from "mods/types/state.js";
 
 export namespace Scroll {
 
@@ -43,15 +43,12 @@ export namespace Scroll {
     params: QueryParams<D[], K> = {},
     replacePending = false,
     ignoreCooldown = false
-  ): Promise<State<D[]> | undefined> {
+  ): Promise<FullState<D[]> | undefined> {
     if (cacheKey === undefined)
       return
 
     const {
-      equals = DEFAULT_EQUALS,
-      cooldown: dcooldown = DEFAULT_COOLDOWN,
-      expiration: dexpiration = DEFAULT_EXPIRATION,
-      timeout: dtimeout = DEFAULT_TIMEOUT,
+      equals = DEFAULT_EQUALS
     } = params
 
     return await core.lock(cacheKey, async () => {
@@ -72,9 +69,9 @@ export namespace Scroll {
 
       return await core.run<D[], K>(cacheKey, async () => {
 
-        const timeout = setTimeout(() => {
+        const timeout = params.timeout !== undefined ? setTimeout(() => {
           aborter.abort("First timed out")
-        }, dtimeout)
+        }, params.timeout) : undefined
 
         try {
           const { signal } = aborter
@@ -84,11 +81,17 @@ export namespace Scroll {
           if (signal.aborted)
             throw new AbortError(signal)
 
-          const {
-            time = Date.now(),
-            cooldown = Time.fromDelay(dcooldown),
-            expiration = Time.fromDelay(dexpiration)
-          } = result
+          const time = "time" in result
+            ? result.time
+            : Date.now()
+
+          const cooldown = "cooldown" in result
+            ? result.cooldown
+            : Time.fromDelay(params.cooldown)
+
+          const expiration = "expiration" in result
+            ? result.expiration
+            : Time.fromDelay(params.expiration)
 
           if ("error" in result)
             return () => ({
@@ -103,7 +106,7 @@ export namespace Scroll {
           const prenormalized = await core.normalize({ data }, params, { shallow: true })
 
           return (previous) => {
-            const state: State<D[]> = {
+            const state: FullState<D[]> = {
               data: data,
               time: time,
               cooldown: cooldown,
@@ -118,8 +121,8 @@ export namespace Scroll {
         } catch (error: unknown) {
           return () => ({
             error: error,
-            cooldown: dcooldown,
-            expiration: dexpiration,
+            cooldown: params.cooldown,
+            expiration: params.expiration,
           })
         } finally {
           clearTimeout(timeout)
@@ -147,15 +150,9 @@ export namespace Scroll {
     params: QueryParams<D[], K> = {},
     replacePending = false,
     ignoreCooldown = false
-  ): Promise<State<D[]> | undefined> {
+  ): Promise<FullState<D[]> | undefined> {
     if (cacheKey === undefined)
       return
-
-    const {
-      cooldown: dcooldown = DEFAULT_COOLDOWN,
-      expiration: dexpiration = DEFAULT_EXPIRATION,
-      timeout: dtimeout = DEFAULT_TIMEOUT,
-    } = params
 
     return await core.lock(cacheKey, async () => {
       const current = await core.get(cacheKey, params)
@@ -177,9 +174,9 @@ export namespace Scroll {
 
       return await core.run<D[], K>(cacheKey, async () => {
 
-        const timeout = setTimeout(() => {
+        const timeout = params.timeout !== undefined ? setTimeout(() => {
           aborter.abort("Scroll timed out")
-        }, dtimeout)
+        }, params.timeout) : undefined
 
         try {
           const { signal } = aborter
@@ -189,11 +186,17 @@ export namespace Scroll {
           if (signal.aborted)
             throw new AbortError(signal)
 
-          let {
-            time = Date.now(),
-            cooldown = Time.fromDelay(dcooldown),
-            expiration = Time.fromDelay(dexpiration)
-          } = result
+          const time = "time" in result
+            ? result.time
+            : Date.now()
+
+          const cooldown = "cooldown" in result
+            ? result.cooldown
+            : Time.fromDelay(params.cooldown)
+
+          let expiration = "expiration" in result
+            ? result.expiration
+            : Time.fromDelay(params.expiration)
 
           if (expiration !== undefined && current?.expiration !== undefined)
             expiration = Math.min(expiration, current?.expiration)
@@ -219,8 +222,8 @@ export namespace Scroll {
         } catch (error: unknown) {
           return () => ({
             error: error,
-            cooldown: dcooldown,
-            expiration: dexpiration
+            cooldown: params.cooldown,
+            expiration: params.expiration
           })
         } finally {
           clearTimeout(timeout)

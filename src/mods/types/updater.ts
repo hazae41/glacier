@@ -1,4 +1,5 @@
 import { FetchResultInit } from "mods/result/result.js"
+import { Times } from "mods/result/times.js"
 import { OptimisticYield } from "./optimism.js"
 
 export type Updater<D> =
@@ -8,8 +9,4 @@ export interface UpdaterMore {
   signal?: AbortSignal
 }
 
-export interface UpdaterParams {
-  cooldown?: number
-  expiration?: number
-  timeout?: number
-}
+export type UpdaterParams = Times

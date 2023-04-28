@@ -1,11 +1,11 @@
 import { Time } from "libs/time/time.js";
 import { Core } from "mods/core/core.js";
-import { DEFAULT_COOLDOWN, DEFAULT_EXPIRATION, DEFAULT_SERIALIZER, DEFAULT_TIMEOUT } from "mods/defaults.js";
+import { DEFAULT_SERIALIZER } from "mods/defaults.js";
 import { AbortError } from "mods/errors/abort.js";
 import { FetchResultInit } from "mods/result/result.js";
 import { Fetcher } from "mods/types/fetcher.js";
 import { QueryParams } from "mods/types/params.js";
-import { State } from "mods/types/state.js";
+import { FullState } from "mods/types/state.js";
 import { Updater } from "mods/types/updater.js";
 
 export namespace Single {
@@ -42,15 +42,9 @@ export namespace Single {
     params: QueryParams<D, K> = {},
     replacePending = false,
     ignoreCooldown = false
-  ): Promise<State<D> | undefined> {
+  ): Promise<FullState<D> | undefined> {
     if (cacheKey === undefined)
       return
-
-    const {
-      cooldown: dcooldown = DEFAULT_COOLDOWN,
-      expiration: dexpiration = DEFAULT_EXPIRATION,
-      timeout: dtimeout = DEFAULT_TIMEOUT,
-    } = params
 
     return await core.lock(cacheKey, async () => {
       const current = await core.get(cacheKey, params)
@@ -65,23 +59,33 @@ export namespace Single {
 
       return await core.run<D, K>(cacheKey, async () => {
 
-        const timeout = setTimeout(() => {
+        const timeout = params.timeout !== undefined ? setTimeout(() => {
           aborter.abort("Fetch timed out")
-        }, dtimeout)
+        }, params.timeout) : undefined
 
         try {
           const { signal } = aborter
 
           const result = await fetcher(key, { signal })
 
+          console.log("result", result)
+
           if (signal.aborted)
             throw new AbortError(signal)
 
-          const {
-            time = Date.now(),
-            cooldown = Time.fromDelay(dcooldown),
-            expiration = Time.fromDelay(dexpiration)
-          } = result
+          const time = "time" in result
+            ? result.time
+            : Date.now()
+
+          const cooldown = "cooldown" in result
+            ? result.cooldown
+            : Time.fromDelay(params.cooldown)
+
+          const expiration = "expiration" in result
+            ? result.expiration
+            : Time.fromDelay(params.expiration)
+
+          console.log("times", time, cooldown, expiration)
 
           if ("error" in result)
             return () => ({
@@ -100,8 +104,8 @@ export namespace Single {
         } catch (error: unknown) {
           return () => ({
             error: error,
-            cooldown: dcooldown,
-            expiration: dexpiration,
+            cooldown: params.cooldown,
+            expiration: params.expiration,
           })
         } finally {
           clearTimeout(timeout)
@@ -129,7 +133,7 @@ export namespace Single {
     updater: Updater<D> | undefined,
     aborter = new AbortController(),
     params: QueryParams<D, K> = {},
-  ): Promise<State<D> | undefined> {
+  ): Promise<FullState<D> | undefined> {
     if (cacheKey === undefined)
       return
 
@@ -143,12 +147,6 @@ export namespace Single {
       return current
 
     const uuid = crypto.randomUUID()
-
-    const {
-      cooldown: dcooldown = DEFAULT_COOLDOWN,
-      expiration: dexpiration = DEFAULT_EXPIRATION,
-      timeout: dtimeout = DEFAULT_TIMEOUT,
-    } = params
 
     try {
       const { signal } = aborter
@@ -186,9 +184,9 @@ export namespace Single {
 
       if (final === undefined) {
 
-        const timeout = setTimeout(() => {
+        const timeout = params.timeout !== undefined ? setTimeout(() => {
           aborter.abort("Fetch timed out")
-        }, dtimeout)
+        }, params.timeout) : undefined
 
         try {
           final = await fetcher(key, { signal, cache: "reload" })
@@ -202,14 +200,20 @@ export namespace Single {
 
       const result = final
 
-      const {
-        time = Date.now(),
-        cooldown = Time.fromDelay(dcooldown),
-        expiration = Time.fromDelay(dexpiration)
-      } = result
-
       if ("error" in result)
         throw result.error
+
+      const time = "time" in result
+        ? result.time
+        : Date.now()
+
+      const cooldown = "cooldown" in result
+        ? result.cooldown
+        : Time.fromDelay(params.cooldown)
+
+      const expiration = "expiration" in result
+        ? result.expiration
+        : Time.fromDelay(params.expiration)
 
       return await core.apply(cacheKey, () => ({
         data: result.data,

@@ -1,4 +1,4 @@
-import { State } from "mods/types/state.js"
+import { FullState } from "mods/types/state.js"
 import { useEffect, useRef } from "react"
 import { AsyncStorage, AsyncStorageParams } from "../storage.js"
 
@@ -97,7 +97,7 @@ export class AsyncLocalStorage implements AsyncStorage {
 
     const state = valueSerializer
       ? await valueSerializer.parse(item)
-      : JSON.parse(item) as State<D>
+      : JSON.parse(item) as FullState<D>
 
     if (state.expiration !== undefined)
       this.#keys.set(key, state.expiration)
@@ -105,7 +105,7 @@ export class AsyncLocalStorage implements AsyncStorage {
     return state
   }
 
-  async set<D>(cacheKey: string, state: State<D>, params: AsyncStorageParams<D> = {}) {
+  async set<D>(cacheKey: string, state: FullState<D>, params: AsyncStorageParams<D> = {}) {
     const { keySerializer, valueSerializer } = params
 
     const key = keySerializer

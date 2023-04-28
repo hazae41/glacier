@@ -8,7 +8,7 @@ import { Fetcher } from "mods/types/fetcher.js";
 import { Mutator } from "mods/types/mutator.js";
 import { QueryParams } from "mods/types/params.js";
 import { Scroller } from "mods/types/scroller.js";
-import { State } from "mods/types/state.js";
+import { FullState } from "mods/types/state.js";
 import { DependencyList, useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 export function useScrollSchema<D, K, L extends DependencyList = []>(
@@ -30,7 +30,7 @@ export interface ScrollQuery<D = unknown, K = unknown> extends Query<D[], K> {
   /**
    * Fetch the next page
    */
-  scroll(): Promise<State<D[]> | undefined>
+  scroll(): Promise<FullState<D[]> | undefined>
 
   /**
    * The next key to be fetched
@@ -66,13 +66,13 @@ export function useScrollQuery<D = unknown, K = string>(
 
   const [, setCounter] = useState(0)
 
-  const stateRef = useRef<State<D[]> | null>()
+  const stateRef = useRef<FullState<D[]> | null>()
 
   useMemo(() => {
     stateRef.current = core.getSync<D[], K>(cacheKey, paramsRef.current)
   }, [core, cacheKey])
 
-  const setState = useCallback((state?: State<D[]>) => {
+  const setState = useCallback((state?: FullState<D[]>) => {
     stateRef.current = state
     setCounter(c => c + 1)
   }, [])

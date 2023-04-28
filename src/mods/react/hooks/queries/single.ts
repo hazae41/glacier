@@ -6,7 +6,7 @@ import { SingleSchema } from "mods/single/schema.js";
 import { Fetcher } from "mods/types/fetcher.js";
 import { Mutator } from "mods/types/mutator.js";
 import { QueryParams } from "mods/types/params.js";
-import { State } from "mods/types/state.js";
+import { FullState } from "mods/types/state.js";
 import { Updater, UpdaterParams } from "mods/types/updater.js";
 import { DependencyList, useCallback, useEffect, useMemo, useRef, useState } from "react";
 
@@ -31,7 +31,7 @@ export interface SingleQuery<D = unknown, K = unknown> extends Query<D, K> {
    * @param updater Mutation function
    * @param aborter Custom AbortController
    */
-  update(updater: Updater<D>, uparams?: UpdaterParams, aborter?: AbortController): Promise<State<D> | undefined>
+  update(updater: Updater<D>, uparams?: UpdaterParams, aborter?: AbortController): Promise<FullState<D> | undefined>
 }
 
 /**
@@ -58,13 +58,13 @@ export function useQuery<D = unknown, K = string>(
 
   const [, setCounter] = useState(0)
 
-  const stateRef = useRef<State<D> | null>()
+  const stateRef = useRef<FullState<D> | null>()
 
   useMemo(() => {
     stateRef.current = core.getSync<D, K>(cacheKey, paramsRef.current)
   }, [core, cacheKey])
 
-  const setState = useCallback((state?: State<D>) => {
+  const setState = useCallback((state?: FullState<D>) => {
     stateRef.current = state
     setCounter(c => c + 1)
   }, [])

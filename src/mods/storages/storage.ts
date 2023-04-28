@@ -1,6 +1,6 @@
 import { Promiseable } from "libs/promises/promises.js"
 import { AsyncCoder, AsyncEncoder, SyncCoder, SyncEncoder } from "mods/serializers/serializer.js"
-import { State } from "mods/types/state.js"
+import { FullState } from "mods/types/state.js"
 
 export type Storage =
   | SyncStorage
@@ -8,12 +8,12 @@ export type Storage =
 
 export interface SyncStorageParams<D> {
   readonly keySerializer?: SyncEncoder<string>,
-  readonly valueSerializer?: SyncCoder<State<D>>
+  readonly valueSerializer?: SyncCoder<FullState<D>>
 }
 
 export interface AsyncStorageParams<D> {
   readonly keySerializer?: AsyncEncoder<string>,
-  readonly valueSerializer?: AsyncCoder<State<D>>
+  readonly valueSerializer?: AsyncCoder<FullState<D>>
 }
 
 export interface SyncStorage {
@@ -35,7 +35,7 @@ export interface SyncStorage {
    * @param shallow true = won't add this key to the garbage collector
    * @returns 
    */
-  get<D>(key: string, params?: SyncStorageParams<D>): State<D> | undefined
+  get<D>(key: string, params?: SyncStorageParams<D>): FullState<D> | undefined
 
   /**
    * Set the given data to the given key
@@ -44,7 +44,7 @@ export interface SyncStorage {
    * @param shallow true = won't add this key to the garbage collector
    * @returns 
    */
-  set<D>(key: string, value: State<D>, params?: SyncStorageParams<D>): void
+  set<D>(key: string, value: FullState<D>, params?: SyncStorageParams<D>): void
 
   /**
    * Delete the given data from the given key
@@ -74,7 +74,7 @@ export interface AsyncStorage {
    * @param shallow true = won't add this key to the garbage collector
    * @returns 
    */
-  get<D>(key: string, params?: AsyncStorageParams<D>): Promiseable<State<D> | undefined>
+  get<D>(key: string, params?: AsyncStorageParams<D>): Promiseable<FullState<D> | undefined>
 
   /**
    * Set the given data to the given key
@@ -83,7 +83,7 @@ export interface AsyncStorage {
    * @param shallow true = won't add this key to the garbage collector
    * @returns 
    */
-  set<D>(key: string, value: State<D>, params?: AsyncStorageParams<D>): Promiseable<void>
+  set<D>(key: string, value: FullState<D>, params?: AsyncStorageParams<D>): Promiseable<void>
 
   /**
    * Delete the given data from the given key

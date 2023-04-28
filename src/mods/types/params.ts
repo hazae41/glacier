@@ -4,9 +4,9 @@ import { AsyncStorage, AsyncStorageParams, SyncStorage, SyncStorageParams } from
 import { Normalizer } from "mods/types/normalizer.js"
 
 export interface GlobalParams {
-  readonly cooldown?: number
-  readonly expiration?: number
   readonly timeout?: number,
+  readonly cooldown?: number,
+  readonly expiration?: number
 
   readonly equals?: Equalser
 }
@@ -24,9 +24,9 @@ export interface AsyncStorageQueryParams<D> extends AsyncStorageParams<D> {
 }
 
 export interface QueryParams<D = unknown, K = unknown> {
-  readonly cooldown?: number
-  readonly expiration?: number
   readonly timeout?: number,
+  readonly cooldown?: number,
+  readonly expiration?: number
 
   readonly storage?: StorageQueryParams<D>
   readonly keySerializer?: SyncEncoder<K>,

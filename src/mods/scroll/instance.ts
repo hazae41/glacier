@@ -5,7 +5,7 @@ import { Instance } from "mods/types/instance.js";
 import { Mutator } from "mods/types/mutator.js";
 import { QueryParams } from "mods/types/params.js";
 import { Scroller } from "mods/types/scroller.js";
-import { State } from "mods/types/state.js";
+import { FullState } from "mods/types/state.js";
 import { Scroll } from "./helper.js";
 
 /**
@@ -16,9 +16,9 @@ export class ScrollInstance<D = unknown, K = unknown> implements Instance<D[], K
   readonly cacheKey: string | undefined
   readonly mparams: QueryParams<D[], K>
 
-  #init: Promise<State<D[]> | undefined>
+  #init: Promise<FullState<D[]> | undefined>
 
-  #state?: State<D[]> | undefined | null
+  #state?: FullState<D[]> | undefined | null
 
   constructor(
     readonly core: Core,
@@ -65,7 +65,7 @@ export class ScrollInstance<D = unknown, K = unknown> implements Instance<D[], K
   #subscribe() {
     const { core, cacheKey } = this
 
-    const setter = (state?: State<D[]>) =>
+    const setter = (state?: FullState<D[]>) =>
       this.#state = state
 
     core.on(cacheKey, setter)

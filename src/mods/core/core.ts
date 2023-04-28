@@ -6,14 +6,14 @@ import { Equals } from "mods/equals/equals.js"
 import { FullMutator, Mutator } from "mods/types/mutator.js"
 import { OptimisticParams } from "mods/types/optimism.js"
 import { GlobalParams, QueryParams, SyncStorageQueryParams } from "mods/types/params.js"
-import { State } from "mods/types/state.js"
+import { FullState } from "mods/types/state.js"
 
 export type Listener<D> =
-  (x?: State<D>) => void
+  (x?: FullState<D>) => void
 
-export class Core extends Ortho<string, State | undefined> {
+export class Core extends Ortho<string, FullState | undefined> {
 
-  readonly #states = new Map<string, State>()
+  readonly #states = new Map<string, FullState>()
 
   readonly #optimisersByKey = new Map<string, Map<string, Mutator<any>>>()
 
@@ -86,7 +86,7 @@ export class Core extends Ortho<string, State | undefined> {
     const mutator = await callback()
 
     return await this.apply(cacheKey, (previous) => {
-      const mutated: State<D> | undefined = mutator(previous)
+      const mutated: FullState<D> | undefined = mutator(previous)
 
       if (mutated === undefined)
         return mutated
@@ -107,13 +107,13 @@ export class Core extends Ortho<string, State | undefined> {
   getSync<D, K>(
     cacheKey: string | undefined,
     params: QueryParams<D, K> = {}
-  ): State<D> | undefined | null {
+  ): FullState<D> | undefined | null {
     if (cacheKey === undefined)
       return undefined
 
     if (this.#states.has(cacheKey)) {
       const cached = this.#states.get(cacheKey)
-      return cached as State<D>
+      return cached as FullState<D>
     }
 
     const { storage } = params
@@ -134,14 +134,14 @@ export class Core extends Ortho<string, State | undefined> {
   async get<D, K>(
     cacheKey: string | undefined,
     params: QueryParams<D, K> = {}
-  ): Promise<State<D> | undefined> {
+  ): Promise<FullState<D> | undefined> {
     if (cacheKey === undefined)
       return undefined
 
     const cached = this.#states.get(cacheKey)
 
     if (cached !== undefined)
-      return cached as State<D>
+      return cached as FullState<D>
 
     const { storage } = params
 
@@ -172,7 +172,7 @@ export class Core extends Ortho<string, State | undefined> {
    */
   async set<D, K>(
     cacheKey: string | undefined,
-    state: State<D>,
+    state: FullState<D>,
     params: QueryParams<D, K> = {}
   ) {
     if (cacheKey === undefined)
@@ -226,7 +226,7 @@ export class Core extends Ortho<string, State | undefined> {
     params: QueryParams<D, K> = {}
   ) {
     return await this.apply(cacheKey, (previous) => {
-      const mutated: State<D> | undefined = mutator(previous)
+      const mutated: FullState<D> | undefined = mutator(previous)
 
       if (mutated === undefined)
         return mutated
@@ -257,7 +257,7 @@ export class Core extends Ortho<string, State | undefined> {
     mutator: FullMutator<D>,
     params: QueryParams<D, K> = {},
     optimistic?: OptimisticParams
-  ): Promise<State<D> | undefined> {
+  ): Promise<FullState<D> | undefined> {
     if (cacheKey === undefined)
       return
 
@@ -323,11 +323,11 @@ export class Core extends Ortho<string, State | undefined> {
 
     await this.set(cacheKey, next, params)
 
-    return next as State<D>
+    return next as FullState<D>
   }
 
   async normalize<D, K>(
-    parent: State<D>,
+    parent: FullState<D>,
     params: QueryParams<D, K> = {},
     more: { shallow?: boolean } = {}
   ) {
@@ -405,8 +405,6 @@ export class Core extends Ortho<string, State | undefined> {
     const current = this.#states.get(cacheKey)
 
     if (current?.expiration === undefined)
-      return
-    if (current.expiration < 0)
       return
 
     const erase = async () => {

@@ -3,7 +3,7 @@ import { Fetcher } from "mods/types/fetcher.js";
 import { Instance } from "mods/types/instance.js";
 import { Mutator } from "mods/types/mutator.js";
 import { QueryParams } from "mods/types/params.js";
-import { State } from "mods/types/state.js";
+import { FullState } from "mods/types/state.js";
 import { Updater, UpdaterParams } from "mods/types/updater.js";
 import { Single } from "./helper.js";
 
@@ -16,9 +16,9 @@ export class SingleInstance<D = unknown, K = unknown> implements Instance<D, K> 
 
   readonly cacheKey: string | undefined
 
-  #init: Promise<State<D> | undefined>
+  #init: Promise<FullState<D> | undefined>
 
-  #state: State<D> | undefined | null
+  #state: FullState<D> | undefined | null
 
   constructor(
     readonly core: Core,
@@ -63,7 +63,7 @@ export class SingleInstance<D = unknown, K = unknown> implements Instance<D, K> 
   #subscribe() {
     const { core, cacheKey } = this
 
-    const setter = (state?: State<D>) =>
+    const setter = (state?: FullState<D>) =>
       this.#state = state
 
     core.on(this.cacheKey, setter)

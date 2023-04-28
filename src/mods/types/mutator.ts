@@ -1,7 +1,7 @@
-import { MutateState, State } from "mods/types/state.js"
+import { FullState, State } from "mods/types/state.js"
 
 export type Mutator<D = unknown> =
-  (previous?: State<D>) => MutateState<D> | undefined
+  (previous?: FullState<D>) => State<D> | undefined
 
 export type FullMutator<D = unknown> =
-  (previous?: State<D>) => State<D> | undefined
+  (previous?: FullState<D>) => FullState<D> | undefined

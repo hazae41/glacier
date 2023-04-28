@@ -1,7 +1,7 @@
-import { State } from "./state.js"
+import { FullState } from "./state.js"
 
 export type OptimisticYield<D = unknown> =
-  (previous?: State<D>) => OptimisticDataInit<D>
+  (previous?: FullState<D>) => OptimisticDataInit<D>
 
 // export type OptimisticResultInit<D = unknown> =
 //   | OptimisticDataInit<D>

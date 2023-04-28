@@ -1,3 +1,4 @@
+
 export interface Times {
   readonly time?: number,
   readonly cooldown?: number,

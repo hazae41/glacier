@@ -1,5 +1,5 @@
 import { Mutator } from "mods/types/mutator.js"
-import { State } from "mods/types/state.js"
+import { FullState } from "mods/types/state.js"
 
 export interface Query<D = unknown, K = unknown> {
   /**
@@ -67,20 +67,20 @@ export interface Query<D = unknown, K = unknown> {
    * Fetch with cooldown
    * @example You want to fetch and don't care if it's cooldowned
    */
-  fetch(aborter?: AbortController): Promise<State<D> | undefined>
+  fetch(aborter?: AbortController): Promise<FullState<D> | undefined>
 
   /**
    * Fetch without cooldown
    * @example User clicked on the refresh button
    * @example You just made a POST request and want to get some fresh data
    */
-  refetch(aborter?: AbortController): Promise<State<D> | undefined>
+  refetch(aborter?: AbortController): Promise<FullState<D> | undefined>
 
   /**
    * Mutate the cache
    * @param res 
    */
-  mutate(mutator: Mutator<D>): Promise<State<D> | undefined>
+  mutate(mutator: Mutator<D>): Promise<FullState<D> | undefined>
 
   /**
    * Clear the cache

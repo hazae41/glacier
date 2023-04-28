@@ -1,4 +1,4 @@
-export interface MutateState<D = unknown> {
+export interface State<D = unknown> {
   data?: D
   error?: unknown
   time?: number,
@@ -6,12 +6,7 @@ export interface MutateState<D = unknown> {
   expiration?: number
 }
 
-export interface State<D = unknown> {
-  data?: D
-  error?: unknown
-  time?: number,
-  cooldown?: number
-  expiration?: number,
+export interface FullState<D = unknown> extends State<D> {
   realData?: D
   realTime?: number
   optimistic?: boolean,
