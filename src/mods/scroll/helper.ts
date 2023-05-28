@@ -78,6 +78,8 @@ export namespace Scroll {
 
           const result = await fetcher(key, { signal })
 
+          result.ignore?.()
+
           if (signal.aborted)
             throw new AbortError(signal)
 
@@ -182,6 +184,8 @@ export namespace Scroll {
           const { signal } = aborter
 
           const result = await fetcher(key, { signal })
+
+          result.ignore?.()
 
           if (signal.aborted)
             throw new AbortError(signal)

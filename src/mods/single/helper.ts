@@ -68,6 +68,8 @@ export namespace Single {
 
           const result = await fetcher(key, { signal })
 
+          result.ignore?.()
+
           if (signal.aborted)
             throw new AbortError(signal)
 
@@ -191,10 +193,12 @@ export namespace Single {
         }
       }
 
+      const result = final
+
+      result.ignore?.()
+
       if (signal.aborted)
         throw new AbortError(signal)
-
-      const result = final
 
       if ("error" in result)
         throw result.error

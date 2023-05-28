@@ -4,6 +4,7 @@ import { Times } from "./times.js"
 
 export interface FailInit<T = unknown> extends Times {
   readonly error: T
+  ignore?(): void
 }
 
 export class Fail<T = unknown> extends Err<T> implements FailInit<T> {
@@ -17,7 +18,10 @@ export class Fail<T = unknown> extends Err<T> implements FailInit<T> {
 
   static from(init: FailInit) {
     const { error, time, cooldown, expiration } = init
-    return new this(error, { time, cooldown, expiration })
+
+    init.ignore?.()
+
+    return new Fail(error, { time, cooldown, expiration })
   }
 
   get time() {
