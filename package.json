@@ -22,22 +22,22 @@
     "prepare": "npm run build"
   },
   "dependencies": {
-    "@hazae41/bytes": "^1.1.6",
+    "@hazae41/bytes": "^1.1.14",
     "@hazae41/mutex": "^1.2.5",
-    "@hazae41/result": "^1.0.16"
+    "@hazae41/result": "^1.0.34"
   },
   "peerDependencies": {
     "react": ">=17"
   },
   "devDependencies": {
     "@hazae41/phobos": "^1.0.10",
-    "@rollup/plugin-typescript": "^11.1.0",
-    "@types/node": "^20.1.0",
-    "@types/react": "^18.2.5",
-    "rimraf": "^5.0.0",
-    "rollup": "^3.21.5",
+    "@rollup/plugin-typescript": "^11.1.1",
+    "@types/node": "^20.2.5",
+    "@types/react": "^18.2.7",
+    "rimraf": "^5.0.1",
+    "rollup": "^3.23.0",
     "rollup-plugin-dts": "^5.3.0",
-    "rollup-plugin-node-externals": "^5.1.2",
+    "rollup-plugin-node-externals": "^6.0.1",
     "typescript": "^5.0.4"
   },
   "exports": {

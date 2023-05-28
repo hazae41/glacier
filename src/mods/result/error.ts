@@ -2,11 +2,11 @@ import { Err } from "@hazae41/result"
 import { Promiseable } from "libs/promises/promises.js"
 import { Times } from "./times.js"
 
-export interface ErrorInit<T = unknown> extends Times {
+export interface FailInit<T = unknown> extends Times {
   readonly error: T
 }
 
-export class Error<T = unknown> extends Err<T> implements ErrorInit<T> {
+export class Fail<T = unknown> extends Err<T> implements FailInit<T> {
 
   constructor(
     readonly error: T,
@@ -15,7 +15,7 @@ export class Error<T = unknown> extends Err<T> implements ErrorInit<T> {
     super(error)
   }
 
-  static from(init: ErrorInit) {
+  static from(init: FailInit) {
     const { error, time, cooldown, expiration } = init
     return new this(error, { time, cooldown, expiration })
   }
@@ -36,16 +36,16 @@ export class Error<T = unknown> extends Err<T> implements ErrorInit<T> {
     return false
   }
 
-  isError(): this is Error<T> {
+  isError(): this is Fail<T> {
     return true
   }
 
-  async mapErr<U>(mapper: (data: T) => Promiseable<U>): Promise<Error<U>> {
-    return new Error<U>(await mapper(this.error), this.times)
+  async mapErr<U>(mapper: (data: T) => Promiseable<U>): Promise<Fail<U>> {
+    return new Fail<U>(await mapper(this.error), this.times)
   }
 
-  mapErrSync<U>(mapper: (data: T) => U): Error<U> {
-    return new Error<U>(mapper(this.error), this.times)
+  mapErrSync<U>(mapper: (data: T) => U): Fail<U> {
+    return new Fail<U>(mapper(this.error), this.times)
   }
 
 }
