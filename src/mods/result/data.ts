@@ -41,11 +41,11 @@ export class Data<T> extends Ok<T> implements DataInit<T> {
   }
 
   async map<U>(mapper: (data: T) => Promiseable<U>) {
-    return new Data<U>(await mapper(this.data), this.times)
+    return new Data<U>(await mapper(this.get()), this.times)
   }
 
   mapSync<U>(mapper: (data: T) => U) {
-    return new Data<U>(mapper(this.data), this.times)
+    return new Data<U>(mapper(this.get()), this.times)
   }
 
 }
