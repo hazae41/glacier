@@ -16,7 +16,7 @@ export class Fail<T = unknown> extends Err<T> implements FailInit<T> {
     super(error)
   }
 
-  static from(init: FailInit) {
+  static from<T>(init: FailInit<T>) {
     const { error, time, cooldown, expiration } = init
 
     init.ignore?.()
