@@ -7,6 +7,14 @@ export interface DataInit<T> extends Times {
   ignore?(): void
 }
 
+export namespace Data {
+
+  export type Infer<T> = Data<Inner<T>>
+
+  export type Inner<T> = T extends Data<infer Inner> ? Inner : never
+
+}
+
 export class Data<T> extends Ok<T> implements DataInit<T> {
 
   constructor(

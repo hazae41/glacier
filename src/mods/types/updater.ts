@@ -1,4 +1,4 @@
-import { FetchedInit } from "mods/result/result.js"
+import { FetchedInit } from "mods/result/fetched.js"
 import { Times } from "mods/result/times.js"
 import { OptimisticYield } from "./optimism.js"
 
