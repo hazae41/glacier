@@ -15,7 +15,7 @@ export class AesGcmCoder implements AsyncCoder<unknown> {
       hash: "SHA-256"
     }, pbkdf2, { name: "AES-GCM", length: 256 }, false, ["encrypt", "decrypt"])
 
-    return new this(key)
+    return new AesGcmCoder(key)
   }
 
   async stringify<T>(value: T) {
