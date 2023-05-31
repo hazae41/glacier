@@ -7,6 +7,13 @@ export class HmacEncoder implements AsyncEncoder<string> {
     readonly key: CryptoKey
   ) { }
 
+  /**
+   * @deprecated
+   * @param pbkdf2 
+   * @param salt 
+   * @param iterations 
+   * @returns 
+   */
   static async fromPBKDF2(pbkdf2: CryptoKey, salt: Uint8Array, iterations: number) {
     const key = await crypto.subtle.deriveKey({
       name: "PBKDF2",
@@ -15,7 +22,7 @@ export class HmacEncoder implements AsyncEncoder<string> {
       hash: "SHA-256"
     }, pbkdf2, { name: "HMAC", hash: "SHA-256" }, false, ["sign"])
 
-    return new this(key)
+    return new HmacEncoder(key)
   }
 
   async stringify(value: string) {

@@ -7,6 +7,13 @@ export class AesGcmCoder implements AsyncCoder<unknown> {
     readonly key: CryptoKey
   ) { }
 
+  /**
+   * @deprecated
+   * @param pbkdf2 
+   * @param salt 
+   * @param iterations 
+   * @returns 
+   */
   static async fromPBKDF2(pbkdf2: CryptoKey, salt: Uint8Array, iterations: number) {
     const key = await crypto.subtle.deriveKey({
       name: "PBKDF2",
