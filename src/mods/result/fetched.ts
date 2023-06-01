@@ -1,4 +1,4 @@
-import { Err, Ok, Result, Wrapper } from "@hazae41/result"
+import { Err, Ok, Result } from "@hazae41/result"
 import { Data, DataInit } from "./data.js"
 import { Fail, FailInit } from "./fail.js"
 import { Times } from "./times.js"
@@ -30,6 +30,11 @@ export namespace Fetched {
       return Data.from(init)
   }
 
+  export interface Wrapper<T> {
+    unwrap(): T
+    times?: Times
+  }
+
   export function rewrap<T extends Ok.Infer<T>>(wrapper: T, times?: Times): Data<Ok.Inner<T>>
 
   export function rewrap<T extends Err.Infer<T>>(wrapper: T, times?: Times): Fail<Err.Inner<T>>
@@ -38,11 +43,11 @@ export namespace Fetched {
 
   export function rewrap<T, E>(wrapper: Wrapper<T>, times?: Times): Fetched<T, E>
 
-  export function rewrap<T, E>(wrapper: Wrapper<T>, times: Times = {}) {
+  export function rewrap<T, E>(wrapper: Wrapper<T>, times?: Times) {
     try {
-      return new Data(wrapper.unwrap(), times)
+      return new Data(wrapper.unwrap(), wrapper.times ?? times)
     } catch (error: unknown) {
-      return new Fail(error as E, times)
+      return new Fail(error as E, wrapper.times ?? times)
     }
   }
 
