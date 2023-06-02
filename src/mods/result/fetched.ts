@@ -3,13 +3,21 @@ import { Data, DataInit } from "./data.js"
 import { Fail, FailInit } from "./fail.js"
 import { Times } from "./times.js"
 
-export type FetchedInit<D = unknown, E = unknown> =
+export type FetchedInit<D = unknown, F = unknown> =
   | DataInit<D>
-  | FailInit<E>
+  | FailInit<F>
 
-export type Fetched<D = unknown, E = unknown> =
+export namespace FetchedInit {
+
+  export type Infer<T> =
+    | DataInit.Infer<T>
+    | FailInit.Infer<T>
+
+}
+
+export type Fetched<D = unknown, F = unknown> =
   | Data<D>
-  | Fail<E>
+  | Fail<F>
 
 export namespace Fetched {
 
@@ -17,27 +25,17 @@ export namespace Fetched {
     | Data.Infer<T>
     | Fail.Infer<T>
 
-  export function from<D>(init: DataInit<D>): Data<D>
-
-  export function from<E>(init: FailInit<E>): Fail<E>
-
-  export function from<D, E>(init: FetchedInit<D, E>): Fetched<D, E>
-
-  export function from<D, E>(init: FetchedInit<D, E>): Fetched<D, E> {
+  export function from<T extends FetchedInit.Infer<T>>(init: T): Fetched<DataInit.Inner<T>, FailInit.Inner<T>> {
     if ("error" in init)
-      return Fail.from(init)
+      return Fail.from<FailInit.Inner<T>>(init)
     else
-      return Data.from(init)
+      return Data.from<DataInit.Inner<T>>(init)
   }
 
   export interface Wrapper<T> {
     unwrap(): T
     times?: Times
   }
-
-  export function rewrap<T extends Ok.Infer<T>>(wrapper: T, times?: Times): Data<Ok.Inner<T>>
-
-  export function rewrap<T extends Err.Infer<T>>(wrapper: T, times?: Times): Fail<Err.Inner<T>>
 
   export function rewrap<T extends Result.Infer<T>>(wrapper: T, times?: Times): Fetched<Ok.Inner<T>, Err.Inner<T>>
 

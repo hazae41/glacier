@@ -7,6 +7,14 @@ export interface FailInit<T = unknown> extends Times {
   ignore?(): void
 }
 
+export namespace FailInit {
+
+  export type Infer<T> = FailInit<Inner<T>>
+
+  export type Inner<T> = T extends FailInit<infer Inner> ? Inner : never
+
+}
+
 export namespace Fail {
 
   export type Infer<T> = Fail<Inner<T>>

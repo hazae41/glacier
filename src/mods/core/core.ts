@@ -1,15 +1,16 @@
 import { Mutex } from "@hazae41/mutex"
-import { None, Option, Some } from "@hazae41/option"
+import { Option } from "@hazae41/option"
 import { Err, Ok, Panic, Result } from "@hazae41/result"
 import { Data, Fail, FakeDataState, FakeFailState, FakeState, Fetched, RealDataState, RealFailState, RealState, State, StoredState, Times } from "index.js"
 import { Ortho } from "libs/ortho/ortho.js"
 import { Time } from "libs/time/time.js"
+import { Optional } from "libs/types/optional.js"
 import { DEFAULT_EQUALS } from "mods/defaults.js"
 import { Mutator } from "mods/types/mutator.js"
 import { GlobalParams, QueryParams, SyncStorageQueryParams } from "mods/types/params.js"
 
 export type Listener<D = unknown> =
-  (x?: State<D>) => void
+  (x: Optional<State<D>>) => void
 
 export class AsyncStorageError extends Error {
   readonly #class = AsyncStorageError
@@ -23,8 +24,8 @@ export class AsyncStorageError extends Error {
 
 export class Core {
 
-  readonly states = new Ortho<string, Option<State>>()
-  readonly aborters = new Ortho<string, Option<AbortController>>()
+  readonly states = new Ortho<string, Optional<State>>()
+  readonly aborters = new Ortho<string, Optional<AbortController>>()
 
   readonly #states = new Map<string, State>()
 
@@ -118,23 +119,23 @@ export class Core {
   getSync<D, K>(
     cacheKey: string,
     params: QueryParams<D, K> = {}
-  ): Result<Option<State<D>>, AsyncStorageError> {
+  ): Result<Optional<State<D>>, AsyncStorageError> {
     const cached = this.#states.get(cacheKey)
 
     if (cached !== undefined)
-      return new Ok(new Some(cached as State<D>))
+      return new Ok(cached as State<D>)
 
     const { storage } = params
 
     if (!storage?.storage)
-      return new Ok(new None())
+      return new Ok(undefined)
     if (storage.storage.async)
       return new Err(new AsyncStorageError())
 
     const stored = storage.storage.get<D>(cacheKey, storage as SyncStorageQueryParams<D>)
 
     if (stored === undefined)
-      return new Ok(new None())
+      return new Ok(undefined)
 
     const { time, cooldown, expiration } = stored
     const times = { time, cooldown, expiration }
@@ -143,14 +144,14 @@ export class Core {
       const data = new Data(stored.data.inner, times)
       const state = new RealDataState(data)
       this.#states.set(cacheKey, state)
-      return new Ok(new Some(state))
+      return new Ok(state)
     }
 
     if (stored.error !== undefined) {
       const fail = new Fail(stored.error.inner, times)
       const state = new RealFailState(fail)
       this.#states.set(cacheKey, state)
-      return new Ok(new Some(state))
+      return new Ok(state)
     }
 
     throw new Panic(`Invalid stored state`)
@@ -159,23 +160,23 @@ export class Core {
   async get<D, K>(
     cacheKey: string,
     params: QueryParams<D, K> = {}
-  ): Promise<Option<State<D>>> {
+  ): Promise<Optional<State<D>>> {
     const cached = this.#states.get(cacheKey)
 
     if (cached !== undefined)
-      return new Some(cached as State<D>)
+      return cached as State<D>
 
     const { storage } = params
 
     if (!storage?.storage)
-      return new None()
+      return undefined
 
     const stored = storage.storage.async
       ? await storage.storage.get<D>(cacheKey, storage)
       : storage.storage.get<D>(cacheKey, storage as SyncStorageQueryParams<D>)
 
     if (stored === undefined)
-      return new None()
+      return undefined
 
     const { time, cooldown, expiration } = stored
     const times = { time, cooldown, expiration }
@@ -184,14 +185,14 @@ export class Core {
       const data = new Data(stored.data.inner, times)
       const state = new RealDataState(data)
       this.#states.set(cacheKey, state)
-      return new Some(state)
+      return state
     }
 
     if (stored.error !== undefined) {
       const fail = new Fail(stored.error.inner, times)
       const state = new RealFailState(fail)
       this.#states.set(cacheKey, state)
-      return new Some(state)
+      return state
     }
 
     throw new Panic(`Invalid stored state`)
@@ -206,17 +207,21 @@ export class Core {
    */
   async set<D, K>(
     cacheKey: string,
-    state: Option<State<D>>,
+    state: Optional<State<D>>,
     params: QueryParams<D, K> = {}
   ) {
-    this.#states.set(cacheKey, state)
+    if (state !== undefined)
+      this.#states.set(cacheKey, state)
+    else
+      this.#states.delete(cacheKey)
+
     this.states.publish(cacheKey, state)
 
     const { storage } = params
 
     if (!storage?.storage)
       return
-    if (state.real === undefined)
+    if (state?.real === undefined)
       return
 
     const { time, cooldown, expiration } = state.real
@@ -231,10 +236,7 @@ export class Core {
       stored = { error, time, cooldown, expiration }
     }
 
-    if (storage.storage.async)
-      await storage.storage.set(cacheKey, stored, storage)
-    else
-      storage.storage.set(cacheKey, stored, storage as SyncStorageQueryParams<D>)
+    await storage.storage.set(cacheKey, stored, storage as any)
   }
 
   /**
@@ -249,8 +251,8 @@ export class Core {
     this.#states.delete(cacheKey)
     this.#mutexes.delete(cacheKey)
     this.#optimisersByKey.delete(cacheKey)
-    this.aborters.publish(cacheKey, new None())
-    this.states.publish(cacheKey, new None())
+    this.aborters.publish(cacheKey, undefined)
+    this.states.publish(cacheKey, undefined)
 
     const { storage } = params
 
@@ -266,37 +268,38 @@ export class Core {
     params: QueryParams<D, K> = {}
   ) {
     const previous = await this.get(cacheKey, params)
-    const fetched = mutator(previous).mapSync(x => Fetched.from(x))
+
+    const fetched = Option.mapSync(mutator(previous), Fetched.from)
 
     return await this.apply(cacheKey, previous, fetched, params)
   }
 
-  #realMerge<D>(fetched: Option<Fetched<D>>, current: Option<State<D>>): Option<RealState<D>> {
-    if (fetched.isNone())
-      return new None()
+  #realMerge<D>(fetched: Optional<Fetched<D>>, current: Optional<State<D>>): Optional<RealState<D>> {
+    if (fetched === undefined)
+      return undefined
 
     const times: Times = {
-      ...current.inner?.real satisfies Times | undefined,
-      ...fetched.inner satisfies Times
+      ...current?.real satisfies Times | undefined,
+      ...fetched satisfies Times
     }
 
-    if (fetched.inner.isData())
-      return new Some(new RealDataState(new Data(fetched.inner.data, times)))
-    return new Some(new RealFailState(new Fail(fetched.inner.error, times)))
+    if (fetched.isData())
+      return new RealDataState(new Data(fetched.data, times))
+    return new RealFailState(new Fail(fetched.error, times))
   }
 
-  #fakeMerge<D>(fetched: Option<Fetched<D>>, current: Option<State<D>>): Option<FakeState<D>> {
-    if (fetched.isNone())
-      return new None()
+  #fakeMerge<D>(fetched: Optional<Fetched<D>>, current: Optional<State<D>>): Optional<FakeState<D>> {
+    if (fetched === undefined)
+      return undefined
 
     const times: Times = {
-      ...current.inner?.current satisfies Times | undefined,
-      ...fetched.inner satisfies Times
+      ...current?.current satisfies Times | undefined,
+      ...fetched satisfies Times
     }
 
-    if (fetched.inner.isData())
-      return new Some(new FakeDataState(new Data(fetched.inner.data, times), current.inner?.real))
-    return new Some(new FakeFailState(new Fail(fetched.inner.error, times), current.inner?.real))
+    if (fetched.isData())
+      return new FakeDataState(new Data(fetched.data, times), current?.real)
+    return new FakeFailState(new Fail(fetched.error, times), current?.real)
   }
 
   /**
@@ -309,26 +312,26 @@ export class Core {
    */
   async apply<D, K>(
     cacheKey: string,
-    previous: Option<State<D>>,
-    fetched: Option<Fetched<D>>,
+    previous: Optional<State<D>>,
+    fetched: Optional<Fetched<D>>,
     params: QueryParams<D, K> = {}
-  ): Promise<Option<State<D>>> {
+  ): Promise<Optional<State<D>>> {
     const { equals = DEFAULT_EQUALS } = params
 
     const next = this.#realMerge(fetched, previous)
 
-    if (next.isSome()) {
-      if (previous.inner?.real && Time.isBefore(next.inner.real.time, previous.inner.real.time))
-        next.inner.real = previous.inner.real
+    if (next !== undefined) {
+      if (previous?.real && Time.isBefore(next.real.time, previous.real.time))
+        next.real = previous.real
 
-      if (next.inner.real.isData())
-        next.inner.real = next.inner.real.set(await this.normalize(next.inner.real.data, params))
+      if (next.real.isData())
+        next.real = next.real.set(await this.normalize(next.real.data, params))
 
-      if (next.inner.real.isData() && previous.inner?.real?.isData() && equals(next.inner.real.data, previous.inner.real.data))
-        next.inner.real = next.inner.real.set(previous.inner.real.data)
+      if (next.real.isData() && previous?.real?.isData() && equals(next.real.data, previous.real.data))
+        next.real = next.real.set(previous.real.data)
 
-      if (next.inner.real.isFail() && previous.inner?.real?.isFail() && equals(next.inner.real.error, previous.inner.real.error))
-        next.inner.real = next.inner.real.setErr(previous.inner.real.error)
+      if (next.real.isFail() && previous?.real?.isFail() && equals(next.real.error, previous.real.error))
+        next.real = next.real.setErr(previous.real.error)
     }
 
     const optimized = await this.optimize(cacheKey, next)
@@ -336,17 +339,21 @@ export class Core {
     return optimized
   }
 
-  async optimize<D>(cacheKey: string, real: Option<RealState<D>>): Promise<Option<State<D>>> {
+  async optimize<D>(
+    cacheKey: string,
+    real: Optional<RealState<D>>
+  ): Promise<Optional<State<D>>> {
     const optimisers = this.#optimisersByKey.get(cacheKey) as Map<string, Mutator<D>>
 
     if (optimisers === undefined)
       return real
 
-    let current: Option<State<D>> = real
+    let current: Optional<State<D>> = real
 
     for (const optimiser of optimisers.values()) {
-      const optimistic = optimiser(current).mapSync(x => Fetched.from(x))
-      current = this.#fakeMerge(optimistic, current)
+      const optimistic = optimiser(current)
+      const fetched = Option.mapSync(optimistic, Fetched.from)
+      current = this.#fakeMerge(fetched, current)
     }
 
     return current

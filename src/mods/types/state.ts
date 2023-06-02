@@ -1,4 +1,5 @@
 import { Data, Fail, Fetched } from "index.js"
+import { Optional } from "libs/types/optional.js"
 
 export interface StoredState<D = unknown> {
   data?: { inner: D }
@@ -64,7 +65,7 @@ export class FakeDataState<D = unknown, F = unknown>  {
 
   constructor(
     public fake: Data<D>,
-    public real?: Fetched<D, F>,
+    public real: Optional<Fetched<D, F>>
   ) { }
 
   get current() {
@@ -77,7 +78,7 @@ export class FakeFailState<D = unknown, F = unknown> {
 
   constructor(
     public fake: Fail<F>,
-    public real?: Fetched<D, F>
+    public real: Optional<Fetched<D, F>>
   ) { }
 
   get current() {

@@ -1,6 +1,6 @@
-import { Option } from "@hazae41/option"
 import { FetchedInit } from "index.js"
+import { Optional } from "libs/types/optional.js"
 import { State } from "./state.js"
 
 export type Mutator<D = unknown> =
-  (previous: Option<State<D>>) => Option<FetchedInit<D>>
+  (previous?: State<D>) => Optional<FetchedInit<D>>
