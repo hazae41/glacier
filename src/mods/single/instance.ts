@@ -69,7 +69,7 @@ export class SingleInstance<D = unknown, K = unknown> implements Instance<D, K> 
     core.on(this.cacheKey, setter)
 
     new FinalizationRegistry(() => {
-      core.off(cacheKey, setter)
+      core.offState(cacheKey, setter)
     }).register(this, undefined)
   }
 

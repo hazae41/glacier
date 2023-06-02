@@ -1,7 +1,6 @@
-import { FullState, State } from "mods/types/state.js"
+import { Option } from "@hazae41/option"
+import { FetchedInit } from "index.js"
+import { State } from "./state.js"
 
 export type Mutator<D = unknown> =
-  (previous?: FullState<D>) => State<D> | undefined
-
-export type FullMutator<D = unknown> =
-  (previous?: FullState<D>) => FullState<D> | undefined
+  (previous: Option<State<D>>) => Option<FetchedInit<D>>

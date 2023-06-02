@@ -1,8 +1,8 @@
 import { Ok } from "@hazae41/result"
 import { Promiseable } from "libs/promises/promises.js"
-import { Times } from "./times.js"
+import { Times, TimesInit } from "./times.js"
 
-export interface DataInit<T> extends Times {
+export interface DataInit<T> extends TimesInit {
   readonly data: T
   ignore?(): void
 }
@@ -15,13 +15,23 @@ export namespace Data {
 
 }
 
-export class Data<T> extends Ok<T> implements DataInit<T> {
+export class Data<T> extends Ok<T> implements DataInit<T>, Times {
 
-  constructor(
-    readonly data: T,
-    readonly times: Times = {}
-  ) {
+  readonly data: T
+
+  readonly time: number
+  readonly cooldown?: number
+  readonly expiration?: number
+
+  constructor(data: T, times: TimesInit = {}) {
     super(data)
+
+    const { time = Date.now(), cooldown, expiration } = times
+
+    this.data = data
+    this.time = time
+    this.cooldown = cooldown
+    this.expiration = expiration
   }
 
   static from<T>(init: DataInit<T>) {
@@ -32,32 +42,52 @@ export class Data<T> extends Ok<T> implements DataInit<T> {
     return new Data(data, { time, cooldown, expiration })
   }
 
-  get time() {
-    return this.times.time
-  }
-
-  get cooldown() {
-    return this.times.cooldown
-  }
-
-  get expiration() {
-    return this.times.expiration
-  }
-
   isData(): this is Data<T> {
     return true
   }
 
-  isError(): false {
+  isFail(): false {
     return false
   }
 
+  set<U>(inner: U): Data<U> {
+    return new Data(inner, this)
+  }
+
+  setErr(inner: unknown): this {
+    return this
+  }
+
   async map<U>(mapper: (data: T) => Promiseable<U>) {
-    return new Data<U>(await mapper(this.get()), this.times)
+    return new Data<U>(await mapper(this.get()), this)
   }
 
   mapSync<U>(mapper: (data: T) => U) {
-    return new Data<U>(mapper(this.get()), this.times)
+    return new Data<U>(mapper(this.get()), this)
+  }
+
+  /**
+   * Transform Result<Promise<T>, E> into Promise<Result<T, E>>
+   * @returns `await this.inner` if `Ok`, `this` if `Err`
+   */
+  async await(): Promise<Data<Awaited<T>>> {
+    return new Data(await this.inner, this)
+  }
+
+  /**
+   * Transform Result<T, Promise<E>> into Promise<Result<T, E>>
+   * @returns `await this.inner` if `Err`, `this` if `Ok`
+   */
+  async awaitErr(): Promise<this> {
+    return this
+  }
+
+  /**
+   * Transform Result<Promise<T>, Promise<E>> into Promise<Result<T, E>>
+   * @returns `await this.inner`
+   */
+  async awaitAll(): Promise<Data<Awaited<T>>> {
+    return await this.await()
   }
 
 }

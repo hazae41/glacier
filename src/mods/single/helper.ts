@@ -46,7 +46,7 @@ export namespace Single {
     if (cacheKey === undefined)
       return
 
-    return await core.lock(cacheKey, async () => {
+    return await core.fetch(cacheKey, async () => {
       const current = await core.get(cacheKey, params)
 
       if (key === undefined)

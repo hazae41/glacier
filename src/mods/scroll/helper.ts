@@ -51,7 +51,7 @@ export namespace Scroll {
       equals = DEFAULT_EQUALS
     } = params
 
-    return await core.lock(cacheKey, async () => {
+    return await core.fetch(cacheKey, async () => {
       const current = await core.get(cacheKey, params)
 
       if (scroller === undefined)
@@ -156,7 +156,7 @@ export namespace Scroll {
     if (cacheKey === undefined)
       return
 
-    return await core.lock(cacheKey, async () => {
+    return await core.fetch(cacheKey, async () => {
       const current = await core.get(cacheKey, params)
 
       if (scroller === undefined)

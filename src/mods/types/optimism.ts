@@ -1,7 +1,7 @@
-import { FullState } from "./state.js"
+import { State } from "./state.js"
 
 export type OptimisticYield<D = unknown> =
-  (previous?: FullState<D>) => OptimisticDataInit<D>
+  (previous?: State<D>) => OptimisticDataInit<D>
 
 // export type OptimisticResultInit<D = unknown> =
 //   | OptimisticDataInit<D>
@@ -17,7 +17,16 @@ export interface OptimisticDataInit<D = unknown> {
 //   time?: number
 // }
 
-export interface OptimisticParams {
+export type OptimisticParams =
+  | OptimisticSet
+  | OptimisticUnset
+
+export interface OptimisticSet {
+  action: "set",
+  uuid: string
+}
+
+export interface OptimisticUnset {
   action: "set" | "unset",
   uuid: string
 }

@@ -1,6 +1,6 @@
 import { Err } from "@hazae41/result"
 import { Promiseable } from "libs/promises/promises.js"
-import { Times } from "./times.js"
+import { Times, TimesInit } from "./times.js"
 
 export interface FailInit<T = unknown> extends Times {
   readonly error: T
@@ -15,13 +15,23 @@ export namespace Fail {
 
 }
 
-export class Fail<T = unknown> extends Err<T> implements FailInit<T> {
+export class Fail<T = unknown> extends Err<T> implements FailInit<T>, Times {
 
-  constructor(
-    readonly error: T,
-    readonly times: Times = {}
-  ) {
+  readonly error: T
+
+  readonly time: number
+  readonly cooldown?: number
+  readonly expiration?: number
+
+  constructor(error: T, times: TimesInit = {}) {
     super(error)
+
+    const { time = Date.now(), cooldown, expiration } = times
+
+    this.error = error
+    this.time = time
+    this.cooldown = cooldown
+    this.expiration = expiration
   }
 
   static from<T>(init: FailInit<T>) {
@@ -32,32 +42,52 @@ export class Fail<T = unknown> extends Err<T> implements FailInit<T> {
     return new Fail(error, { time, cooldown, expiration })
   }
 
-  get time() {
-    return this.times.time
-  }
-
-  get cooldown() {
-    return this.times.cooldown
-  }
-
-  get expiration() {
-    return this.times.expiration
-  }
-
   isData(): false {
     return false
   }
 
-  isError(): this is Fail<T> {
+  isFail(): this is Fail<T> {
     return true
   }
 
+  set(inner: unknown): this {
+    return this
+  }
+
+  setErr<U>(inner: U): Fail<U> {
+    return new Fail(inner, this)
+  }
+
   async mapErr<U>(mapper: (data: T) => Promiseable<U>): Promise<Fail<U>> {
-    return new Fail<U>(await mapper(this.get()), this.times)
+    return new Fail<U>(await mapper(this.get()), this)
   }
 
   mapErrSync<U>(mapper: (data: T) => U): Fail<U> {
-    return new Fail<U>(mapper(this.get()), this.times)
+    return new Fail<U>(mapper(this.get()), this)
+  }
+
+  /**
+   * Transform Result<Promise<T>, E> into Promise<Result<T, E>>
+   * @returns `await this.inner` if `Ok`, `this` if `Err`
+   */
+  async await(): Promise<this> {
+    return this
+  }
+
+  /**
+   * Transform Result<T, Promise<E>> into Promise<Result<T, E>>
+   * @returns `await this.inner` if `Err`, `this` if `Ok`
+   */
+  async awaitErr(): Promise<Fail<Awaited<T>>> {
+    return new Fail(await this.inner, this)
+  }
+
+  /**
+   * Transform Result<Promise<T>, Promise<E>> into Promise<Result<T, E>>
+   * @returns `await this.inner`
+   */
+  async awaitAll(): Promise<Fail<Awaited<T>>> {
+    return await this.awaitErr()
   }
 
 }

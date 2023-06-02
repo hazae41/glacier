@@ -71,7 +71,7 @@ export class ScrollInstance<D = unknown, K = unknown> implements Instance<D[], K
     core.on(cacheKey, setter)
 
     new FinalizationRegistry(() => {
-      core.off(cacheKey, setter)
+      core.offState(cacheKey, setter)
     }).register(this, undefined)
   }
 
