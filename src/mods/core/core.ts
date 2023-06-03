@@ -1,7 +1,7 @@
 import { Mutex } from "@hazae41/mutex"
 import { Option } from "@hazae41/option"
 import { Err, Ok, Panic, Result } from "@hazae41/result"
-import { Data, Fail, FakeDataState, FakeFailState, FakeState, Fetched, RealDataState, RealFailState, RealState, State, StoredState, Times } from "index.js"
+import { Data, Fail, FakeState, Fetched, RealState, State, StoredState, Times } from "index.js"
 import { Ortho } from "libs/ortho/ortho.js"
 import { Time } from "libs/time/time.js"
 import { Optional } from "libs/types/optional.js"
@@ -142,14 +142,14 @@ export class Core {
 
     if (stored.data !== undefined) {
       const data = new Data(stored.data.inner, times)
-      const state = new RealDataState(data)
+      const state = new RealState<D, unknown>(data)
       this.#states.set(cacheKey, state)
       return new Ok(state)
     }
 
     if (stored.error !== undefined) {
       const fail = new Fail(stored.error.inner, times)
-      const state = new RealFailState(fail)
+      const state = new RealState<D, unknown>(fail)
       this.#states.set(cacheKey, state)
       return new Ok(state)
     }
@@ -183,14 +183,14 @@ export class Core {
 
     if (stored.data !== undefined) {
       const data = new Data(stored.data.inner, times)
-      const state = new RealDataState(data)
+      const state = new RealState<D, unknown>(data)
       this.#states.set(cacheKey, state)
       return state
     }
 
     if (stored.error !== undefined) {
       const fail = new Fail(stored.error.inner, times)
-      const state = new RealFailState(fail)
+      const state = new RealState<D, unknown>(fail)
       this.#states.set(cacheKey, state)
       return state
     }
@@ -207,14 +207,10 @@ export class Core {
    */
   async set<D, K>(
     cacheKey: string,
-    state: Optional<State<D>>,
+    state: State<D> = new RealState(undefined),
     params: QueryParams<D, K> = {}
   ) {
-    if (state !== undefined)
-      this.#states.set(cacheKey, state)
-    else
-      this.#states.delete(cacheKey)
-
+    this.#states.set(cacheKey, state)
     this.states.publish(cacheKey, state)
 
     const { storage } = params
@@ -244,7 +240,7 @@ export class Core {
    * @param cacheKey 
    * @returns 
    */
-  async delete<D, K>(
+  async garbage<D, K>(
     cacheKey: string,
     params: QueryParams<D, K> = {}
   ) {
@@ -267,39 +263,42 @@ export class Core {
     mutator: Mutator<D>,
     params: QueryParams<D, K> = {}
   ) {
-    const previous = await this.get(cacheKey, params)
+    let previous = await this.get(cacheKey, params)
+
+    if (previous === undefined)
+      previous = new RealState(undefined)
 
     const fetched = Option.mapSync(mutator(previous), Fetched.from)
 
     return await this.apply(cacheKey, previous, fetched, params)
   }
 
-  #realMerge<D>(fetched: Optional<Fetched<D>>, current: Optional<State<D>>): Optional<RealState<D>> {
+  #realMerge<D>(previous: State<D>, fetched: Optional<Fetched<D>>): RealState<D> {
     if (fetched === undefined)
-      return undefined
+      return new RealState(undefined)
 
     const times: Times = {
-      ...current?.real satisfies Times | undefined,
+      ...previous.real satisfies Times | undefined,
       ...fetched satisfies Times
     }
 
     if (fetched.isData())
-      return new RealDataState(new Data(fetched.data, times))
-    return new RealFailState(new Fail(fetched.error, times))
+      return new RealState(new Data(fetched.data, times))
+    return new RealState(new Fail(fetched.error, times))
   }
 
-  #fakeMerge<D>(fetched: Optional<Fetched<D>>, current: Optional<State<D>>): Optional<FakeState<D>> {
+  #fakeMerge<D>(previous: State<D>, fetched: Optional<Fetched<D>>): FakeState<D> {
     if (fetched === undefined)
-      return undefined
+      return new FakeState(undefined, previous.real)
 
     const times: Times = {
-      ...current?.current satisfies Times | undefined,
+      ...previous.current satisfies Times | undefined,
       ...fetched satisfies Times
     }
 
     if (fetched.isData())
-      return new FakeDataState(new Data(fetched.data, times), current?.real)
-    return new FakeFailState(new Fail(fetched.error, times), current?.real)
+      return new FakeState(new Data(fetched.data, times), previous.real)
+    return new FakeState(new Fail(fetched.error, times), previous.real)
   }
 
   /**
@@ -312,15 +311,15 @@ export class Core {
    */
   async apply<D, K>(
     cacheKey: string,
-    previous: Optional<State<D>>,
+    previous: State<D>,
     fetched: Optional<Fetched<D>>,
     params: QueryParams<D, K> = {}
   ): Promise<Optional<State<D>>> {
     const { equals = DEFAULT_EQUALS } = params
 
-    const next = this.#realMerge(fetched, previous)
+    const next = this.#realMerge(previous, fetched)
 
-    if (next !== undefined) {
+    if (next.real !== undefined) {
       if (previous?.real && Time.isBefore(next.real.time, previous.real.time))
         next.real = previous.real
 
@@ -341,19 +340,19 @@ export class Core {
 
   async optimize<D>(
     cacheKey: string,
-    real: Optional<RealState<D>>
-  ): Promise<Optional<State<D>>> {
+    state: RealState<D>
+  ): Promise<State<D>> {
     const optimisers = this.#optimisersByKey.get(cacheKey) as Map<string, Mutator<D>>
 
     if (optimisers === undefined)
-      return real
+      return state
 
-    let current: Optional<State<D>> = real
+    let current: State<D> = state
 
     for (const optimiser of optimisers.values()) {
       const optimistic = optimiser(current)
       const fetched = Option.mapSync(optimistic, Fetched.from)
-      current = this.#fakeMerge(fetched, current)
+      current = this.#fakeMerge(current, fetched)
     }
 
     return current
