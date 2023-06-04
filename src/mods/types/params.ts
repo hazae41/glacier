@@ -16,11 +16,11 @@ export type StorageQueryParams<D> =
   | AsyncStorageQueryParams<D>
 
 export interface SyncStorageQueryParams<D> extends SyncStorageParams<D> {
-  readonly storage?: SyncStorage
+  readonly storage: SyncStorage
 }
 
 export interface AsyncStorageQueryParams<D> extends AsyncStorageParams<D> {
-  readonly storage?: AsyncStorage
+  readonly storage: AsyncStorage
 }
 
 export interface QueryParams<D = unknown, K = unknown> {

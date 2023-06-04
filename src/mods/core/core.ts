@@ -7,7 +7,7 @@ import { Time } from "libs/time/time.js"
 import { Optional } from "libs/types/optional.js"
 import { DEFAULT_EQUALS } from "mods/defaults.js"
 import { Mutator } from "mods/types/mutator.js"
-import { GlobalParams, QueryParams, SyncStorageQueryParams } from "mods/types/params.js"
+import { GlobalParams, QueryParams } from "mods/types/params.js"
 
 export type Listener<D = unknown> =
   (x: Optional<State<D>>) => void
@@ -118,24 +118,28 @@ export class Core {
 
   getSync<D, K>(
     cacheKey: string,
-    params: QueryParams<D, K> = {}
-  ): Result<Optional<State<D>>, AsyncStorageError> {
+    params: QueryParams<D, K>
+  ): Result<State<D>, AsyncStorageError> {
     const cached = this.#states.get(cacheKey)
 
     if (cached !== undefined)
       return new Ok(cached as State<D>)
 
-    const { storage } = params
+    if (!params.storage) {
+      const state = new RealState<D, unknown>(undefined)
+      this.#states.set(cacheKey, state)
+      return new Ok(state)
+    }
 
-    if (!storage?.storage)
-      return new Ok(undefined)
-    if (storage.storage.async)
+    if (params.storage.storage.async)
       return new Err(new AsyncStorageError())
+    const stored = params.storage.storage.get<D>(cacheKey, params.storage as any)
 
-    const stored = storage.storage.get<D>(cacheKey, storage as SyncStorageQueryParams<D>)
-
-    if (stored === undefined)
-      return new Ok(undefined)
+    if (stored === undefined) {
+      const state = new RealState<D, unknown>(undefined)
+      this.#states.set(cacheKey, state)
+      return new Ok(state)
+    }
 
     const { time, cooldown, expiration } = stored
     const times = { time, cooldown, expiration }
@@ -159,24 +163,26 @@ export class Core {
 
   async get<D, K>(
     cacheKey: string,
-    params: QueryParams<D, K> = {}
-  ): Promise<Optional<State<D>>> {
+    params: QueryParams<D, K>
+  ): Promise<State<D>> {
     const cached = this.#states.get(cacheKey)
 
     if (cached !== undefined)
       return cached as State<D>
 
-    const { storage } = params
+    if (!params.storage) {
+      const state = new RealState<D, unknown>(undefined)
+      this.#states.set(cacheKey, state)
+      return state
+    }
 
-    if (!storage?.storage)
-      return undefined
+    const stored = await params.storage.storage.get<D>(cacheKey, params.storage as any)
 
-    const stored = storage.storage.async
-      ? await storage.storage.get<D>(cacheKey, storage)
-      : storage.storage.get<D>(cacheKey, storage as SyncStorageQueryParams<D>)
-
-    if (stored === undefined)
-      return undefined
+    if (stored === undefined) {
+      const state = new RealState<D, unknown>(undefined)
+      this.#states.set(cacheKey, state)
+      return state
+    }
 
     const { time, cooldown, expiration } = stored
     const times = { time, cooldown, expiration }
@@ -205,11 +211,7 @@ export class Core {
    * @param state New state
    * @returns 
    */
-  async set<D, K>(
-    cacheKey: string,
-    state: State<D> = new RealState(undefined),
-    params: QueryParams<D, K> = {}
-  ) {
+  async set<D, K>(cacheKey: string, state: State<D>, params: QueryParams<D, K>) {
     this.#states.set(cacheKey, state)
     this.states.publish(cacheKey, state)
 
@@ -217,8 +219,11 @@ export class Core {
 
     if (!storage?.storage)
       return
-    if (state?.real === undefined)
+
+    if (state.real === undefined) {
+      await storage.storage.delete(cacheKey)
       return
+    }
 
     const { time, cooldown, expiration } = state.real
 
@@ -235,33 +240,27 @@ export class Core {
     await storage.storage.set(cacheKey, stored, storage as any)
   }
 
+  async delete<D, K>(cacheKey: string, params: QueryParams<D, K>) {
+    return await this.set<D, K>(cacheKey, new RealState(undefined), params)
+  }
+
   /**
    * Delete key and publish undefined
    * @param cacheKey 
    * @returns 
    */
-  async garbage<D, K>(
-    cacheKey: string,
-    params: QueryParams<D, K> = {}
-  ) {
+  async garbage<D, K>(cacheKey: string, params: QueryParams<D, K>) {
     this.#states.delete(cacheKey)
     this.#mutexes.delete(cacheKey)
     this.#optimisersByKey.delete(cacheKey)
     this.aborters.publish(cacheKey, undefined)
     this.states.publish(cacheKey, undefined)
-
-    const { storage } = params
-
-    if (!storage?.storage)
-      return
-
-    await storage.storage.delete(cacheKey)
   }
 
   async mutate<D, K>(
     cacheKey: string,
     mutator: Mutator<D>,
-    params: QueryParams<D, K> = {}
+    params: QueryParams<D, K>
   ) {
     let previous = await this.get(cacheKey, params)
 
@@ -358,17 +357,16 @@ export class Core {
     return current
   }
 
-  async normalize<D, K>(
-    data: D,
-    params: QueryParams<D, K> = {},
-    more: { shallow?: boolean } = {}
-  ) {
-    const { shallow } = more
-
+  async normalize<D, K>(data: D, params: QueryParams<D, K>) {
     if (params.normalizer === undefined)
       return data
+    return await params.normalizer(data, { core: this, parent, shallow: false })
+  }
 
-    return await params.normalizer(data, { core: this, parent, shallow })
+  async prenormalize<D, K>(data: D, params: QueryParams<D, K>) {
+    if (params.normalizer === undefined)
+      return data
+    return await params.normalizer(data, { core: this, parent, shallow: true })
   }
 
   onState<D, K>(
@@ -393,7 +391,7 @@ export class Core {
   async offState<D, K>(
     cacheKey: string,
     listener: Listener<D>,
-    params: QueryParams<D, K> = {}
+    params: QueryParams<D, K>
   ) {
     this.states.off(cacheKey, listener as Listener)
 
