@@ -24,12 +24,12 @@ export class AsyncStorageError extends Error {
 
 export class Core {
 
-  readonly states = new Ortho<string, Optional<State>>()
+  readonly states = new Ortho<string, State>()
   readonly aborters = new Ortho<string, Optional<AbortController>>()
 
   readonly #states = new Map<string, State>()
 
-  readonly #optimisersByKey = new Map<string, Map<string, Mutator>>()
+  readonly #optimisers = new Map<string, Set<Mutator<any>>>()
 
   readonly #counts = new Map<string, number>()
   readonly #timeouts = new Map<string, NodeJS.Timeout>()
@@ -59,11 +59,7 @@ export class Core {
     this.#mounted = false
   }
 
-  async fetch<T>(
-    cacheKey: string,
-    callback: () => Promise<T>,
-    aborter = new AbortController()
-  ) {
+  async fetch<D, K, T>(cacheKey: string, callback: () => Promise<T>, aborter: AbortController, params: QueryParams<D, K>) {
     let mutex = this.#mutexes.get(cacheKey)
 
     if (mutex === undefined) {
@@ -89,11 +85,7 @@ export class Core {
     })
   }
 
-  async abortAndFetch<T>(
-    cacheKey: string,
-    callback: () => Promise<T>,
-    aborter = new AbortController(),
-  ) {
+  async abortAndFetch<T>(cacheKey: string, callback: () => Promise<T>, aborter: AbortController) {
     let mutex = this.#mutexes.get(cacheKey)
 
     if (mutex === undefined) {
@@ -116,10 +108,7 @@ export class Core {
     })
   }
 
-  getSync<D, K>(
-    cacheKey: string,
-    params: QueryParams<D, K>
-  ): Result<State<D>, AsyncStorageError> {
+  getSync<D, K>(cacheKey: string, params: QueryParams<D, K>): Result<State<D>, AsyncStorageError> {
     const cached = this.#states.get(cacheKey)
 
     if (cached !== undefined)
@@ -182,10 +171,7 @@ export class Core {
     throw new Panic(`Invalid stored state`)
   }
 
-  async get<D, K>(
-    cacheKey: string,
-    params: QueryParams<D, K>
-  ): Promise<State<D>> {
+  async get<D, K>(cacheKey: string, params: QueryParams<D, K>): Promise<State<D>> {
     const cached = this.#states.get(cacheKey)
 
     if (cached !== undefined)
@@ -286,11 +272,7 @@ export class Core {
     return await this.set<D, K>(cacheKey, new RealState(undefined), params)
   }
 
-  async mutate<D, K>(
-    cacheKey: string,
-    mutator: Mutator<D>,
-    params: QueryParams<D, K>
-  ) {
+  async mutate<D, K>(cacheKey: string, mutator: Mutator<D>, params: QueryParams<D, K>) {
     let previous = await this.get(cacheKey, params)
 
     if (previous === undefined)
@@ -337,12 +319,7 @@ export class Core {
    * @param params 
    * @returns 
    */
-  async apply<D, K>(
-    cacheKey: string,
-    previous: State<D>,
-    fetched: Optional<Fetched<D>>,
-    params: QueryParams<D, K> = {}
-  ): Promise<Optional<State<D>>> {
+  async apply<D, K>(cacheKey: string, previous: State<D>, fetched: Optional<Fetched<D>>, params: QueryParams<D, K>): Promise<Optional<State<D>>> {
     const { equals = DEFAULT_EQUALS } = params
 
     const next = this.#realMerge(previous, fetched)
@@ -361,29 +338,42 @@ export class Core {
         next.real = next.real.setErr(previous.real.error)
     }
 
-    const optimized = await this.optimize(cacheKey, next)
+    return await this.#reoptimize(cacheKey, next, params)
+  }
+
+  getOrCreateOptimizers<D>(cacheKey: string): Set<Mutator<D>> {
+    const current = this.#optimisers.get(cacheKey)
+
+    if (current !== undefined)
+      return current as Set<Mutator<D>>
+
+    const next = new Set<Mutator>()
+    this.#optimisers.set(cacheKey, next)
+    return next as Set<Mutator<D>>
+  }
+
+  async #reoptimize<D, K>(cacheKey: string, state: RealState<D>, params: QueryParams<D, K>): Promise<State<D>> {
+    const optimizers = this.getOrCreateOptimizers<D>(cacheKey)
+
+    let optimized: State<D> = state
+
+    for (const optimizer of optimizers) {
+      const fetched = Option.mapSync(optimizer(optimized), Fetched.from)
+
+      optimized = this.#fakeMerge(optimized, fetched)
+    }
+
     await this.set(cacheKey, optimized, params)
     return optimized
   }
 
-  async optimize<D>(
-    cacheKey: string,
-    state: RealState<D>
-  ): Promise<State<D>> {
-    const optimisers = this.#optimisersByKey.get(cacheKey) as Map<string, Mutator<D>>
+  async optimize<D, K>(cacheKey: string, state: State<D>, optimizer: Mutator<D>, params: QueryParams<D, K>) {
+    this.getOrCreateOptimizers<D>(cacheKey).add(optimizer)
+    const fetched = Option.mapSync(optimizer(state), Fetched.from)
 
-    if (optimisers === undefined)
-      return state
-
-    let current: State<D> = state
-
-    for (const optimiser of optimisers.values()) {
-      const optimistic = optimiser(current)
-      const fetched = Option.mapSync(optimistic, Fetched.from)
-      current = this.#fakeMerge(current, fetched)
-    }
-
-    return current
+    const optimized = this.#fakeMerge(state, fetched)
+    await this.set(cacheKey, optimized, params)
+    return optimized
   }
 
   async normalize<D, K>(data: D, params: QueryParams<D, K>) {
@@ -398,13 +388,7 @@ export class Core {
     return await params.normalizer(data, { core: this, parent, shallow: true })
   }
 
-  onState<D, K>(
-    cacheKey: string,
-    listener: Listener<D>,
-    params: QueryParams<D, K> = {}
-  ) {
-    this.states.on(cacheKey, listener as Listener)
-
+  async increment<D, K>(cacheKey: string, params: QueryParams<D, K>) {
     const count = this.#counts.get(cacheKey) ?? 0
     this.#counts.set(cacheKey, count + 1)
 
@@ -416,13 +400,7 @@ export class Core {
     this.#timeouts.delete(cacheKey)
   }
 
-  async offState<D, K>(
-    cacheKey: string,
-    listener: Listener<D>,
-    params: QueryParams<D, K>
-  ) {
-    this.states.off(cacheKey, listener as Listener)
-
+  async decrement<D, K>(cacheKey: string, params: QueryParams<D, K>) {
     const count = this.#counts.get(cacheKey)
 
     if (count === undefined)

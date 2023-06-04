@@ -22,6 +22,11 @@ export interface StoredState2<D = unknown, F = unknown> {
   expiration?: number
 }
 
+export interface StateAndAborter<D = unknown, F = unknown> {
+  state: State<D, F>
+  aborter?: AbortController
+}
+
 export type State<D = unknown, F = unknown> =
   | RealState<D, F>
   | FakeState<D, F>

@@ -89,7 +89,7 @@ export function useScrollQuery<D = unknown, K = string>(
       return
 
     core.on(cacheKey, setState, paramsRef.current)
-    return () => void core.offState(cacheKey, setState, paramsRef.current)
+    return () => void core.decrement(cacheKey, setState, paramsRef.current)
   }, [core, cacheKey])
 
   const mutate = useCallback(async (mutator: Mutator<D[]>) => {
