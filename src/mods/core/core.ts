@@ -141,6 +141,27 @@ export class Core {
       return new Ok(state)
     }
 
+    if (stored.version === undefined) {
+      const { time, cooldown, expiration } = stored
+      const times = { time, cooldown, expiration }
+
+      if (stored.data !== undefined) {
+        const data = new Data(stored.data, times)
+        const state = new RealState<D, unknown>(data)
+        this.#states.set(cacheKey, state)
+        return new Ok(state)
+      }
+
+      if (stored.error !== undefined) {
+        const fail = new Fail(stored.error, times)
+        const state = new RealState<D, unknown>(fail)
+        this.#states.set(cacheKey, state)
+        return new Ok(state)
+      }
+
+      throw new Panic(`Invalid stored state`)
+    }
+
     const { time, cooldown, expiration } = stored
     const times = { time, cooldown, expiration }
 
@@ -184,6 +205,27 @@ export class Core {
       return state
     }
 
+    if (stored.version === undefined) {
+      const { time, cooldown, expiration } = stored
+      const times = { time, cooldown, expiration }
+
+      if (stored.data !== undefined) {
+        const data = new Data(stored.data, times)
+        const state = new RealState<D, unknown>(data)
+        this.#states.set(cacheKey, state)
+        return state
+      }
+
+      if (stored.error !== undefined) {
+        const fail = new Fail(stored.error, times)
+        const state = new RealState<D, unknown>(fail)
+        this.#states.set(cacheKey, state)
+        return state
+      }
+
+      throw new Panic(`Invalid stored state`)
+    }
+
     const { time, cooldown, expiration } = stored
     const times = { time, cooldown, expiration }
 
@@ -221,7 +263,7 @@ export class Core {
       return
 
     if (state.real === undefined) {
-      await storage.storage.delete(cacheKey)
+      await storage.storage.delete(cacheKey, storage as any)
       return
     }
 
@@ -231,10 +273,10 @@ export class Core {
 
     if (state.real.isData()) {
       const data = { inner: state.real.data }
-      stored = { data, time, cooldown, expiration }
+      stored = { version: 2, data, time, cooldown, expiration }
     } else {
       const error = { inner: state.real.error }
-      stored = { error, time, cooldown, expiration }
+      stored = { version: 2, error, time, cooldown, expiration }
     }
 
     await storage.storage.set(cacheKey, stored, storage as any)
@@ -242,19 +284,6 @@ export class Core {
 
   async delete<D, K>(cacheKey: string, params: QueryParams<D, K>) {
     return await this.set<D, K>(cacheKey, new RealState(undefined), params)
-  }
-
-  /**
-   * Delete key and publish undefined
-   * @param cacheKey 
-   * @returns 
-   */
-  async garbage<D, K>(cacheKey: string, params: QueryParams<D, K>) {
-    this.#states.delete(cacheKey)
-    this.#mutexes.delete(cacheKey)
-    this.#optimisersByKey.delete(cacheKey)
-    this.aborters.publish(cacheKey, undefined)
-    this.states.publish(cacheKey, undefined)
   }
 
   async mutate<D, K>(
@@ -383,7 +412,6 @@ export class Core {
 
     if (timeout === undefined)
       return
-
     clearTimeout(timeout)
     this.#timeouts.delete(cacheKey)
   }
