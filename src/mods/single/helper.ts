@@ -7,7 +7,7 @@ import { Fetcher } from "mods/types/fetcher.js";
 import { QueryParams } from "mods/types/params.js";
 import { Updater } from "mods/types/updater.js";
 
-export namespace Single {
+export namespace Simple {
 
   export function getCacheKey<D, K>(key: K, params: QueryParams<D, K>) {
     if (typeof key === "string")

@@ -1,8 +1,8 @@
 import { useAutoRef } from "libs/react/ref.js";
 import { useCore } from "mods/react/contexts/core.js";
 import { Query } from "mods/react/types/query.js";
-import { Single } from "mods/single/helper.js";
-import { SingleQuerySchema } from "mods/single/schema.js";
+import { Simple } from "mods/single/helper.js";
+import { SimpleQuerySchema } from "mods/single/schema.js";
 import { Fetcher } from "mods/types/fetcher.js";
 import { Mutator } from "mods/types/mutator.js";
 import { QueryParams } from "mods/types/params.js";
@@ -11,7 +11,7 @@ import { Updater, UpdaterParams } from "mods/types/updater.js";
 import { DependencyList, useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 export function useSchema<D, K, L extends DependencyList = []>(
-  factory: (...deps: L) => SingleQuerySchema<D, K> | undefined,
+  factory: (...deps: L) => SimpleQuerySchema<D, K> | undefined,
   deps: L
 ) {
   const schema = useMemo(() => {
@@ -53,7 +53,7 @@ export function useQuery<D = unknown, K = string>(
   const paramsRef = useAutoRef({ ...core.params, ...params })
 
   const cacheKey = useMemo(() => {
-    return Single.getCacheKey<D, K>(key, paramsRef.current)
+    return Simple.getCacheKey<D, K>(key, paramsRef.current)
   }, [key])
 
   const [, setCounter] = useState(0)
@@ -108,7 +108,7 @@ export function useQuery<D = unknown, K = string>(
     const fetcher = fetcherRef.current
     const params = paramsRef.current
 
-    return await Single.fetch(core, key, cacheKey, fetcher, aborter, params)
+    return await Simple.fetch(core, key, cacheKey, fetcher, aborter, params)
   }, [core, cacheKey])
 
   const refetch = useCallback(async (aborter?: AbortController) => {
@@ -119,7 +119,7 @@ export function useQuery<D = unknown, K = string>(
     const fetcher = fetcherRef.current
     const params = paramsRef.current
 
-    return await Single.fetch(core, key, cacheKey, fetcher, aborter, params, true, true)
+    return await Simple.fetch(core, key, cacheKey, fetcher, aborter, params, true, true)
   }, [core, cacheKey])
 
   const update = useCallback(async (updater: Updater<D>, uparams: UpdaterParams = {}, aborter?: AbortController) => {
@@ -132,7 +132,7 @@ export function useQuery<D = unknown, K = string>(
 
     const fparams = { ...params, ...uparams }
 
-    return await Single.update(core, key, cacheKey, fetcher, updater, aborter, fparams)
+    return await Simple.update(core, key, cacheKey, fetcher, updater, aborter, fparams)
   }, [core, cacheKey])
 
   const suspend = useCallback(() => {
@@ -145,7 +145,7 @@ export function useQuery<D = unknown, K = string>(
       const params = paramsRef.current
 
       const background = new Promise<void>(ok => core.once(cacheKey, () => ok(), params))
-      await Single.fetch(core, key, cacheKey, fetcher, undefined, params, false, true)
+      await Simple.fetch(core, key, cacheKey, fetcher, undefined, params, false, true)
       await background
     })()
   }, [core, cacheKey])

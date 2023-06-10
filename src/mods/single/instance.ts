@@ -7,9 +7,9 @@ import { Instance } from "mods/types/instance.js";
 import { Mutator } from "mods/types/mutator.js";
 import { QueryParams } from "mods/types/params.js";
 import { Updater } from "mods/types/updater.js";
-import { Single } from "./helper.js";
+import { Simple } from "./helper.js";
 
-export class SingleQueryInstance<D = unknown, K = unknown> implements Instance<D, K> {
+export class SimpleQueryInstance<D = unknown, K = unknown> implements Instance<D, K> {
   readonly core: Core
 
   readonly key: K
@@ -51,12 +51,12 @@ export class SingleQueryInstance<D = unknown, K = unknown> implements Instance<D
   static async make<D, K>(core: Core, key: K, fetcher: Optional<Fetcher<D, K>>, qparams: QueryParams<D, K>) {
     const params = { ...core.params, ...qparams }
 
-    const cacheKey = Single.getCacheKey<D, K>(key, params)
+    const cacheKey = Simple.getCacheKey<D, K>(key, params)
 
     const state = await core.get(cacheKey, params)
     const aborter = core.aborter(cacheKey)
 
-    return new SingleQueryInstance(core, key, cacheKey, fetcher, params, state, aborter)
+    return new SimpleQueryInstance(core, key, cacheKey, fetcher, params, state, aborter)
   }
 
   get state() {
@@ -106,7 +106,7 @@ export class SingleQueryInstance<D = unknown, K = unknown> implements Instance<D
       return new Err(new UnfetchableError())
 
     await core.fetch(cacheKey, aborter, async () => {
-      return await Single.fetch(core, key, cacheKey, fetcher, aborter, params)
+      return await Simple.fetch(core, key, cacheKey, fetcher, aborter, params)
     }).then(r => r.inspectSync(state => this.#state = state).ignore())
   }
 
@@ -117,7 +117,7 @@ export class SingleQueryInstance<D = unknown, K = unknown> implements Instance<D
       return new Err(new UnfetchableError())
 
     await core.abortAndFetch(cacheKey, aborter, async () => {
-      return await Single.fetch(core, key, cacheKey, fetcher, aborter, params)
+      return await Simple.fetch(core, key, cacheKey, fetcher, aborter, params)
     }).then(r => r.inspectSync(state => this.#state = state).ignore())
   }
 
@@ -127,7 +127,7 @@ export class SingleQueryInstance<D = unknown, K = unknown> implements Instance<D
     if (fetcher === undefined)
       return new Err(new UnfetchableError())
 
-    await Single
+    await Simple
       .update(core, key, cacheKey, fetcher, updater, aborter, { ...params, ...uparams })
       .then(r => r.inspectSync(state => this.#state = state).ignore())
   }

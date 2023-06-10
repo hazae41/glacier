@@ -5,7 +5,7 @@ import { Fetcher } from "mods/types/fetcher.js";
 import { NormalizerMore } from "mods/types/normalizer.js";
 import { QueryParams } from "mods/types/params.js";
 import { QuerySchema } from "mods/types/schema.js";
-import { SingleQueryInstance } from "./instance.js";
+import { SimpleQueryInstance } from "./instance.js";
 
 export function createQuerySchema<D = unknown, K = string>(
   key: Optional<K>,
@@ -15,10 +15,10 @@ export function createQuerySchema<D = unknown, K = string>(
   if (key === undefined)
     return undefined
 
-  return new SingleQuerySchema<D, K>(key, fetcher, params)
+  return new SimpleQuerySchema<D, K>(key, fetcher, params)
 }
 
-export class SingleQuerySchema<D = unknown, K = unknown> implements QuerySchema<D, K, SingleQueryInstance<D, K>>  {
+export class SimpleQuerySchema<D = unknown, K = unknown> implements QuerySchema<D, K, SimpleQueryInstance<D, K>>  {
 
   constructor(
     readonly key: K,
@@ -27,7 +27,7 @@ export class SingleQuerySchema<D = unknown, K = unknown> implements QuerySchema<
   ) { }
 
   async make(core: Core) {
-    return await SingleQueryInstance.make<D, K>(core, this.key, this.fetcher, this.params)
+    return await SimpleQueryInstance.make<D, K>(core, this.key, this.fetcher, this.params)
   }
 
   async normalize(data: D, more: NormalizerMore) {
