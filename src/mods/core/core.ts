@@ -241,11 +241,7 @@ export class Core {
     }
 
     return await mutex.lock(async () => {
-      let previous = await this.get(cacheKey, params)
-
-      if (previous === undefined)
-        previous = new RealState(undefined)
-
+      const previous = await this.get(cacheKey, params)
       const state = await setter(previous)
 
       this.#states.set(cacheKey, state)
