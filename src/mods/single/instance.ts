@@ -1,5 +1,5 @@
 import { Optional } from "@hazae41/option";
-import { Err } from "@hazae41/result";
+import { Err, Ok } from "@hazae41/result";
 import { State, TimesInit } from "index.js";
 import { Core, UnfetchableError } from "mods/core/core.js";
 import { Fetcher } from "mods/types/fetcher.js";
@@ -91,12 +91,16 @@ export class SimpleQueryInstance<D = unknown, K = unknown> implements Instance<D
     const { core, cacheKey, params } = this
 
     this.#state = await core.mutate(cacheKey, mutator, params)
+
+    return Ok.void()
   }
 
   async delete() {
     const { core, cacheKey, params } = this
 
     this.#state = await core.delete(cacheKey, params)
+
+    return Ok.void()
   }
 
   async fetch(aborter = new AbortController()) {
@@ -105,9 +109,9 @@ export class SimpleQueryInstance<D = unknown, K = unknown> implements Instance<D
     if (fetcher === undefined)
       return new Err(new UnfetchableError())
 
-    await core.fetch(cacheKey, aborter, async () => {
+    return await core.fetch(cacheKey, aborter, async () => {
       return await Simple.fetch(core, key, cacheKey, fetcher, aborter, params)
-    }).then(r => r.inspectSync(state => this.#state = state).ignore())
+    }).then(r => r.inspectSync(state => this.#state = state))
   }
 
   async refetch(aborter = new AbortController()) {
@@ -116,9 +120,9 @@ export class SimpleQueryInstance<D = unknown, K = unknown> implements Instance<D
     if (fetcher === undefined)
       return new Err(new UnfetchableError())
 
-    await core.abortAndFetch(cacheKey, aborter, async () => {
+    return await core.abortAndFetch(cacheKey, aborter, async () => {
       return await Simple.fetch(core, key, cacheKey, fetcher, aborter, params)
-    }).then(r => r.inspectSync(state => this.#state = state).ignore())
+    }).then(r => r.inspectSync(state => this.#state = state))
   }
 
   async update(updater: Updater<D>, uparams: TimesInit = {}, aborter = new AbortController()) {
@@ -127,9 +131,9 @@ export class SimpleQueryInstance<D = unknown, K = unknown> implements Instance<D
     if (fetcher === undefined)
       return new Err(new UnfetchableError())
 
-    await Simple
+    return await Simple
       .update(core, key, cacheKey, fetcher, updater, aborter, { ...params, ...uparams })
-      .then(r => r.inspectSync(state => this.#state = state).ignore())
+      .then(r => r.inspectSync(state => this.#state = state))
   }
 
 }

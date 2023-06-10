@@ -1,5 +1,5 @@
 import { Option, Optional } from "@hazae41/option";
-import { Err } from "@hazae41/result";
+import { Err, Ok } from "@hazae41/result";
 import { Arrays } from "libs/arrays/arrays.js";
 import { Core, UnfetchableError } from "mods/core/core.js";
 import { Fetcher } from "mods/types/fetcher.js";
@@ -99,12 +99,16 @@ export class ScrollInstance<D = unknown, K = unknown> implements Instance<D[], K
     const { core, cacheKey, params } = this
 
     this.#state = await core.mutate(cacheKey, mutator, params)
+
+    return Ok.void()
   }
 
   async delete() {
     const { core, cacheKey, params } = this
 
     this.#state = await core.delete(cacheKey, params)
+
+    return Ok.void()
   }
 
   async fetch(aborter = new AbortController()) {
@@ -113,9 +117,9 @@ export class ScrollInstance<D = unknown, K = unknown> implements Instance<D[], K
     if (fetcher === undefined)
       return new Err(new UnfetchableError())
 
-    await core.fetch(cacheKey, aborter, async () => {
+    return await core.fetch(cacheKey, aborter, async () => {
       return await Scroll.first(core, scroller, cacheKey, fetcher, aborter, params)
-    }).then(r => r.inspectSync(state => this.#state = state).ignore())
+    }).then(r => r.inspectSync(state => this.#state = state))
   }
 
   async refetch(aborter = new AbortController()) {
@@ -126,7 +130,7 @@ export class ScrollInstance<D = unknown, K = unknown> implements Instance<D[], K
 
     return await core.abortAndFetch(cacheKey, aborter, async () => {
       return await Scroll.first(core, scroller, cacheKey, fetcher, aborter, params)
-    }).then(r => r.inspectSync(state => this.#state = state).ignore())
+    }).then(r => r.inspectSync(state => this.#state = state))
   }
 
   async scroll(aborter = new AbortController()) {
@@ -135,9 +139,9 @@ export class ScrollInstance<D = unknown, K = unknown> implements Instance<D[], K
     if (fetcher === undefined)
       return new Err(new UnfetchableError())
 
-    await core.abortAndFetch(cacheKey, aborter, async () => {
+    return await core.abortAndFetch(cacheKey, aborter, async () => {
       return await Scroll.scroll(core, scroller, cacheKey, fetcher, aborter, params)
-    }).then(r => r.inspectSync(state => this.#state = state).ignore())
+    }).then(r => r.inspectSync(state => this.#state = state))
   }
 
 }
