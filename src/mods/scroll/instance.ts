@@ -79,15 +79,20 @@ export class ScrollInstance<D = unknown, K = unknown> implements Instance<D[], K
     if (cacheKey === undefined)
       return
 
-    const setter = (state: State) =>
+    const setState = (state: State) =>
       this.#state = state as State<D[]>
 
-    core.states.on(cacheKey, setter)
+    const setAborter = (aborter?: AbortController) =>
+      this.#aborter = aborter
+
+    core.states.on(cacheKey, setState)
+    core.aborters.on(cacheKey, setAborter)
     core.increment(cacheKey, params)
 
     new FinalizationRegistry(() => {
       core.decrement(cacheKey, params)
-      core.states.off(cacheKey, setter)
+      core.states.off(cacheKey, setState)
+      core.aborters.off(cacheKey, setAborter)
     }).register(this, undefined)
   }
 
