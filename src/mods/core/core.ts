@@ -297,6 +297,9 @@ export class Core {
       const previous = await this.get(cacheKey, params)
       const state = await setter(previous)
 
+      if (state === previous)
+        return state
+
       this.#states.set(cacheKey, state)
       this.states.publish(cacheKey, state)
 
