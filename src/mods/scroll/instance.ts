@@ -12,29 +12,29 @@ import { Scroll } from "./helper.js";
 export class ScrollInstance<D = unknown, K = unknown> implements Instance<D[], K> {
   readonly core: Core
 
-  readonly key?: K
-  readonly cacheKey?: string
+  readonly key: K
+  readonly cacheKey: string
 
-  readonly scroller?: Scroller<D, K>
+  readonly scroller: Scroller<D, K>
   readonly fetcher?: Fetcher<D, K>
 
   readonly params: QueryParams<D[], K>
 
-  #state?: State<D[]>
+  #state: State<D[]>
   #aborter?: AbortController
 
   private constructor(
     core: Core,
 
-    key: Optional<K>,
-    cacheKey: Optional<string>,
+    key: K,
+    cacheKey: string,
 
-    scroller: Optional<Scroller<D, K>>,
+    scroller: Scroller<D, K>,
     fetcher: Optional<Fetcher<D, K>>,
 
     params: QueryParams<D[], K>,
 
-    state: Optional<State<D[]>>,
+    state: State<D[]>,
     aborter: Optional<AbortController>
   ) {
     this.core = core
@@ -53,14 +53,18 @@ export class ScrollInstance<D = unknown, K = unknown> implements Instance<D[], K
     this.#subscribe()
   }
 
-  static async make<D, K>(core: Core, scroller: Optional<Scroller<D, K>>, fetcher: Optional<Fetcher<D, K>>, qparams: QueryParams<D[], K>) {
+  static async make<D, K>(core: Core, scroller: Scroller<D, K>, fetcher: Optional<Fetcher<D, K>>, qparams: QueryParams<D[], K>) {
     const key = scroller?.()
+
+    if (key === undefined)
+      return undefined
+
     const params = { ...core.params, ...qparams }
 
     const cacheKey = Scroll.getCacheKey<D[], K>(key, params)
 
-    const state = await Option.map(cacheKey, async cacheKey => await core.get(cacheKey, params))
-    const aborter = Option.mapSync(cacheKey, cacheKey => core.aborter(cacheKey))
+    const state = await core.get(cacheKey, params)
+    const aborter = core.aborter(cacheKey)
 
     return new ScrollInstance(core, key, cacheKey, scroller, fetcher, params, state, aborter)
   }
@@ -75,9 +79,6 @@ export class ScrollInstance<D = unknown, K = unknown> implements Instance<D[], K
 
   #subscribe() {
     const { core, cacheKey, params } = this
-
-    if (cacheKey === undefined)
-      return
 
     const setState = (state: State) =>
       this.#state = state as State<D[]>
@@ -103,19 +104,12 @@ export class ScrollInstance<D = unknown, K = unknown> implements Instance<D[], K
   async mutate(mutator: Mutator<D[]>) {
     const { core, cacheKey, params } = this
 
-    if (cacheKey === undefined)
-      return
-
     this.#state = await core.mutate(cacheKey, mutator, params)
   }
 
   async fetch() {
     const { core, scroller, cacheKey, fetcher, params } = this
 
-    if (scroller === undefined)
-      return
-    if (cacheKey === undefined)
-      return
     if (fetcher === undefined)
       return
 
@@ -127,10 +121,6 @@ export class ScrollInstance<D = unknown, K = unknown> implements Instance<D[], K
   async refetch() {
     const { core, scroller, cacheKey, fetcher, params } = this
 
-    if (scroller === undefined)
-      return
-    if (cacheKey === undefined)
-      return
     if (fetcher === undefined)
       return
 
@@ -142,10 +132,6 @@ export class ScrollInstance<D = unknown, K = unknown> implements Instance<D[], K
   async scroll() {
     const { core, scroller, cacheKey, fetcher, params } = this
 
-    if (scroller === undefined)
-      return
-    if (cacheKey === undefined)
-      return
     if (fetcher === undefined)
       return
 
@@ -156,9 +142,6 @@ export class ScrollInstance<D = unknown, K = unknown> implements Instance<D[], K
 
   async delete() {
     const { core, cacheKey, params } = this
-
-    if (cacheKey === undefined)
-      return
 
     this.#state = await core.delete(cacheKey, params)
   }

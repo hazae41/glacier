@@ -1,4 +1,3 @@
-import { Optional } from "@hazae41/option";
 import { Err, Ok, Result } from "@hazae41/result";
 import { Fetched, State, TimesInit } from "index.js";
 import { Arrays } from "libs/arrays/arrays.js";
@@ -11,9 +10,7 @@ import { Scroller } from "mods/types/scroller.js";
 
 export namespace Scroll {
 
-  export function getCacheKey<D, K>(key: Optional<K>, params: QueryParams<D, K>) {
-    if (key === undefined)
-      return undefined
+  export function getCacheKey<D, K>(key: K, params: QueryParams<D, K>) {
     if (typeof key === "string")
       return key
 
