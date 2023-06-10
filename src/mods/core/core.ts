@@ -1,5 +1,5 @@
 import { Mutex } from "@hazae41/mutex"
-import { Option, Optional } from "@hazae41/option"
+import { Optional } from "@hazae41/option"
 import { Err, Ok, Panic, Result } from "@hazae41/result"
 import { Data, Fail, FakeState, Fetched, RealState, State, StoredState, Times } from "index.js"
 import { Ortho } from "libs/ortho/ortho.js"
@@ -370,7 +370,7 @@ export class Core {
     return await this.#replace(cacheKey, async (previous) => {
       const { equals = DEFAULT_EQUALS } = params
 
-      const fetched = Option.mapSync(await mutator(previous), Fetched.from)
+      const fetched = await mutator(previous)
 
       let next = this.#mergeRealStateWithFetched(previous, fetched)
 
@@ -378,7 +378,7 @@ export class Core {
         return previous
 
       if (next.real?.isData())
-        next = new RealState(next.real.set(await this.normalize(next.real.data, params)))
+        next = new RealState(next.real.set(await this.#normalize(next.real.data, params)))
 
       if (next.real?.isData() && previous.real?.isData() && equals(next.real.data, previous.real.data))
         return previous
@@ -422,11 +422,8 @@ export class Core {
   async #reoptimize<D, K>(state: State<D>, optimizers: Map<string, Mutator<D>>): Promise<State<D>> {
     let optimized: State<D> = new RealState<D>(state.real)
 
-    for (const optimizer of optimizers.values()) {
-      const fetched = Option.mapSync(await optimizer(optimized), Fetched.from)
-
-      optimized = this.#mergeFakeStateWithFetched(optimized, fetched)
-    }
+    for (const optimizer of optimizers.values())
+      optimized = this.#mergeFakeStateWithFetched(optimized, await optimizer(optimized))
 
     return optimized
   }
@@ -443,9 +440,7 @@ export class Core {
 
       optimizers.set(uuid, optimizer)
 
-      const fetched = Option.mapSync(await optimizer(previous), Fetched.from)
-
-      return this.#mergeFakeStateWithFetched(previous, fetched)
+      return this.#mergeFakeStateWithFetched(previous, await optimizer(previous))
     }, params)
   }
 
@@ -478,12 +473,24 @@ export class Core {
     }
   }
 
-  async normalize<D, K>(data: D, params: QueryParams<D, K>) {
+  /**
+   * Transform children into refs and normalize them
+   * @param data 
+   * @param params 
+   * @returns 
+   */
+  async #normalize<D, K>(data: D, params: QueryParams<D, K>) {
     if (params.normalizer === undefined)
       return data
     return await params.normalizer(data, { core: this, parent, shallow: false })
   }
 
+  /**
+   * Transform children into refs but do not normalize them
+   * @param data 
+   * @param params 
+   * @returns 
+   */
   async prenormalize<D, K>(data: D, params: QueryParams<D, K>) {
     if (params.normalizer === undefined)
       return data

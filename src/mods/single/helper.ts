@@ -1,6 +1,6 @@
 import { Optional } from "@hazae41/option";
 import { Err, Ok, Result } from "@hazae41/result";
-import { State } from "index.js";
+import { Fetched, State, TimesInit } from "index.js";
 import { Time } from "libs/time/time.js";
 import { AbortedError, CooldownError, Core } from "mods/core/core.js";
 import { DEFAULT_SERIALIZER } from "mods/defaults.js";
@@ -46,35 +46,10 @@ export namespace Single {
     if (aborted.isErr())
       return aborted
 
-    const fetched = aborted.get()
-    fetched.ignore?.()
+    const times = TimesInit.merge(aborted.get(), params)
+    const timed = Fetched.rewrap(aborted.get(), times)
 
-    const time = "time" in fetched
-      ? fetched.time
-      : Date.now()
-
-    const cooldown = "cooldown" in fetched
-      ? fetched.cooldown
-      : Time.fromDelay(params.cooldown)
-
-    const expiration = "expiration" in fetched
-      ? fetched.expiration
-      : Time.fromDelay(params.expiration)
-
-    if ("error" in fetched)
-      return new Ok(await core.mutate(cacheKey, () => ({
-        error: fetched.error,
-        time: time,
-        cooldown: cooldown,
-        expiration: expiration,
-      }), params))
-
-    return new Ok(await core.mutate(cacheKey, () => ({
-      data: fetched.data,
-      time: time,
-      cooldown: cooldown,
-      expiration: expiration,
-    }), params))
+    return new Ok(await core.mutate(cacheKey, () => timed, params))
   }
 
 
@@ -114,34 +89,9 @@ export namespace Single {
     if (aborted.isErr())
       return aborted
 
-    const fetched = aborted.get()
-    fetched.ignore?.()
+    const times = TimesInit.merge(aborted.get(), params)
+    const timed = Fetched.rewrap(aborted.get(), times)
 
-    const time = "time" in fetched
-      ? fetched.time
-      : Date.now()
-
-    const cooldown = "cooldown" in fetched
-      ? fetched.cooldown
-      : Time.fromDelay(params.cooldown)
-
-    const expiration = "expiration" in fetched
-      ? fetched.expiration
-      : Time.fromDelay(params.expiration)
-
-    if ("error" in fetched)
-      return new Ok(await core.mutate(cacheKey, () => ({
-        error: fetched.error,
-        time: time,
-        cooldown: cooldown,
-        expiration: expiration,
-      }), params))
-
-    return new Ok(await core.mutate(cacheKey, () => ({
-      data: fetched.data,
-      time: time,
-      cooldown: cooldown,
-      expiration: expiration
-    }), params))
+    return new Ok(await core.mutate(cacheKey, () => timed, params))
   }
 }

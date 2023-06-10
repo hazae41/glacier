@@ -1,6 +1,6 @@
 import { Optional } from "@hazae41/option";
 import { Err, Ok, Result } from "@hazae41/result";
-import { Fetched, State } from "index.js";
+import { Fetched, State, TimesInit } from "index.js";
 import { Arrays } from "libs/arrays/arrays.js";
 import { Time } from "libs/time/time.js";
 import { AbortedError, CooldownError, Core, ScrollError } from "mods/core/core.js";
@@ -61,19 +61,19 @@ export namespace Scroll {
     if (aborted.isErr())
       return aborted
 
-    const { cooldown, expiration } = params
-    const times = { time: Date.now(), cooldown, expiration }
-    const fetched = Fetched.fromWithTimes(aborted.get(), times)
+    const times = TimesInit.merge(aborted.get(), params)
+    const timed = Fetched.rewrap(aborted.get(), times)
 
-    const paginated = await fetched.map(async (data) => {
-      const prenormalized = await core.prenormalize([data], params)
+    return new Ok(await core.mutate(cacheKey, async (previous) => {
+      return await timed.map(async (data) => {
+        const prenormalized = await core.prenormalize([data], params)
 
-      if (previous.real?.isData() && equals(prenormalized[0], previous.real.data[0]))
-        return previous.real.data
-      return [data]
-    })
+        if (previous.real?.isData() && equals(prenormalized[0], previous.real.data[0]))
+          return previous.real.data
 
-    return new Ok(await core.mutate(cacheKey, () => paginated, params))
+        return [data]
+      })
+    }, params))
   }
 
   /**
@@ -113,40 +113,17 @@ export namespace Scroll {
     if (aborted.isErr())
       return aborted
 
-    aborted.ignore?.()
+    let { time, cooldown, expiration } = TimesInit.merge(aborted.get(), params)
 
-    const time = "time" in result
-      ? result.time
-      : Date.now()
+    return new Ok(await core.mutate(cacheKey, (previous) => {
+      if (expiration !== undefined && previous.real?.expiration !== undefined)
+        expiration = Math.min(expiration, previous.real.expiration)
 
-    const cooldown = "cooldown" in result
-      ? result.cooldown
-      : Time.fromDelay(params.cooldown)
+      const times = { time, cooldown, expiration }
+      const timed = Fetched.rewrap(aborted.get(), times)
 
-    let expiration = "expiration" in result
-      ? result.expiration
-      : Time.fromDelay(params.expiration)
-
-    if (expiration !== undefined && previous?.expiration !== undefined)
-      expiration = Math.min(expiration, previous?.expiration)
-
-    if ("error" in result)
-      return () => ({
-        error: result.error,
-        time: time,
-        cooldown: cooldown,
-        expiration: expiration
-      })
-
-    return (previous) => {
-      const data = [...(previous?.data ?? []), result.data]
-
-      return {
-        data: data,
-        time: time,
-        cooldown: cooldown,
-        expiration: expiration
-      }
-    }
+      const previousPages = previous.real?.ok().inner ?? []
+      return timed.mapSync(data => [...previousPages, data])
+    }, params))
   }
 }

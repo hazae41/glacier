@@ -32,37 +32,16 @@ export namespace Fetched {
       return Data.from<DataInit.Inner<T>>(init)
   }
 
-  export function fromWithTimes<T extends FetchedInit.Infer<T>>(init: T, times: TimesInit): Fetched<DataInit.Inner<T>, FailInit.Inner<T>> {
-    const time = "time" in init
-      ? init.time
-      : times.time
-
-    const cooldown = "cooldown" in init
-      ? init.cooldown
-      : times.cooldown
-
-    const expiration = "expiration" in init
-      ? init.expiration
-      : times.expiration
-
-    init.ignore?.()
-
-    if ("error" in init)
-      return Fail.from({ error: init.error, time, cooldown, expiration })
-    else
-      return Data.from({ data: init.data, time, cooldown, expiration })
-  }
-
   export interface Wrapper<T> {
     unwrap(): T
     times?: Times
   }
 
-  export function rewrap<T extends Result.Infer<T>>(wrapper: T, times?: Times): Fetched<Ok.Inner<T>, Err.Inner<T>>
+  export function rewrap<T extends Result.Infer<T>>(wrapper: T, times?: TimesInit): Fetched<Ok.Inner<T>, Err.Inner<T>>
 
-  export function rewrap<T, E>(wrapper: Wrapper<T>, times?: Times): Fetched<T, E>
+  export function rewrap<T, E>(wrapper: Wrapper<T>, times?: TimesInit): Fetched<T, E>
 
-  export function rewrap<T, E>(wrapper: Wrapper<T>, times?: Times) {
+  export function rewrap<T, E>(wrapper: Wrapper<T>, times?: TimesInit) {
     try {
       return new Data(wrapper.unwrap(), wrapper.times ?? times)
     } catch (error: unknown) {

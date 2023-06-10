@@ -4,7 +4,6 @@ import { Times, TimesInit } from "./times.js"
 
 export interface DataInit<T> extends TimesInit {
   readonly data: T
-  ignore?(): unknown
 }
 
 export namespace DataInit {
@@ -44,8 +43,6 @@ export class Data<T> extends Ok<T> implements DataInit<T>, Times {
 
   static from<T>(init: DataInit<T>) {
     const { data, time, cooldown, expiration } = init
-
-    init.ignore?.()
 
     return new Data(data, { time, cooldown, expiration })
   }
