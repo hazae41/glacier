@@ -1,10 +1,10 @@
 import { useCore } from "mods/react/contexts/core.js"
 import { Instance } from "mods/types/instance.js"
-import { Schema } from "mods/types/schema.js"
+import { QuerySchema } from "mods/types/schema.js"
 import { useCallback } from "react"
 
 export type Maker = <D, K, O extends Instance<D, K> = Instance<D, K>>(
-  schema: Schema<D, K, O>
+  schema: QuerySchema<D, K, O>
 ) => O
 
 export function useXSWR() {

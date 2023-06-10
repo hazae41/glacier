@@ -2,7 +2,7 @@ import { useAutoRef } from "libs/react/ref.js";
 import { useCore } from "mods/react/contexts/core.js";
 import { Query } from "mods/react/types/query.js";
 import { Single } from "mods/single/helper.js";
-import { SingleSchema } from "mods/single/schema.js";
+import { SingleQuerySchema } from "mods/single/schema.js";
 import { Fetcher } from "mods/types/fetcher.js";
 import { Mutator } from "mods/types/mutator.js";
 import { QueryParams } from "mods/types/params.js";
@@ -11,7 +11,7 @@ import { Updater, UpdaterParams } from "mods/types/updater.js";
 import { DependencyList, useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 export function useSchema<D, K, L extends DependencyList = []>(
-  factory: (...deps: L) => SingleSchema<D, K> | undefined,
+  factory: (...deps: L) => SingleQuerySchema<D, K> | undefined,
   deps: L
 ) {
   const schema = useMemo(() => {

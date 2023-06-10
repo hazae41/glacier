@@ -1,30 +1,33 @@
+import { Optional } from "@hazae41/option";
+import { Data } from "index.js";
 import { Core } from "mods/core/core.js";
 import { Fetcher } from "mods/types/fetcher.js";
 import { NormalizerMore } from "mods/types/normalizer.js";
 import { QueryParams } from "mods/types/params.js";
-import { Schema } from "mods/types/schema.js";
-import { SingleInstance } from "./instance.js";
+import { QuerySchema } from "mods/types/schema.js";
+import { SingleQueryInstance } from "./instance.js";
 
-export function getSchema<D = unknown, K = string>(
-  key: K | undefined,
-  fetcher: Fetcher<D, K> | undefined,
+export function createQuerySchema<D = unknown, K = string>(
+  key: Optional<K>,
+  fetcher: Optional<Fetcher<D, K>>,
   params: QueryParams<D, K> = {},
 ) {
-  return new SingleSchema<D, K>(key, fetcher, params)
+  if (key === undefined)
+    return undefined
+
+  return new SingleQuerySchema<D, K>(key, fetcher, params)
 }
 
-export class SingleSchema<D = unknown, K = unknown> implements Schema<D, K, SingleInstance<D, K>>  {
+export class SingleQuerySchema<D = unknown, K = unknown> implements QuerySchema<D, K, SingleQueryInstance<D, K>>  {
 
   constructor(
-    readonly key: K | undefined,
-    readonly fetcher: Fetcher<D, K> | undefined,
-    readonly params: QueryParams<D, K> = {},
+    readonly key: K,
+    readonly fetcher: Optional<Fetcher<D, K>>,
+    readonly params: QueryParams<D, K>
   ) { }
 
-  make(core: Core) {
-    const { key, fetcher, params } = this
-
-    return new SingleInstance<D, K>(core, key, fetcher, params)
+  async make(core: Core) {
+    return await SingleQueryInstance.make<D, K>(core, this.key, this.fetcher, this.params)
   }
 
   async normalize(data: D, more: NormalizerMore) {
@@ -33,15 +36,10 @@ export class SingleSchema<D = unknown, K = unknown> implements Schema<D, K, Sing
     if (shallow)
       return
 
-    const { cacheKey, mparams } = this.make(core)
-    const { time, cooldown, expiration } = parent
+    const instance = await this.make(core)
 
-    await more.core.apply(cacheKey, () => ({
-      data: data,
-      error: undefined,
-      time: time,
-      cooldown: cooldown,
-      expiration: expiration
-    }), mparams)
+    await core.mutate(instance.cacheKey, () => {
+      return new Data(data, parent)
+    }, instance.params)
   }
 }

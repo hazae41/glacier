@@ -38,18 +38,18 @@ export namespace Scroll {
     fetcher: Fetcher<D, K>,
     aborter: AbortController,
     params: QueryParams<D[], K>
-  ): Promise<Result<State<D[]>, AbortedError>> {
+  ): Promise<Result<State<D[]>, AbortedError | CooldownError | ScrollError>> {
     const { equals = DEFAULT_EQUALS } = params
 
     const previous = await core.get(cacheKey, params)
 
     if (Time.isAfterNow(previous.real?.cooldown))
-      return new Err(AbortedError.from(new CooldownError()))
+      return new Err(new CooldownError())
 
     const key = scroller(undefined)
 
     if (key === undefined)
-      return new Err(AbortedError.from(new ScrollError()))
+      return new Err(new ScrollError())
 
     const aborted = await core.catchAndTimeout(async (signal) => {
       return await fetcher(key, { signal })
@@ -90,18 +90,18 @@ export namespace Scroll {
     fetcher: Fetcher<D, K>,
     aborter: AbortController,
     params: QueryParams<D[], K>
-  ): Promise<Result<State<D[]>, AbortedError>> {
+  ): Promise<Result<State<D[]>, AbortedError | CooldownError | ScrollError>> {
     const previous = await core.get(cacheKey, params)
 
     if (Time.isAfterNow(previous.real?.cooldown))
-      return new Err(AbortedError.from(new CooldownError()))
+      return new Err(new CooldownError())
 
     const previousPages = previous.real?.ok().inner ?? []
     const previousPage = Arrays.last(previousPages)
     const key = scroller(previousPage)
 
     if (key === undefined)
-      return new Err(AbortedError.from(new ScrollError()))
+      return new Err(new ScrollError())
 
     const aborted = await core.catchAndTimeout(async (signal) => {
       return await fetcher(key, { signal })

@@ -1,31 +1,37 @@
+import { Optional } from "@hazae41/option";
+import { Data } from "index.js";
 import { Core } from "mods/core/core.js";
 import { Fetcher } from "mods/types/fetcher.js";
 import { NormalizerMore } from "mods/types/normalizer.js";
 import { QueryParams } from "mods/types/params.js";
-import { Schema } from "mods/types/schema.js";
+import { QuerySchema } from "mods/types/schema.js";
 import { Scroller } from "mods/types/scroller.js";
 import { ScrollInstance } from "./instance.js";
 
-export function getScrollSchema<D = unknown, K = string>(
+export function createScrollQuerySchema<D = unknown, K = string>(
   scroller: Scroller<D, K>,
-  fetcher: Fetcher<D, K> | undefined,
+  fetcher: Optional<Fetcher<D, K>>,
   params: QueryParams<D[], K> = {},
 ) {
-  return new ScrollSchema<D, K>(scroller, fetcher, params)
+  const key = scroller()
+
+  if (key === undefined)
+    return undefined
+
+  return new ScrollQuerySchema<D, K>(key, scroller, fetcher, params)
 }
 
-export class ScrollSchema<D = unknown, K = unknown> implements Schema<D[], K, ScrollInstance<D, K>> {
+export class ScrollQuerySchema<D = unknown, K = unknown> implements QuerySchema<D[], K, ScrollInstance<D, K>> {
 
   constructor(
+    readonly key: K,
     readonly scroller: Scroller<D, K>,
-    readonly fetcher: Fetcher<D, K> | undefined,
-    readonly params: QueryParams<D[], K> = {},
+    readonly fetcher: Optional<Fetcher<D, K>>,
+    readonly params: QueryParams<D[], K>
   ) { }
 
-  make(core: Core) {
-    const { scroller, fetcher, params } = this
-
-    return new ScrollInstance<D, K>(core, scroller, fetcher, params)
+  async make(core: Core) {
+    return await ScrollInstance.make<D, K>(core, this.key, this.scroller, this.fetcher, this.params)
   }
 
   async normalize(data: D[], more: NormalizerMore) {
@@ -34,15 +40,11 @@ export class ScrollSchema<D = unknown, K = unknown> implements Schema<D[], K, Sc
     if (shallow)
       return
 
-    const { cacheKey, mparams } = this.make(core)
-    const { time, cooldown, expiration } = parent
+    const instance = await this.make(core)
 
-    await more.core.apply(cacheKey, () => ({
-      data: data,
-      error: undefined,
-      time: time,
-      cooldown: cooldown,
-      expiration: expiration,
-    }), mparams)
+    await core.mutate(instance.cacheKey, () => {
+      return new Data(data, parent)
+    }, instance.params)
   }
+
 }

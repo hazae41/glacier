@@ -3,7 +3,7 @@ import { useAutoRef } from "libs/react/ref.js";
 import { useCore } from "mods/react/contexts/core.js";
 import { Query } from "mods/react/types/query.js";
 import { Scroll } from "mods/scroll/helper.js";
-import { ScrollSchema } from "mods/scroll/schema.js";
+import { ScrollQuerySchema } from "mods/scroll/schema.js";
 import { Fetcher } from "mods/types/fetcher.js";
 import { Mutator } from "mods/types/mutator.js";
 import { QueryParams } from "mods/types/params.js";
@@ -12,7 +12,7 @@ import { FullState } from "mods/types/state.js";
 import { DependencyList, useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 export function useScrollSchema<D, K, L extends DependencyList = []>(
-  factory: (...deps: L) => ScrollSchema<D, K> | undefined,
+  factory: (...deps: L) => ScrollQuerySchema<D, K> | undefined,
   deps: L
 ) {
   const schema = useMemo(() => {

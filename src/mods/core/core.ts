@@ -59,6 +59,17 @@ export class ScrollError extends Error {
   constructor() {
     super(`Scroller returned undefined`)
   }
+
+}
+
+export class UnfetchableError extends Error {
+  readonly #class = UnfetchableError
+  readonly name = this.#class.name
+
+  constructor() {
+    super(`The query doesn't have a fetcher`)
+  }
+
 }
 
 export class AbortedError extends Error {
@@ -112,7 +123,7 @@ export class Core {
     return this.#aborters.get(cacheKey)
   }
 
-  async fetch<T, E>(cacheKey: string, callback: (aborter: AbortController) => Promise<Result<T, E>>): Promise<Result<T, E | PendingFetchError>> {
+  async fetch<T, E>(cacheKey: string, aborter: AbortController, callback: () => Promise<Result<T, E>>): Promise<Result<T, E | PendingFetchError>> {
     let mutex = this.#fetches.get(cacheKey)
 
     if (mutex === undefined) {
@@ -125,13 +136,11 @@ export class Core {
     if (pending !== undefined)
       return new Err(new PendingFetchError())
 
-    const aborter = new AbortController()
-
     const result = await mutex.lock(async () => {
       this.#aborters.set(cacheKey, aborter)
       this.aborters.publish(cacheKey, aborter)
 
-      const result = await callback(aborter)
+      const result = await callback()
 
       this.#aborters.delete(cacheKey)
       this.aborters.publish(cacheKey, undefined)
@@ -142,7 +151,7 @@ export class Core {
     return result
   }
 
-  async abortAndFetch<T, E>(cacheKey: string, callback: (aborter: AbortController) => Promise<Result<T, E>>): Promise<Result<T, E>> {
+  async abortAndFetch<T, E>(cacheKey: string, aborter: AbortController, callback: () => Promise<Result<T, E>>): Promise<Result<T, E>> {
     let mutex = this.#fetches.get(cacheKey)
 
     if (mutex === undefined) {
@@ -152,13 +161,11 @@ export class Core {
 
     this.#aborters.get(cacheKey)?.abort(`Replaced`)
 
-    const aborter = new AbortController()
-
     return await mutex.lock(async () => {
       this.#aborters.set(cacheKey, aborter)
       this.aborters.publish(cacheKey, aborter)
 
-      const result = await callback(aborter)
+      const result = await callback()
 
       this.#aborters.delete(cacheKey)
       this.aborters.publish(cacheKey, undefined)

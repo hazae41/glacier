@@ -1,6 +1,7 @@
 import { Option, Optional } from "@hazae41/option";
+import { Err } from "@hazae41/result";
 import { Arrays } from "libs/arrays/arrays.js";
-import { Core } from "mods/core/core.js";
+import { Core, UnfetchableError } from "mods/core/core.js";
 import { Fetcher } from "mods/types/fetcher.js";
 import { Instance } from "mods/types/instance.js";
 import { Mutator } from "mods/types/mutator.js";
@@ -17,7 +18,6 @@ export class ScrollInstance<D = unknown, K = unknown> implements Instance<D[], K
 
   readonly scroller: Scroller<D, K>
   readonly fetcher?: Fetcher<D, K>
-
   readonly params: QueryParams<D[], K>
 
   #state: State<D[]>
@@ -31,7 +31,6 @@ export class ScrollInstance<D = unknown, K = unknown> implements Instance<D[], K
 
     scroller: Scroller<D, K>,
     fetcher: Optional<Fetcher<D, K>>,
-
     params: QueryParams<D[], K>,
 
     state: State<D[]>,
@@ -53,12 +52,7 @@ export class ScrollInstance<D = unknown, K = unknown> implements Instance<D[], K
     this.#subscribe()
   }
 
-  static async make<D, K>(core: Core, scroller: Scroller<D, K>, fetcher: Optional<Fetcher<D, K>>, qparams: QueryParams<D[], K>) {
-    const key = scroller?.()
-
-    if (key === undefined)
-      return undefined
-
+  static async make<D, K>(core: Core, key: K, scroller: Scroller<D, K>, fetcher: Optional<Fetcher<D, K>>, qparams: QueryParams<D[], K>) {
     const params = { ...core.params, ...qparams }
 
     const cacheKey = Scroll.getCacheKey<D[], K>(key, params)
@@ -107,43 +101,43 @@ export class ScrollInstance<D = unknown, K = unknown> implements Instance<D[], K
     this.#state = await core.mutate(cacheKey, mutator, params)
   }
 
-  async fetch() {
-    const { core, scroller, cacheKey, fetcher, params } = this
-
-    if (fetcher === undefined)
-      return
-
-    await core.fetch(cacheKey, async (aborter) => {
-      return await Scroll.first(core, scroller, cacheKey, fetcher, aborter, params)
-    }).then(r => r.inspectSync(state => this.#state = state).ignore())
-  }
-
-  async refetch() {
-    const { core, scroller, cacheKey, fetcher, params } = this
-
-    if (fetcher === undefined)
-      return
-
-    await core.abortAndFetch(cacheKey, async (aborter) => {
-      return await Scroll.first(core, scroller, cacheKey, fetcher, aborter, params)
-    }).then(r => r.inspectSync(state => this.#state = state).ignore())
-  }
-
-  async scroll() {
-    const { core, scroller, cacheKey, fetcher, params } = this
-
-    if (fetcher === undefined)
-      return
-
-    await core.abortAndFetch(cacheKey, async (aborter) => {
-      return await Scroll.scroll(core, scroller, cacheKey, fetcher, aborter, params)
-    }).then(r => r.inspectSync(state => this.#state = state).ignore())
-  }
-
   async delete() {
     const { core, cacheKey, params } = this
 
     this.#state = await core.delete(cacheKey, params)
+  }
+
+  async fetch(aborter = new AbortController()) {
+    const { core, scroller, cacheKey, fetcher, params } = this
+
+    if (fetcher === undefined)
+      return new Err(new UnfetchableError())
+
+    await core.fetch(cacheKey, aborter, async () => {
+      return await Scroll.first(core, scroller, cacheKey, fetcher, aborter, params)
+    }).then(r => r.inspectSync(state => this.#state = state).ignore())
+  }
+
+  async refetch(aborter = new AbortController()) {
+    const { core, scroller, cacheKey, fetcher, params } = this
+
+    if (fetcher === undefined)
+      return new Err(new UnfetchableError())
+
+    return await core.abortAndFetch(cacheKey, aborter, async () => {
+      return await Scroll.first(core, scroller, cacheKey, fetcher, aborter, params)
+    }).then(r => r.inspectSync(state => this.#state = state).ignore())
+  }
+
+  async scroll(aborter = new AbortController()) {
+    const { core, scroller, cacheKey, fetcher, params } = this
+
+    if (fetcher === undefined)
+      return new Err(new UnfetchableError())
+
+    await core.abortAndFetch(cacheKey, aborter, async () => {
+      return await Scroll.scroll(core, scroller, cacheKey, fetcher, aborter, params)
+    }).then(r => r.inspectSync(state => this.#state = state).ignore())
   }
 
 }

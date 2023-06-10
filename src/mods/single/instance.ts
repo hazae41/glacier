@@ -1,108 +1,135 @@
-import { Core } from "mods/core/core.js";
+import { Optional } from "@hazae41/option";
+import { Err } from "@hazae41/result";
+import { State, TimesInit } from "index.js";
+import { Core, UnfetchableError } from "mods/core/core.js";
 import { Fetcher } from "mods/types/fetcher.js";
 import { Instance } from "mods/types/instance.js";
 import { Mutator } from "mods/types/mutator.js";
 import { QueryParams } from "mods/types/params.js";
-import { FullState } from "mods/types/state.js";
-import { Updater, UpdaterParams } from "mods/types/updater.js";
+import { Updater } from "mods/types/updater.js";
 import { Single } from "./helper.js";
 
-/**
- * Non-React version of SingleQuery
- */
-export class SingleInstance<D = unknown, K = unknown> implements Instance<D, K> {
+export class SingleQueryInstance<D = unknown, K = unknown> implements Instance<D, K> {
+  readonly core: Core
 
-  readonly mparams: QueryParams<D, K>
+  readonly key: K
+  readonly cacheKey: string
 
-  readonly cacheKey: string | undefined
+  readonly fetcher?: Fetcher<D, K>
 
-  #init: Promise<FullState<D> | undefined>
+  readonly params: QueryParams<D, K>
 
-  #state: FullState<D> | undefined | null
+  #state: State<D>
+  #aborter?: AbortController
 
-  constructor(
-    readonly core: Core,
-    readonly key: K | undefined,
-    readonly fetcher: Fetcher<D, K> | undefined,
-    readonly params: QueryParams<D, K> = {},
+  private constructor(
+    core: Core,
+
+    key: K,
+    cacheKey: string,
+
+    fetcher: Optional<Fetcher<D, K>>,
+    params: QueryParams<D, K>,
+
+    state: State<D>,
+    aborter: Optional<AbortController>
   ) {
-    this.mparams = { ...core.params, ...this.params }
+    this.core = core
 
-    this.cacheKey = Single.getCacheKey<D, K>(key, this.params)
+    this.key = key
+    this.cacheKey = cacheKey
 
-    this.#loadSync()
+    this.fetcher = fetcher
+    this.params = params
+
+    this.#state = state
+    this.#aborter = aborter
+
     this.#subscribe()
-
-    this.#init = this.#load()
   }
 
-  get init() {
-    return this.#init
+  static async make<D, K>(core: Core, key: K, fetcher: Optional<Fetcher<D, K>>, qparams: QueryParams<D, K>) {
+    const params = { ...core.params, ...qparams }
+
+    const cacheKey = Single.getCacheKey<D, K>(key, params)
+
+    const state = await core.get(cacheKey, params)
+    const aborter = core.aborter(cacheKey)
+
+    return new SingleQueryInstance(core, key, cacheKey, fetcher, params, state, aborter)
   }
 
   get state() {
     return this.#state
   }
 
-  get ready() {
-    return this.#state !== null
-  }
-
-  async #load() {
-    const { core, cacheKey, mparams } = this
-
-    return this.#state = await core.get(cacheKey, mparams)
-  }
-
-  #loadSync() {
-    const { core, cacheKey, mparams } = this
-
-    return this.#state = core.getSync<D, K>(cacheKey, mparams)
+  get aborter() {
+    return this.#aborter
   }
 
   #subscribe() {
-    const { core, cacheKey } = this
+    const { core, cacheKey, params } = this
 
-    const setter = (state?: FullState<D>) =>
-      this.#state = state
+    const setState = (state: State) =>
+      this.#state = state as State<D>
 
-    core.on(this.cacheKey, setter)
+    const setAborter = (aborter?: AbortController) =>
+      this.#aborter = aborter
+
+    core.states.on(cacheKey, setState)
+    core.aborters.on(cacheKey, setAborter)
+    core.increment(cacheKey, params)
 
     new FinalizationRegistry(() => {
-      core.decrement(cacheKey, setter)
+      core.decrement(cacheKey, params)
+      core.states.off(cacheKey, setState)
+      core.aborters.off(cacheKey, setAborter)
     }).register(this, undefined)
   }
 
   async mutate(mutator: Mutator<D>) {
-    const { core, cacheKey, mparams } = this
+    const { core, cacheKey, params } = this
 
-    return this.#state = await core.mutate(cacheKey, mutator, mparams)
+    this.#state = await core.mutate(cacheKey, mutator, params)
   }
 
-  async fetch(aborter?: AbortController) {
-    const { core, key, cacheKey, fetcher, mparams } = this
+  async delete() {
+    const { core, cacheKey, params } = this
 
-    return this.#state = await Single.fetch(core, key, cacheKey, fetcher, aborter, mparams)
+    this.#state = await core.delete(cacheKey, params)
   }
 
-  async refetch(aborter?: AbortController) {
-    const { core, key, cacheKey, fetcher, mparams } = this
+  async fetch(aborter = new AbortController()) {
+    const { core, key, cacheKey, fetcher, params } = this
 
-    return this.#state = await Single.fetch(core, key, cacheKey, fetcher, aborter, mparams, true, true)
+    if (fetcher === undefined)
+      return new Err(new UnfetchableError())
+
+    await core.fetch(cacheKey, aborter, async () => {
+      return await Single.fetch(core, key, cacheKey, fetcher, aborter, params)
+    }).then(r => r.inspectSync(state => this.#state = state).ignore())
   }
 
-  async update(updater: Updater<D>, uparams: UpdaterParams = {}, aborter?: AbortController) {
-    const { core, key, cacheKey, fetcher, mparams } = this
+  async refetch(aborter = new AbortController()) {
+    const { core, key, cacheKey, fetcher, params } = this
 
-    const fparams = { ...mparams, ...uparams }
+    if (fetcher === undefined)
+      return new Err(new UnfetchableError())
 
-    return this.#state = await Single.update(core, key, cacheKey, fetcher, updater, aborter, fparams)
+    await core.abortAndFetch(cacheKey, aborter, async () => {
+      return await Single.fetch(core, key, cacheKey, fetcher, aborter, params)
+    }).then(r => r.inspectSync(state => this.#state = state).ignore())
   }
 
-  async clear() {
-    const { core, cacheKey, mparams } = this
+  async update(updater: Updater<D>, uparams: TimesInit = {}, aborter = new AbortController()) {
+    const { core, key, cacheKey, fetcher, params } = this
 
-    await core.delete(cacheKey, mparams)
-    this.#state = undefined
+    if (fetcher === undefined)
+      return new Err(new UnfetchableError())
+
+    await Single
+      .update(core, key, cacheKey, fetcher, updater, aborter, { ...params, ...uparams })
+      .then(r => r.inspectSync(state => this.#state = state).ignore())
   }
+
 }
