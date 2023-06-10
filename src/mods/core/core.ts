@@ -278,7 +278,7 @@ export class Core {
     })
   }
 
-  #realMerge<D>(previous: State<D>, fetched: Optional<Fetched<D>>): RealState<D> {
+  #mergeRealStateWithFetched<D>(previous: State<D>, fetched: Optional<Fetched<D>>): RealState<D> {
     if (fetched === undefined)
       return new RealState(undefined)
 
@@ -292,7 +292,7 @@ export class Core {
     return new RealState(new Fail(fetched.error, times))
   }
 
-  #fakeMerge<D>(previous: State<D>, fetched: Optional<Fetched<D>>): FakeState<D> {
+  #mergeFakeStateWithFetched<D>(previous: State<D>, fetched: Optional<Fetched<D>>): FakeState<D> {
     if (fetched === undefined)
       return new FakeState(undefined, previous.real)
 
@@ -320,7 +320,7 @@ export class Core {
 
       const fetched = Option.mapSync(await mutator(previous), Fetched.from)
 
-      const next = this.#realMerge(previous, fetched)
+      const next = this.#mergeRealStateWithFetched(previous, fetched)
 
       if (next.real !== undefined) {
         if (previous?.real && Time.isBefore(next.real.time, previous.real.time))
@@ -376,7 +376,7 @@ export class Core {
     for (const optimizer of optimizers) {
       const fetched = Option.mapSync(await optimizer(optimized), Fetched.from)
 
-      optimized = this.#fakeMerge(optimized, fetched)
+      optimized = this.#mergeFakeStateWithFetched(optimized, fetched)
     }
 
     return optimized
@@ -394,7 +394,7 @@ export class Core {
     this.#getOrCreateOptimizers<D>(cacheKey).add(optimizer)
     const fetched = Option.mapSync(await optimizer(state), Fetched.from)
 
-    return this.#fakeMerge(state, fetched)
+    return this.#mergeFakeStateWithFetched(state, fetched)
   }
 
   async normalize<D, K>(data: D, params: QueryParams<D, K>) {
