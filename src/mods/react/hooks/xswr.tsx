@@ -5,13 +5,13 @@ import { useCallback } from "react"
 
 export type Maker = <D, K, O extends Instance<D, K> = Instance<D, K>>(
   schema: QuerySchema<D, K, O>
-) => O
+) => Promise<O>
 
 export function useXSWR() {
   const core = useCore()
 
-  const make = useCallback<Maker>((schema) => {
-    return schema.make(core)
+  const make = useCallback<Maker>(async (schema) => {
+    return await schema.make(core)
   }, [core])
 
   return { core, make }

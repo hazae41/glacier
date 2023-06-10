@@ -1,4 +1,5 @@
-import { useAutoRef } from "libs/react/ref.js";
+import { Times } from "index.js";
+import { useRenderRef } from "libs/react/ref.js";
 import { useCore } from "mods/react/contexts/core.js";
 import { Query } from "mods/react/types/query.js";
 import { Simple } from "mods/single/helper.js";
@@ -6,8 +7,8 @@ import { SimpleQuerySchema } from "mods/single/schema.js";
 import { Fetcher } from "mods/types/fetcher.js";
 import { Mutator } from "mods/types/mutator.js";
 import { QueryParams } from "mods/types/params.js";
-import { FullState } from "mods/types/state.js";
-import { Updater, UpdaterParams } from "mods/types/updater.js";
+import { State } from "mods/types/state.js";
+import { Updater } from "mods/types/updater.js";
 import { DependencyList, useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 export function useSchema<D, K, L extends DependencyList = []>(
@@ -31,7 +32,7 @@ export interface SingleQuery<D = unknown, K = unknown> extends Query<D, K> {
    * @param updater Mutation function
    * @param aborter Custom AbortController
    */
-  update(updater: Updater<D>, uparams?: UpdaterParams, aborter?: AbortController): Promise<FullState<D> | undefined>
+  update(updater: Updater<D>, uparams?: Times, aborter?: AbortController): Promise<State<D>>
 }
 
 /**
@@ -48,40 +49,59 @@ export function useQuery<D = unknown, K = string>(
 ): SingleQuery<D, K> {
   const core = useCore()
 
-  const keyRef = useAutoRef(key)
-  const fetcherRef = useAutoRef(fetcher)
-  const paramsRef = useAutoRef({ ...core.params, ...params })
+  const keyRef = useRenderRef(key)
+  const fetcherRef = useRenderRef(fetcher)
+  const paramsRef = useRenderRef({ ...core.params, ...params })
 
   const cacheKey = useMemo(() => {
+    if (key === undefined)
+      return undefined
     return Simple.getCacheKey<D, K>(key, paramsRef.current)
   }, [key])
 
   const [, setCounter] = useState(0)
 
-  const stateRef = useRef<FullState<D> | null>()
+  const stateRef = useRef<State<D>>()
+  const aborterRef = useRef<AbortController>()
 
   useMemo(() => {
-    stateRef.current = core.getSync<D, K>(cacheKey, paramsRef.current)
+    if (cacheKey === undefined)
+      return
+    stateRef.current = core.getSync<D, K>(cacheKey, paramsRef.current).ok().inner
   }, [core, cacheKey])
 
-  const setState = useCallback((state?: FullState<D>) => {
-    stateRef.current = state
+  const setState = useCallback((state: State) => {
+    stateRef.current = state as State<D>
+    setCounter(c => c + 1)
+  }, [])
+
+  const setAborter = useCallback((aborter?: AbortController) => {
+    aborterRef.current = aborter
     setCounter(c => c + 1)
   }, [])
 
   useEffect(() => {
-    if (stateRef.current !== null)
+    if (cacheKey === undefined)
+      return
+    if (stateRef.current !== undefined)
       return
 
     core.get<D, K>(cacheKey, paramsRef.current).then(setState)
   }, [core, cacheKey, params])
 
   useEffect(() => {
-    if (!cacheKey)
+    if (cacheKey === undefined)
       return
 
-    core.on(cacheKey, setState, paramsRef.current)
-    return () => void core.decrement(cacheKey, setState, paramsRef.current)
+    core.states.on(cacheKey, setState)
+    core.aborters.on(cacheKey, setAborter)
+    core.increment(cacheKey, paramsRef.current)
+
+    return () => {
+      core.decrement(cacheKey, paramsRef.current)
+      core.states.off(cacheKey, setState)
+      core.aborters.off(cacheKey, setAborter)
+    }
   }, [core, cacheKey])
 
   const mutate = useCallback(async (mutator: Mutator<D>) => {
@@ -152,7 +172,7 @@ export function useQuery<D = unknown, K = string>(
 
   const state = stateRef.current
 
-  const { data, realData, error, time, cooldown, expiration, aborter, optimistic } = state ?? {}
+  const { data, error, time, cooldown, expiration, aborter, optimistic } = state ?? {}
 
   const ready = state !== null
 

@@ -1,5 +1,5 @@
 import { Arrays } from "libs/arrays/arrays.js";
-import { useAutoRef } from "libs/react/ref.js";
+import { useRenderRef } from "libs/react/ref.js";
 import { useCore } from "mods/react/contexts/core.js";
 import { Query } from "mods/react/types/query.js";
 import { Scroll } from "mods/scroll/helper.js";
@@ -52,9 +52,9 @@ export function useScrollQuery<D = unknown, K = string>(
 ): ScrollQuery<D, K> {
   const core = useCore()
 
-  const scrollerRef = useAutoRef(scroller)
-  const fetcherRef = useAutoRef(fetcher)
-  const paramsRef = useAutoRef({ ...core.params, ...params })
+  const scrollerRef = useRenderRef(scroller)
+  const fetcherRef = useRenderRef(fetcher)
+  const paramsRef = useRenderRef({ ...core.params, ...params })
 
   const key = useMemo(() => {
     return scroller?.()

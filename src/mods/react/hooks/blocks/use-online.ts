@@ -1,4 +1,4 @@
-import { useAutoRef } from "libs/react/ref.js"
+import { useRenderRef } from "libs/react/ref.js"
 import { Query } from "mods/react/types/query.js"
 import { useEffect } from "react"
 
@@ -9,7 +9,7 @@ import { useEffect } from "react"
 export function useOnline(query: Query) {
   const { ready, fetch } = query
 
-  const fetchRef = useAutoRef(fetch)
+  const fetchRef = useRenderRef(fetch)
 
   useEffect(() => {
     if (!ready)

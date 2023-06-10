@@ -1,4 +1,4 @@
-import { useAutoRef } from "libs/react/ref.js"
+import { useRenderRef } from "libs/react/ref.js"
 import { Query } from "mods/react/types/query.js"
 import { useEffect, useRef } from "react"
 
@@ -29,7 +29,7 @@ export function useRetry(query: Query, options: RetryOptions = {}) {
     count.current = 0
   }, [cacheKey])
 
-  const refetchRef = useAutoRef(refetch)
+  const refetchRef = useRenderRef(refetch)
 
   useEffect(() => {
     if (!ready)

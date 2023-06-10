@@ -1,3 +1,4 @@
+import { Panic } from "@hazae41/result"
 import { ChildrenProps } from "libs/react/props/children.js"
 import { Core } from "mods/core/core.js"
 import { GlobalParams } from "mods/types/params.js"
@@ -11,7 +12,7 @@ export function useCore() {
   const core = useContext(CoreContext)
 
   if (core === undefined)
-    throw new Error("Core is undefined")
+    throw new Panic(`Core is undefined`)
 
   return core
 }
@@ -24,7 +25,7 @@ export function useCoreProvider(params: GlobalParams) {
 
   useEffect(() => {
     coreRef.current?.mount()
-    return () => void coreRef.current?.unmount()
+    return () => coreRef.current?.unmount()
   }, [])
 
   return coreRef.current
