@@ -163,7 +163,7 @@ export function useScrollQuery<D = unknown, K = string>(
   const ready = state !== null
 
   const peek = useCallback(() => {
-    const current = Arrays.tryLast(data)
+    const current = Arrays.maybeLast(data)
     return scroller?.(current)
   }, [data, scroller])
 

@@ -1,3 +1,4 @@
+import { Option, Optional } from "@hazae41/option";
 import { Arrays } from "libs/arrays/arrays.js";
 import { Core } from "mods/core/core.js";
 import { Fetcher } from "mods/types/fetcher.js";
@@ -5,110 +6,156 @@ import { Instance } from "mods/types/instance.js";
 import { Mutator } from "mods/types/mutator.js";
 import { QueryParams } from "mods/types/params.js";
 import { Scroller } from "mods/types/scroller.js";
-import { FullState } from "mods/types/state.js";
+import { State } from "mods/types/state.js";
 import { Scroll } from "./helper.js";
 
-/**
- * Non-React version of ScrollQuery
- */
 export class ScrollInstance<D = unknown, K = unknown> implements Instance<D[], K> {
-  readonly key: K | undefined
-  readonly cacheKey: string | undefined
-  readonly mparams: QueryParams<D[], K>
+  readonly core: Core
 
-  #init: Promise<FullState<D[]> | undefined>
+  readonly key?: K
+  readonly cacheKey?: string
 
-  #state?: FullState<D[]> | undefined | null
+  readonly scroller?: Scroller<D, K>
+  readonly fetcher?: Fetcher<D, K>
 
-  constructor(
-    readonly core: Core,
-    readonly scroller: Scroller<D, K> | undefined,
-    readonly fetcher: Fetcher<D, K> | undefined,
-    readonly params: QueryParams<D[], K> = {},
+  readonly params: QueryParams<D[], K>
+
+  #state?: State<D[]>
+  #aborter?: AbortController
+
+  private constructor(
+    core: Core,
+
+    key: Optional<K>,
+    cacheKey: Optional<string>,
+
+    scroller: Optional<Scroller<D, K>>,
+    fetcher: Optional<Fetcher<D, K>>,
+
+    params: QueryParams<D[], K>,
+
+    state: Optional<State<D[]>>,
+    aborter: Optional<AbortController>
   ) {
-    this.mparams = { ...core.params, ...params }
+    this.core = core
 
-    this.key = scroller?.()
+    this.key = key
+    this.cacheKey = cacheKey
 
-    this.cacheKey = Scroll.getCacheKey<D[], K>(this.key, this.mparams)
+    this.scroller = scroller
+    this.fetcher = fetcher
 
-    this.#loadSync()
+    this.params = params
+
+    this.#state = state
+    this.#aborter = aborter
+
     this.#subscribe()
-
-    this.#init = this.#load()
   }
 
-  get init() {
-    return this.#init
+  static async make<D, K>(core: Core, scroller: Optional<Scroller<D, K>>, fetcher: Optional<Fetcher<D, K>>, qparams: QueryParams<D[], K>) {
+    const key = scroller?.()
+    const params = { ...core.params, ...qparams }
+
+    const cacheKey = Scroll.getCacheKey<D[], K>(key, params)
+
+    const state = await Option.map(cacheKey, async cacheKey => await core.get(cacheKey, params))
+    const aborter = Option.mapSync(cacheKey, cacheKey => core.aborter(cacheKey))
+
+    return new ScrollInstance(core, key, cacheKey, scroller, fetcher, params, state, aborter)
   }
 
   get state() {
     return this.#state
   }
 
-  get ready() {
-    return this.#state !== null
-  }
-
-  async #load() {
-    const { core, cacheKey, mparams } = this
-
-    return this.#state = await core.get(cacheKey, mparams)
-  }
-
-  #loadSync() {
-    const { core, cacheKey, mparams } = this
-
-    return this.#state = core.getSync<D[], K>(cacheKey, mparams)
+  get aborter() {
+    return this.#aborter
   }
 
   #subscribe() {
-    const { core, cacheKey } = this
+    const { core, cacheKey, params } = this
 
-    const setter = (state?: FullState<D[]>) =>
-      this.#state = state
+    if (cacheKey === undefined)
+      return
 
-    core.on(cacheKey, setter)
+    const setter = (state: State) =>
+      this.#state = state as State<D[]>
+
+    core.states.on(cacheKey, setter)
+    core.increment(cacheKey, params)
 
     new FinalizationRegistry(() => {
-      core.decrement(cacheKey, setter)
+      core.decrement(cacheKey, params)
+      core.states.off(cacheKey, setter)
     }).register(this, undefined)
   }
 
-  async mutate(mutator: Mutator<D[]>) {
-    const { core, cacheKey, mparams } = this
-
-    return this.#state = await core.mutate(cacheKey, mutator, mparams)
-  }
-
-  async fetch(aborter?: AbortController) {
-    const { core, scroller, cacheKey, fetcher, mparams } = this
-
-    return this.#state = await Scroll.first(core, scroller, cacheKey, fetcher, aborter, mparams)
-  }
-
-  async refetch(aborter?: AbortController) {
-    const { core, scroller, cacheKey, fetcher, mparams } = this
-
-    return this.#state = await Scroll.first(core, scroller, cacheKey, fetcher, aborter, mparams, true, true)
-  }
-
-  async scroll(aborter?: AbortController) {
-    const { core, scroller, cacheKey, fetcher, mparams } = this
-
-    return this.#state = await Scroll.scroll(core, scroller, cacheKey, fetcher, aborter, mparams, true, true)
-  }
-
-  async clear() {
-    const { core, cacheKey, mparams } = this
-
-    await core.delete(cacheKey, mparams)
-    this.#state = undefined
-  }
-
   peek() {
-    const current = Arrays.tryLast(this.state?.data)
-    return this.scroller?.(current)
+    return this.scroller?.(Option.mapSync(this.state?.real?.ok().inner, Arrays.last))
+  }
+
+  async mutate(mutator: Mutator<D[]>) {
+    const { core, cacheKey, params } = this
+
+    if (cacheKey === undefined)
+      return
+
+    this.#state = await core.mutate(cacheKey, mutator, params)
+  }
+
+  async fetch() {
+    const { core, scroller, cacheKey, fetcher, params } = this
+
+    if (scroller === undefined)
+      return
+    if (cacheKey === undefined)
+      return
+    if (fetcher === undefined)
+      return
+
+    await core.fetch(cacheKey, async (aborter) => {
+      return await Scroll.first(core, scroller, cacheKey, fetcher, aborter, params)
+    }).then(r => r.inspectSync(state => this.#state = state).ignore())
+  }
+
+  async refetch() {
+    const { core, scroller, cacheKey, fetcher, params } = this
+
+    if (scroller === undefined)
+      return
+    if (cacheKey === undefined)
+      return
+    if (fetcher === undefined)
+      return
+
+    await core.abortAndFetch(cacheKey, async (aborter) => {
+      return await Scroll.first(core, scroller, cacheKey, fetcher, aborter, params)
+    }).then(r => r.inspectSync(state => this.#state = state).ignore())
+  }
+
+  async scroll() {
+    const { core, scroller, cacheKey, fetcher, params } = this
+
+    if (scroller === undefined)
+      return
+    if (cacheKey === undefined)
+      return
+    if (fetcher === undefined)
+      return
+
+    await core.abortAndFetch(cacheKey, async (aborter) => {
+      return await Scroll.scroll(core, scroller, cacheKey, fetcher, aborter, params)
+    }).then(r => r.inspectSync(state => this.#state = state).ignore())
+  }
+
+  async delete() {
+    const { core, cacheKey, params } = this
+
+    if (cacheKey === undefined)
+      return
+
+    this.#state = await core.delete(cacheKey, params)
   }
 
 }

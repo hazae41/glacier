@@ -108,7 +108,11 @@ export class Core {
     this.#mounted = false
   }
 
-  async fetch<D, K, T>(cacheKey: string, callback: (aborter: AbortController) => Promise<T>, params: QueryParams<D, K>): Promise<Result<T, PendingFetchError>> {
+  aborter(cacheKey: string) {
+    return this.#aborters.get(cacheKey)
+  }
+
+  async fetch<T, E>(cacheKey: string, callback: (aborter: AbortController) => Promise<Result<T, E>>): Promise<Result<T, E | PendingFetchError>> {
     let mutex = this.#fetches.get(cacheKey)
 
     if (mutex === undefined) {
@@ -135,10 +139,10 @@ export class Core {
       return result
     })
 
-    return new Ok(result)
+    return result
   }
 
-  async abortAndFetch<T>(cacheKey: string, callback: () => Promise<T>, aborter: AbortController) {
+  async abortAndFetch<T, E>(cacheKey: string, callback: (aborter: AbortController) => Promise<Result<T, E>>): Promise<Result<T, E>> {
     let mutex = this.#fetches.get(cacheKey)
 
     if (mutex === undefined) {
@@ -148,11 +152,13 @@ export class Core {
 
     this.#aborters.get(cacheKey)?.abort(`Replaced`)
 
+    const aborter = new AbortController()
+
     return await mutex.lock(async () => {
       this.#aborters.set(cacheKey, aborter)
       this.aborters.publish(cacheKey, aborter)
 
-      const result = await callback()
+      const result = await callback(aborter)
 
       this.#aborters.delete(cacheKey)
       this.aborters.publish(cacheKey, undefined)
