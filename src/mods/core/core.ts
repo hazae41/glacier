@@ -1,10 +1,10 @@
 import { Mutex } from "@hazae41/mutex"
-import { Option } from "@hazae41/option"
+import { Option, Optional } from "@hazae41/option"
 import { Err, Ok, Panic, Result } from "@hazae41/result"
 import { Data, Fail, FakeState, Fetched, RealState, State, StoredState, Times } from "index.js"
 import { Ortho } from "libs/ortho/ortho.js"
+import { Promiseable } from "libs/promises/promises.js"
 import { Time } from "libs/time/time.js"
-import { Optional } from "libs/types/optional.js"
 import { DEFAULT_EQUALS } from "mods/defaults.js"
 import { Mutator, Setter } from "mods/types/mutator.js"
 import { GlobalParams, QueryParams } from "mods/types/params.js"
@@ -22,6 +22,55 @@ export class AsyncStorageError extends Error {
 
 }
 
+export class PendingFetchError extends Error {
+  readonly #class = PendingFetchError
+  readonly name = this.#class.name
+
+  constructor() {
+    super(`A fetch is already pending`)
+  }
+
+}
+
+export class TimeoutError extends Error {
+  readonly #class = TimeoutError
+  readonly name = this.#class.name
+
+  constructor() {
+    super(`Timed out`)
+  }
+
+}
+
+export class CooldownError extends Error {
+  readonly #class = CooldownError
+  readonly name = this.#class.name
+
+  constructor() {
+    super(`Cooled down`)
+  }
+
+}
+
+export class ScrollError extends Error {
+  readonly #class = ScrollError
+  readonly name = this.#class.name
+
+  constructor() {
+    super(`Scroller returned undefined`)
+  }
+}
+
+export class AbortedError extends Error {
+  readonly #class = AbortedError
+  readonly name = this.#class.name
+
+  static from(cause: unknown) {
+    return new AbortedError(`Aborted`, { cause })
+  }
+
+}
+
 export class Core {
 
   readonly states = new Ortho<string, State>()
@@ -29,7 +78,7 @@ export class Core {
 
   readonly #states = new Map<string, State>()
 
-  readonly #optimisers = new Map<string, Set<Mutator<any>>>()
+  readonly #optimisers = new Map<string, Map<string, Mutator<any>>>()
 
   readonly #counts = new Map<string, number>()
   readonly #timeouts = new Map<string, NodeJS.Timeout>()
@@ -59,7 +108,7 @@ export class Core {
     this.#mounted = false
   }
 
-  async fetch<D, K, T>(cacheKey: string, callback: () => Promise<T>, aborter: AbortController, params: QueryParams<D, K>) {
+  async fetch<D, K, T>(cacheKey: string, callback: (aborter: AbortController) => Promise<T>, params: QueryParams<D, K>): Promise<Result<T, PendingFetchError>> {
     let mutex = this.#fetches.get(cacheKey)
 
     if (mutex === undefined) {
@@ -70,19 +119,23 @@ export class Core {
     const pending = this.#aborters.get(cacheKey)
 
     if (pending !== undefined)
-      return
+      return new Err(new PendingFetchError())
 
-    return await mutex.lock(async () => {
+    const aborter = new AbortController()
+
+    const result = await mutex.lock(async () => {
       this.#aborters.set(cacheKey, aborter)
       this.aborters.publish(cacheKey, aborter)
 
-      const result = await callback()
+      const result = await callback(aborter)
 
       this.#aborters.delete(cacheKey)
       this.aborters.publish(cacheKey, undefined)
 
       return result
     })
+
+    return new Ok(result)
   }
 
   async abortAndFetch<T>(cacheKey: string, callback: () => Promise<T>, aborter: AbortController) {
@@ -310,29 +363,28 @@ export class Core {
    * @param params 
    * @returns 
    */
-  async mutate<D, K>(cacheKey: string, mutator: Mutator<D>, params: QueryParams<D, K>): Promise<Optional<State<D>>> {
+  async mutate<D, K>(cacheKey: string, mutator: Mutator<D>, params: QueryParams<D, K>): Promise<State<D>> {
     return await this.#replace(cacheKey, async (previous) => {
       const { equals = DEFAULT_EQUALS } = params
 
       const fetched = Option.mapSync(await mutator(previous), Fetched.from)
 
-      const next = this.#mergeRealStateWithFetched(previous, fetched)
+      let next = this.#mergeRealStateWithFetched(previous, fetched)
 
-      if (next.real !== undefined) {
-        if (previous?.real && Time.isBefore(next.real.time, previous.real.time))
-          next.real = previous.real
+      if (next.real && previous.real && Time.isBefore(next.real?.time, previous.real.time))
+        return previous
 
-        if (next.real.isData())
-          next.real = next.real.set(await this.normalize(next.real.data, params))
+      if (next.real?.isData())
+        next = new RealState(next.real.set(await this.normalize(next.real.data, params)))
 
-        if (next.real.isData() && previous?.real?.isData() && equals(next.real.data, previous.real.data))
-          next.real = next.real.set(previous.real.data)
+      if (next.real?.isData() && previous.real?.isData() && equals(next.real.data, previous.real.data))
+        return previous
 
-        if (next.real.isFail() && previous?.real?.isFail() && equals(next.real.error, previous.real.error))
-          next.real = next.real.setErr(previous.real.error)
-      }
+      if (next.real?.isFail() && previous.real?.isFail() && equals(next.real.error, previous.real.error))
+        return previous
 
-      return await this.#reoptimize(cacheKey, next, params)
+      const optimizers = this.#getOrCreateOptimizers<D>(cacheKey)
+      return await this.#reoptimize(next, optimizers)
     }, params)
   }
 
@@ -346,30 +398,28 @@ export class Core {
     return await this.mutate<D, K>(cacheKey, () => undefined, params)
   }
 
-  #getOrCreateOptimizers<D>(cacheKey: string): Set<Mutator<D>> {
+  #getOrCreateOptimizers<D>(cacheKey: string): Map<string, Mutator<D>> {
     const current = this.#optimisers.get(cacheKey)
 
     if (current !== undefined)
-      return current as Set<Mutator<D>>
+      return current as Map<string, Mutator<D>>
 
-    const next = new Set<Mutator>()
+    const next = new Map<string, Mutator>()
     this.#optimisers.set(cacheKey, next)
-    return next as Set<Mutator<D>>
+    return next as Map<string, Mutator<D>>
   }
 
   /**
-   * Apply all optimizations
+   * Erase and reapply all optimizations
    * @param cacheKey 
    * @param state 
    * @param params 
    * @returns 
    */
-  async #reoptimize<D, K>(cacheKey: string, state: RealState<D>, params: QueryParams<D, K>): Promise<State<D>> {
-    const optimizers = this.#getOrCreateOptimizers<D>(cacheKey)
+  async #reoptimize<D, K>(state: State<D>, optimizers: Map<string, Mutator<D>>): Promise<State<D>> {
+    let optimized: State<D> = new RealState<D>(state.real)
 
-    let optimized: State<D> = state
-
-    for (const optimizer of optimizers) {
+    for (const optimizer of optimizers.values()) {
       const fetched = Option.mapSync(await optimizer(optimized), Fetched.from)
 
       optimized = this.#mergeFakeStateWithFetched(optimized, fetched)
@@ -378,19 +428,51 @@ export class Core {
     return optimized
   }
 
-  /**
-   * Apply a single optimization
-   * @param cacheKey 
-   * @param state 
-   * @param optimizer 
-   * @param params 
-   * @returns 
-   */
-  async #optimize<D, K>(cacheKey: string, state: State<D>, optimizer: Mutator<D>, params: QueryParams<D, K>) {
-    this.#getOrCreateOptimizers<D>(cacheKey).add(optimizer)
-    const fetched = Option.mapSync(await optimizer(state), Fetched.from)
+  async optimize<D, K>(cacheKey: string, uuid: string, optimizer: Mutator<D>, params: QueryParams<D, K>) {
+    return await this.#replace(cacheKey, async (previous) => {
+      const optimizers = this.#getOrCreateOptimizers<D>(cacheKey)
 
-    return this.#mergeFakeStateWithFetched(state, fetched)
+      if (optimizers.has(uuid)) {
+        optimizers.delete(uuid)
+
+        previous = await this.#reoptimize(previous, optimizers)
+      }
+
+      optimizers.set(uuid, optimizer)
+
+      const fetched = Option.mapSync(await optimizer(previous), Fetched.from)
+
+      return this.#mergeFakeStateWithFetched(previous, fetched)
+    }, params)
+  }
+
+  async deoptimize<D, K>(cacheKey: string, uuid: string, params: QueryParams<D, K>) {
+    return await this.#replace(cacheKey, async (previous) => {
+      const optimizers = this.#getOrCreateOptimizers<D>(cacheKey)
+
+      optimizers.delete(uuid)
+
+      return this.#reoptimize(previous, optimizers)
+    }, params)
+  }
+
+  async catchAndTimeout<T>(callback: (signal: AbortSignal) => Promiseable<T>, aborter: AbortController, delay?: number): Promise<Result<T, AbortedError>> {
+    const timeout = delay ? setTimeout(() => {
+      aborter.abort(new TimeoutError())
+    }, delay) : undefined
+
+    try {
+      const result = await callback(aborter.signal)
+
+      if (aborter.signal.aborted)
+        return new Err(AbortedError.from(aborter.signal.reason))
+
+      return new Ok(result)
+    } catch (e: unknown) {
+      return new Err(AbortedError.from(e))
+    } finally {
+      clearTimeout(timeout)
+    }
   }
 
   async normalize<D, K>(data: D, params: QueryParams<D, K>) {

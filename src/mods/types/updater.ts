@@ -1,12 +1,5 @@
-import { FetchedInit } from "mods/result/fetched.js"
-import { Times } from "mods/result/times.js"
-import { OptimisticYield } from "./optimism.js"
+import { Fetcher } from "./fetcher.js"
+import { Mutator } from "./mutator.js"
 
 export type Updater<D> =
-  (more: UpdaterMore) => AsyncGenerator<OptimisticYield<D>, FetchedInit<D> | void>
-
-export interface UpdaterMore {
-  signal?: AbortSignal
-}
-
-export type UpdaterParams = Times
+  () => AsyncGenerator<Mutator<D>, Fetcher<D> | void>

@@ -2,9 +2,9 @@ import { Err } from "@hazae41/result"
 import { Promiseable } from "libs/promises/promises.js"
 import { Times, TimesInit } from "./times.js"
 
-export interface FailInit<T = unknown> extends Times {
+export interface FailInit<T = unknown> extends TimesInit {
   readonly error: T
-  ignore?(): void
+  ignore?(): unknown
 }
 
 export namespace FailInit {

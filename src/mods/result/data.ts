@@ -4,7 +4,7 @@ import { Times, TimesInit } from "./times.js"
 
 export interface DataInit<T> extends TimesInit {
   readonly data: T
-  ignore?(): void
+  ignore?(): unknown
 }
 
 export namespace DataInit {

@@ -1,16 +1,16 @@
+import { Optional } from "@hazae41/option";
+import { Err, Ok, Result } from "@hazae41/result";
+import { State } from "index.js";
 import { Time } from "libs/time/time.js";
-import { Core } from "mods/core/core.js";
+import { AbortedError, CooldownError, Core } from "mods/core/core.js";
 import { DEFAULT_SERIALIZER } from "mods/defaults.js";
-import { AbortError } from "mods/errors/abort.js";
-import { FetchedInit } from "mods/result/fetched.js";
 import { Fetcher } from "mods/types/fetcher.js";
 import { QueryParams } from "mods/types/params.js";
-import { FullState } from "mods/types/state.js";
 import { Updater } from "mods/types/updater.js";
 
 export namespace Single {
 
-  export function getCacheKey<D, K>(key: K | undefined, params: QueryParams<D, K>) {
+  export function getCacheKey<D, K>(key: Optional<K>, params: QueryParams<D, K>) {
     if (key === undefined)
       return undefined
     if (typeof key === "string")
@@ -24,211 +24,124 @@ export namespace Single {
   }
 
   /**
-   * Fetch
-   * @param key Key (passed to fetcher)
-   * @param cacheKey Storage key
-   * @param fetcher Resource fetcher
-   * @param aborter AbortController
-   * @param tparams Time parameters
-   * @param replacePending Should ignore cooldown
-   * @returns The new state
+   * Unlocked fetch
+   * @param core 
+   * @param key 
+   * @param cacheKey 
+   * @param fetcher 
+   * @param aborter 
+   * @param params 
+   * @returns 
    */
-  export async function fetch<D, K>(
-    core: Core,
-    key: K | undefined,
-    cacheKey: string | undefined,
-    fetcher: Fetcher<D, K> | undefined,
-    aborter = new AbortController(),
-    params: QueryParams<D, K> = {},
-    replacePending = false,
-    ignoreCooldown = false
-  ): Promise<FullState<D> | undefined> {
-    if (cacheKey === undefined)
-      return
+  export async function fetch<D, K>(core: Core, key: K, cacheKey: string, fetcher: Fetcher<D, K>, aborter: AbortController, params: QueryParams<D, K>): Promise<Result<State<D>, AbortedError>> {
+    const previous = await core.get(cacheKey, params)
 
-    return await core.fetch(cacheKey, async () => {
-      const current = await core.get(cacheKey, params)
+    if (Time.isAfterNow(previous.real?.cooldown))
+      return new Err(AbortedError.from(new CooldownError()))
 
-      if (key === undefined)
-        return current
-      if (fetcher === undefined)
-        return current
+    const aborted = await core.catchAndTimeout(async signal => {
+      return await fetcher(key, { signal })
+    }, aborter, params.timeout)
 
-      if (Time.isAfterNow(current?.cooldown) && !ignoreCooldown)
-        return current
+    if (aborted.isErr())
+      return aborted
 
-      return await core.run<D, K>(cacheKey, async () => {
+    const fetched = aborted.get()
+    fetched.ignore?.()
 
-        const timeout = params.timeout !== undefined ? setTimeout(() => {
-          aborter.abort("Fetch timed out")
-        }, params.timeout) : undefined
+    const time = "time" in fetched
+      ? fetched.time
+      : Date.now()
 
-        try {
-          const { signal } = aborter
+    const cooldown = "cooldown" in fetched
+      ? fetched.cooldown
+      : Time.fromDelay(params.cooldown)
 
-          const result = await fetcher(key, { signal })
+    const expiration = "expiration" in fetched
+      ? fetched.expiration
+      : Time.fromDelay(params.expiration)
 
-          result.ignore?.()
+    if ("error" in fetched)
+      return new Ok(await core.mutate(cacheKey, () => ({
+        error: fetched.error,
+        time: time,
+        cooldown: cooldown,
+        expiration: expiration,
+      }), params))
 
-          if (signal.aborted)
-            throw new AbortError(signal)
-
-          const time = "time" in result
-            ? result.time
-            : Date.now()
-
-          const cooldown = "cooldown" in result
-            ? result.cooldown
-            : Time.fromDelay(params.cooldown)
-
-          const expiration = "expiration" in result
-            ? result.expiration
-            : Time.fromDelay(params.expiration)
-
-          if ("error" in result)
-            return () => ({
-              error: result.error,
-              time: time,
-              cooldown: cooldown,
-              expiration: expiration,
-            })
-
-          return () => ({
-            data: result.data,
-            time: time,
-            cooldown: cooldown,
-            expiration: expiration,
-          })
-        } catch (error: unknown) {
-          return () => ({
-            error: error,
-            cooldown: params.cooldown,
-            expiration: params.expiration,
-          })
-        } finally {
-          clearTimeout(timeout)
-        }
-      }, aborter, params)
-    }, aborter, replacePending)
+    return new Ok(await core.mutate(cacheKey, () => ({
+      data: fetched.data,
+      time: time,
+      cooldown: cooldown,
+      expiration: expiration,
+    }), params))
   }
+
 
   /**
    * Optimistic update
-   * @param key Key (:K) (passed to poster)
-   * @param cacheKey Storage key
-   * @param fetcher Resource poster
-   * @param updater Mutation function
-   * @param aborter AbortController
-   * @param tparams Time parameters
-   * @returns The new state
-   * @throws Error
+   * @param core 
+   * @param key 
+   * @param cacheKey 
+   * @param fetcher 
+   * @param updater 
+   * @param params 
+   * @returns 
    */
   export async function update<D, K>(
     core: Core,
-    key: K | undefined,
-    cacheKey: string | undefined,
-    fetcher: Fetcher<D, K> | undefined,
-    updater: Updater<D> | undefined,
-    aborter = new AbortController(),
-    params: QueryParams<D, K> = {},
-  ): Promise<FullState<D> | undefined> {
-    if (cacheKey === undefined)
-      return
-
-    const current = await core.get(cacheKey, params)
-
-    if (key === undefined)
-      return current
-    if (fetcher === undefined)
-      return current
-    if (updater === undefined)
-      return current
-
+    key: K,
+    cacheKey: string,
+    fetcher: Fetcher<D, K>,
+    updater: Updater<D>,
+    params: QueryParams<D, K>
+  ): Promise<Result<State<D>, AbortedError>> {
     const uuid = crypto.randomUUID()
 
-    try {
-      const { signal } = aborter
+    const generator = updater()
 
-      const generator = updater({ signal })
+    let result = await generator.next()
 
-      let final: FetchedInit<D> | void
+    for (; !result.done; result = await generator.next())
+      await core.optimize<D, K>(cacheKey, uuid, result.value, params)
 
-      while (true) {
-        const { done, value } = await generator.next()
+    const fetcher2 = result.value ?? fetcher
 
-        if (signal.aborted)
-          throw new AbortError(signal)
+    const aborted = await core.catchAndTimeout(async (signal) => {
+      return await fetcher2(key, { signal, cache: "reload" })
+    }, new AbortController(), params.timeout)
 
-        if (done) {
-          final = value
-          break
-        }
+    if (aborted.isErr())
+      return aborted
 
-        await core.apply<D, K>(cacheKey, (previous) => {
-          const result = value(previous)
+    const fetched = aborted.get()
+    fetched.ignore?.()
 
-          // if ("error" in result)
-          //   return {
-          //     error: result.error,
-          //     optimistic: optimistic
-          //   }
+    const time = "time" in fetched
+      ? fetched.time
+      : Date.now()
 
-          return {
-            data: result.data,
-            error: undefined
-          }
-        }, params, { action: "set", uuid })
-      }
+    const cooldown = "cooldown" in fetched
+      ? fetched.cooldown
+      : Time.fromDelay(params.cooldown)
 
-      if (final === undefined) {
+    const expiration = "expiration" in fetched
+      ? fetched.expiration
+      : Time.fromDelay(params.expiration)
 
-        const timeout = params.timeout !== undefined ? setTimeout(() => {
-          aborter.abort("Fetch timed out")
-        }, params.timeout) : undefined
-
-        try {
-          final = await fetcher(key, { signal, cache: "reload" })
-        } finally {
-          clearTimeout(timeout)
-        }
-      }
-
-      const result = final
-
-      result.ignore?.()
-
-      if (signal.aborted)
-        throw new AbortError(signal)
-
-      if ("error" in result)
-        throw result.error
-
-      const time = "time" in result
-        ? result.time
-        : Date.now()
-
-      const cooldown = "cooldown" in result
-        ? result.cooldown
-        : Time.fromDelay(params.cooldown)
-
-      const expiration = "expiration" in result
-        ? result.expiration
-        : Time.fromDelay(params.expiration)
-
-      return await core.apply(cacheKey, () => ({
-        data: result.data,
-        error: undefined,
+    if ("error" in fetched)
+      return new Ok(await core.mutate(cacheKey, () => ({
+        error: fetched.error,
         time: time,
         cooldown: cooldown,
-        expiration: expiration
-      }), params, { action: "unset", uuid })
-    } catch (error: unknown) {
-      await core.apply(cacheKey, (previous) => previous && ({
-        data: previous.realData,
-        time: previous.realTime
-      }), params, { action: "unset", uuid })
+        expiration: expiration,
+      }), params))
 
-      throw error
-    }
+    return new Ok(await core.mutate(cacheKey, () => ({
+      data: fetched.data,
+      time: time,
+      cooldown: cooldown,
+      expiration: expiration
+    }), params))
   }
 }

@@ -1,7 +1,7 @@
 import { Err, Ok, Result } from "@hazae41/result"
 import { Data, DataInit } from "./data.js"
 import { Fail, FailInit } from "./fail.js"
-import { Times } from "./times.js"
+import { Times, TimesInit } from "./times.js"
 
 export type FetchedInit<D = unknown, F = unknown> =
   | DataInit<D>
@@ -30,6 +30,27 @@ export namespace Fetched {
       return Fail.from<FailInit.Inner<T>>(init)
     else
       return Data.from<DataInit.Inner<T>>(init)
+  }
+
+  export function fromWithTimes<T extends FetchedInit.Infer<T>>(init: T, times: TimesInit): Fetched<DataInit.Inner<T>, FailInit.Inner<T>> {
+    const time = "time" in init
+      ? init.time
+      : times.time
+
+    const cooldown = "cooldown" in init
+      ? init.cooldown
+      : times.cooldown
+
+    const expiration = "expiration" in init
+      ? init.expiration
+      : times.expiration
+
+    init.ignore?.()
+
+    if ("error" in init)
+      return Fail.from({ error: init.error, time, cooldown, expiration })
+    else
+      return Data.from({ data: init.data, time, cooldown, expiration })
   }
 
   export interface Wrapper<T> {
