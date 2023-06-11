@@ -18,16 +18,15 @@ import { useDataAndError } from "../../types/data_and_error.js";
 export type SchemaFactory<D, K, L extends DependencyList = []> =
   (...deps: L) => Optional<SimpleQuerySchema<D, K>>
 
-export function useSchemaQuery<D, K, L extends DependencyList = []>(
+export function useQuery<D, K, L extends DependencyList = []>(
   factory: SchemaFactory<D, K, L>,
   deps: L
 ) {
-  const schema = useMemo(() => {
+  const { key, fetcher, params } = useMemo(() => {
     return factory(...deps)
-  }, deps)
+  }, deps) ?? {}
 
-  const { key, fetcher, params } = schema ?? {}
-  return useQuery<D, K>(key, fetcher, params)
+  return useAnonymousQuery<D, K>(key, fetcher, params)
 }
 
 /**
@@ -49,7 +48,7 @@ export interface SingleQuery<D = unknown, K = unknown> extends Query<D, K> {
  * @param cparams Parameters (unmemoized)
  * @returns Single query
  */
-export function useQuery<D = unknown, K = string>(
+export function useAnonymousQuery<D = unknown, K = string>(
   key: K | undefined,
   fetcher: Fetcher<D, K> | undefined,
   params: QueryParams<D, K> = {},

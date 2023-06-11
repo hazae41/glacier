@@ -18,16 +18,15 @@ import { useDataAndError } from "../../types/data_and_error.js";
 export type ScrollSchemaFactory<D, K, L extends DependencyList = []> =
   (...deps: L) => ScrollQuerySchema<D, K> | undefined
 
-export function useScrollSchemaQuery<D, K, L extends DependencyList = []>(
+export function useScrollQuery<D, K, L extends DependencyList = []>(
   factory: ScrollSchemaFactory<D, K, L>,
   deps: L
 ) {
-  const schema = useMemo(() => {
+  const { scroller, fetcher, params } = useMemo(() => {
     return factory(...deps)
-  }, deps)
+  }, deps) ?? {}
 
-  const { scroller, fetcher, params } = schema ?? {}
-  return useScrollQuery<D, K>(scroller, fetcher, params)
+  return useAnonymousScrollQuery<D, K>(scroller, fetcher, params)
 }
 
 /**
@@ -52,7 +51,7 @@ export interface ScrollQuery<D = unknown, K = unknown> extends Query<D[], K> {
  * @param cparams Parameters (unmemoized)
  * @returns Scrolling query
  */
-export function useScrollQuery<D = unknown, K = string>(
+export function useAnonymousScrollQuery<D = unknown, K = string>(
   scroller: Scroller<D, K> | undefined,
   fetcher: Fetcher<D, K> | undefined,
   params: QueryParams<D[], K> = {},
