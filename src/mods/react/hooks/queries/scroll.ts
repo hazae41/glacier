@@ -1,8 +1,8 @@
 import { Option } from "@hazae41/option";
 import { Err, Ok, Result } from "@hazae41/result";
-import { DataAndError, MissingFetcherError, MissingKeyError, State } from "index.js";
 import { Arrays } from "libs/arrays/arrays.js";
 import { useRenderRef } from "libs/react/ref.js";
+import { MissingFetcherError, MissingKeyError } from "mods/core/core.js";
 import { useCore } from "mods/react/contexts/core.js";
 import { Query } from "mods/react/types/query.js";
 import { Scroll } from "mods/scroll/helper.js";
@@ -11,6 +11,7 @@ import { Fetcher } from "mods/types/fetcher.js";
 import { Mutator } from "mods/types/mutator.js";
 import { QueryParams } from "mods/types/params.js";
 import { Scroller } from "mods/types/scroller.js";
+import { DataAndError, State } from "mods/types/state.js";
 import { DependencyList, useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 export function useScrollQuerySchema<D, K, L extends DependencyList = []>(
