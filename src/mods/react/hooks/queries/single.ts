@@ -1,4 +1,3 @@
-import { Option } from "@hazae41/option";
 import { Err, Ok, Result } from "@hazae41/result";
 import { useRenderRef } from "libs/react/ref.js";
 import { MissingFetcherError, MissingKeyError } from "mods/core/core.js";
@@ -10,11 +9,11 @@ import { SimpleQuerySchema } from "mods/single/schema.js";
 import { Fetcher } from "mods/types/fetcher.js";
 import { Mutator } from "mods/types/mutator.js";
 import { QueryParams } from "mods/types/params.js";
-import { FetchedState, State } from "mods/types/state.js";
+import { DataAndError, State } from "mods/types/state.js";
 import { Updater } from "mods/types/updater.js";
 import { DependencyList, useCallback, useEffect, useMemo, useRef, useState } from "react";
 
-export function useSchema<D, K, L extends DependencyList = []>(
+export function useQuerySchema<D, K, L extends DependencyList = []>(
   factory: (...deps: L) => SimpleQuerySchema<D, K> | undefined,
   deps: L
 ) {
@@ -202,28 +201,16 @@ export function useQuery<D = unknown, K = string>(
   const state = stateRef.current
   const aborter = aborterRef.current
 
-  function toDataAndError<D, F>(state?: FetchedState<D, F>) {
-    const data = Option
-      .from(state?.data)
-      .mapSync(x => x.inner)
-
-    const error = Option
-      .from(state?.error)
-      .mapSync(x => x.inner)
-
-    return { data, error }
-  }
-
   const { time, cooldown, expiration } = state?.current?.current ?? {}
 
   const ready = state !== undefined
   const optimistic = state?.fake !== undefined
   const fetching = aborter !== undefined
 
-  const { data, error } = toDataAndError(state?.current)
+  const { data, error } = DataAndError.from(state?.current)
 
-  const real = toDataAndError(state?.real)
-  const fake = toDataAndError(state?.fake)
+  const real = DataAndError.from(state?.real)
+  const fake = DataAndError.from(state?.fake)
 
   return {
     key,

@@ -118,7 +118,7 @@ export class ScrollInstance<D = unknown, K = unknown> implements Instance<D[], K
       return new Err(new MissingFetcherError())
 
     return await core.fetchOrError(cacheKey, aborter, async () => {
-      return await Scroll.first(core, scroller, cacheKey, fetcher, aborter, params)
+      return await Scroll.firstOrError(core, scroller, cacheKey, fetcher, aborter, params)
     }).then(r => r.inspectSync(state => this.#state = state))
   }
 
@@ -129,7 +129,7 @@ export class ScrollInstance<D = unknown, K = unknown> implements Instance<D[], K
       return new Err(new MissingFetcherError())
 
     return await core.abortAndFetch(cacheKey, aborter, async () => {
-      return await Scroll.first(core, scroller, cacheKey, fetcher, aborter, params)
+      return await Scroll.firstOrError(core, scroller, cacheKey, fetcher, aborter, params)
     }).then(r => r.inspectSync(state => this.#state = state))
   }
 

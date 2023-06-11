@@ -1,3 +1,4 @@
+import { Option } from "@hazae41/option";
 import { Err, Ok, Result } from "@hazae41/result";
 import { Arrays } from "libs/arrays/arrays.js";
 import { Time } from "libs/time/time.js";
@@ -32,20 +33,15 @@ export namespace Scroll {
    * @param params 
    * @returns 
    */
-  export async function first<D, K>(
+  async function first<D, K>(
     core: Core,
     scroller: Scroller<D, K>,
     cacheKey: string,
     fetcher: Fetcher<D, K>,
     aborter: AbortController,
     params: QueryParams<D[], K>
-  ): Promise<Result<State<D[]>, AbortedError | CooldownError | ScrollError>> {
+  ): Promise<Result<State<D[]>, AbortedError | ScrollError>> {
     const { equals = DEFAULT_EQUALS } = params
-
-    const previous = await core.get(cacheKey, params)
-
-    if (Time.isAfterNow(previous.real?.current.cooldown))
-      return new Err(new CooldownError())
 
     const key = scroller(undefined)
 
@@ -73,6 +69,43 @@ export namespace Scroll {
 
       return timed
     }, params))
+  }
+
+  export async function firstOrError<D, K>(
+    core: Core,
+    scroller: Scroller<D, K>,
+    cacheKey: string,
+    fetcher: Fetcher<D, K>,
+    aborter: AbortController,
+    params: QueryParams<D[], K>
+  ): Promise<Result<State<D[]>, AbortedError | CooldownError | ScrollError>> {
+    const previous = await core.get(cacheKey, params)
+
+    if (Time.isAfterNow(previous.real?.current.cooldown))
+      return new Err(new CooldownError())
+
+    return await first(core, scroller, cacheKey, fetcher, aborter, params)
+  }
+
+  export async function firstOrWait<D, K>(
+    core: Core,
+    scroller: Scroller<D, K>,
+    cacheKey: string,
+    fetcher: Fetcher<D, K>,
+    aborter: AbortController,
+    params: QueryParams<D[], K>
+  ): Promise<Result<State<D[]>, AbortedError | CooldownError | ScrollError>> {
+    const previous = await core.get(cacheKey, params)
+
+    const cooldown = Option
+      .from(previous.real?.current.cooldown)
+      .mapSync(Time.toDelay)
+      .filterSync(x => x > 0)
+
+    if (cooldown.isSome())
+      await new Promise(ok => setTimeout(ok, cooldown.get()))
+
+    return await first(core, scroller, cacheKey, fetcher, aborter, params)
   }
 
   /**
