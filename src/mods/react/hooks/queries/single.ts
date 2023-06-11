@@ -13,7 +13,7 @@ import { DataAndError, State } from "mods/types/state.js";
 import { Updater } from "mods/types/updater.js";
 import { DependencyList, useCallback, useEffect, useMemo, useRef, useState } from "react";
 
-export function useQuerySchema<D, K, L extends DependencyList = []>(
+export function useSchemaQuery<D, K, L extends DependencyList = []>(
   factory: (...deps: L) => SimpleQuerySchema<D, K> | undefined,
   deps: L
 ) {

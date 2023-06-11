@@ -14,7 +14,7 @@ import { Scroller } from "mods/types/scroller.js";
 import { DataAndError, State } from "mods/types/state.js";
 import { DependencyList, useCallback, useEffect, useMemo, useRef, useState } from "react";
 
-export function useScrollQuerySchema<D, K, L extends DependencyList = []>(
+export function useScrollSchemaQuery<D, K, L extends DependencyList = []>(
   factory: (...deps: L) => ScrollQuerySchema<D, K> | undefined,
   deps: L
 ) {
