@@ -401,7 +401,7 @@ export class Core {
         return previous
 
       if (next.real?.current.isData())
-        next = new RealState(new DataState(next.real.current.set(await this.#normalize(next.real.current.inner, params))))
+        next = new RealState(new DataState(await this.#normalize(next.real.current, params)))
 
       if (next.real?.current.isData() && previous.real?.current.isData() && equals(next.real.current.inner, previous.real.current.inner))
         return previous
@@ -502,10 +502,10 @@ export class Core {
    * @param params 
    * @returns 
    */
-  async #normalize<D, K>(data: D, params: QueryParams<D, K>) {
+  async #normalize<D, K>(data: Data<D>, params: QueryParams<D, K>) {
     if (params.normalizer === undefined)
       return data
-    return await params.normalizer(data, { core: this, parent, shallow: false })
+    return new Data(await params.normalizer(data.inner, { core: this, times: data, shallow: false }), data)
   }
 
   /**
@@ -514,10 +514,10 @@ export class Core {
    * @param params 
    * @returns 
    */
-  async prenormalize<D, K>(data: D, params: QueryParams<D, K>) {
+  async prenormalize<D, K>(data: Data<D>, params: QueryParams<D, K>) {
     if (params.normalizer === undefined)
       return data
-    return await params.normalizer(data, { core: this, parent, shallow: true })
+    return new Data(await params.normalizer(data.inner, { core: this, times: data, shallow: true }), data)
   }
 
   async increment<D, K>(cacheKey: string, params: QueryParams<D, K>) {

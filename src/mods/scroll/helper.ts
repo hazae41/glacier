@@ -59,17 +59,18 @@ export namespace Scroll {
       return aborted
 
     const times = TimesInit.merge(aborted.get(), params)
-    const timed = aborted.get().setTimes(times)
+    const timed = aborted.get().setTimes(times).mapSync(data => [data])
 
     return new Ok(await core.mutate(cacheKey, async (previous) => {
-      return await timed.map(async (data) => {
-        const prenormalized = await core.prenormalize([data], params)
+      if (timed.isErr())
+        return timed
 
-        if (previous.real?.data && equals(prenormalized[0], previous.real.data.inner[0]))
-          return previous.real.data.inner
+      const prenormalized = await core.prenormalize(timed, params)
 
-        return [data]
-      })
+      if (previous.real?.data && equals(prenormalized.inner[0], previous.real.data.inner[0]))
+        return previous.real.data
+
+      return timed
     }, params))
   }
 

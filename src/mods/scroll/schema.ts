@@ -35,7 +35,7 @@ export class ScrollQuerySchema<D = unknown, K = unknown> implements QuerySchema<
   }
 
   async normalize(data: D[], more: NormalizerMore) {
-    const { core, parent, shallow } = more
+    const { core, times, shallow } = more
 
     if (shallow)
       return
@@ -43,7 +43,7 @@ export class ScrollQuerySchema<D = unknown, K = unknown> implements QuerySchema<
     const instance = await this.make(core)
 
     await core.mutate(instance.cacheKey, () => {
-      return new Data(data, parent)
+      return new Data(data, times)
     }, instance.params)
   }
 
