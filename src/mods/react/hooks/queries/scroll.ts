@@ -15,8 +15,11 @@ import { State } from "mods/types/state.js";
 import { DependencyList, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useDataAndError } from "../../types/data_and_error.js";
 
+export type ScrollSchemaFactory<D, K, L extends DependencyList = []> =
+  (...deps: L) => ScrollQuerySchema<D, K> | undefined
+
 export function useScrollSchemaQuery<D, K, L extends DependencyList = []>(
-  factory: (...deps: L) => ScrollQuerySchema<D, K> | undefined,
+  factory: ScrollSchemaFactory<D, K, L>,
   deps: L
 ) {
   const schema = useMemo(() => {

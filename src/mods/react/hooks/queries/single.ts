@@ -1,3 +1,4 @@
+import { Optional } from "@hazae41/option";
 import { Err, Ok, Result } from "@hazae41/result";
 import { useRenderRef } from "libs/react/ref.js";
 import { MissingFetcherError, MissingKeyError } from "mods/core/core.js";
@@ -14,8 +15,11 @@ import { Updater } from "mods/types/updater.js";
 import { DependencyList, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useDataAndError } from "../../types/data_and_error.js";
 
+export type SchemaFactory<D, K, L extends DependencyList = []> =
+  (...deps: L) => Optional<SimpleQuerySchema<D, K>>
+
 export function useSchemaQuery<D, K, L extends DependencyList = []>(
-  factory: (...deps: L) => SimpleQuerySchema<D, K> | undefined,
+  factory: SchemaFactory<D, K, L>,
   deps: L
 ) {
   const schema = useMemo(() => {
