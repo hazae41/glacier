@@ -90,25 +90,32 @@ export namespace Simple {
   ): Promise<Result<State<D>, AbortedError>> {
     const uuid = crypto.randomUUID()
 
-    const generator = updater()
+    try {
+      const generator = updater()
 
-    let result = await generator.next()
+      let result = await generator.next()
 
-    for (; !result.done; result = await generator.next())
-      await core.optimize<D, K>(cacheKey, uuid, result.value, params)
+      for (; !result.done; result = await generator.next())
+        await core.optimize<D, K>(cacheKey, uuid, result.value, params)
 
-    const fetcher2 = result.value ?? fetcher
+      const fetcher2 = result.value ?? fetcher
 
-    const aborted = await core.catchAndTimeout(async (signal) => {
-      return await fetcher2(key, { signal, cache: "reload" })
-    }, aborter, params.timeout)
+      const aborted = await core.catchAndTimeout(async (signal) => {
+        return await fetcher2(key, { signal, cache: "reload" })
+      }, aborter, params.timeout)
 
-    if (aborted.isErr())
-      return aborted
+      core.deoptimize(cacheKey, uuid, params)
 
-    const times = TimesInit.merge(aborted.get(), params)
-    const timed = aborted.get().setTimes(times)
+      if (aborted.isErr())
+        return aborted
 
-    return new Ok(await core.mutate(cacheKey, () => new Some(timed), params))
+      const times = TimesInit.merge(aborted.get(), params)
+      const timed = aborted.get().setTimes(times)
+
+      return new Ok(await core.mutate(cacheKey, () => new Some(timed), params))
+    } catch (e: unknown) {
+      core.deoptimize(cacheKey, uuid, params)
+      throw e
+    }
   }
 }

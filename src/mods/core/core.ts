@@ -420,10 +420,10 @@ export class Core {
         next = new RealState(new DataState(await this.#normalize(next.real.current, params)))
 
       if (next.real?.current.isData() && previous.real?.current.isData() && equals(next.real.current.inner, previous.real.current.inner))
-        return previous
+        next = new RealState(new DataState(new Data(previous.real.current.inner, next.real.current)))
 
       if (next.real?.current.isFail() && previous.real?.current.isFail() && equals(next.real.current.inner, previous.real.current.inner))
-        return previous
+        next = new RealState(new FailState(new Fail(previous.real.current.inner, next.real.current), previous.real.data))
 
       const optimizers = this.#getOrCreateOptimizers<D>(cacheKey)
       return await this.#reoptimize(next, optimizers)
