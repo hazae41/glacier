@@ -1,5 +1,5 @@
 import { AsyncStorage, AsyncStorageParams } from "mods/storages/storage.js"
-import { FullState } from "mods/types/state.js"
+import { StoredState } from "mods/types/state.js"
 import { useEffect, useRef } from "react"
 
 export function useIDBStorage(name?: string) {
@@ -134,7 +134,7 @@ export class IDBStorage implements AsyncStorage {
 
     const state = valueSerializer
       ? await valueSerializer.parse(value as string)
-      : value as FullState<D>
+      : value as StoredState<D>
 
     if (state.expiration !== undefined)
       this.#keys.set(key, state.expiration)
@@ -142,7 +142,7 @@ export class IDBStorage implements AsyncStorage {
     return state
   }
 
-  async set<D>(cacheKey: string, state: FullState<D>, params: AsyncStorageParams<D> = {}) {
+  async set<D>(cacheKey: string, state: StoredState<D>, params: AsyncStorageParams<D> = {}) {
     const { keySerializer, valueSerializer } = params
 
     const key = keySerializer

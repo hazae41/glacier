@@ -1,5 +1,5 @@
 import { SyncStorage, SyncStorageParams } from "mods/storages/storage.js"
-import { FullState } from "mods/types/state.js"
+import { StoredState } from "mods/types/state.js"
 import { useEffect, useRef } from "react"
 
 /**
@@ -91,7 +91,7 @@ export class SyncLocalStorage implements SyncStorage {
 
     const state = valueSerializer
       ? valueSerializer.parse(item)
-      : JSON.parse(item) as FullState<D>
+      : JSON.parse(item) as StoredState<D>
 
     if (state.expiration !== undefined)
       this.#keys.set(key, state.expiration)
@@ -99,7 +99,7 @@ export class SyncLocalStorage implements SyncStorage {
     return state
   }
 
-  set<D>(cacheKey: string, state: FullState<D>, params: SyncStorageParams<D> = {}) {
+  set<D>(cacheKey: string, state: StoredState<D>, params: SyncStorageParams<D> = {}) {
     const { keySerializer, valueSerializer } = params
 
     const key = keySerializer
