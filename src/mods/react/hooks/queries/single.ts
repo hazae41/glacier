@@ -1,9 +1,10 @@
 import { Option } from "@hazae41/option";
 import { Err, Ok, Result } from "@hazae41/result";
-import { MissingFetcherError, MissingKeyError, Times, TimesInit } from "index.js";
 import { useRenderRef } from "libs/react/ref.js";
+import { MissingFetcherError, MissingKeyError } from "mods/core/core.js";
 import { useCore } from "mods/react/contexts/core.js";
 import { Query } from "mods/react/types/query.js";
+import { TimesInit } from "mods/result/times.js";
 import { Simple } from "mods/single/helper.js";
 import { SimpleQuerySchema } from "mods/single/schema.js";
 import { Fetcher } from "mods/types/fetcher.js";
@@ -34,7 +35,7 @@ export interface SingleQuery<D = unknown, K = unknown> extends Query<D, K> {
    * @param updater Mutation function
    * @param aborter Custom AbortController
    */
-  update(updater: Updater<D>, uparams?: Times, aborter?: AbortController): Promise<Result<State<D>, Error>>
+  update(updater: Updater<D>, uparams?: TimesInit, aborter?: AbortController): Promise<Result<State<D>, Error>>
 }
 
 /**

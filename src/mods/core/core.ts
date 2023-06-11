@@ -1,13 +1,16 @@
 import { Mutex } from "@hazae41/mutex"
 import { Optional } from "@hazae41/option"
 import { Err, Ok, Panic, Result } from "@hazae41/result"
-import { Data, DataState, Fail, FailState, FakeState, Fetched, RealState, State, StoredState } from "index.js"
 import { Ortho } from "libs/ortho/ortho.js"
 import { Promiseable } from "libs/promises/promises.js"
 import { Time } from "libs/time/time.js"
 import { DEFAULT_EQUALS } from "mods/defaults.js"
+import { Data } from "mods/result/data.js"
+import { Fail } from "mods/result/fail.js"
+import { Fetched } from "mods/result/fetched.js"
 import { Mutator, Setter } from "mods/types/mutator.js"
 import { GlobalParams, QueryParams } from "mods/types/params.js"
+import { DataState, FailState, FakeState, RealState, State, StoredState } from "mods/types/state.js"
 
 export type Listener<D = unknown> =
   (x: Optional<State<D>>) => void

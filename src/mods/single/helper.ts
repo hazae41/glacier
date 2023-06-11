@@ -1,11 +1,12 @@
 import { Option } from "@hazae41/option";
 import { Err, Ok, Result } from "@hazae41/result";
-import { State, TimesInit } from "index.js";
 import { Time } from "libs/time/time.js";
 import { AbortedError, CooldownError, Core } from "mods/core/core.js";
 import { DEFAULT_SERIALIZER } from "mods/defaults.js";
+import { TimesInit } from "mods/result/times.js";
 import { Fetcher } from "mods/types/fetcher.js";
 import { QueryParams } from "mods/types/params.js";
+import { State } from "mods/types/state.js";
 import { Updater } from "mods/types/updater.js";
 
 export namespace Simple {

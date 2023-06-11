@@ -1,12 +1,13 @@
 import { Err, Ok, Result } from "@hazae41/result";
-import { State, TimesInit } from "index.js";
 import { Arrays } from "libs/arrays/arrays.js";
 import { Time } from "libs/time/time.js";
 import { AbortedError, CooldownError, Core, ScrollError } from "mods/core/core.js";
 import { DEFAULT_EQUALS, DEFAULT_SERIALIZER } from "mods/defaults.js";
+import { TimesInit } from "mods/result/times.js";
 import { Fetcher } from "mods/types/fetcher.js";
 import { QueryParams } from "mods/types/params.js";
 import { Scroller } from "mods/types/scroller.js";
+import { State } from "mods/types/state.js";
 
 export namespace Scroll {
 

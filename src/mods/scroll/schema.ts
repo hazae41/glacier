@@ -1,6 +1,6 @@
 import { Optional } from "@hazae41/option";
-import { Data } from "index.js";
 import { Core } from "mods/core/core.js";
+import { Data } from "mods/result/data.js";
 import { Fetcher } from "mods/types/fetcher.js";
 import { NormalizerMore } from "mods/types/normalizer.js";
 import { QueryParams } from "mods/types/params.js";
