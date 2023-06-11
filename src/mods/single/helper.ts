@@ -1,5 +1,5 @@
 import { Err, Ok, Result } from "@hazae41/result";
-import { Fetched, State, TimesInit } from "index.js";
+import { State, TimesInit } from "index.js";
 import { Time } from "libs/time/time.js";
 import { AbortedError, CooldownError, Core } from "mods/core/core.js";
 import { DEFAULT_SERIALIZER } from "mods/defaults.js";
@@ -33,7 +33,7 @@ export namespace Simple {
   export async function fetch<D, K>(core: Core, key: K, cacheKey: string, fetcher: Fetcher<D, K>, aborter: AbortController, params: QueryParams<D, K>): Promise<Result<State<D>, AbortedError | CooldownError>> {
     const previous = await core.get(cacheKey, params)
 
-    if (Time.isAfterNow(previous.real?.cooldown))
+    if (Time.isAfterNow(previous.real?.current.cooldown))
       return new Err(new CooldownError())
 
     const aborted = await core.catchAndTimeout(async signal => {
@@ -44,7 +44,7 @@ export namespace Simple {
       return aborted
 
     const times = TimesInit.merge(aborted.get(), params)
-    const timed = Fetched.rewrap(aborted.get(), times)
+    const timed = aborted.get().setTimes(times)
 
     return new Ok(await core.mutate(cacheKey, () => timed, params))
   }
@@ -88,7 +88,7 @@ export namespace Simple {
       return aborted
 
     const times = TimesInit.merge(aborted.get(), params)
-    const timed = Fetched.rewrap(aborted.get(), times)
+    const timed = aborted.get().setTimes(times)
 
     return new Ok(await core.mutate(cacheKey, () => timed, params))
   }

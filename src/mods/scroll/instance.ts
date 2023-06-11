@@ -92,7 +92,7 @@ export class ScrollInstance<D = unknown, K = unknown> implements Instance<D[], K
   }
 
   peek() {
-    return this.scroller?.(Option.mapSync(this.state?.real?.ok().inner, Arrays.last))
+    return this.scroller?.(Option.mapSync(this.state.real?.data?.inner, Arrays.last))
   }
 
   async mutate(mutator: Mutator<D[]>) {

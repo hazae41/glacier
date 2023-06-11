@@ -1,5 +1,5 @@
 import { Err, Ok, Result } from "@hazae41/result";
-import { Fetched, State, TimesInit } from "index.js";
+import { State, TimesInit } from "index.js";
 import { Arrays } from "libs/arrays/arrays.js";
 import { Time } from "libs/time/time.js";
 import { AbortedError, CooldownError, Core, ScrollError } from "mods/core/core.js";
@@ -43,7 +43,7 @@ export namespace Scroll {
 
     const previous = await core.get(cacheKey, params)
 
-    if (Time.isAfterNow(previous.real?.cooldown))
+    if (Time.isAfterNow(previous.real?.current.cooldown))
       return new Err(new CooldownError())
 
     const key = scroller(undefined)
@@ -59,14 +59,14 @@ export namespace Scroll {
       return aborted
 
     const times = TimesInit.merge(aborted.get(), params)
-    const timed = Fetched.rewrap(aborted.get(), times)
+    const timed = aborted.get().setTimes(times)
 
     return new Ok(await core.mutate(cacheKey, async (previous) => {
       return await timed.map(async (data) => {
         const prenormalized = await core.prenormalize([data], params)
 
-        if (previous.real?.isData() && equals(prenormalized[0], previous.real.data[0]))
-          return previous.real.data
+        if (previous.real?.data && equals(prenormalized[0], previous.real.data.inner[0]))
+          return previous.real.data.inner
 
         return [data]
       })
@@ -93,10 +93,10 @@ export namespace Scroll {
   ): Promise<Result<State<D[]>, AbortedError | CooldownError | ScrollError>> {
     const previous = await core.get(cacheKey, params)
 
-    if (Time.isAfterNow(previous.real?.cooldown))
+    if (Time.isAfterNow(previous.real?.current.cooldown))
       return new Err(new CooldownError())
 
-    const previousPages = previous.real?.ok().inner ?? []
+    const previousPages = previous.real?.data?.inner ?? []
     const previousPage = Arrays.last(previousPages)
     const key = scroller(previousPage)
 
@@ -110,16 +110,11 @@ export namespace Scroll {
     if (aborted.isErr())
       return aborted
 
-    let { time, cooldown, expiration } = TimesInit.merge(aborted.get(), params)
+    const times = TimesInit.merge(aborted.get(), params)
+    const timed = aborted.get().setTimes(times)
 
     return new Ok(await core.mutate(cacheKey, (previous) => {
-      if (expiration !== undefined && previous.real?.expiration !== undefined)
-        expiration = Math.min(expiration, previous.real.expiration)
-
-      const times = { time, cooldown, expiration }
-      const timed = Fetched.rewrap(aborted.get(), times)
-
-      const previousPages = previous.real?.ok().inner ?? []
+      const previousPages = previous.real?.data?.inner ?? []
       return timed.mapSync(data => [...previousPages, data])
     }, params))
   }

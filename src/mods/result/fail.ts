@@ -63,6 +63,10 @@ export class Fail<T = unknown> extends Err<T> implements FailInit<T>, Times {
     return new Fail(inner, this)
   }
 
+  setTimes(times: TimesInit = {}) {
+    return new Fail(this.inner, times)
+  }
+
   async mapErr<U>(mapper: (data: T) => Promiseable<U>): Promise<Fail<U>> {
     return new Fail<U>(await mapper(this.get()), this)
   }

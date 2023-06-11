@@ -63,6 +63,10 @@ export class Data<T> extends Ok<T> implements DataInit<T>, Times {
     return this
   }
 
+  setTimes(times: TimesInit = {}) {
+    return new Data(this.inner, times)
+  }
+
   async map<U>(mapper: (data: T) => Promiseable<U>) {
     return new Data<U>(await mapper(this.get()), this)
   }

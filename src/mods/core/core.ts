@@ -1,7 +1,7 @@
 import { Mutex } from "@hazae41/mutex"
 import { Optional } from "@hazae41/option"
 import { Err, Ok, Panic, Result } from "@hazae41/result"
-import { Data, Fail, FakeState, Fetched, RealState, State, StoredState, Times } from "index.js"
+import { Data, DataState, Fail, FailState, FakeState, Fetched, RealState, State, StoredState } from "index.js"
 import { Ortho } from "libs/ortho/ortho.js"
 import { Promiseable } from "libs/promises/promises.js"
 import { Time } from "libs/time/time.js"
@@ -202,15 +202,19 @@ export class Core {
 
       if (stored.data !== undefined) {
         const data = new Data(stored.data, times)
-        const state = new RealState<D, unknown>(data)
+        const substate = new DataState<D, unknown>(data)
+        const state = new RealState(substate)
         this.#states.set(cacheKey, state)
+        this.states.publish(cacheKey, state)
         return new Ok(state)
       }
 
       if (stored.error !== undefined) {
         const fail = new Fail(stored.error, times)
-        const state = new RealState<D, unknown>(fail)
+        const substate = new FailState<D, unknown>(fail)
+        const state = new RealState(substate)
         this.#states.set(cacheKey, state)
+        this.states.publish(cacheKey, state)
         return new Ok(state)
       }
 
@@ -222,15 +226,19 @@ export class Core {
 
     if (stored.data !== undefined) {
       const data = new Data(stored.data.inner, times)
-      const state = new RealState<D, unknown>(data)
+      const substate = new DataState<D, unknown>(data)
+      const state = new RealState(substate)
       this.#states.set(cacheKey, state)
+      this.states.publish(cacheKey, state)
       return new Ok(state)
     }
 
     if (stored.error !== undefined) {
       const fail = new Fail(stored.error.inner, times)
-      const state = new RealState<D, unknown>(fail)
+      const substate = new FailState<D, unknown>(fail)
+      const state = new RealState(substate)
       this.#states.set(cacheKey, state)
+      this.states.publish(cacheKey, state)
       return new Ok(state)
     }
 
@@ -263,15 +271,19 @@ export class Core {
 
       if (stored.data !== undefined) {
         const data = new Data(stored.data, times)
-        const state = new RealState<D, unknown>(data)
+        const substate = new DataState<D, unknown>(data)
+        const state = new RealState(substate)
         this.#states.set(cacheKey, state)
+        this.states.publish(cacheKey, state)
         return state
       }
 
       if (stored.error !== undefined) {
         const fail = new Fail(stored.error, times)
-        const state = new RealState<D, unknown>(fail)
+        const substate = new FailState<D, unknown>(fail)
+        const state = new RealState(substate)
         this.#states.set(cacheKey, state)
+        this.states.publish(cacheKey, state)
         return state
       }
 
@@ -283,15 +295,19 @@ export class Core {
 
     if (stored.data !== undefined) {
       const data = new Data(stored.data.inner, times)
-      const state = new RealState<D, unknown>(data)
+      const substate = new DataState<D, unknown>(data)
+      const state = new RealState(substate)
       this.#states.set(cacheKey, state)
+      this.states.publish(cacheKey, state)
       return state
     }
 
     if (stored.error !== undefined) {
       const fail = new Fail(stored.error.inner, times)
-      const state = new RealState<D, unknown>(fail)
+      const substate = new FailState<D, unknown>(fail)
+      const state = new RealState(substate)
       this.#states.set(cacheKey, state)
+      this.states.publish(cacheKey, state)
       return state
     }
 
@@ -326,15 +342,15 @@ export class Core {
         return state
       }
 
-      const { time, cooldown, expiration } = state.real
+      const { time, cooldown, expiration } = state.real.current
 
       let stored: StoredState<D>
 
-      if (state.real.isData()) {
-        const data = { inner: state.real.data }
+      if (state.real.current.isData()) {
+        const data = { inner: state.real.current.data }
         stored = { version: 2, data, time, cooldown, expiration }
       } else {
-        const error = { inner: state.real.error }
+        const error = { inner: state.real.current.error }
         stored = { version: 2, error, time, cooldown, expiration }
       }
 
@@ -347,28 +363,22 @@ export class Core {
     if (fetched === undefined)
       return new RealState(undefined)
 
-    const times: Times = {
-      ...previous.real satisfies Times | undefined,
-      ...fetched satisfies Times
-    }
+    const times = { ...previous.real?.current, ...fetched }
 
     if (fetched.isData())
-      return new RealState(new Data(fetched.data, times))
-    return new RealState(new Fail(fetched.error, times))
+      return new RealState(new DataState(new Data(fetched.data, times)))
+    return new RealState(new FailState(new Fail(fetched.error, times), previous.real?.data))
   }
 
   #mergeFakeStateWithFetched<D>(previous: State<D>, fetched: Optional<Fetched<D>>): FakeState<D> {
     if (fetched === undefined)
       return new FakeState(undefined, previous.real)
 
-    const times: Times = {
-      ...previous.current satisfies Times | undefined,
-      ...fetched satisfies Times
-    }
+    const times = { ...previous.current?.current, ...fetched }
 
     if (fetched.isData())
-      return new FakeState(new Data(fetched.data, times), previous.real)
-    return new FakeState(new Fail(fetched.error, times), previous.real)
+      return new FakeState(new DataState(new Data(fetched.inner, times)), previous.real)
+    return new FakeState(new FailState(new Fail(fetched.inner, times), previous.current?.data), previous.real)
   }
 
   /**
@@ -385,18 +395,18 @@ export class Core {
 
       const fetched = await mutator(previous)
 
-      let next = this.#mergeRealStateWithFetched(previous, fetched)
+      let next: RealState<D, unknown> = this.#mergeRealStateWithFetched(previous, fetched)
 
-      if (next.real && previous.real && Time.isBefore(next.real?.time, previous.real.time))
+      if (next.real && previous.real && Time.isBefore(next.real?.current.time, previous.real.current.time))
         return previous
 
-      if (next.real?.isData())
-        next = new RealState(next.real.set(await this.#normalize(next.real.data, params)))
+      if (next.real?.current.isData())
+        next = new RealState(new DataState(next.real.current.set(await this.#normalize(next.real.current.inner, params))))
 
-      if (next.real?.isData() && previous.real?.isData() && equals(next.real.data, previous.real.data))
+      if (next.real?.current.isData() && previous.real?.current.isData() && equals(next.real.current.inner, previous.real.current.inner))
         return previous
 
-      if (next.real?.isFail() && previous.real?.isFail() && equals(next.real.error, previous.real.error))
+      if (next.real?.current.isFail() && previous.real?.current.isFail() && equals(next.real.current.inner, previous.real.current.inner))
         return previous
 
       const optimizers = this.#getOrCreateOptimizers<D>(cacheKey)
@@ -537,7 +547,7 @@ export class Core {
 
     const current = this.#states.get(cacheKey)
 
-    if (current?.real?.expiration === undefined)
+    if (current?.real?.current.expiration === undefined)
       return
 
     const erase = async () => {
@@ -553,12 +563,12 @@ export class Core {
       await this.delete(cacheKey, params)
     }
 
-    if (Date.now() > current.real.expiration) {
+    if (Date.now() > current.real.current.expiration) {
       await erase()
       return
     }
 
-    const delay = current.real.expiration - Date.now()
+    const delay = current.real.current.expiration - Date.now()
     const timeout = setTimeout(erase, delay)
     this.#timeouts.set(cacheKey, timeout)
   }

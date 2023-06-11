@@ -1,4 +1,4 @@
-import { Fetched } from "index.js"
+import { Data, Fail } from "index.js"
 
 export type StoredState<D = unknown, F = unknown> =
   | StoredState1<D, F>
@@ -34,8 +34,14 @@ export type State<D = unknown, F = unknown> =
 export class RealState<D = unknown, F = unknown> {
 
   constructor(
-    public real?: Fetched<D, F>
+    readonly real?: FetchedState<D, F>
   ) { }
+
+  new(
+    real?: FetchedState<D, F>
+  ) {
+    return new RealState(real)
+  }
 
   get fake() {
     return undefined
@@ -50,12 +56,65 @@ export class RealState<D = unknown, F = unknown> {
 export class FakeState<D = unknown, F = unknown>  {
 
   constructor(
-    public fake?: Fetched<D, F>,
-    public real?: Fetched<D, F>
+    readonly fake?: FetchedState<D, F>,
+    readonly real?: FetchedState<D, F>
   ) { }
+
+  new(
+    fake?: FetchedState<D, F>,
+    real?: FetchedState<D, F>
+  ) {
+    return new FakeState(fake, real)
+  }
 
   get current() {
     return this.fake
+  }
+
+}
+
+export type FetchedState<D = unknown, F = unknown> =
+  | DataState<D, F>
+  | FailState<D, F>
+
+export class DataState<D = unknown, F = unknown> {
+
+  constructor(
+    readonly data: Data<D>
+  ) { }
+
+  new(
+    data: Data<D>
+  ) {
+    return new DataState(data)
+  }
+
+  get current() {
+    return this.data
+  }
+
+  get error() {
+    return undefined
+  }
+
+}
+
+export class FailState<D = unknown, F = unknown> {
+
+  constructor(
+    readonly error: Fail<F>,
+    readonly data?: Data<D>
+  ) { }
+
+  new(
+    error: Fail<F>,
+    data?: Data<D>
+  ) {
+    return new FailState(error, data)
+  }
+
+  get current() {
+    return this.error
   }
 
 }
