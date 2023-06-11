@@ -3,6 +3,7 @@ import { Err, Ok, Result } from "@hazae41/result";
 import { Time } from "libs/time/time.js";
 import { AbortedError, CooldownError, Core } from "mods/core/core.js";
 import { DEFAULT_SERIALIZER } from "mods/defaults.js";
+import { Fetched } from "mods/result/fetched.js";
 import { TimesInit } from "mods/result/times.js";
 import { Fetcher } from "mods/types/fetcher.js";
 import { QueryParams } from "mods/types/params.js";
@@ -31,7 +32,7 @@ export namespace Simple {
       return aborted
 
     const times = TimesInit.merge(aborted.get(), params)
-    const timed = aborted.get().setTimes(times)
+    const timed = Fetched.from(aborted.get()).setTimes(times)
 
     return new Ok(await core.mutate(cacheKey, () => new Some(timed), params))
   }
@@ -110,7 +111,7 @@ export namespace Simple {
         return aborted
 
       const times = TimesInit.merge(aborted.get(), params)
-      const timed = aborted.get().setTimes(times)
+      const timed = Fetched.from(aborted.get()).setTimes(times)
 
       return new Ok(await core.mutate(cacheKey, () => new Some(timed), params))
     } catch (e: unknown) {

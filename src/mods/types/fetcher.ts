@@ -1,7 +1,7 @@
-import { Fetched } from "index.js"
+import { FetchedInit } from "index.js"
 
 export type Fetcher<D = unknown, K = unknown> =
-  (key: K, more: FetcherMore) => Promise<Fetched<D>>
+  (key: K, more: FetcherMore) => Promise<FetchedInit<D>>
 
 export interface FetcherMore {
   readonly signal?: AbortSignal,

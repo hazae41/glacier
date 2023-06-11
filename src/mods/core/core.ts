@@ -1,5 +1,5 @@
 import { Mutex } from "@hazae41/mutex"
-import { Optional, Some } from "@hazae41/option"
+import { Option, Optional, Some } from "@hazae41/option"
 import { Err, Ok, Panic, Result } from "@hazae41/result"
 import { Ortho } from "libs/ortho/ortho.js"
 import { Promiseable } from "libs/promises/promises.js"
@@ -406,12 +406,14 @@ export class Core {
     return await this.#replace(cacheKey, async (previous) => {
       const { equals = DEFAULT_EQUALS } = params
 
-      const fetched = await mutator(previous)
+      const init = await mutator(previous)
 
-      if (fetched.isNone())
+      if (init.isNone())
         return previous
 
-      let next: RealState<D, unknown> = this.#mergeRealStateWithFetched(previous, fetched.get())
+      const fetched = Option.mapSync(init.get(), Fetched.from)
+
+      let next: RealState<D, unknown> = this.#mergeRealStateWithFetched(previous, fetched)
 
       if (next.real && previous.real && Time.isBefore(next.real?.current.time, previous.real.current.time))
         return previous
@@ -467,7 +469,8 @@ export class Core {
       if (optimized.isNone())
         continue
 
-      reoptimized = this.#mergeFakeStateWithFetched(reoptimized, optimized.get())
+      const fetched = Option.mapSync(optimized.get(), Fetched.from)
+      reoptimized = this.#mergeFakeStateWithFetched(reoptimized, fetched)
     }
 
     return reoptimized
@@ -490,7 +493,8 @@ export class Core {
       if (optimized.isNone())
         return previous
 
-      return this.#mergeFakeStateWithFetched(previous, optimized.get())
+      const fetched = Option.mapSync(optimized.get(), Fetched.from)
+      return this.#mergeFakeStateWithFetched(previous, fetched)
     }, params)
   }
 
