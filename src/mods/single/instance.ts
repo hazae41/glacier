@@ -121,7 +121,7 @@ export class SimpleQueryInstance<D = unknown, K = unknown> implements Instance<D
       return new Err(new MissingFetcherError())
 
     return await core.abortAndFetch(cacheKey, aborter, async () => {
-      return await Simple.fetchOrError(core, key, cacheKey, fetcher, aborter, params)
+      return await Simple.fetch(core, key, cacheKey, fetcher, aborter, params)
     }).then(r => r.inspectSync(state => this.#state = state))
   }
 

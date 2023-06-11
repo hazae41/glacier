@@ -33,7 +33,7 @@ export namespace Scroll {
    * @param params 
    * @returns 
    */
-  async function first<D, K>(
+  export async function first<D, K>(
     core: Core,
     scroller: Scroller<D, K>,
     cacheKey: string,

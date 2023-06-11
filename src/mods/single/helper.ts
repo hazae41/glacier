@@ -22,6 +22,20 @@ export namespace Simple {
     return keySerializer.stringify(key)
   }
 
+  export async function fetch<D, K>(core: Core, key: K, cacheKey: string, fetcher: Fetcher<D, K>, aborter: AbortController, params: QueryParams<D, K>): Promise<Result<State<D>, AbortedError>> {
+    const aborted = await core.catchAndTimeout(async signal => {
+      return await fetcher(key, { signal })
+    }, aborter, params.timeout)
+
+    if (aborted.isErr())
+      return aborted
+
+    const times = TimesInit.merge(aborted.get(), params)
+    const timed = aborted.get().setTimes(times)
+
+    return new Ok(await core.mutate(cacheKey, () => new Some(timed), params))
+  }
+
   /**
    * Unlocked fetch
    * @param core 
@@ -38,17 +52,7 @@ export namespace Simple {
     if (Time.isAfterNow(previous.real?.current.cooldown))
       return new Err(new CooldownError())
 
-    const aborted = await core.catchAndTimeout(async signal => {
-      return await fetcher(key, { signal })
-    }, aborter, params.timeout)
-
-    if (aborted.isErr())
-      return aborted
-
-    const times = TimesInit.merge(aborted.get(), params)
-    const timed = aborted.get().setTimes(times)
-
-    return new Ok(await core.mutate(cacheKey, () => new Some(timed), params))
+    return await fetch(core, key, cacheKey, fetcher, aborter, params)
   }
 
   export async function fetchOrWait<D, K>(core: Core, key: K, cacheKey: string, fetcher: Fetcher<D, K>, aborter: AbortController, params: QueryParams<D, K>): Promise<Result<State<D>, AbortedError>> {
@@ -62,17 +66,7 @@ export namespace Simple {
     if (cooldown.isSome())
       await new Promise(ok => setTimeout(ok, cooldown.get()))
 
-    const aborted = await core.catchAndTimeout(async signal => {
-      return await fetcher(key, { signal })
-    }, aborter, params.timeout)
-
-    if (aborted.isErr())
-      return aborted
-
-    const times = TimesInit.merge(aborted.get(), params)
-    const timed = aborted.get().setTimes(times)
-
-    return new Ok(await core.mutate(cacheKey, () => new Some(timed), params))
+    return await fetch(core, key, cacheKey, fetcher, aborter, params)
   }
 
   /**
