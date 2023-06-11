@@ -1,4 +1,4 @@
-import { Option } from "@hazae41/option";
+import { Option, Some } from "@hazae41/option";
 import { Err, Ok, Result } from "@hazae41/result";
 import { Time } from "libs/time/time.js";
 import { AbortedError, CooldownError, Core } from "mods/core/core.js";
@@ -48,7 +48,7 @@ export namespace Simple {
     const times = TimesInit.merge(aborted.get(), params)
     const timed = aborted.get().setTimes(times)
 
-    return new Ok(await core.mutate(cacheKey, () => timed, params))
+    return new Ok(await core.mutate(cacheKey, () => new Some(timed), params))
   }
 
   export async function fetchOrWait<D, K>(core: Core, key: K, cacheKey: string, fetcher: Fetcher<D, K>, aborter: AbortController, params: QueryParams<D, K>): Promise<Result<State<D>, AbortedError>> {
@@ -72,7 +72,7 @@ export namespace Simple {
     const times = TimesInit.merge(aborted.get(), params)
     const timed = aborted.get().setTimes(times)
 
-    return new Ok(await core.mutate(cacheKey, () => timed, params))
+    return new Ok(await core.mutate(cacheKey, () => new Some(timed), params))
   }
 
   /**
@@ -90,7 +90,7 @@ export namespace Simple {
     key: K,
     cacheKey: string,
     fetcher: Fetcher<D, K>,
-    updater: Updater<D>,
+    updater: Updater<D, K>,
     aborter: AbortController,
     params: QueryParams<D, K>
   ): Promise<Result<State<D>, AbortedError>> {
@@ -115,6 +115,6 @@ export namespace Simple {
     const times = TimesInit.merge(aborted.get(), params)
     const timed = aborted.get().setTimes(times)
 
-    return new Ok(await core.mutate(cacheKey, () => timed, params))
+    return new Ok(await core.mutate(cacheKey, () => new Some(timed), params))
   }
 }

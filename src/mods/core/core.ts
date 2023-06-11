@@ -1,5 +1,5 @@
 import { Mutex } from "@hazae41/mutex"
-import { Optional } from "@hazae41/option"
+import { Optional, Some } from "@hazae41/option"
 import { Err, Ok, Panic, Result } from "@hazae41/result"
 import { Ortho } from "libs/ortho/ortho.js"
 import { Promiseable } from "libs/promises/promises.js"
@@ -408,7 +408,10 @@ export class Core {
 
       const fetched = await mutator(previous)
 
-      let next: RealState<D, unknown> = this.#mergeRealStateWithFetched(previous, fetched)
+      if (fetched.isNone())
+        return previous
+
+      let next: RealState<D, unknown> = this.#mergeRealStateWithFetched(previous, fetched.get())
 
       if (next.real && previous.real && Time.isBefore(next.real?.current.time, previous.real.current.time))
         return previous
@@ -434,7 +437,7 @@ export class Core {
    * @returns 
    */
   async delete<D, K>(cacheKey: string, params: QueryParams<D, K>) {
-    return await this.mutate<D, K>(cacheKey, () => undefined, params)
+    return await this.mutate<D, K>(cacheKey, () => new Some(undefined), params)
   }
 
   #getOrCreateOptimizers<D>(cacheKey: string): Map<string, Mutator<D>> {
@@ -456,12 +459,18 @@ export class Core {
    * @returns 
    */
   async #reoptimize<D, K>(state: State<D>, optimizers: Map<string, Mutator<D>>): Promise<State<D>> {
-    let optimized: State<D> = new RealState<D>(state.real)
+    let reoptimized: State<D> = new RealState<D>(state.real)
 
-    for (const optimizer of optimizers.values())
-      optimized = this.#mergeFakeStateWithFetched(optimized, await optimizer(optimized))
+    for (const optimizer of optimizers.values()) {
+      const optimized = await optimizer(reoptimized)
 
-    return optimized
+      if (optimized.isNone())
+        continue
+
+      reoptimized = this.#mergeFakeStateWithFetched(reoptimized, optimized.get())
+    }
+
+    return reoptimized
   }
 
   async optimize<D, K>(cacheKey: string, uuid: string, optimizer: Mutator<D>, params: QueryParams<D, K>) {
@@ -476,7 +485,12 @@ export class Core {
 
       optimizers.set(uuid, optimizer)
 
-      return this.#mergeFakeStateWithFetched(previous, await optimizer(previous))
+      const optimized = await optimizer(previous)
+
+      if (optimized.isNone())
+        return previous
+
+      return this.#mergeFakeStateWithFetched(previous, optimized.get())
     }, params)
   }
 

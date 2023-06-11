@@ -125,7 +125,7 @@ export class SimpleQueryInstance<D = unknown, K = unknown> implements Instance<D
     }).then(r => r.inspectSync(state => this.#state = state))
   }
 
-  async update(updater: Updater<D>, uparams: TimesInit = {}, aborter = new AbortController()) {
+  async update(updater: Updater<D, K>, uparams: TimesInit = {}, aborter = new AbortController()) {
     const { core, key, cacheKey, fetcher, params } = this
 
     if (fetcher === undefined)

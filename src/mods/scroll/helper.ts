@@ -1,4 +1,4 @@
-import { Option } from "@hazae41/option";
+import { Option, Some } from "@hazae41/option";
 import { Err, Ok, Result } from "@hazae41/result";
 import { Arrays } from "libs/arrays/arrays.js";
 import { Time } from "libs/time/time.js";
@@ -60,14 +60,14 @@ export namespace Scroll {
 
     return new Ok(await core.mutate(cacheKey, async (previous) => {
       if (timed.isErr())
-        return timed
+        return new Some(timed)
 
       const prenormalized = await core.prenormalize(timed, params)
 
       if (previous.real?.data && equals(prenormalized.inner[0], previous.real.data.inner[0]))
-        return previous.real.data
+        return new Some(previous.real.data)
 
-      return timed
+      return new Some(timed)
     }, params))
   }
 
@@ -150,7 +150,9 @@ export namespace Scroll {
 
     return new Ok(await core.mutate(cacheKey, (previous) => {
       const previousPages = previous.real?.data?.inner ?? []
-      return timed.mapSync(data => [...previousPages, data])
+      const paginated = timed.mapSync(data => [...previousPages, data])
+
+      return new Some(paginated)
     }, params))
   }
 }

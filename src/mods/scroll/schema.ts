@@ -1,4 +1,4 @@
-import { Optional } from "@hazae41/option";
+import { Optional, Some } from "@hazae41/option";
 import { Core } from "mods/core/core.js";
 import { Data } from "mods/result/data.js";
 import { Fetcher } from "mods/types/fetcher.js";
@@ -43,7 +43,7 @@ export class ScrollQuerySchema<D = unknown, K = unknown> implements QuerySchema<
     const instance = await this.make(core)
 
     await core.mutate(instance.cacheKey, () => {
-      return new Data(data, times)
+      return new Some(new Data(data, times))
     }, instance.params)
   }
 

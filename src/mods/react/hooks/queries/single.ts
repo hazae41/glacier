@@ -34,7 +34,7 @@ export interface SingleQuery<D = unknown, K = unknown> extends Query<D, K> {
    * @param updater Mutation function
    * @param aborter Custom AbortController
    */
-  update(updater: Updater<D>, uparams?: TimesInit, aborter?: AbortController): Promise<Result<State<D>, Error>>
+  update(updater: Updater<D, K>, uparams?: TimesInit, aborter?: AbortController): Promise<Result<State<D>, Error>>
 }
 
 /**
@@ -160,7 +160,7 @@ export function useQuery<D = unknown, K = string>(
     }).then(r => r.inspectSync(state => stateRef.current = state))
   }, [core, cacheKey])
 
-  const update = useCallback(async (updater: Updater<D>, uparams: TimesInit = {}, aborter = new AbortController()) => {
+  const update = useCallback(async (updater: Updater<D, K>, uparams: TimesInit = {}, aborter = new AbortController()) => {
     if (cacheKey === undefined)
       return new Err(new MissingKeyError())
 
