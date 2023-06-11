@@ -505,7 +505,9 @@ export class Core {
   async #normalize<D, K>(data: Data<D>, params: QueryParams<D, K>) {
     if (params.normalizer === undefined)
       return data
-    return new Data(await params.normalizer(data.inner, { core: this, times: data, shallow: false }), data)
+    const more = { core: this, times: data, shallow: false }
+    const normalized = await params.normalizer(data.inner, more)
+    return new Data(normalized, data)
   }
 
   /**
@@ -517,7 +519,9 @@ export class Core {
   async prenormalize<D, K>(data: Data<D>, params: QueryParams<D, K>) {
     if (params.normalizer === undefined)
       return data
-    return new Data(await params.normalizer(data.inner, { core: this, times: data, shallow: true }), data)
+    const more = { core: this, times: data, shallow: true }
+    const normalized = await params.normalizer(data.inner, more)
+    return new Data(normalized, data)
   }
 
   async increment<D, K>(cacheKey: string, params: QueryParams<D, K>) {
