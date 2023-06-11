@@ -126,12 +126,8 @@ export namespace Scroll {
     fetcher: Fetcher<D, K>,
     aborter: AbortController,
     params: QueryParams<D[], K>
-  ): Promise<Result<State<D[]>, AbortedError | CooldownError | ScrollError>> {
+  ): Promise<Result<State<D[]>, AbortedError | ScrollError>> {
     const previous = await core.get(cacheKey, params)
-
-    if (Time.isAfterNow(previous.real?.current.cooldown))
-      return new Err(new CooldownError())
-
     const previousPages = previous.real?.data?.inner ?? []
     const previousPage = Arrays.last(previousPages)
     const key = scroller(previousPage)
