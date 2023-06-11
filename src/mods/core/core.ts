@@ -62,12 +62,22 @@ export class ScrollError extends Error {
 
 }
 
-export class UnfetchableError extends Error {
-  readonly #class = UnfetchableError
+export class MissingKeyError extends Error {
+  readonly #class = MissingKeyError
   readonly name = this.#class.name
 
   constructor() {
-    super(`The query doesn't have a fetcher`)
+    super(`Missing a key`)
+  }
+
+}
+
+export class MissingFetcherError extends Error {
+  readonly #class = MissingFetcherError
+  readonly name = this.#class.name
+
+  constructor() {
+    super(`Missing a fetcher`)
   }
 
 }
@@ -123,7 +133,7 @@ export class Core {
     return this.#aborters.get(cacheKey)
   }
 
-  async fetch<T, E>(cacheKey: string, aborter: AbortController, callback: () => Promise<Result<T, E>>): Promise<Result<T, E | PendingFetchError>> {
+  async fetchOrError<T, E>(cacheKey: string, aborter: AbortController, callback: () => Promise<Result<T, E>>): Promise<Result<T, E | PendingFetchError>> {
     let mutex = this.#fetches.get(cacheKey)
 
     if (mutex === undefined) {

@@ -1,23 +1,24 @@
 import { Query } from "mods/react/types/query.js"
-import { FullState } from "mods/types/state.js"
+import { DataAndError } from "mods/types/state.js"
 
 /**
  * Fallback to given data/error if there is no data/error
  * @example You got some data/error using SSR/ISR and want to display it on first render
  * @example You still want to display something even if the fetcher returned nothing
  * @param query 
- * @param state 
+ * @param fallback 
  */
-export function useFallback<D>(
+export function useFallback<D, F>(
   query: Query<D>,
-  state?: FullState<D>
+  fallback?: DataAndError<D, F>
 ) {
-  const { data, error } = query
-
-  if (data !== undefined)
+  if (fallback === undefined)
     return
-  if (error !== undefined)
+  if (query.data.isSome())
+    return
+  if (query.error.isSome())
     return
 
-  Object.assign(query, state)
+  const { data, error } = fallback
+  Object.assign(query, { data, error })
 }

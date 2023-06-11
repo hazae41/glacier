@@ -11,6 +11,6 @@ export function useFetch(query: Query) {
   const { fetch } = query
 
   useEffect(() => {
-    fetch()
+    fetch().then(r => r.ignore())
   }, [fetch])
 }

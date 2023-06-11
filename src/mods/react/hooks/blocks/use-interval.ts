@@ -16,7 +16,8 @@ export function useInterval(query: Query, interval: number) {
     if (!interval)
       return
 
-    const i = setInterval(fetch, interval)
+    const f = () => fetch().then(r => r.ignore())
+    const i = setInterval(f, interval)
     return () => clearInterval(i)
-  }, [fetch, interval])
+  }, [ready, fetch, interval])
 }

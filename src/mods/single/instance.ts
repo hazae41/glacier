@@ -1,7 +1,7 @@
 import { Optional } from "@hazae41/option";
 import { Err, Ok } from "@hazae41/result";
 import { State, TimesInit } from "index.js";
-import { Core, UnfetchableError } from "mods/core/core.js";
+import { Core, MissingFetcherError } from "mods/core/core.js";
 import { Fetcher } from "mods/types/fetcher.js";
 import { Instance } from "mods/types/instance.js";
 import { Mutator } from "mods/types/mutator.js";
@@ -107,10 +107,10 @@ export class SimpleQueryInstance<D = unknown, K = unknown> implements Instance<D
     const { core, key, cacheKey, fetcher, params } = this
 
     if (fetcher === undefined)
-      return new Err(new UnfetchableError())
+      return new Err(new MissingFetcherError())
 
-    return await core.fetch(cacheKey, aborter, async () => {
-      return await Simple.fetch(core, key, cacheKey, fetcher, aborter, params)
+    return await core.fetchOrError(cacheKey, aborter, async () => {
+      return await Simple.fetchOrError(core, key, cacheKey, fetcher, aborter, params)
     }).then(r => r.inspectSync(state => this.#state = state))
   }
 
@@ -118,10 +118,10 @@ export class SimpleQueryInstance<D = unknown, K = unknown> implements Instance<D
     const { core, key, cacheKey, fetcher, params } = this
 
     if (fetcher === undefined)
-      return new Err(new UnfetchableError())
+      return new Err(new MissingFetcherError())
 
     return await core.abortAndFetch(cacheKey, aborter, async () => {
-      return await Simple.fetch(core, key, cacheKey, fetcher, aborter, params)
+      return await Simple.fetchOrError(core, key, cacheKey, fetcher, aborter, params)
     }).then(r => r.inspectSync(state => this.#state = state))
   }
 
@@ -129,10 +129,12 @@ export class SimpleQueryInstance<D = unknown, K = unknown> implements Instance<D
     const { core, key, cacheKey, fetcher, params } = this
 
     if (fetcher === undefined)
-      return new Err(new UnfetchableError())
+      return new Err(new MissingFetcherError())
+
+    const fparams = { ...params, ...uparams }
 
     return await Simple
-      .update(core, key, cacheKey, fetcher, updater, aborter, { ...params, ...uparams })
+      .update(core, key, cacheKey, fetcher, updater, aborter, fparams)
       .then(r => r.inspectSync(state => this.#state = state))
   }
 

@@ -1,6 +1,5 @@
-import { useRenderRef } from "libs/react/ref.js"
 import { Query } from "mods/react/types/query.js"
-import { useEffect, useRef } from "react"
+import { useEffect, useMemo, useRef } from "react"
 
 export interface RetryOptions {
   init?: number
@@ -25,17 +24,15 @@ export function useRetry(query: Query, options: RetryOptions = {}) {
 
   const count = useRef(0)
 
-  useEffect(() => {
+  useMemo(() => {
     count.current = 0
   }, [cacheKey])
-
-  const refetchRef = useRenderRef(refetch)
 
   useEffect(() => {
     if (!ready)
       return
 
-    if (error === undefined) {
+    if (error.isNone()) {
       count.current = 0
       return
     }
@@ -47,10 +44,11 @@ export function useRetry(query: Query, options: RetryOptions = {}) {
 
     function f() {
       count.current++
-      refetchRef.current()
+      // TODO use suspend or wait cooldown
+      refetch().then(r => r.ignore())
     }
 
     const t = setTimeout(f, init * ratio)
     return () => clearTimeout(t)
-  }, [ready, error])
+  }, [ready, error, refetch])
 }

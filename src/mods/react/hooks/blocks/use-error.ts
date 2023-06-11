@@ -13,6 +13,8 @@ export function useError(
   const { error } = query
 
   useEffect(() => {
-    if (error !== undefined) callback(error)
+    if (error.isNone())
+      return
+    callback(error.get())
   }, [error])
 }

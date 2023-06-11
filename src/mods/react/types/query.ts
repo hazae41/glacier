@@ -1,5 +1,7 @@
+import { Option } from "@hazae41/option"
+import { Result } from "@hazae41/result"
+import { State } from "index.js"
 import { Mutator } from "mods/types/mutator.js"
-import { FullState } from "mods/types/state.js"
 
 export interface Query<D = unknown, K = unknown> {
   /**
@@ -13,34 +15,43 @@ export interface Query<D = unknown, K = unknown> {
   cacheKey?: string,
 
   /**
-   * Data, if any
+   * Data (or previous data if current error is some) (can be fake)
    */
-  data?: D
+  data: Option<D>
 
   /**
-   * Data, if any, but not optimistic
+   * Error (can be fake)
    */
-  realData?: D
+  error: Option<unknown>
+
+  real: {
+    /**
+     * Real data (or previous real data if real error is some)
+     */
+    data: Option<D>
+
+    /**
+     * Real error
+     */
+    error: Option<unknown>
+  }
+
+  fake: {
+    /**
+     * Fake data (or previous fake data if fake error is some)
+     */
+    data: Option<D>
+
+    /**
+     * Fake error
+     */
+    error: Option<unknown>
+  }
 
   /**
-   * Error, if any
+   * True if a fetch is ongoing (except those from update())
    */
-  error?: unknown
-
-  /**
-   * Shorthand for Boolean(aborter), use this to check if a fetch is ongoing (except those from update())
-   */
-  loading: boolean
-
-  /**
-   * Use this to check if the state has been loaded from async storage and is ready to be used
-   */
-  ready: boolean
-
-  /**
-   * The last time this resource was mutated, if any
-   */
-  time?: number
+  fetching: boolean
 
   /**
    * Abort controller, can be used to abort and check for abortion, present when a fetch is ongoing (except those from update())
@@ -48,10 +59,20 @@ export interface Query<D = unknown, K = unknown> {
   aborter?: AbortController,
 
   /**
+   * Use this to check if the state has been loaded from async storage and is ready to be used
+   */
+  ready: boolean
+
+  /**
    * - Whether the data is from an optimistic update
    * - Whether the ongoing request is an optimistic update
    */
   optimistic?: boolean,
+
+  /**
+   * The last time this resource was mutated
+   */
+  time?: number
 
   /**
    * Expiration time of this resource, if any, may be useful for fetching just before the resource becomes stale
@@ -67,28 +88,29 @@ export interface Query<D = unknown, K = unknown> {
    * Fetch with cooldown
    * @example You want to fetch and don't care if it's cooldowned
    */
-  fetch(aborter?: AbortController): Promise<FullState<D> | undefined>
+  fetch(aborter?: AbortController): Promise<Result<State<D>, Error>>
 
   /**
    * Fetch without cooldown
    * @example User clicked on the refresh button
    * @example You just made a POST request and want to get some fresh data
    */
-  refetch(aborter?: AbortController): Promise<FullState<D> | undefined>
+  refetch(aborter?: AbortController): Promise<Result<State<D>, Error>>
 
   /**
    * Mutate the cache
    * @param res 
    */
-  mutate(mutator: Mutator<D>): Promise<FullState<D> | undefined>
+  mutate(mutator: Mutator<D>): Promise<Result<State<D>, Error>>
 
   /**
    * Clear the cache
    */
-  clear(): void
+  clear(): Promise<Result<State<D>, Error>>
 
   /**
    * Suspend until the next state change, also launches an undeduped fetch
    */
-  suspend(): Promise<void>
+  suspend(): Promise<Result<State<D>, Error>>
+
 }

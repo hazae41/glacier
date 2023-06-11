@@ -1,10 +1,12 @@
 
 export namespace Time {
 
-  export function fromDelay(delay?: number) {
-    return delay !== undefined
-      ? Date.now() + delay
-      : undefined
+  export function fromDelay(delay: number) {
+    return Date.now() + delay
+  }
+
+  export function toDelay(time: number) {
+    return time - Date.now()
   }
 
   export function isBefore(left?: number, right?: number) {

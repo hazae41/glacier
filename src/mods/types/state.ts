@@ -1,3 +1,4 @@
+import { Option } from "@hazae41/option"
 import { Data, Fail } from "index.js"
 
 export type StoredState<D = unknown, F = unknown> =
@@ -117,4 +118,9 @@ export class FailState<D = unknown, F = unknown> {
     return this.error
   }
 
+}
+
+export interface DataAndError<D, F> {
+  readonly data: Option<D>
+  readonly error: Option<F>
 }

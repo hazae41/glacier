@@ -1,4 +1,3 @@
-import { useRenderRef } from "libs/react/ref.js"
 import { Query } from "mods/react/types/query.js"
 import { useEffect } from "react"
 
@@ -9,15 +8,13 @@ import { useEffect } from "react"
 export function useOnline(query: Query) {
   const { ready, fetch } = query
 
-  const fetchRef = useRenderRef(fetch)
-
   useEffect(() => {
     if (!ready)
       return
 
-    const f = () => fetchRef.current()
+    const f = () => fetch().then(r => r.ignore())
 
     addEventListener("online", f)
     return () => removeEventListener("online", f)
-  }, [ready])
+  }, [ready, fetch])
 }

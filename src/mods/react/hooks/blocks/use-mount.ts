@@ -11,6 +11,6 @@ export function useMount(query: Query) {
   const { fetch } = query
 
   useEffect(() => {
-    fetch()
+    fetch().then(r => r.ignore())
   }, [])
 }
