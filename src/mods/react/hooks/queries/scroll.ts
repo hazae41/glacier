@@ -11,8 +11,9 @@ import { Fetcher } from "mods/types/fetcher.js";
 import { Mutator } from "mods/types/mutator.js";
 import { QueryParams } from "mods/types/params.js";
 import { Scroller } from "mods/types/scroller.js";
-import { DataAndError, State } from "mods/types/state.js";
+import { State } from "mods/types/state.js";
 import { DependencyList, useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useDataAndError } from "../../types/data_and_error.js";
 
 export function useScrollSchemaQuery<D, K, L extends DependencyList = []>(
   factory: (...deps: L) => ScrollQuerySchema<D, K> | undefined,
@@ -213,10 +214,10 @@ export function useScrollQuery<D = unknown, K = string>(
   const optimistic = state?.fake !== undefined
   const fetching = aborter !== undefined
 
-  const { data, error } = DataAndError.from(state?.current)
+  const { data, error } = useDataAndError(state?.current)
 
-  const real = DataAndError.from(state?.real)
-  const fake = DataAndError.from(state?.fake)
+  const real = useDataAndError(state?.real)
+  const fake = useDataAndError(state?.fake)
 
   const peek = useCallback(() => {
     return scroller?.(Option.mapSync(state?.real?.data?.inner, Arrays.last))

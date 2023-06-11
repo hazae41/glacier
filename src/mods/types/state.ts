@@ -1,4 +1,3 @@
-import { Option } from "@hazae41/option"
 import { Data, Fail } from "index.js"
 
 export type StoredState<D = unknown, F = unknown> =
@@ -116,27 +115,6 @@ export class FailState<D = unknown, F = unknown> {
 
   get current() {
     return this.error
-  }
-
-}
-
-export interface DataAndError<D, F> {
-  readonly data: Option<D>
-  readonly error: Option<F>
-}
-
-export namespace DataAndError {
-
-  export function from<D, F>(state?: FetchedState<D, F>): DataAndError<D, F> {
-    const data = Option
-      .from(state?.data)
-      .mapSync(x => x.inner)
-
-    const error = Option
-      .from(state?.error)
-      .mapSync(x => x.inner)
-
-    return { data, error }
   }
 
 }

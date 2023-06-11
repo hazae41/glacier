@@ -1,5 +1,5 @@
+import { DataAndError } from "mods/react/types/data_and_error.js"
 import { Query } from "mods/react/types/query.js"
-import { DataAndError } from "mods/types/state.js"
 
 /**
  * Fallback to given data/error if there is no data/error
