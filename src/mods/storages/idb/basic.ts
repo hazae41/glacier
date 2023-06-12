@@ -67,8 +67,7 @@ export class IDBStorage implements AsyncStorage {
 
     if (keys !== undefined) {
       this.#keys = new Map(keys)
-      this.#delete("__keys")
-
+      await this.#delete("__keys").catch(console.error)
       await this.collect().catch(console.error)
     }
 
