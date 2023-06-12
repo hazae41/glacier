@@ -6,9 +6,9 @@ import { useEffect } from "react"
  * @param query 
  */
 export function useDebug(query: Query, label: string) {
-  const { data, error, time } = query
+  const { current } = query
 
   useEffect(() => {
     console.debug(label, query)
-  }, [data, error, time])
+  }, [current])
 }

@@ -376,22 +376,18 @@ export class Core {
     if (fetched === undefined)
       return new RealState(undefined)
 
-    const times = { ...previous.real?.current, ...fetched }
-
     if (fetched.isData())
-      return new RealState(new DataState(new Data(fetched.data, times)))
-    return new RealState(new FailState(new Fail(fetched.error, times), previous.real?.data))
+      return new RealState(new DataState(fetched))
+    return new RealState(new FailState(fetched, previous.real?.data))
   }
 
   #mergeFakeStateWithFetched<D>(previous: State<D>, fetched: Optional<Fetched<D>>): FakeState<D> {
     if (fetched === undefined)
       return new FakeState(undefined, previous.real)
 
-    const times = { ...previous.current?.current, ...fetched }
-
     if (fetched.isData())
-      return new FakeState(new DataState(new Data(fetched.inner, times)), previous.real)
-    return new FakeState(new FailState(new Fail(fetched.inner, times), previous.current?.data), previous.real)
+      return new FakeState(new DataState(fetched), previous.real)
+    return new FakeState(new FailState(fetched, previous.data), previous.real)
   }
 
   /**

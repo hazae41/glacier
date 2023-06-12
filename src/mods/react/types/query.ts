@@ -1,7 +1,9 @@
-import { Option } from "@hazae41/option"
 import { Result } from "@hazae41/result"
-import { State } from "index.js"
+import { Data } from "mods/result/data.js"
+import { Fail } from "mods/result/fail.js"
+import { Fetched } from "mods/result/fetched.js"
 import { Mutator } from "mods/types/mutator.js"
+import { FetchedState, State } from "mods/types/state.js"
 
 export interface Query<D = unknown, K = unknown> {
   /**
@@ -15,38 +17,29 @@ export interface Query<D = unknown, K = unknown> {
   cacheKey?: string,
 
   /**
-   * Data (or previous data if current error is some) (can be fake)
+   * Current data or error (can be fake)
    */
-  data: Option<D>
+  current?: Fetched<D, unknown>
 
   /**
-   * Error (can be fake)
+   * Data (or previous data if current error is some) (can be fake or fakely undefined)
    */
-  error: Option<unknown>
+  data?: Data<D>
 
-  real: {
-    /**
-     * Real data (or previous real data if real error is some)
-     */
-    data: Option<D>
+  /**
+   * Error (can be fake or fakely undefined)
+   */
+  error?: Fail<unknown>
 
-    /**
-     * Real error
-     */
-    error: Option<unknown>
-  }
+  /**
+   * Real state
+   */
+  real?: FetchedState<D, unknown>
 
-  fake: {
-    /**
-     * Fake data (or previous fake data if fake error is some)
-     */
-    data: Option<D>
-
-    /**
-     * Fake error
-     */
-    error: Option<unknown>
-  }
+  /**
+   * Fake state (can be fakely undefined)
+   */
+  fake?: FetchedState<D, unknown>
 
   /**
    * True if a fetch is ongoing (except those from update())
@@ -64,25 +57,9 @@ export interface Query<D = unknown, K = unknown> {
   ready: boolean
 
   /**
-   * - Whether the data is from an optimistic update
-   * - Whether the ongoing request is an optimistic update
+   * True if it's in a fake state
    */
   optimistic?: boolean,
-
-  /**
-   * The last time this resource was mutated
-   */
-  time?: number
-
-  /**
-   * Expiration time of this resource, if any, may be useful for fetching just before the resource becomes stale
-   */
-  expiration?: number
-
-  /**
-   * Cooldown time of this resource, if any, may be useful for NOT fetching until it's over
-   */
-  cooldown?: number
 
   /**
    * Fetch with cooldown

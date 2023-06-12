@@ -1,5 +1,5 @@
-import { DataAndError } from "mods/react/types/data_and_error.js"
 import { Query } from "mods/react/types/query.js"
+import { Fetched } from "mods/result/fetched.js"
 
 /**
  * Fallback to given data/error if there is no data/error
@@ -10,15 +10,18 @@ import { Query } from "mods/react/types/query.js"
  */
 export function useFallback<D, F>(
   query: Query<D>,
-  fallback?: DataAndError<D, F>
+  fallback?: Fetched<D, F>
 ) {
   if (fallback === undefined)
     return
-  if (query.data.isSome())
+  if (query.data !== undefined)
     return
-  if (query.error.isSome())
+  if (query.error !== undefined)
     return
 
-  const { data, error } = fallback
-  Object.assign(query, { data, error })
+  if (fallback.isData())
+    Object.assign(query, { data: fallback })
+  if (fallback.isFail())
+    Object.assign(query, { error: fallback })
+  Object.assign(query, { current: fallback })
 }

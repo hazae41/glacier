@@ -67,6 +67,26 @@ export class SimpleQueryInstance<D = unknown, K = unknown> implements Instance<D
     return this.#aborter
   }
 
+  get current() {
+    return this.#state.current
+  }
+
+  get data() {
+    return this.#state.data
+  }
+
+  get error() {
+    return this.#state.error
+  }
+
+  get real() {
+    return this.#state.real
+  }
+
+  get fake() {
+    return this.#state.fake
+  }
+
   #subscribe() {
     const { core, cacheKey, params } = this
 

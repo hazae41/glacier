@@ -13,7 +13,6 @@ import { QueryParams } from "mods/types/params.js";
 import { State } from "mods/types/state.js";
 import { Updater } from "mods/types/updater.js";
 import { DependencyList, useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { useDataAndError } from "../../types/data_and_error.js";
 
 export type SchemaFactory<D, K, L extends DependencyList = []> =
   (...deps: L) => Optional<SimpleQuerySchema<D, K>>
@@ -205,27 +204,25 @@ export function useAnonymousQuery<D = unknown, K = string>(
   const state = stateRef.current
   const aborter = aborterRef.current
 
-  const { time, cooldown, expiration } = state?.current?.current ?? {}
-
   const ready = state !== undefined
-  const optimistic = state?.fake !== undefined
   const fetching = aborter !== undefined
+  const optimistic = state?.isFake()
 
-  const { data, error } = useDataAndError(state?.current)
+  const current = state?.current
+  const data = state?.data
+  const error = state?.error
 
-  const real = useDataAndError(state?.real)
-  const fake = useDataAndError(state?.fake)
+  const real = state?.real
+  const fake = state?.fake
 
   return {
     key,
     cacheKey,
+    current,
     data,
     error,
     real,
     fake,
-    time,
-    cooldown,
-    expiration,
     ready,
     optimistic,
     fetching,

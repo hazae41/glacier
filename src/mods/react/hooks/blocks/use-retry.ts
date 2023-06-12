@@ -32,7 +32,7 @@ export function useRetry(query: Query, options: RetryOptions = {}) {
     if (!ready)
       return
 
-    if (error.isNone()) {
+    if (error === undefined) {
       count.current = 0
       return
     }

@@ -37,10 +37,12 @@ export class RealState<D = unknown, F = unknown> {
     readonly real?: FetchedState<D, F>
   ) { }
 
-  new(
-    real?: FetchedState<D, F>
-  ) {
-    return new RealState(real)
+  isReal(): this is RealState<D, F> {
+    return true
+  }
+
+  isFake(): false {
+    return false
   }
 
   get fake() {
@@ -48,7 +50,15 @@ export class RealState<D = unknown, F = unknown> {
   }
 
   get current() {
-    return this.real
+    return this.real?.current
+  }
+
+  get data() {
+    return this.real?.data
+  }
+
+  get error() {
+    return this.real?.error
   }
 
 }
@@ -60,15 +70,24 @@ export class FakeState<D = unknown, F = unknown>  {
     readonly real?: FetchedState<D, F>
   ) { }
 
-  new(
-    fake?: FetchedState<D, F>,
-    real?: FetchedState<D, F>
-  ) {
-    return new FakeState(fake, real)
+  isFake(): this is FakeState<D, F> {
+    return true
+  }
+
+  isReal(): false {
+    return false
   }
 
   get current() {
-    return this.fake
+    return this.fake?.current
+  }
+
+  get data() {
+    return this.fake?.data
+  }
+
+  get error() {
+    return this.fake?.error
   }
 
 }
@@ -82,12 +101,6 @@ export class DataState<D = unknown, F = unknown> {
   constructor(
     readonly data: Data<D>
   ) { }
-
-  new(
-    data: Data<D>
-  ) {
-    return new DataState(data)
-  }
 
   get current() {
     return this.data
@@ -105,13 +118,6 @@ export class FailState<D = unknown, F = unknown> {
     readonly error: Fail<F>,
     readonly data?: Data<D>
   ) { }
-
-  new(
-    error: Fail<F>,
-    data?: Data<D>
-  ) {
-    return new FailState(error, data)
-  }
 
   get current() {
     return this.error
