@@ -39,8 +39,6 @@ export class IDBStorage implements AsyncStorage {
   }
 
   static tryCreate(name?: string): Result<IDBStorage, StorageCreationError> {
-    if (typeof window === "undefined")
-      return new Err(new StorageCreationError())
     if (typeof Storage === "undefined")
       return new Err(new StorageCreationError())
 

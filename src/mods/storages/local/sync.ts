@@ -55,8 +55,6 @@ export class SyncLocalStorage implements SyncStorage {
   }
 
   static tryCreate(prefix?: string): Result<SyncLocalStorage, StorageCreationError> {
-    if (typeof window === "undefined")
-      return new Err(new StorageCreationError())
     if (typeof Storage === "undefined")
       return new Err(new StorageCreationError())
 
