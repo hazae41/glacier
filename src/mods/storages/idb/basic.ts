@@ -61,6 +61,8 @@ export class IDBStorage implements AsyncStorage {
       req.onerror = () => err(req.error)
     })
 
+    console.log("db", database)
+
     const keys = await this.#get<[string, number][]>("__keys")
 
     console.log("keys", keys)
