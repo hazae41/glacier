@@ -63,6 +63,8 @@ export class IDBStorage implements AsyncStorage {
 
     const keys = await this.#get<[string, number][]>("__keys")
 
+    console.log("keys", keys)
+
     if (keys !== undefined) {
       this.#keys = new Map(keys)
       this.#delete("__keys")
