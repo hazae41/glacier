@@ -196,6 +196,7 @@ export class Core {
     if (!params.storage) {
       const state = new RealState<D, unknown>(undefined)
       this.#states.set(cacheKey, state)
+      this.states.publish(cacheKey, state)
       return new Ok(state)
     }
 
@@ -206,6 +207,7 @@ export class Core {
     if (stored === undefined) {
       const state = new RealState<D, unknown>(undefined)
       this.#states.set(cacheKey, state)
+      this.states.publish(cacheKey, state)
       return new Ok(state)
     }
 
@@ -267,6 +269,7 @@ export class Core {
     if (!params.storage) {
       const state = new RealState<D, unknown>(undefined)
       this.#states.set(cacheKey, state)
+      this.states.publish(cacheKey, state)
       return state
     }
 
@@ -275,6 +278,7 @@ export class Core {
     if (stored === undefined) {
       const state = new RealState<D, unknown>(undefined)
       this.#states.set(cacheKey, state)
+      this.states.publish(cacheKey, state)
       return state
     }
 
