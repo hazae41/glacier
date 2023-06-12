@@ -6,6 +6,7 @@ import { NormalizerMore } from "mods/types/normalizer.js";
 import { QueryParams } from "mods/types/params.js";
 import { QuerySchema } from "mods/types/schema.js";
 import { Scroller } from "mods/types/scroller.js";
+import { Scroll } from "./helper.js";
 import { ScrollInstance } from "./instance.js";
 
 export function createScrollQuerySchema<D = unknown, K = string>(
@@ -22,16 +23,19 @@ export function createScrollQuerySchema<D = unknown, K = string>(
 }
 
 export class ScrollQuerySchema<D = unknown, K = unknown> implements QuerySchema<D[], K, ScrollInstance<D, K>> {
+  readonly cacheKey: string
 
   constructor(
     readonly key: K,
     readonly scroller: Scroller<D, K>,
     readonly fetcher: Optional<Fetcher<D, K>>,
     readonly params: QueryParams<D[], K>
-  ) { }
+  ) {
+    this.cacheKey = Scroll.getCacheKey<D[], K>(key, params)
+  }
 
   async make(core: Core) {
-    return await ScrollInstance.make<D, K>(core, this.key, this.scroller, this.fetcher, this.params)
+    return await ScrollInstance.make<D, K>(core, this.key, this.cacheKey, this.scroller, this.fetcher, this.params)
   }
 
   async normalize(data: D[], more: NormalizerMore) {

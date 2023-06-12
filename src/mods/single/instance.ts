@@ -48,10 +48,8 @@ export class SimpleQueryInstance<D = unknown, K = unknown> implements Instance<D
     this.#subscribe()
   }
 
-  static async make<D, K>(core: Core, key: K, fetcher: Optional<Fetcher<D, K>>, qparams: QueryParams<D, K>) {
+  static async make<D, K>(core: Core, key: K, cacheKey: string, fetcher: Optional<Fetcher<D, K>>, qparams: QueryParams<D, K>) {
     const params = { ...core.params, ...qparams }
-
-    const cacheKey = Simple.getCacheKey<D, K>(key, params)
 
     const state = await core.get(cacheKey, params)
     const aborter = core.aborter(cacheKey)

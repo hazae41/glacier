@@ -52,10 +52,8 @@ export class ScrollInstance<D = unknown, K = unknown> implements Instance<D[], K
     this.#subscribe()
   }
 
-  static async make<D, K>(core: Core, key: K, scroller: Scroller<D, K>, fetcher: Optional<Fetcher<D, K>>, qparams: QueryParams<D[], K>) {
+  static async make<D, K>(core: Core, key: K, cacheKey: string, scroller: Scroller<D, K>, fetcher: Optional<Fetcher<D, K>>, qparams: QueryParams<D[], K>) {
     const params = { ...core.params, ...qparams }
-
-    const cacheKey = Scroll.getCacheKey<D[], K>(key, params)
 
     const state = await core.get(cacheKey, params)
     const aborter = core.aborter(cacheKey)
