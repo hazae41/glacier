@@ -116,17 +116,17 @@ export class ScrollInstance<D = unknown, K = unknown> implements Instance<D[], K
   async mutate(mutator: Mutator<D[]>) {
     const { core, cacheKey, params } = this
 
-    this.#state = await core.mutate(cacheKey, mutator, params)
-
-    return Ok.void()
+    const state = await core.mutate(cacheKey, mutator, params)
+    this.#state = state
+    return new Ok(state)
   }
 
   async delete() {
     const { core, cacheKey, params } = this
 
-    this.#state = await core.delete(cacheKey, params)
-
-    return Ok.void()
+    const state = await core.delete(cacheKey, params)
+    this.#state = state
+    return new Ok(state)
   }
 
   async fetch(aborter = new AbortController()) {
