@@ -61,7 +61,7 @@ export class AsyncLocalStorage implements AsyncStorage {
   }
 
   static tryCreate(prefix?: string): Result<AsyncLocalStorage, StorageCreationError> {
-    if (typeof Storage === "undefined")
+    if (typeof localStorage === "undefined")
       return new Err(new StorageCreationError())
 
     return new Ok(new AsyncLocalStorage(prefix))

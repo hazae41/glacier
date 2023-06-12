@@ -39,7 +39,7 @@ export class IDBStorage implements AsyncStorage {
   }
 
   static tryCreate(name?: string): Result<IDBStorage, StorageCreationError> {
-    if (typeof Storage === "undefined")
+    if (typeof indexedDB === "undefined")
       return new Err(new StorageCreationError())
 
     return new Ok(new IDBStorage(name))
