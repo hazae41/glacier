@@ -106,6 +106,7 @@ export class IDBStorage implements AsyncStorage {
       return result
     } catch (e: unknown) {
       transaction.abort()
+      throw e
     }
   }
 
