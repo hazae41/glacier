@@ -97,19 +97,16 @@ export class IDBStorage implements AsyncStorage {
 
   async #transact<T>(callback: (store: IDBObjectStore) => Promise<T>, mode: IDBTransactionMode) {
     const database = await this.#init
+    const transaction = database.transaction("keyval", mode)
+    const store = transaction.objectStore("keyval")
 
-    return await new Promise<T>((ok, err) => {
-      const tx = database.transaction("keyval", mode)
-      tx.onerror = () => err(tx.error)
-      tx.oncomplete = () => ok(result)
-
-      let result: T;
-
-      callback(tx.objectStore("keyval"))
-        .then(x => result = x)
-        .then(() => tx.commit())
-        .catch(err)
-    })
+    try {
+      const result = await callback(store)
+      transaction.commit()
+      return result
+    } catch (e: unknown) {
+      transaction.abort()
+    }
   }
 
   async #get<T>(key: string) {
