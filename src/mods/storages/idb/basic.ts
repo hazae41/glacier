@@ -1,15 +1,19 @@
+import { Err, Ok, Result } from "@hazae41/result"
 import { AsyncStorage, AsyncStorageParams } from "mods/storages/storage.js"
 import { StoredState } from "mods/types/state.js"
 import { useEffect, useRef } from "react"
+import { StorageCreationError } from "../errors.js"
 
 export function useIDBStorage(name?: string) {
-  const storage = useRef<IDBStorage>()
+  const storage = useRef<Result<IDBStorage, StorageCreationError>>()
 
   if (storage.current === undefined)
-    storage.current = IDBStorage.create(name)
+    storage.current = IDBStorage.tryCreate(name).ignore()
 
   useEffect(() => () => {
-    storage.current?.unmount().catch(console.error)
+    if (!storage.current?.isOk())
+      return
+    storage.current?.inner.unmount().catch(console.error)
   }, [])
 
   return storage.current
@@ -25,7 +29,7 @@ export class IDBStorage implements AsyncStorage {
 
   #keys = new Map<string, number>()
 
-  constructor(
+  private constructor(
     readonly name = "xswr"
   ) {
     this.#init = this.#load()
@@ -34,13 +38,13 @@ export class IDBStorage implements AsyncStorage {
     addEventListener("beforeunload", this.#onunload)
   }
 
-  static create(name?: string) {
+  static tryCreate(name?: string): Result<IDBStorage, StorageCreationError> {
     if (typeof window === "undefined")
-      return
-    if (typeof indexedDB === "undefined")
-      return
+      return new Err(new StorageCreationError())
+    if (typeof Storage === "undefined")
+      return new Err(new StorageCreationError())
 
-    return new this(name)
+    return new Ok(new IDBStorage(name))
   }
 
   /**

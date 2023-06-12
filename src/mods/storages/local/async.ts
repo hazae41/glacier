@@ -1,5 +1,7 @@
+import { Err, Ok, Result } from "@hazae41/result"
 import { StoredState } from "mods/types/state.js"
 import { useEffect, useRef } from "react"
+import { StorageCreationError } from "../errors.js"
 import { AsyncStorage, AsyncStorageParams } from "../storage.js"
 
 /**
@@ -16,13 +18,15 @@ import { AsyncStorage, AsyncStorageParams } from "../storage.js"
  * @see useFallback
  */
 export function useAsyncLocalStorage(prefix?: string) {
-  const storage = useRef<AsyncLocalStorage>()
+  const storage = useRef<Result<AsyncLocalStorage, StorageCreationError>>()
 
   if (storage.current === undefined)
-    storage.current = AsyncLocalStorage.create(prefix)
+    storage.current = AsyncLocalStorage.tryCreate(prefix).ignore()
 
   useEffect(() => () => {
-    storage.current?.unmount().catch(console.error)
+    if (!storage.current?.isOk())
+      return
+    storage.current?.inner.unmount().catch(console.error)
   }, [])
 
   return storage.current
@@ -49,20 +53,20 @@ export class AsyncLocalStorage implements AsyncStorage {
 
   #keys = new Map<string, number>()
 
-  constructor(
+  private constructor(
     readonly prefix = "xswr:"
   ) {
     this.#onunload = () => this.collectSync()
     addEventListener("beforeunload", this.#onunload)
   }
 
-  static create(prefix?: string) {
+  static tryCreate(prefix?: string): Result<AsyncLocalStorage, StorageCreationError> {
     if (typeof window === "undefined")
-      return
+      return new Err(new StorageCreationError())
     if (typeof Storage === "undefined")
-      return
+      return new Err(new StorageCreationError())
 
-    return new this(prefix)
+    return new Ok(new AsyncLocalStorage(prefix))
   }
 
   async unmount() {

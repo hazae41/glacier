@@ -1,6 +1,8 @@
+import { Err, Ok, Result } from "@hazae41/result"
 import { SyncStorage, SyncStorageParams } from "mods/storages/storage.js"
 import { StoredState } from "mods/types/state.js"
 import { useEffect, useRef } from "react"
+import { StorageCreationError } from "../errors.js"
 
 /**
  * Synchronous local storage
@@ -13,13 +15,15 @@ import { useEffect, useRef } from "react"
  * @see AsyncLocalStorage
  */
 export function useSyncLocalStorage(prefix?: string) {
-  const storage = useRef<SyncLocalStorage>()
+  const storage = useRef<Result<SyncLocalStorage, StorageCreationError>>()
 
   if (!storage.current)
-    storage.current = SyncLocalStorage.create(prefix)
+    storage.current = SyncLocalStorage.tryCreate(prefix).ignore()
 
   useEffect(() => () => {
-    storage.current?.unmount().catch(console.error)
+    if (!storage.current?.isOk())
+      return
+    storage.current?.inner.unmount().catch(console.error)
   }, [])
 
   return storage.current
@@ -43,20 +47,20 @@ export class SyncLocalStorage implements SyncStorage {
 
   #keys = new Map<string, number>()
 
-  constructor(
+  private constructor(
     readonly prefix = "xswr:"
   ) {
     this.#onunload = () => this.collectSync()
     addEventListener("beforeunload", this.#onunload)
   }
 
-  static create(prefix?: string) {
+  static tryCreate(prefix?: string): Result<SyncLocalStorage, StorageCreationError> {
     if (typeof window === "undefined")
-      return
+      return new Err(new StorageCreationError())
     if (typeof Storage === "undefined")
-      return
+      return new Err(new StorageCreationError())
 
-    return new this(prefix)
+    return new Ok(new SyncLocalStorage(prefix))
   }
 
   async unmount() {
