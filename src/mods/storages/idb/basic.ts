@@ -23,7 +23,7 @@ export class IDBStorage implements AsyncStorage {
 
   readonly async = true as const
 
-  readonly #init: Promise<IDBDatabase>
+  readonly #database: Promise<IDBDatabase>
 
   readonly #onunload: () => void
 
@@ -32,7 +32,7 @@ export class IDBStorage implements AsyncStorage {
   private constructor(
     readonly name = "xswr"
   ) {
-    this.#init = this.#load()
+    this.#database = this.#load()
 
     this.#onunload = () => this.#unload()
     addEventListener("beforeunload", this.#onunload)
@@ -61,17 +61,17 @@ export class IDBStorage implements AsyncStorage {
       req.onerror = () => err(req.error)
     })
 
-    console.log("db", database)
+    await this.#transact(database, async store => {
+      const keys = await this.#get<[string, number][]>(store, "__keys")
 
-    const keys = await this.#get<[string, number][]>("__keys")
+      if (keys === undefined)
+        return
 
-    console.log("keys", keys)
-
-    if (keys !== undefined) {
       this.#keys = new Map(keys)
-      await this.#delete("__keys").catch(console.error)
-      await this.collect().catch(console.error)
-    }
+
+      await this.#delete(store, "__keys").catch(console.error)
+      await this.#collect(store).catch(console.error)
+    }, "readwrite")
 
     return database
   }
@@ -85,43 +85,41 @@ export class IDBStorage implements AsyncStorage {
   /**
    * Save the garbage collector keys
    */
-  #unload() {
-    this.#set("__keys", [...this.#keys])
+  async #unload() {
+    await this.#transact(await this.#database, async store => {
+      await this.#set(store, "__keys", [...this.#keys])
+    }, "readwrite")
   }
 
-  async collect() {
+  async #collect(store: IDBObjectStore) {
     for (const [key, expiration] of this.#keys) {
       if (expiration > Date.now())
         continue
       this.#keys.delete(key)
-      this.#delete(key)
+      await this.#delete(store, key)
     }
   }
 
-  async #transact<T>(callback: (store: IDBObjectStore) => Promise<T>, mode: IDBTransactionMode) {
-    const database = await this.#init
+  async collect() {
+    await this.#transact(await this.#database, async store => {
+      return await this.#collect(store)
+    }, "readwrite")
+  }
+
+  async #transact<T>(database: IDBDatabase, callback: (store: IDBObjectStore) => Promise<T>, mode: IDBTransactionMode) {
     const transaction = database.transaction("keyval", mode)
     const store = transaction.objectStore("keyval")
 
-    try {
-      const result = await callback(store)
-      transaction.commit()
-      return result
-    } catch (e: unknown) {
-      transaction.abort()
-      throw e
-    }
+    return await callback(store)
   }
 
-  async #get<T>(key: string) {
-    return await this.#transact(async (store) => {
-      return await new Promise<T | undefined>((ok, err) => {
-        const req = store.get(key)
+  #get<T>(store: IDBObjectStore, key: string) {
+    return new Promise<T | undefined>((ok, err) => {
+      const req = store.get(key)
 
-        req.onerror = () => err(req.error)
-        req.onsuccess = () => ok(req.result)
-      })
-    }, "readonly")
+      req.onerror = () => err(req.error)
+      req.onsuccess = () => ok(req.result)
+    })
   }
 
   async get<D>(cacheKey: string, params: AsyncStorageParams<D> = {}) {
@@ -131,7 +129,9 @@ export class IDBStorage implements AsyncStorage {
       ? await keySerializer.stringify(cacheKey)
       : cacheKey
 
-    const value = await this.#get(key)
+    const value = await this.#transact(await this.#database, async store => {
+      return await this.#get(store, key)
+    }, "readonly")
 
     if (value === undefined)
       return undefined
@@ -146,15 +146,13 @@ export class IDBStorage implements AsyncStorage {
     return state
   }
 
-  async #set<T>(key: string, value: T) {
-    await this.#transact(async (store) => {
-      return await new Promise<void>((ok, err) => {
-        const req = store.put(value, key)
+  #set<T>(store: IDBObjectStore, key: string, value: T) {
+    return new Promise<void>((ok, err) => {
+      const req = store.put(value, key)
 
-        req.onerror = () => err(req.error)
-        req.onsuccess = () => ok()
-      })
-    }, "readwrite")
+      req.onerror = () => err(req.error)
+      req.onsuccess = () => ok()
+    })
   }
 
   async set<D>(cacheKey: string, state: StoredState<D>, params: AsyncStorageParams<D> = {}) {
@@ -171,18 +169,18 @@ export class IDBStorage implements AsyncStorage {
     if (state.expiration !== undefined)
       this.#keys.set(key, state.expiration)
 
-    return await this.#set(key, value)
+    return await this.#transact(await this.#database, async store => {
+      return await this.#set(store, key, value)
+    }, "readwrite")
   }
 
-  async #delete(key: string) {
-    return await this.#transact(async (store) => {
-      return await new Promise<void>((ok, err) => {
-        const req = store.delete(key)
+  #delete(store: IDBObjectStore, key: string) {
+    return new Promise<void>((ok, err) => {
+      const req = store.delete(key)
 
-        req.onerror = () => err(req.error)
-        req.onsuccess = () => ok()
-      })
-    }, "readwrite")
+      req.onerror = () => err(req.error)
+      req.onsuccess = () => ok()
+    })
   }
 
   async delete<D>(cacheKey: string, params: AsyncStorageParams<D> = {}) {
@@ -193,7 +191,10 @@ export class IDBStorage implements AsyncStorage {
       : cacheKey
 
     this.#keys.delete(key)
-    this.#delete(key)
+
+    await this.#transact(await this.#database, async store => {
+      await this.#delete(store, key)
+    }, "readwrite")
   }
 
 }
