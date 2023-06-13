@@ -483,6 +483,14 @@ export class Core {
     return reoptimized
   }
 
+  async reoptimize<K, D, F>(cacheKey: string, settings: QuerySettings<K, D, F>) {
+    return await this.#replace(cacheKey, async (previous) => {
+      const optimizers = this.#getOrCreateOptimizers<D, F>(cacheKey)
+
+      return this.#reoptimize(previous, optimizers)
+    }, settings)
+  }
+
   async optimize<K, D, F>(cacheKey: string, uuid: string, optimizer: Mutator<D, F>, settings: QuerySettings<K, D, F>) {
     return await this.#replace(cacheKey, async (previous) => {
       const optimizers = this.#getOrCreateOptimizers<D, F>(cacheKey)
@@ -505,17 +513,15 @@ export class Core {
     }, settings)
   }
 
-  async deoptimize<K, D, F>(cacheKey: string, uuid: string, settings: QuerySettings<K, D, F>) {
-    return await this.#replace(cacheKey, async (previous) => {
-      const optimizers = this.#getOrCreateOptimizers<D, F>(cacheKey)
-
-      optimizers.delete(uuid)
-
-      return this.#reoptimize(previous, optimizers)
-    }, settings)
+  async deoptimize(cacheKey: string, uuid: string) {
+    this.#getOrCreateOptimizers(cacheKey).delete(uuid)
   }
 
-  async catchAndTimeout<T>(callback: (signal: AbortSignal) => Promiseable<T>, aborter: AbortController, delay?: number): Promise<Result<T, AbortedError>> {
+  async runWithTimeout<T>(
+    callback: (signal: AbortSignal) => Promiseable<T>,
+    aborter: AbortController,
+    delay?: number
+  ): Promise<Result<T, AbortedError>> {
     const timeout = delay ? setTimeout(() => {
       aborter.abort(new TimeoutError())
     }, delay) : undefined
@@ -527,8 +533,6 @@ export class Core {
         return new Err(AbortedError.from(aborter.signal.reason))
 
       return new Ok(result)
-    } catch (e: unknown) {
-      return new Err(AbortedError.from(e))
     } finally {
       clearTimeout(timeout)
     }

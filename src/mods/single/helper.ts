@@ -29,7 +29,7 @@ export namespace Simple {
     aborter: AbortController,
     settings: QuerySettings<K, D, F>
   ): Promise<Result<State<D, F>, AbortedError>> {
-    const aborted = await core.catchAndTimeout(async signal => {
+    const aborted = await core.runWithTimeout(async signal => {
       return await fetcher(key, { signal })
     }, aborter, settings.timeout)
 
@@ -120,21 +120,25 @@ export namespace Simple {
 
       const fetcher2 = result.value ?? fetcher
 
-      const aborted = await core.catchAndTimeout(async (signal) => {
+      const aborted = await core.runWithTimeout(async (signal) => {
         return await fetcher2(key, { signal, cache: "reload" })
       }, aborter, settings.timeout)
 
-      core.deoptimize(cacheKey, uuid, settings)
-
-      if (aborted.isErr())
+      if (aborted.isErr()) {
+        core.deoptimize(cacheKey, uuid)
+        core.reoptimize(cacheKey, settings)
         return aborted
+      }
+
+      core.deoptimize(cacheKey, uuid)
 
       const times = TimesInit.merge(aborted.get(), settings)
       const timed = Fetched.from(aborted.get()).setTimes(times)
 
       return new Ok(await core.mutate(cacheKey, () => new Some(timed), settings))
     } catch (e: unknown) {
-      core.deoptimize(cacheKey, uuid, settings)
+      core.deoptimize(cacheKey, uuid)
+      core.reoptimize(cacheKey, settings)
       throw e
     }
   }
