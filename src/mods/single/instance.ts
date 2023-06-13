@@ -21,6 +21,8 @@ export class SimpleQueryInstance<K, D, F>  {
   #state: State<D, F>
   #aborter?: AbortController
 
+  readonly clean: () => void
+
   private constructor(
     core: Core,
 
@@ -44,7 +46,25 @@ export class SimpleQueryInstance<K, D, F>  {
     this.#state = state
     this.#aborter = aborter
 
-    this.#subscribe()
+    const setState = (state: State<D, F>) =>
+      this.#state = state
+
+    const setAborter = (aborter?: AbortController) =>
+      this.#aborter = aborter
+
+    core.states.on(cacheKey, setState)
+    core.aborters.on(cacheKey, setAborter)
+    core.increment(cacheKey, settings)
+
+    this.clean = () => {
+      core.decrement(cacheKey, settings)
+      core.states.off(cacheKey, setState)
+      core.aborters.off(cacheKey, setAborter)
+    }
+
+    new FinalizationRegistry(() => {
+      this.clean()
+    }).register(this, undefined)
   }
 
   static async make<K, D, F>(core: Core, key: K, cacheKey: string, fetcher: Optional<Fetcher<K, D, F>>, qsettings: QuerySettings<K, D, F>) {
@@ -82,26 +102,6 @@ export class SimpleQueryInstance<K, D, F>  {
 
   get fake() {
     return this.#state.fake
-  }
-
-  #subscribe() {
-    const { core, cacheKey, settings } = this
-
-    const setState = (state: State<D, F>) =>
-      this.#state = state
-
-    const setAborter = (aborter?: AbortController) =>
-      this.#aborter = aborter
-
-    core.states.on(cacheKey, setState)
-    core.aborters.on(cacheKey, setAborter)
-    core.increment(cacheKey, settings)
-
-    new FinalizationRegistry(() => {
-      core.decrement(cacheKey, settings)
-      core.states.off(cacheKey, setState)
-      core.aborters.off(cacheKey, setAborter)
-    }).register(this, undefined)
   }
 
   async mutate(mutator: Mutator<D, F>) {

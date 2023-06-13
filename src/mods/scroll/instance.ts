@@ -23,6 +23,8 @@ export class ScrollQueryInstance<K, D, F>  {
   #state: State<D[], F>
   #aborter?: AbortController
 
+  readonly clean: () => void
+
   private constructor(
     core: Core,
 
@@ -49,7 +51,25 @@ export class ScrollQueryInstance<K, D, F>  {
     this.#state = state
     this.#aborter = aborter
 
-    this.#subscribe()
+    const setState = (state: State<D, F>) =>
+      this.#state = state as State<D[], F>
+
+    const setAborter = (aborter?: AbortController) =>
+      this.#aborter = aborter
+
+    core.states.on(cacheKey, setState)
+    core.aborters.on(cacheKey, setAborter)
+    core.increment(cacheKey, settings)
+
+    this.clean = () => {
+      core.states.off(cacheKey, setState)
+      core.aborters.off(cacheKey, setAborter)
+      core.decrement(cacheKey, settings)
+    }
+
+    new FinalizationRegistry(() => {
+      this.clean()
+    }).register(this, undefined)
   }
 
   static async make<K, D, F>(core: Core, key: K, cacheKey: string, scroller: Scroller<K, D, F>, fetcher: Optional<Fetcher<K, D, F>>, qsettings: QuerySettings<K, D[], F>) {
@@ -87,26 +107,6 @@ export class ScrollQueryInstance<K, D, F>  {
 
   get fake() {
     return this.#state.fake
-  }
-
-  #subscribe() {
-    const { core, cacheKey, settings } = this
-
-    const setState = (state: State<D, F>) =>
-      this.#state = state as State<D[], F>
-
-    const setAborter = (aborter?: AbortController) =>
-      this.#aborter = aborter
-
-    core.states.on(cacheKey, setState)
-    core.aborters.on(cacheKey, setAborter)
-    core.increment(cacheKey, settings)
-
-    new FinalizationRegistry(() => {
-      core.decrement(cacheKey, settings)
-      core.states.off(cacheKey, setState)
-      core.aborters.off(cacheKey, setAborter)
-    }).register(this, undefined)
   }
 
   peek() {
