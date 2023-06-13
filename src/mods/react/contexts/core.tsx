@@ -9,7 +9,7 @@ export const CoreContext =
   createContext<Optional<Core>>(undefined)
 
 export function useCore() {
-  return Option.from(useContext(CoreContext))
+  return Option.wrap(useContext(CoreContext))
 }
 
 export function useCoreProvider(settings: GlobalSettings) {

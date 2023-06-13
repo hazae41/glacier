@@ -97,7 +97,7 @@ export namespace Scroll {
     const previous = await core.get(cacheKey, settings)
 
     const cooldown = Option
-      .from(previous.real?.current.cooldown)
+      .wrap(previous.real?.current.cooldown)
       .mapSync(Time.toDelay)
       .filterSync(x => x > 0)
 
