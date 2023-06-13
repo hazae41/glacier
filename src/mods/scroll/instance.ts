@@ -1,7 +1,7 @@
 import { Option, Optional } from "@hazae41/option";
-import { Err, Ok } from "@hazae41/result";
+import { Err, Ok, Result } from "@hazae41/result";
 import { Arrays } from "libs/arrays/arrays.js";
-import { Core, MissingFetcherError } from "mods/core/core.js";
+import { AbortedError, CooldownError, Core, MissingFetcherError, PendingFetchError, ScrollError } from "mods/core/core.js";
 import { Fetcher } from "mods/types/fetcher.js";
 import { Mutator } from "mods/types/mutator.js";
 import { Scroller } from "mods/types/scroller.js";
@@ -20,11 +20,6 @@ export class ScrollQueryInstance<K, D, F>  {
 
   readonly settings: QuerySettings<K, D[], F>
 
-  #state: State<D[], F>
-  #aborter?: AbortController
-
-  readonly clean: () => void
-
   private constructor(
     core: Core,
 
@@ -34,9 +29,6 @@ export class ScrollQueryInstance<K, D, F>  {
     scroller: Scroller<K, D, F>,
     fetcher: Optional<Fetcher<K, D, F>>,
     settings: QuerySettings<K, D[], F>,
-
-    state: State<D[], F>,
-    aborter: Optional<AbortController>
   ) {
     this.core = core
 
@@ -47,85 +39,57 @@ export class ScrollQueryInstance<K, D, F>  {
     this.fetcher = fetcher
 
     this.settings = settings
-
-    this.#state = state
-    this.#aborter = aborter
-
-    const setState = (state: State<D, F>) =>
-      this.#state = state as State<D[], F>
-
-    const setAborter = (aborter?: AbortController) =>
-      this.#aborter = aborter
-
-    core.states.on(cacheKey, setState)
-    core.aborters.on(cacheKey, setAborter)
-    core.increment(cacheKey, settings)
-
-    this.clean = () => {
-      core.states.off(cacheKey, setState)
-      core.aborters.off(cacheKey, setAborter)
-      core.decrement(cacheKey, settings)
-    }
-
-    new FinalizationRegistry(() => {
-      this.clean()
-    }).register(this, undefined)
   }
 
   static async make<K, D, F>(core: Core, key: K, cacheKey: string, scroller: Scroller<K, D, F>, fetcher: Optional<Fetcher<K, D, F>>, qsettings: QuerySettings<K, D[], F>) {
     const settings = { ...core.settings, ...qsettings }
 
-    const state = await core.get(cacheKey, settings)
-    const aborter = core.getAborter(cacheKey)
+    await core.get(cacheKey, settings)
 
-    return new ScrollQueryInstance(core, key, cacheKey, scroller, fetcher, settings, state, aborter)
+    return new ScrollQueryInstance(core, key, cacheKey, scroller, fetcher, settings)
   }
 
   get state() {
-    return this.#state
+    return this.core.getSync(this.cacheKey, this.settings).unwrap()
   }
 
   get aborter() {
-    return this.#aborter
+    return this.core.getAborter(this.cacheKey)
   }
 
   get current() {
-    return this.#state.current
+    return this.state.current
   }
 
   get data() {
-    return this.#state.data
+    return this.state.data
   }
 
   get error() {
-    return this.#state.error
+    return this.state.error
   }
 
   get real() {
-    return this.#state.real
+    return this.state.real
   }
 
   get fake() {
-    return this.#state.fake
+    return this.state.fake
   }
 
   peek() {
     return this.scroller?.(Option.mapSync(this.state.real?.data?.inner, Arrays.last))
   }
 
-  async mutate(mutator: Mutator<D[], F>) {
-    const state = await this.core.mutate(this.cacheKey, mutator, this.settings)
-    this.#state = state
-    return new Ok(state)
+  async mutate(mutator: Mutator<D[], F>): Promise<Ok<State<D[], F>>> {
+    return new Ok(await this.core.mutate(this.cacheKey, mutator, this.settings))
   }
 
-  async delete() {
-    const state = await this.core.delete(this.cacheKey, this.settings)
-    this.#state = state
-    return new Ok(state)
+  async delete(): Promise<Ok<State<D[], F>>> {
+    return new Ok(await this.core.delete(this.cacheKey, this.settings))
   }
 
-  async fetch(aborter = new AbortController()) {
+  async fetch(aborter = new AbortController()): Promise<Result<State<D[], F>, AbortedError | CooldownError | ScrollError | MissingFetcherError | PendingFetchError>> {
     const { core, scroller, cacheKey, fetcher, settings } = this
 
     if (fetcher === undefined)
@@ -133,10 +97,10 @@ export class ScrollQueryInstance<K, D, F>  {
 
     return await core.lockOrError(cacheKey, aborter, async () => {
       return await Scroll.firstOrError(core, scroller, cacheKey, fetcher, aborter, settings)
-    }).then(r => r.inspectSync(state => this.#state = state))
+    })
   }
 
-  async refetch(aborter = new AbortController()) {
+  async refetch(aborter = new AbortController()): Promise<Result<State<D[], F>, AbortedError | CooldownError | ScrollError | MissingFetcherError>> {
     const { core, scroller, cacheKey, fetcher, settings } = this
 
     if (fetcher === undefined)
@@ -144,10 +108,10 @@ export class ScrollQueryInstance<K, D, F>  {
 
     return await core.abortAndLock(cacheKey, aborter, async () => {
       return await Scroll.first(core, scroller, cacheKey, fetcher, aborter, settings)
-    }).then(r => r.inspectSync(state => this.#state = state))
+    })
   }
 
-  async scroll(aborter = new AbortController()) {
+  async scroll(aborter = new AbortController()): Promise<Result<State<D[], F>, AbortedError | CooldownError | ScrollError | MissingFetcherError>> {
     const { core, scroller, cacheKey, fetcher, settings } = this
 
     if (fetcher === undefined)
@@ -155,7 +119,7 @@ export class ScrollQueryInstance<K, D, F>  {
 
     return await core.abortAndLock(cacheKey, aborter, async () => {
       return await Scroll.scroll(core, scroller, cacheKey, fetcher, aborter, settings)
-    }).then(r => r.inspectSync(state => this.#state = state))
+    })
   }
 
 }
