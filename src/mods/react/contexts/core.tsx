@@ -18,9 +18,8 @@ export function useCoreProvider(settings: GlobalSettings) {
   if (coreRef.current === undefined)
     coreRef.current = new Core(settings)
 
-  useEffect(() => {
-    coreRef.current?.mount()
-    return () => coreRef.current?.unmount()
+  useEffect(() => () => {
+    coreRef.current?.clean()
   }, [])
 
   return coreRef.current

@@ -71,7 +71,9 @@ export function useAnonymousQuery<K, D, F>(
   useMemo(() => {
     if (cacheKey === undefined)
       return
+
     stateRef.current = core.getSync(cacheKey, settingsRef.current).ok().inner
+    aborterRef.current = core.getAborter(cacheKey)
   }, [core, cacheKey])
 
   const setState = useCallback((state: State<D, F>) => {

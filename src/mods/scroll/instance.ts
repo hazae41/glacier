@@ -76,7 +76,7 @@ export class ScrollQueryInstance<K, D, F>  {
     const settings = { ...core.settings, ...qsettings }
 
     const state = await core.get(cacheKey, settings)
-    const aborter = core.aborter(cacheKey)
+    const aborter = core.getAborter(cacheKey)
 
     return new ScrollQueryInstance(core, key, cacheKey, scroller, fetcher, settings, state, aborter)
   }

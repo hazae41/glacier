@@ -118,29 +118,17 @@ export class Core {
     readonly settings: GlobalSettings
   ) {
     new FinalizationRegistry(() => {
-      this.#clean()
+      this.clean()
     }).register(this, undefined)
   }
 
-  get mounted() {
-    return this.#mounted
-  }
-
-  mount() {
-    this.#mounted = true
-  }
-
-  #clean() {
+  clean() {
     for (const timeout of this.#timeouts.values())
       clearTimeout(timeout)
-  }
-
-  unmount() {
-    this.#clean()
     this.#mounted = false
   }
 
-  aborter(cacheKey: string) {
+  getAborter(cacheKey: string) {
     return this.#aborters.get(cacheKey)
   }
 

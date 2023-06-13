@@ -71,7 +71,7 @@ export class SimpleQueryInstance<K, D, F>  {
     const settings = { ...core.settings, ...qsettings }
 
     const state = await core.get(cacheKey, settings)
-    const aborter = core.aborter(cacheKey)
+    const aborter = core.getAborter(cacheKey)
 
     return new SimpleQueryInstance(core, key, cacheKey, fetcher, settings, state, aborter)
   }
