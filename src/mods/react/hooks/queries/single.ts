@@ -4,79 +4,78 @@ import { useRenderRef } from "libs/react/ref.js";
 import { MissingFetcherError, MissingKeyError } from "mods/core/core.js";
 import { useCore } from "mods/react/contexts/core.js";
 import { Query } from "mods/react/types/query.js";
-import { TimesInit } from "mods/result/times.js";
 import { Simple } from "mods/single/helper.js";
 import { SimpleQuerySchema } from "mods/single/schema.js";
 import { Fetcher } from "mods/types/fetcher.js";
 import { Mutator } from "mods/types/mutator.js";
-import { QueryParams } from "mods/types/params.js";
+import { QuerySettings } from "mods/types/settings.js";
 import { State } from "mods/types/state.js";
 import { Updater } from "mods/types/updater.js";
 import { DependencyList, useCallback, useEffect, useMemo, useRef, useState } from "react";
 
-export type SchemaFactory<D, K, L extends DependencyList = []> =
-  (...deps: L) => Optional<SimpleQuerySchema<D, K>>
+export type SchemaFactory<K, D, F, DL extends DependencyList> =
+  (...deps: DL) => Optional<SimpleQuerySchema<K, D, F>>
 
-export function useQuery<D, K, L extends DependencyList = []>(
-  factory: SchemaFactory<D, K, L>,
-  deps: L
+export function useQuery<K, D, F, DL extends DependencyList>(
+  factory: SchemaFactory<K, D, F, DL>,
+  deps: DL
 ) {
-  const { key, fetcher, params } = useMemo(() => {
+  const { key, fetcher, settings } = useMemo(() => {
     return factory(...deps)
   }, deps) ?? {}
 
-  return useAnonymousQuery<D, K>(key, fetcher, params)
+  return useAnonymousQuery<K, D, F>(key, fetcher, settings)
 }
 
 /**
  * Query for a single resource
  */
-export interface SingleQuery<D = unknown, K = unknown> extends Query<D, K> {
+export interface SingleQuery<K, D, F> extends Query<K, D, F> {
   /**
    * Optimistic update
    * @param updater Mutation function
    * @param aborter Custom AbortController
    */
-  update(updater: Updater<D, K>, uparams?: TimesInit, aborter?: AbortController): Promise<Result<State<D>, Error>>
+  update(updater: Updater<K, D, F>, aborter?: AbortController): Promise<Result<State<D, F>, Error>>
 }
 
 /**
- * Single resource query factory
- * @param key Key (memoized)
- * @param fetcher Resource fetcher (unmemoized)
- * @param cparams Parameters (unmemoized)
- * @returns Single query
+ * Single query
+ * @param key 
+ * @param fetcher 
+ * @param settings 
+ * @returns 
  */
-export function useAnonymousQuery<D = unknown, K = string>(
+export function useAnonymousQuery<K, D, F>(
   key: K | undefined,
-  fetcher: Fetcher<D, K> | undefined,
-  params: QueryParams<D, K> = {},
-): SingleQuery<D, K> {
+  fetcher: Fetcher<K, D, F> | undefined,
+  settings: QuerySettings<K, D, F> = {},
+): SingleQuery<K, D, F> {
   const core = useCore()
 
   const keyRef = useRenderRef(key)
   const fetcherRef = useRenderRef(fetcher)
-  const paramsRef = useRenderRef({ ...core.params, ...params })
+  const settingsRef = useRenderRef({ ...core.settings, ...settings })
 
   const cacheKey = useMemo(() => {
     if (key === undefined)
       return undefined
-    return Simple.getCacheKey<D, K>(key, paramsRef.current)
+    return Simple.getCacheKey(key, settingsRef.current)
   }, [key])
 
   const [, setCounter] = useState(0)
 
-  const stateRef = useRef<State<D>>()
+  const stateRef = useRef<State<D, F>>()
   const aborterRef = useRef<AbortController>()
 
   useMemo(() => {
     if (cacheKey === undefined)
       return
-    stateRef.current = core.getSync<D, K>(cacheKey, paramsRef.current).ok().inner
+    stateRef.current = core.getSync(cacheKey, settingsRef.current).ok().inner
   }, [core, cacheKey])
 
-  const setState = useCallback((state: State) => {
-    stateRef.current = state as State<D>
+  const setState = useCallback((state: State<D, F>) => {
+    stateRef.current = state
     setCounter(c => c + 1)
   }, [])
 
@@ -91,8 +90,8 @@ export function useAnonymousQuery<D = unknown, K = string>(
     if (stateRef.current !== undefined)
       return
 
-    core.get<D, K>(cacheKey, paramsRef.current).then(setState)
-  }, [core, cacheKey, params])
+    core.get(cacheKey, settingsRef.current).then(setState)
+  }, [core, cacheKey, settings])
 
   useEffect(() => {
     if (cacheKey === undefined)
@@ -100,20 +99,20 @@ export function useAnonymousQuery<D = unknown, K = string>(
 
     core.states.on(cacheKey, setState)
     core.aborters.on(cacheKey, setAborter)
-    core.increment(cacheKey, paramsRef.current)
+    core.increment(cacheKey, settingsRef.current)
 
     return () => {
-      core.decrement(cacheKey, paramsRef.current)
+      core.decrement(cacheKey, settingsRef.current)
       core.states.off(cacheKey, setState)
       core.aborters.off(cacheKey, setAborter)
     }
   }, [core, cacheKey])
 
-  const mutate = useCallback(async (mutator: Mutator<D>) => {
+  const mutate = useCallback(async (mutator: Mutator<D, F>) => {
     if (cacheKey === undefined)
       return new Err(new MissingKeyError())
 
-    stateRef.current = await core.mutate(cacheKey, mutator, paramsRef.current)
+    stateRef.current = await core.mutate(cacheKey, mutator, settingsRef.current)
 
     return new Ok(stateRef.current)
   }, [core, cacheKey])
@@ -122,7 +121,7 @@ export function useAnonymousQuery<D = unknown, K = string>(
     if (cacheKey === undefined)
       return new Err(new MissingKeyError())
 
-    stateRef.current = await core.delete(cacheKey, paramsRef.current)
+    stateRef.current = await core.delete(cacheKey, settingsRef.current)
 
     return new Ok(stateRef.current)
   }, [core, cacheKey])
@@ -133,15 +132,15 @@ export function useAnonymousQuery<D = unknown, K = string>(
 
     const key = keyRef.current
     const fetcher = fetcherRef.current
-    const params = paramsRef.current
+    const settings = settingsRef.current
 
     if (key === undefined)
       return new Err(new MissingKeyError())
     if (fetcher === undefined)
       return new Err(new MissingFetcherError())
 
-    return await core.fetchOrError(cacheKey, aborter, async () => {
-      return await Simple.fetchOrError(core, key, cacheKey, fetcher, aborter, params)
+    return await core.lockOrError(cacheKey, aborter, async () => {
+      return await Simple.fetchOrError(core, key, cacheKey, fetcher, aborter, settings)
     }).then(r => r.inspectSync(state => stateRef.current = state))
   }, [core, cacheKey])
 
@@ -151,35 +150,33 @@ export function useAnonymousQuery<D = unknown, K = string>(
 
     const key = keyRef.current
     const fetcher = fetcherRef.current
-    const params = paramsRef.current
+    const settings = settingsRef.current
 
     if (key === undefined)
       return new Err(new MissingKeyError())
     if (fetcher === undefined)
       return new Err(new MissingFetcherError())
 
-    return await core.abortAndFetch(cacheKey, aborter, async () => {
-      return await Simple.fetch(core, key, cacheKey, fetcher, aborter, params)
+    return await core.abortAndLock(cacheKey, aborter, async () => {
+      return await Simple.fetch(core, key, cacheKey, fetcher, aborter, settings)
     }).then(r => r.inspectSync(state => stateRef.current = state))
   }, [core, cacheKey])
 
-  const update = useCallback(async (updater: Updater<D, K>, uparams: TimesInit = {}, aborter = new AbortController()) => {
+  const update = useCallback(async (updater: Updater<K, D, F>, aborter = new AbortController()) => {
     if (cacheKey === undefined)
       return new Err(new MissingKeyError())
 
     const key = keyRef.current
     const fetcher = fetcherRef.current
-    const params = paramsRef.current
+    const settings = settingsRef.current
 
     if (key === undefined)
       return new Err(new MissingKeyError())
     if (fetcher === undefined)
       return new Err(new MissingFetcherError())
 
-    const fparams = { ...params, ...uparams }
-
     return await Simple
-      .update(core, key, cacheKey, fetcher, updater, aborter, fparams)
+      .update(core, key, cacheKey, fetcher, updater, aborter, settings)
       .then(r => r.inspectSync(state => stateRef.current = state))
   }, [core, cacheKey])
 
@@ -189,15 +186,15 @@ export function useAnonymousQuery<D = unknown, K = string>(
 
     const key = keyRef.current
     const fetcher = fetcherRef.current
-    const params = paramsRef.current
+    const settings = settingsRef.current
 
     if (key === undefined)
       return new Err(new MissingKeyError())
     if (fetcher === undefined)
       return new Err(new MissingFetcherError())
 
-    return await core.fetchOrError(cacheKey, aborter, async () => {
-      return await Simple.fetchOrWait(core, key, cacheKey, fetcher, aborter, params)
+    return await core.lockOrError(cacheKey, aborter, async () => {
+      return await Simple.fetchOrWait(core, key, cacheKey, fetcher, aborter, settings)
     }).then(r => r.inspectSync(state => stateRef.current = state))
   }, [core, cacheKey])
 

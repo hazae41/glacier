@@ -8,8 +8,8 @@ import { Fetched } from "mods/result/fetched.js"
  * @param query 
  * @param fallback 
  */
-export function useFallback<D, F>(
-  query: Query<D>,
+export function useFallback<K, D, F>(
+  query: Query<K, D, F>,
   fallback?: Fetched<D, F>
 ) {
   if (fallback === undefined)

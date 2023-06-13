@@ -9,11 +9,11 @@ import { Data } from "mods/result/data.js"
 import { Fail } from "mods/result/fail.js"
 import { Fetched } from "mods/result/fetched.js"
 import { Mutator, Setter } from "mods/types/mutator.js"
-import { GlobalParams, QueryParams } from "mods/types/params.js"
+import { GlobalSettings, QuerySettings } from "mods/types/settings.js"
 import { DataState, FailState, FakeState, RealState, State, StoredState } from "mods/types/state.js"
 
-export type Listener<D = unknown> =
-  (x: Optional<State<D>>) => void
+export type Listener<D, F> =
+  (x: Optional<State<D, F>>) => void
 
 export class AsyncStorageError extends Error {
   readonly #class = AsyncStorageError
@@ -97,12 +97,12 @@ export class AbortedError extends Error {
 
 export class Core {
 
-  readonly states = new Ortho<string, State>()
+  readonly states = new Ortho<string, State<any, any>>()
   readonly aborters = new Ortho<string, Optional<AbortController>>()
 
-  readonly #states = new Map<string, State>()
+  readonly #states = new Map<string, State<any, any>>()
 
-  readonly #optimisers = new Map<string, Map<string, Mutator<any>>>()
+  readonly #optimisers = new Map<string, Map<string, Mutator<any, any>>>()
 
   readonly #counts = new Map<string, number>()
   readonly #timeouts = new Map<string, NodeJS.Timeout>()
@@ -115,7 +115,7 @@ export class Core {
   #mounted = true
 
   constructor(
-    readonly params: GlobalParams
+    readonly settings: GlobalSettings
   ) { }
 
   get mounted() {
@@ -136,7 +136,7 @@ export class Core {
     return this.#aborters.get(cacheKey)
   }
 
-  async fetchOrError<T, E>(cacheKey: string, aborter: AbortController, callback: () => Promise<Result<T, E>>): Promise<Result<T, E | PendingFetchError>> {
+  async lockOrError<T, E>(cacheKey: string, aborter: AbortController, callback: () => Promise<Result<T, E>>): Promise<Result<T, E | PendingFetchError>> {
     let mutex = this.#fetches.get(cacheKey)
 
     if (mutex === undefined) {
@@ -149,7 +149,7 @@ export class Core {
     if (pending !== undefined)
       return new Err(new PendingFetchError())
 
-    const result = await mutex.lock(async () => {
+    return await mutex.lock(async () => {
       this.#aborters.set(cacheKey, aborter)
       this.aborters.publish(cacheKey, aborter)
 
@@ -160,11 +160,9 @@ export class Core {
 
       return result
     })
-
-    return result
   }
 
-  async abortAndFetch<T, E>(cacheKey: string, aborter: AbortController, callback: () => Promise<Result<T, E>>): Promise<Result<T, E>> {
+  async abortAndLock<T, E>(cacheKey: string, aborter: AbortController, callback: () => Promise<Result<T, E>>): Promise<Result<T, E>> {
     let mutex = this.#fetches.get(cacheKey)
 
     if (mutex === undefined) {
@@ -187,25 +185,25 @@ export class Core {
     })
   }
 
-  getSync<D, K>(cacheKey: string, params: QueryParams<D, K>): Result<State<D>, AsyncStorageError> {
+  getSync<K, D, F>(cacheKey: string, settings: QuerySettings<K, D, F>): Result<State<D, F>, AsyncStorageError> {
     const cached = this.#states.get(cacheKey)
 
     if (cached !== undefined)
-      return new Ok(cached as State<D>)
+      return new Ok(cached)
 
-    if (!params.storage) {
-      const state = new RealState<D, unknown>(undefined)
+    if (!settings.storage) {
+      const state = new RealState<D, F>(undefined)
       this.#states.set(cacheKey, state)
       this.states.publish(cacheKey, state)
       return new Ok(state)
     }
 
-    if (params.storage.storage.async)
+    if (settings.storage.storage.async)
       return new Err(new AsyncStorageError())
-    const stored = params.storage.storage.get<D>(cacheKey, params.storage as any)
+    const stored = settings.storage.storage.get<D, F>(cacheKey, settings.storage as any)
 
     if (stored === undefined) {
-      const state = new RealState<D, unknown>(undefined)
+      const state = new RealState<D, F>(undefined)
       this.#states.set(cacheKey, state)
       this.states.publish(cacheKey, state)
       return new Ok(state)
@@ -217,7 +215,7 @@ export class Core {
 
       if (stored.data !== undefined) {
         const data = new Data(stored.data, times)
-        const substate = new DataState<D, unknown>(data)
+        const substate = new DataState<D, F>(data)
         const state = new RealState(substate)
         this.#states.set(cacheKey, state)
         this.states.publish(cacheKey, state)
@@ -226,7 +224,7 @@ export class Core {
 
       if (stored.error !== undefined) {
         const fail = new Fail(stored.error, times)
-        const substate = new FailState<D, unknown>(fail)
+        const substate = new FailState<D, F>(fail)
         const state = new RealState(substate)
         this.#states.set(cacheKey, state)
         this.states.publish(cacheKey, state)
@@ -241,7 +239,7 @@ export class Core {
 
     if (stored.data !== undefined) {
       const data = new Data(stored.data.inner, times)
-      const substate = new DataState<D, unknown>(data)
+      const substate = new DataState<D, F>(data)
       const state = new RealState(substate)
       this.#states.set(cacheKey, state)
       this.states.publish(cacheKey, state)
@@ -250,7 +248,7 @@ export class Core {
 
     if (stored.error !== undefined) {
       const fail = new Fail(stored.error.inner, times)
-      const substate = new FailState<D, unknown>(fail)
+      const substate = new FailState<D, F>(fail)
       const state = new RealState(substate)
       this.#states.set(cacheKey, state)
       this.states.publish(cacheKey, state)
@@ -260,23 +258,23 @@ export class Core {
     throw new Panic(`Invalid stored state`)
   }
 
-  async get<D, K>(cacheKey: string, params: QueryParams<D, K>): Promise<State<D>> {
+  async get<K, D, F>(cacheKey: string, settings: QuerySettings<K, D, F>): Promise<State<D, F>> {
     const cached = this.#states.get(cacheKey)
 
     if (cached !== undefined)
-      return cached as State<D>
+      return cached
 
-    if (!params.storage) {
-      const state = new RealState<D, unknown>(undefined)
+    if (!settings.storage) {
+      const state = new RealState<D, F>(undefined)
       this.#states.set(cacheKey, state)
       this.states.publish(cacheKey, state)
       return state
     }
 
-    const stored = await params.storage.storage.get<D>(cacheKey, params.storage as any)
+    const stored = await settings.storage.storage.get<D, F>(cacheKey, settings.storage as any)
 
     if (stored === undefined) {
-      const state = new RealState<D, unknown>(undefined)
+      const state = new RealState<D, F>(undefined)
       this.#states.set(cacheKey, state)
       this.states.publish(cacheKey, state)
       return state
@@ -288,7 +286,7 @@ export class Core {
 
       if (stored.data !== undefined) {
         const data = new Data(stored.data, times)
-        const substate = new DataState<D, unknown>(data)
+        const substate = new DataState<D, F>(data)
         const state = new RealState(substate)
         this.#states.set(cacheKey, state)
         this.states.publish(cacheKey, state)
@@ -297,7 +295,7 @@ export class Core {
 
       if (stored.error !== undefined) {
         const fail = new Fail(stored.error, times)
-        const substate = new FailState<D, unknown>(fail)
+        const substate = new FailState<D, F>(fail)
         const state = new RealState(substate)
         this.#states.set(cacheKey, state)
         this.states.publish(cacheKey, state)
@@ -312,7 +310,7 @@ export class Core {
 
     if (stored.data !== undefined) {
       const data = new Data(stored.data.inner, times)
-      const substate = new DataState<D, unknown>(data)
+      const substate = new DataState<D, F>(data)
       const state = new RealState(substate)
       this.#states.set(cacheKey, state)
       this.states.publish(cacheKey, state)
@@ -321,7 +319,7 @@ export class Core {
 
     if (stored.error !== undefined) {
       const fail = new Fail(stored.error.inner, times)
-      const substate = new FailState<D, unknown>(fail)
+      const substate = new FailState<D, F>(fail)
       const state = new RealState(substate)
       this.#states.set(cacheKey, state)
       this.states.publish(cacheKey, state)
@@ -331,7 +329,7 @@ export class Core {
     throw new Panic(`Invalid stored state`)
   }
 
-  async #replace<D, K>(cacheKey: string, setter: Setter<D>, params: QueryParams<D, K>) {
+  async #replace<K, D, F>(cacheKey: string, setter: Setter<D, F>, settings: QuerySettings<K, D, F>) {
     let mutex = this.#replaces.get(cacheKey)
 
     if (mutex === undefined) {
@@ -340,7 +338,7 @@ export class Core {
     }
 
     return await mutex.lock(async () => {
-      const previous = await this.get(cacheKey, params)
+      const previous = await this.get(cacheKey, settings)
       const state = await setter(previous)
 
       if (state === previous)
@@ -349,7 +347,7 @@ export class Core {
       this.#states.set(cacheKey, state)
       this.states.publish(cacheKey, state)
 
-      const { storage } = params
+      const { storage } = settings
 
       if (!storage?.storage)
         return state
@@ -361,7 +359,7 @@ export class Core {
 
       const { time, cooldown, expiration } = state.real.current
 
-      let stored: StoredState<D>
+      let stored: StoredState<D, F>
 
       if (state.real.current.isData()) {
         const data = { inner: state.real.current.data }
@@ -376,7 +374,7 @@ export class Core {
     })
   }
 
-  #mergeRealStateWithFetched<D>(previous: State<D>, fetched: Optional<Fetched<D>>): RealState<D> {
+  #mergeRealStateWithFetched<D, F>(previous: State<D, F>, fetched: Optional<Fetched<D, F>>): RealState<D, F> {
     if (fetched === undefined)
       return new RealState(undefined)
 
@@ -385,7 +383,7 @@ export class Core {
     return new RealState(new FailState(fetched, previous.real?.data))
   }
 
-  #mergeFakeStateWithFetched<D>(previous: State<D>, fetched: Optional<Fetched<D>>): FakeState<D> {
+  #mergeFakeStateWithFetched<D, F>(previous: State<D, F>, fetched: Optional<Fetched<D, F>>): FakeState<D, F> {
     if (fetched === undefined)
       return new FakeState(undefined, previous.real)
 
@@ -399,12 +397,12 @@ export class Core {
    * @param cacheKey 
    * @param previous 
    * @param fetched 
-   * @param params 
+   * @param settings 
    * @returns 
    */
-  async mutate<D, K>(cacheKey: string, mutator: Mutator<D>, params: QueryParams<D, K>): Promise<State<D>> {
+  async mutate<K, D, F>(cacheKey: string, mutator: Mutator<D, F>, settings: QuerySettings<K, D, F>): Promise<State<D, F>> {
     return await this.#replace(cacheKey, async (previous) => {
-      const { equals = DEFAULT_EQUALS } = params
+      const { equals = DEFAULT_EQUALS } = settings
 
       const init = await mutator(previous)
 
@@ -413,13 +411,13 @@ export class Core {
 
       const fetched = Option.mapSync(init.get(), Fetched.from)
 
-      let next: RealState<D, unknown> = this.#mergeRealStateWithFetched(previous, fetched)
+      let next: RealState<D, F> = this.#mergeRealStateWithFetched(previous, fetched)
 
       if (next.real && previous.real && Time.isBefore(next.real?.current.time, previous.real.current.time))
         return previous
 
       if (next.real?.current.isData())
-        next = new RealState(new DataState(await this.#normalize(next.real.current, params)))
+        next = new RealState(new DataState(await this.#normalize(next.real.current, settings)))
 
       if (next.real?.current.isData() && previous.real?.current.isData() && equals(next.real.current.inner, previous.real.current.inner))
         next = new RealState(new DataState(new Data(previous.real.current.inner, next.real.current)))
@@ -427,41 +425,41 @@ export class Core {
       if (next.real?.current.isFail() && previous.real?.current.isFail() && equals(next.real.current.inner, previous.real.current.inner))
         next = new RealState(new FailState(new Fail(previous.real.current.inner, next.real.current), previous.real.data))
 
-      const optimizers = this.#getOrCreateOptimizers<D>(cacheKey)
+      const optimizers = this.#getOrCreateOptimizers<D, F>(cacheKey)
       return await this.#reoptimize(next, optimizers)
-    }, params)
+    }, settings)
   }
 
   /**
    * Mutate real state to undefined (keep fake state)
    * @param cacheKey 
-   * @param params 
+   * @param settings 
    * @returns 
    */
-  async delete<D, K>(cacheKey: string, params: QueryParams<D, K>) {
-    return await this.mutate<D, K>(cacheKey, () => new Some(undefined), params)
+  async delete<K, D, F>(cacheKey: string, settings: QuerySettings<K, D, F>) {
+    return await this.mutate(cacheKey, () => new Some(undefined), settings)
   }
 
-  #getOrCreateOptimizers<D>(cacheKey: string): Map<string, Mutator<D>> {
+  #getOrCreateOptimizers<D, F>(cacheKey: string): Map<string, Mutator<D, F>> {
     const current = this.#optimisers.get(cacheKey)
 
     if (current !== undefined)
-      return current as Map<string, Mutator<D>>
+      return current
 
-    const next = new Map<string, Mutator>()
+    const next = new Map<string, Mutator<D, F>>()
     this.#optimisers.set(cacheKey, next)
-    return next as Map<string, Mutator<D>>
+    return next
   }
+
 
   /**
    * Erase and reapply all optimizations
-   * @param cacheKey 
    * @param state 
-   * @param params 
+   * @param optimizers 
    * @returns 
    */
-  async #reoptimize<D, K>(state: State<D>, optimizers: Map<string, Mutator<D>>): Promise<State<D>> {
-    let reoptimized: State<D> = new RealState<D>(state.real)
+  async #reoptimize<D, F>(state: State<D, F>, optimizers: Map<string, Mutator<D, F>>): Promise<State<D, F>> {
+    let reoptimized: State<D, F> = new RealState(state.real)
 
     for (const optimizer of optimizers.values()) {
       const optimized = await optimizer(reoptimized)
@@ -476,9 +474,9 @@ export class Core {
     return reoptimized
   }
 
-  async optimize<D, K>(cacheKey: string, uuid: string, optimizer: Mutator<D>, params: QueryParams<D, K>) {
+  async optimize<K, D, F>(cacheKey: string, uuid: string, optimizer: Mutator<D, F>, settings: QuerySettings<K, D, F>) {
     return await this.#replace(cacheKey, async (previous) => {
-      const optimizers = this.#getOrCreateOptimizers<D>(cacheKey)
+      const optimizers = this.#getOrCreateOptimizers<D, F>(cacheKey)
 
       if (optimizers.has(uuid)) {
         optimizers.delete(uuid)
@@ -495,17 +493,17 @@ export class Core {
 
       const fetched = Option.mapSync(optimized.get(), Fetched.from)
       return this.#mergeFakeStateWithFetched(previous, fetched)
-    }, params)
+    }, settings)
   }
 
-  async deoptimize<D, K>(cacheKey: string, uuid: string, params: QueryParams<D, K>) {
+  async deoptimize<K, D, F>(cacheKey: string, uuid: string, settings: QuerySettings<K, D, F>) {
     return await this.#replace(cacheKey, async (previous) => {
-      const optimizers = this.#getOrCreateOptimizers<D>(cacheKey)
+      const optimizers = this.#getOrCreateOptimizers<D, F>(cacheKey)
 
       optimizers.delete(uuid)
 
       return this.#reoptimize(previous, optimizers)
-    }, params)
+    }, settings)
   }
 
   async catchAndTimeout<T>(callback: (signal: AbortSignal) => Promiseable<T>, aborter: AbortController, delay?: number): Promise<Result<T, AbortedError>> {
@@ -530,32 +528,36 @@ export class Core {
   /**
    * Transform children into refs and normalize them
    * @param data 
-   * @param params 
+   * @param settings 
    * @returns 
    */
-  async #normalize<D, K>(data: Data<D>, params: QueryParams<D, K>) {
-    if (params.normalizer === undefined)
+  async #normalize<K, D, F>(data: Data<D>, settings: QuerySettings<K, D, F>) {
+    if (settings.normalizer === undefined)
       return data
+
     const more = { core: this, times: data, shallow: false }
-    const normalized = await params.normalizer(data.inner, more)
+    const normalized = await settings.normalizer(data.inner, more)
+
     return new Data(normalized, data)
   }
 
   /**
    * Transform children into refs but do not normalize them
    * @param data 
-   * @param params 
+   * @param settings 
    * @returns 
    */
-  async prenormalize<D, K>(data: Data<D>, params: QueryParams<D, K>) {
-    if (params.normalizer === undefined)
+  async prenormalize<K, D, F>(data: Data<D>, settings: QuerySettings<K, D, F>) {
+    if (settings.normalizer === undefined)
       return data
+
     const more = { core: this, times: data, shallow: true }
-    const normalized = await params.normalizer(data.inner, more)
+    const normalized = await settings.normalizer(data.inner, more)
+
     return new Data(normalized, data)
   }
 
-  async increment<D, K>(cacheKey: string, params: QueryParams<D, K>) {
+  async increment<K, D, F>(cacheKey: string, settings: QuerySettings<K, D, F>) {
     const count = this.#counts.get(cacheKey) ?? 0
     this.#counts.set(cacheKey, count + 1)
 
@@ -567,7 +569,7 @@ export class Core {
     this.#timeouts.delete(cacheKey)
   }
 
-  async decrement<D, K>(cacheKey: string, params: QueryParams<D, K>) {
+  async decrement<K, D, F>(cacheKey: string, settings: QuerySettings<K, D, F>) {
     const count = this.#counts.get(cacheKey)
 
     if (count === undefined)
@@ -595,7 +597,7 @@ export class Core {
         return
 
       this.#timeouts.delete(cacheKey)
-      await this.delete(cacheKey, params)
+      await this.delete(cacheKey, settings)
     }
 
     if (Date.now() > current.real.current.expiration) {

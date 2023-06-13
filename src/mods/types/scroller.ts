@@ -1,2 +1,2 @@
-export type Scroller<D = unknown, K = unknown> =
+export type Scroller<K, D, F> =
   (previousPage?: D) => K | undefined

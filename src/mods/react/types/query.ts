@@ -5,7 +5,7 @@ import { Fetched } from "mods/result/fetched.js"
 import { Mutator } from "mods/types/mutator.js"
 import { FetchedState, State } from "mods/types/state.js"
 
-export interface Query<D = unknown, K = unknown> {
+export interface Query<K, D, F> {
   /**
    * Arbitrary key, must be serializable
    */
@@ -19,7 +19,7 @@ export interface Query<D = unknown, K = unknown> {
   /**
    * Current data or error (can be fake)
    */
-  current?: Fetched<D, unknown>
+  current?: Fetched<D, F>
 
   /**
    * Data (or previous data if current error is some) (can be fake or fakely undefined)
@@ -29,17 +29,17 @@ export interface Query<D = unknown, K = unknown> {
   /**
    * Error (can be fake or fakely undefined)
    */
-  error?: Fail<unknown>
+  error?: Fail<F>
 
   /**
    * Real state
    */
-  real?: FetchedState<D, unknown>
+  real?: FetchedState<D, F>
 
   /**
    * Fake state (can be fakely undefined)
    */
-  fake?: FetchedState<D, unknown>
+  fake?: FetchedState<D, F>
 
   /**
    * True if a fetch is ongoing (except those from update())
@@ -65,29 +65,29 @@ export interface Query<D = unknown, K = unknown> {
    * Fetch with cooldown
    * @example You want to fetch and don't care if it's cooldowned
    */
-  fetch(aborter?: AbortController): Promise<Result<State<D>, Error>>
+  fetch(aborter?: AbortController): Promise<Result<State<D, F>, Error>>
 
   /**
    * Fetch without cooldown
    * @example User clicked on the refresh button
    * @example You just made a POST request and want to get some fresh data
    */
-  refetch(aborter?: AbortController): Promise<Result<State<D>, Error>>
+  refetch(aborter?: AbortController): Promise<Result<State<D, F>, Error>>
 
   /**
    * Mutate the cache
    * @param res 
    */
-  mutate(mutator: Mutator<D>): Promise<Result<State<D>, Error>>
+  mutate(mutator: Mutator<D, F>): Promise<Result<State<D, F>, Error>>
 
   /**
    * Clear the cache
    */
-  clear(): Promise<Result<State<D>, Error>>
+  clear(): Promise<Result<State<D, F>, Error>>
 
   /**
    * Suspend until the next state change, also launches an undeduped fetch
    */
-  suspend(): Promise<Result<State<D>, Error>>
+  suspend(): Promise<Result<State<D, F>, Error>>
 
 }

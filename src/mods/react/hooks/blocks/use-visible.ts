@@ -5,7 +5,7 @@ import { useEffect } from "react"
  * Do a request when the tab is visible
  * @param query 
  */
-export function useVisible(query: Query) {
+export function useVisible<K, D, F>(query: Query<K, D, F>) {
   const { ready, fetch } = query
 
   useEffect(() => {

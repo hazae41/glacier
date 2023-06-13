@@ -1,12 +1,11 @@
 import { Data } from "mods/result/data.js"
 import { Fail } from "mods/result/fail.js"
 
-
-export type StoredState<D = unknown, F = unknown> =
+export type StoredState<D, F> =
   | StoredState1<D, F>
   | StoredState2<D, F>
 
-export interface StoredState1<D = unknown, F = unknown> {
+export interface StoredState1<D, F> {
   version?: undefined,
   data?: D
   error?: F
@@ -15,7 +14,7 @@ export interface StoredState1<D = unknown, F = unknown> {
   expiration?: number
 }
 
-export interface StoredState2<D = unknown, F = unknown> {
+export interface StoredState2<D, F> {
   version: 2,
   data?: { inner: D }
   error?: { inner: F }
@@ -24,16 +23,16 @@ export interface StoredState2<D = unknown, F = unknown> {
   expiration?: number
 }
 
-export interface StateAndAborter<D = unknown, F = unknown> {
+export interface StateAndAborter<D, F> {
   state: State<D, F>
   aborter?: AbortController
 }
 
-export type State<D = unknown, F = unknown> =
+export type State<D, F> =
   | RealState<D, F>
   | FakeState<D, F>
 
-export class RealState<D = unknown, F = unknown> {
+export class RealState<D, F> {
 
   constructor(
     readonly real?: FetchedState<D, F>

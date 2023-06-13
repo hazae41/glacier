@@ -6,14 +6,14 @@ export type Storage =
   | SyncStorage
   | AsyncStorage
 
-export interface SyncStorageParams<D> {
+export interface SyncStorageSettings<D, F> {
   readonly keySerializer?: SyncEncoder<string>,
-  readonly valueSerializer?: SyncCoder<StoredState<D>>
+  readonly valueSerializer?: SyncCoder<StoredState<D, F>>
 }
 
-export interface AsyncStorageParams<D> {
+export interface AsyncStorageSettings<D, F> {
   readonly keySerializer?: AsyncEncoder<string>,
-  readonly valueSerializer?: AsyncCoder<StoredState<D>>
+  readonly valueSerializer?: AsyncCoder<StoredState<D, F>>
 }
 
 export interface SyncStorage {
@@ -31,28 +31,28 @@ export interface SyncStorage {
 
   /**
    * Get the data from the given key
-   * @param key the given key
+   * @param cacheKey the given key
    * @param shallow true = won't add this key to the garbage collector
    * @returns 
    */
-  get<D>(key: string, params?: SyncStorageParams<D>): StoredState<D> | undefined
+  get<D, F>(cacheKey: string, settings?: SyncStorageSettings<D, F>): StoredState<D, F> | undefined
 
   /**
    * Set the given data to the given key
-   * @param key the given key
+   * @param cacheKey the given key
    * @param value the given data
    * @param shallow true = won't add this key to the garbage collector
    * @returns 
    */
-  set<D>(key: string, value: StoredState<D>, params?: SyncStorageParams<D>): void
+  set<D, F>(cacheKey: string, value: StoredState<D, F>, settings?: SyncStorageSettings<D, F>): void
 
   /**
    * Delete the given data from the given key
-   * @param key the given key
+   * @param cacheKey the given key
    * @param shallow true = won't add this key to the garbage collector
    * @returns 
    */
-  delete<D>(key: string, params?: SyncStorageParams<D>): void
+  delete<D, F>(cacheKey: string, settings?: SyncStorageSettings<D, F>): void
 }
 
 export interface AsyncStorage {
@@ -74,7 +74,7 @@ export interface AsyncStorage {
    * @param shallow true = won't add this key to the garbage collector
    * @returns 
    */
-  get<D>(key: string, params?: AsyncStorageParams<D>): Promiseable<StoredState<D> | undefined>
+  get<D, F>(key: string, settings?: AsyncStorageSettings<D, F>): Promiseable<StoredState<D, F> | undefined>
 
   /**
    * Set the given data to the given key
@@ -83,7 +83,7 @@ export interface AsyncStorage {
    * @param shallow true = won't add this key to the garbage collector
    * @returns 
    */
-  set<D>(key: string, value: StoredState<D>, params?: AsyncStorageParams<D>): Promiseable<void>
+  set<D, F>(key: string, value: StoredState<D, F>, settings?: AsyncStorageSettings<D, F>): Promiseable<void>
 
   /**
    * Delete the given data from the given key
@@ -91,5 +91,5 @@ export interface AsyncStorage {
    * @param shallow true = won't add this key to the garbage collector
    * @returns 
    */
-  delete<D>(key: string, params?: AsyncStorageParams<D>): Promiseable<void>
+  delete<D, F>(key: string, settings?: AsyncStorageSettings<D, F>): Promiseable<void>
 }

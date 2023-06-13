@@ -1,5 +1,5 @@
 import { Err, Ok, Result } from "@hazae41/result"
-import { SyncStorage, SyncStorageParams } from "mods/storages/storage.js"
+import { SyncStorage, SyncStorageSettings } from "mods/storages/storage.js"
 import { StoredState } from "mods/types/state.js"
 import { useEffect, useRef } from "react"
 import { StorageCreationError } from "../errors.js"
@@ -79,8 +79,8 @@ export class SyncLocalStorage implements SyncStorage {
     }
   }
 
-  get<D>(cacheKey: string, params: SyncStorageParams<D> = {}) {
-    const { keySerializer, valueSerializer } = params
+  get<D, F>(cacheKey: string, settings: SyncStorageSettings<D, F> = {}) {
+    const { keySerializer, valueSerializer } = settings
 
     const key = keySerializer
       ? keySerializer.stringify(cacheKey)
@@ -93,7 +93,7 @@ export class SyncLocalStorage implements SyncStorage {
 
     const state = valueSerializer
       ? valueSerializer.parse(item)
-      : JSON.parse(item) as StoredState<D>
+      : JSON.parse(item) as StoredState<D, F>
 
     if (state.expiration !== undefined)
       this.#keys.set(key, state.expiration)
@@ -101,8 +101,8 @@ export class SyncLocalStorage implements SyncStorage {
     return state
   }
 
-  set<D>(cacheKey: string, state: StoredState<D>, params: SyncStorageParams<D> = {}) {
-    const { keySerializer, valueSerializer } = params
+  set<D, F>(cacheKey: string, state: StoredState<D, F>, settings: SyncStorageSettings<D, F> = {}) {
+    const { keySerializer, valueSerializer } = settings
 
     const key = keySerializer
       ? keySerializer.stringify(cacheKey)
@@ -118,8 +118,8 @@ export class SyncLocalStorage implements SyncStorage {
     localStorage.setItem(this.prefix + key, item)
   }
 
-  delete<D>(cacheKey: string, params: SyncStorageParams<D> = {}) {
-    const { keySerializer } = params
+  delete<D, F>(cacheKey: string, settings: SyncStorageSettings<D, F> = {}) {
+    const { keySerializer } = settings
 
     const key = keySerializer
       ? keySerializer.stringify(cacheKey)

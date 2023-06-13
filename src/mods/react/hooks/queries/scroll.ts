@@ -9,33 +9,33 @@ import { Scroll } from "mods/scroll/helper.js";
 import { ScrollQuerySchema } from "mods/scroll/schema.js";
 import { Fetcher } from "mods/types/fetcher.js";
 import { Mutator } from "mods/types/mutator.js";
-import { QueryParams } from "mods/types/params.js";
 import { Scroller } from "mods/types/scroller.js";
+import { QuerySettings } from "mods/types/settings.js";
 import { State } from "mods/types/state.js";
 import { DependencyList, useCallback, useEffect, useMemo, useRef, useState } from "react";
 
-export type ScrollSchemaFactory<D, K, L extends DependencyList = []> =
-  (...deps: L) => ScrollQuerySchema<D, K> | undefined
+export type ScrollSchemaFactory<K, D, F, DL extends DependencyList> =
+  (...deps: DL) => ScrollQuerySchema<K, D, F> | undefined
 
-export function useScrollQuery<D, K, L extends DependencyList = []>(
-  factory: ScrollSchemaFactory<D, K, L>,
-  deps: L
+export function useScrollQuery<K, D, F, DL extends DependencyList>(
+  factory: ScrollSchemaFactory<K, D, F, DL>,
+  deps: DL
 ) {
-  const { scroller, fetcher, params } = useMemo(() => {
+  const { scroller, fetcher, settings } = useMemo(() => {
     return factory(...deps)
   }, deps) ?? {}
 
-  return useAnonymousScrollQuery<D, K>(scroller, fetcher, params)
+  return useAnonymousScrollQuery<K, D, F>(scroller, fetcher, settings)
 }
 
 /**
  * Query for a scrolling resource
  */
-export interface ScrollQuery<D = unknown, K = unknown> extends Query<D[], K> {
+export interface ScrollQuery<K, D, F> extends Query<K, D[], F> {
   /**
    * Fetch the next page
    */
-  scroll(): Promise<Result<State<D[]>, Error>>
+  scroll(): Promise<Result<State<D[], F>, Error>>
 
   /**
    * The next key to be fetched
@@ -44,22 +44,22 @@ export interface ScrollQuery<D = unknown, K = unknown> extends Query<D[], K> {
 }
 
 /**
- * Scrolling resource query factory
- * @param scroller Key scroller (memoized)
- * @param fetcher Resource fetcher (unmemoized)
- * @param cparams Parameters (unmemoized)
- * @returns Scrolling query
+ * Scroll query
+ * @param scroller 
+ * @param fetcher 
+ * @param settings 
+ * @returns 
  */
-export function useAnonymousScrollQuery<D = unknown, K = string>(
-  scroller: Scroller<D, K> | undefined,
-  fetcher: Fetcher<D, K> | undefined,
-  params: QueryParams<D[], K> = {},
-): ScrollQuery<D, K> {
+export function useAnonymousScrollQuery<K, D, F>(
+  scroller: Scroller<K, D, F> | undefined,
+  fetcher: Fetcher<K, D, F> | undefined,
+  settings: QuerySettings<K, D[], F> = {},
+): ScrollQuery<K, D, F> {
   const core = useCore()
 
   const scrollerRef = useRenderRef(scroller)
   const fetcherRef = useRenderRef(fetcher)
-  const paramsRef = useRenderRef({ ...core.params, ...params })
+  const settingsRef = useRenderRef({ ...core.settings, ...settings })
 
   const key = useMemo(() => {
     return scroller?.()
@@ -68,22 +68,22 @@ export function useAnonymousScrollQuery<D = unknown, K = string>(
   const cacheKey = useMemo(() => {
     if (key === undefined)
       return undefined
-    return Scroll.getCacheKey<D[], K>(key, paramsRef.current)
+    return Scroll.getCacheKey(key, settingsRef.current)
   }, [key])
 
   const [, setCounter] = useState(0)
 
-  const stateRef = useRef<State<D[]>>()
+  const stateRef = useRef<State<D[], F>>()
   const aborterRef = useRef<AbortController>()
 
   useMemo(() => {
     if (cacheKey === undefined)
       return
-    stateRef.current = core.getSync<D[], K>(cacheKey, paramsRef.current).ok().inner
+    stateRef.current = core.getSync<K, D[], F>(cacheKey, settingsRef.current).ok().inner
   }, [core, cacheKey])
 
-  const setState = useCallback((state: State) => {
-    stateRef.current = state as State<D[]>
+  const setState = useCallback((state: State<D[], F>) => {
+    stateRef.current = state
     setCounter(c => c + 1)
   }, [])
 
@@ -98,8 +98,8 @@ export function useAnonymousScrollQuery<D = unknown, K = string>(
     if (stateRef.current !== undefined)
       return
 
-    core.get<D[], K>(cacheKey, paramsRef.current).then(setState)
-  }, [core, cacheKey, params])
+    core.get(cacheKey, settingsRef.current).then(setState)
+  }, [core, cacheKey, settings])
 
   useEffect(() => {
     if (cacheKey === undefined)
@@ -107,20 +107,20 @@ export function useAnonymousScrollQuery<D = unknown, K = string>(
 
     core.states.on(cacheKey, setState)
     core.aborters.on(cacheKey, setAborter)
-    core.increment(cacheKey, paramsRef.current)
+    core.increment(cacheKey, settingsRef.current)
 
     return () => {
-      core.decrement(cacheKey, paramsRef.current)
+      core.decrement(cacheKey, settingsRef.current)
       core.states.off(cacheKey, setState)
       core.aborters.off(cacheKey, setAborter)
     }
   }, [core, cacheKey])
 
-  const mutate = useCallback(async (mutator: Mutator<D[]>) => {
+  const mutate = useCallback(async (mutator: Mutator<D[], F>) => {
     if (cacheKey === undefined)
       return new Err(new MissingKeyError())
 
-    stateRef.current = await core.mutate(cacheKey, mutator, paramsRef.current)
+    stateRef.current = await core.mutate(cacheKey, mutator, settingsRef.current)
 
     return new Ok(stateRef.current)
   }, [core, cacheKey])
@@ -129,7 +129,7 @@ export function useAnonymousScrollQuery<D = unknown, K = string>(
     if (cacheKey === undefined)
       return new Err(new MissingKeyError())
 
-    stateRef.current = await core.delete(cacheKey, paramsRef.current)
+    stateRef.current = await core.delete(cacheKey, settingsRef.current)
 
     return new Ok(stateRef.current)
   }, [core, cacheKey])
@@ -140,15 +140,15 @@ export function useAnonymousScrollQuery<D = unknown, K = string>(
 
     const scroller = scrollerRef.current
     const fetcher = fetcherRef.current
-    const params = paramsRef.current
+    const settings = settingsRef.current
 
     if (scroller === undefined)
       return new Err(new MissingKeyError())
     if (fetcher === undefined)
       return new Err(new MissingFetcherError())
 
-    return await core.fetchOrError(cacheKey, aborter, async () => {
-      return await Scroll.firstOrError(core, scroller, cacheKey, fetcher, aborter, params)
+    return await core.lockOrError(cacheKey, aborter, async () => {
+      return await Scroll.firstOrError(core, scroller, cacheKey, fetcher, aborter, settings)
     }).then(r => r.inspectSync(state => stateRef.current = state))
   }, [core, cacheKey])
 
@@ -158,15 +158,15 @@ export function useAnonymousScrollQuery<D = unknown, K = string>(
 
     const scroller = scrollerRef.current
     const fetcher = fetcherRef.current
-    const params = paramsRef.current
+    const settings = settingsRef.current
 
     if (scroller === undefined)
       return new Err(new MissingKeyError())
     if (fetcher === undefined)
       return new Err(new MissingFetcherError())
 
-    return await core.abortAndFetch(cacheKey, aborter, async () => {
-      return await Scroll.first(core, scroller, cacheKey, fetcher, aborter, params)
+    return await core.abortAndLock(cacheKey, aborter, async () => {
+      return await Scroll.first(core, scroller, cacheKey, fetcher, aborter, settings)
     }).then(r => r.inspectSync(state => stateRef.current = state))
   }, [core, cacheKey])
 
@@ -176,15 +176,15 @@ export function useAnonymousScrollQuery<D = unknown, K = string>(
 
     const scroller = scrollerRef.current
     const fetcher = fetcherRef.current
-    const params = paramsRef.current
+    const settings = settingsRef.current
 
     if (scroller === undefined)
       return new Err(new MissingKeyError())
     if (fetcher === undefined)
       return new Err(new MissingFetcherError())
 
-    return await core.abortAndFetch(cacheKey, aborter, async () => {
-      return await Scroll.scroll(core, scroller, cacheKey, fetcher, aborter, params)
+    return await core.abortAndLock(cacheKey, aborter, async () => {
+      return await Scroll.scroll(core, scroller, cacheKey, fetcher, aborter, settings)
     }).then(r => r.inspectSync(state => stateRef.current = state))
   }, [core, cacheKey])
 
@@ -194,15 +194,15 @@ export function useAnonymousScrollQuery<D = unknown, K = string>(
 
     const scroller = scrollerRef.current
     const fetcher = fetcherRef.current
-    const params = paramsRef.current
+    const settings = settingsRef.current
 
     if (scroller === undefined)
       return new Err(new MissingKeyError())
     if (fetcher === undefined)
       return new Err(new MissingFetcherError())
 
-    return await core.abortAndFetch(cacheKey, aborter, async () => {
-      return await Scroll.firstOrWait(core, scroller, cacheKey, fetcher, aborter, params)
+    return await core.abortAndLock(cacheKey, aborter, async () => {
+      return await Scroll.firstOrWait(core, scroller, cacheKey, fetcher, aborter, settings)
     }).then(r => r.inspectSync(state => stateRef.current = state))
   }, [core, cacheKey])
 

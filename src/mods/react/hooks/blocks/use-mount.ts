@@ -7,7 +7,7 @@ import { useEffect } from "react"
  * @see useOnce for doing a request only if there is no data yet
  * @param query 
  */
-export function useMount(query: Query) {
+export function useMount<K, D, F>(query: Query<K, D, F>) {
   const { fetch } = query
 
   useEffect(() => {

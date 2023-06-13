@@ -1,7 +1,7 @@
 import { Panic } from "@hazae41/result"
 import { ChildrenProps } from "libs/react/props/children.js"
 import { Core } from "mods/core/core.js"
-import { GlobalParams } from "mods/types/params.js"
+import { GlobalSettings } from "mods/types/settings.js"
 import * as React from "react"
 import { createContext, useContext, useEffect, useRef } from "react"
 
@@ -17,11 +17,11 @@ export function useCore() {
   return core
 }
 
-export function useCoreProvider(params: GlobalParams) {
+export function useCoreProvider(settings: GlobalSettings) {
   const coreRef = useRef<Core>()
 
   if (coreRef.current === undefined)
-    coreRef.current = new Core(params)
+    coreRef.current = new Core(settings)
 
   useEffect(() => {
     coreRef.current?.mount()
@@ -31,10 +31,10 @@ export function useCoreProvider(params: GlobalParams) {
   return coreRef.current
 }
 
-export function CoreProvider(props: ChildrenProps & GlobalParams) {
-  const { children, ...params } = props
+export function CoreProvider(props: ChildrenProps & GlobalSettings) {
+  const { children, ...settings } = props
 
-  const core = useCoreProvider(params)
+  const core = useCoreProvider(settings)
 
   return <CoreContext.Provider value={core}>
     {children}

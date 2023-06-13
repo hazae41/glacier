@@ -7,19 +7,17 @@ import { DEFAULT_EQUALS, DEFAULT_SERIALIZER } from "mods/defaults.js";
 import { Fetched } from "mods/result/fetched.js";
 import { TimesInit } from "mods/result/times.js";
 import { Fetcher } from "mods/types/fetcher.js";
-import { QueryParams } from "mods/types/params.js";
 import { Scroller } from "mods/types/scroller.js";
+import { QuerySettings } from "mods/types/settings.js";
 import { State } from "mods/types/state.js";
 
 export namespace Scroll {
 
-  export function getCacheKey<D, K>(key: K, params: QueryParams<D, K>) {
+  export function getCacheKey<K, D, F>(key: K, settings: QuerySettings<K, D, F>) {
     if (typeof key === "string")
       return key
 
-    const {
-      keySerializer = DEFAULT_SERIALIZER
-    } = params
+    const { keySerializer = DEFAULT_SERIALIZER } = settings
 
     return `scroll:${keySerializer.stringify(key)}`
   }
@@ -31,18 +29,18 @@ export namespace Scroll {
    * @param cacheKey 
    * @param fetcher 
    * @param aborter 
-   * @param params 
+   * @param settings 
    * @returns 
    */
-  export async function first<D, K>(
+  export async function first<K, D, F>(
     core: Core,
-    scroller: Scroller<D, K>,
+    scroller: Scroller<K, D, F>,
     cacheKey: string,
-    fetcher: Fetcher<D, K>,
+    fetcher: Fetcher<K, D, F>,
     aborter: AbortController,
-    params: QueryParams<D[], K>
-  ): Promise<Result<State<D[]>, AbortedError | ScrollError>> {
-    const { equals = DEFAULT_EQUALS } = params
+    settings: QuerySettings<K, D[], F>
+  ): Promise<Result<State<D[], F>, AbortedError | ScrollError>> {
+    const { equals = DEFAULT_EQUALS } = settings
 
     const key = scroller(undefined)
 
@@ -51,52 +49,52 @@ export namespace Scroll {
 
     const aborted = await core.catchAndTimeout(async (signal) => {
       return await fetcher(key, { signal })
-    }, aborter, params.timeout)
+    }, aborter, settings.timeout)
 
     if (aborted.isErr())
       return aborted
 
-    const times = TimesInit.merge(aborted.get(), params)
+    const times = TimesInit.merge(aborted.get(), settings)
     const timed = Fetched.from(aborted.get()).setTimes(times).mapSync(data => [data])
 
     return new Ok(await core.mutate(cacheKey, async (previous) => {
       if (timed.isErr())
         return new Some(timed)
 
-      const prenormalized = await core.prenormalize(timed, params)
+      const prenormalized = await core.prenormalize(timed, settings)
 
       if (previous.real?.data && equals(prenormalized.inner[0], previous.real.data.inner[0]))
         return new Some(previous.real.data)
 
       return new Some(timed)
-    }, params))
+    }, settings))
   }
 
-  export async function firstOrError<D, K>(
+  export async function firstOrError<K, D, F>(
     core: Core,
-    scroller: Scroller<D, K>,
+    scroller: Scroller<K, D, F>,
     cacheKey: string,
-    fetcher: Fetcher<D, K>,
+    fetcher: Fetcher<K, D, F>,
     aborter: AbortController,
-    params: QueryParams<D[], K>
-  ): Promise<Result<State<D[]>, AbortedError | CooldownError | ScrollError>> {
-    const previous = await core.get(cacheKey, params)
+    settings: QuerySettings<K, D[], F>
+  ): Promise<Result<State<D[], F>, AbortedError | CooldownError | ScrollError>> {
+    const previous = await core.get(cacheKey, settings)
 
     if (Time.isAfterNow(previous.real?.current.cooldown))
       return new Err(new CooldownError())
 
-    return await first(core, scroller, cacheKey, fetcher, aborter, params)
+    return await first(core, scroller, cacheKey, fetcher, aborter, settings)
   }
 
-  export async function firstOrWait<D, K>(
+  export async function firstOrWait<K, D, F>(
     core: Core,
-    scroller: Scroller<D, K>,
+    scroller: Scroller<K, D, F>,
     cacheKey: string,
-    fetcher: Fetcher<D, K>,
+    fetcher: Fetcher<K, D, F>,
     aborter: AbortController,
-    params: QueryParams<D[], K>
-  ): Promise<Result<State<D[]>, AbortedError | CooldownError | ScrollError>> {
-    const previous = await core.get(cacheKey, params)
+    settings: QuerySettings<K, D[], F>
+  ): Promise<Result<State<D[], F>, AbortedError | CooldownError | ScrollError>> {
+    const previous = await core.get(cacheKey, settings)
 
     const cooldown = Option
       .from(previous.real?.current.cooldown)
@@ -106,28 +104,29 @@ export namespace Scroll {
     if (cooldown.isSome())
       await new Promise(ok => setTimeout(ok, cooldown.get()))
 
-    return await first(core, scroller, cacheKey, fetcher, aborter, params)
+    return await first(core, scroller, cacheKey, fetcher, aborter, settings)
   }
+
 
   /**
    * Scroll to the next page
-   * @param cacheKey Storage key
-   * @param scroller Key scroller
-   * @param fetcher Resource fetcher
-   * @param aborter AbortController
-   * @param tparams Time parameters
-   * @param replacePending Should ignore cooldown
-   * @returns The new state
+   * @param core 
+   * @param scroller 
+   * @param cacheKey 
+   * @param fetcher 
+   * @param aborter 
+   * @param settings 
+   * @returns 
    */
-  export async function scroll<D, K>(
+  export async function scroll<K, D, F>(
     core: Core,
-    scroller: Scroller<D, K>,
+    scroller: Scroller<K, D, F>,
     cacheKey: string,
-    fetcher: Fetcher<D, K>,
+    fetcher: Fetcher<K, D, F>,
     aborter: AbortController,
-    params: QueryParams<D[], K>
-  ): Promise<Result<State<D[]>, AbortedError | ScrollError>> {
-    const previous = await core.get(cacheKey, params)
+    settings: QuerySettings<K, D[], F>
+  ): Promise<Result<State<D[], F>, AbortedError | ScrollError>> {
+    const previous = await core.get(cacheKey, settings)
     const previousPages = previous.real?.data?.inner ?? []
     const previousPage = Arrays.last(previousPages)
     const key = scroller(previousPage)
@@ -137,12 +136,12 @@ export namespace Scroll {
 
     const aborted = await core.catchAndTimeout(async (signal) => {
       return await fetcher(key, { signal })
-    }, aborter, params.timeout)
+    }, aborter, settings.timeout)
 
     if (aborted.isErr())
       return aborted
 
-    const times = TimesInit.merge(aborted.get(), params)
+    const times = TimesInit.merge(aborted.get(), settings)
     const timed = Fetched.from(aborted.get()).setTimes(times)
 
     return new Ok(await core.mutate(cacheKey, (previous) => {
@@ -150,6 +149,6 @@ export namespace Scroll {
       const paginated = timed.mapSync(data => [...previousPages, data])
 
       return new Some(paginated)
-    }, params))
+    }, settings))
   }
 }

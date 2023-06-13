@@ -1,5 +1,5 @@
 import { Err, Ok, Result } from "@hazae41/result"
-import { AsyncStorage, AsyncStorageParams } from "mods/storages/storage.js"
+import { AsyncStorage, AsyncStorageSettings } from "mods/storages/storage.js"
 import { StoredState } from "mods/types/state.js"
 import { useEffect, useRef } from "react"
 import { StorageCreationError } from "../errors.js"
@@ -129,8 +129,8 @@ export class IDBStorage implements AsyncStorage {
     })
   }
 
-  async get<D>(cacheKey: string, params: AsyncStorageParams<D> = {}) {
-    const { keySerializer, valueSerializer } = params
+  async get<D, F>(cacheKey: string, settings: AsyncStorageSettings<D, F> = {}) {
+    const { keySerializer, valueSerializer } = settings
 
     const key = keySerializer
       ? await keySerializer.stringify(cacheKey)
@@ -145,7 +145,7 @@ export class IDBStorage implements AsyncStorage {
 
     const state = valueSerializer
       ? await valueSerializer.parse(value as string)
-      : value as StoredState<D>
+      : value as StoredState<D, F>
 
     if (state.expiration !== undefined)
       this.#keys.set(key, state.expiration)
@@ -162,8 +162,8 @@ export class IDBStorage implements AsyncStorage {
     })
   }
 
-  async set<D>(cacheKey: string, state: StoredState<D>, params: AsyncStorageParams<D> = {}) {
-    const { keySerializer, valueSerializer } = params
+  async set<D, F>(cacheKey: string, state: StoredState<D, F>, settings: AsyncStorageSettings<D, F> = {}) {
+    const { keySerializer, valueSerializer } = settings
 
     const key = keySerializer
       ? await keySerializer.stringify(cacheKey)
@@ -190,8 +190,8 @@ export class IDBStorage implements AsyncStorage {
     })
   }
 
-  async delete<D>(cacheKey: string, params: AsyncStorageParams<D> = {}) {
-    const { keySerializer } = params
+  async delete<D, F>(cacheKey: string, settings: AsyncStorageSettings<D, F> = {}) {
+    const { keySerializer } = settings
 
     const key = keySerializer
       ? await keySerializer.stringify(cacheKey)

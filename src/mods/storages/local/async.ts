@@ -2,7 +2,7 @@ import { Err, Ok, Result } from "@hazae41/result"
 import { StoredState } from "mods/types/state.js"
 import { useEffect, useRef } from "react"
 import { StorageCreationError } from "../errors.js"
-import { AsyncStorage, AsyncStorageParams } from "../storage.js"
+import { AsyncStorage, AsyncStorageSettings } from "../storage.js"
 
 /**
  * Asynchronous local storage
@@ -85,8 +85,8 @@ export class AsyncLocalStorage implements AsyncStorage {
     }
   }
 
-  async get<D>(cacheKey: string, params: AsyncStorageParams<D> = {}) {
-    const { keySerializer, valueSerializer } = params
+  async get<D, F>(cacheKey: string, settings: AsyncStorageSettings<D, F> = {}) {
+    const { keySerializer, valueSerializer } = settings
 
     const key = keySerializer
       ? await keySerializer.stringify(cacheKey)
@@ -99,7 +99,7 @@ export class AsyncLocalStorage implements AsyncStorage {
 
     const state = valueSerializer
       ? await valueSerializer.parse(item)
-      : JSON.parse(item) as StoredState<D>
+      : JSON.parse(item) as StoredState<D, F>
 
     if (state.expiration !== undefined)
       this.#keys.set(key, state.expiration)
@@ -107,8 +107,8 @@ export class AsyncLocalStorage implements AsyncStorage {
     return state
   }
 
-  async set<D>(cacheKey: string, state: StoredState<D>, params: AsyncStorageParams<D> = {}) {
-    const { keySerializer, valueSerializer } = params
+  async set<D, F>(cacheKey: string, state: StoredState<D, F>, settings: AsyncStorageSettings<D, F> = {}) {
+    const { keySerializer, valueSerializer } = settings
 
     const key = keySerializer
       ? await keySerializer.stringify(cacheKey)
@@ -124,8 +124,8 @@ export class AsyncLocalStorage implements AsyncStorage {
     localStorage.setItem(this.prefix + key, item)
   }
 
-  async delete<D>(cacheKey: string, params: AsyncStorageParams<D> = {}) {
-    const { keySerializer } = params
+  async delete<D, F>(cacheKey: string, settings: AsyncStorageSettings<D, F> = {}) {
+    const { keySerializer } = settings
 
     const key = keySerializer
       ? await keySerializer.stringify(cacheKey)

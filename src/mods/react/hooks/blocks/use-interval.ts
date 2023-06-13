@@ -7,7 +7,7 @@ import { useEffect } from "react"
  * @param query 
  * @param interval 
  */
-export function useInterval(query: Query, interval: number) {
+export function useInterval<K, D, F>(query: Query<K, D, F>, interval: number) {
   const { ready, fetch } = query
 
   useEffect(() => {

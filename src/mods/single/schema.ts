@@ -3,35 +3,35 @@ import { Core } from "mods/core/core.js";
 import { Data } from "mods/result/data.js";
 import { Fetcher } from "mods/types/fetcher.js";
 import { NormalizerMore } from "mods/types/normalizer.js";
-import { QueryParams } from "mods/types/params.js";
 import { QuerySchema } from "mods/types/schema.js";
+import { QuerySettings } from "mods/types/settings.js";
 import { Simple } from "./helper.js";
 import { SimpleQueryInstance } from "./instance.js";
 
-export function createQuerySchema<D = unknown, K = string>(
+export function createQuerySchema<K, D, F>(
   key: Optional<K>,
-  fetcher: Optional<Fetcher<D, K>>,
-  params: QueryParams<D, K> = {},
+  fetcher: Optional<Fetcher<K, D, F>>,
+  settings: QuerySettings<K, D, F> = {},
 ) {
   if (key === undefined)
     return undefined
 
-  return new SimpleQuerySchema<D, K>(key, fetcher, params)
+  return new SimpleQuerySchema<K, D, F>(key, fetcher, settings)
 }
 
-export class SimpleQuerySchema<D = unknown, K = unknown> implements QuerySchema<D, K, SimpleQueryInstance<D, K>>  {
+export class SimpleQuerySchema<K, D, F> implements QuerySchema<K, D, F, SimpleQueryInstance<K, D, F>>  {
   readonly cacheKey: string
 
   constructor(
     readonly key: K,
-    readonly fetcher: Optional<Fetcher<D, K>>,
-    readonly params: QueryParams<D, K>
+    readonly fetcher: Optional<Fetcher<K, D, F>>,
+    readonly settings: QuerySettings<K, D, F>
   ) {
-    this.cacheKey = Simple.getCacheKey<D, K>(key, params)
+    this.cacheKey = Simple.getCacheKey(key, settings)
   }
 
   async make(core: Core) {
-    return await SimpleQueryInstance.make<D, K>(core, this.key, this.cacheKey, this.fetcher, this.params)
+    return await SimpleQueryInstance.make(core, this.key, this.cacheKey, this.fetcher, this.settings)
   }
 
   async normalize(data: D, more: NormalizerMore) {
@@ -44,6 +44,6 @@ export class SimpleQuerySchema<D = unknown, K = unknown> implements QuerySchema<
 
     await core.mutate(instance.cacheKey, () => {
       return new Some(new Data(data, times))
-    }, instance.params)
+    }, instance.settings)
   }
 }
