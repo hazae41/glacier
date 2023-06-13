@@ -95,6 +95,11 @@ export class AbortedError extends Error {
 
 }
 
+interface Counter {
+  value: number,
+  timeout?: NodeJS.Timeout
+}
+
 export class Core {
 
   readonly states = new Ortho<string, State<any, any>>()
@@ -104,8 +109,7 @@ export class Core {
 
   readonly #optimisers = new Map<string, Map<string, Mutator<any, any>>>()
 
-  readonly #counts = new Map<string, number>()
-  readonly #timeouts = new Map<string, NodeJS.Timeout>()
+  readonly #counters = new Mutex(new Map<string, Counter>())
 
   readonly #fetches = new Map<string, Mutex<void>>()
   readonly #replaces = new Map<string, Mutex<void>>()
@@ -123,8 +127,8 @@ export class Core {
   }
 
   clean() {
-    for (const timeout of this.#timeouts.values())
-      clearTimeout(timeout)
+    for (const counter of this.#counters.inner.values())
+      clearTimeout(counter.timeout)
     this.#mounted = false
   }
 
@@ -571,55 +575,59 @@ export class Core {
   }
 
   async increment<K, D, F>(cacheKey: string, settings: QuerySettings<K, D, F>) {
-    const count = this.#counts.get(cacheKey) ?? 0
-    this.#counts.set(cacheKey, count + 1)
+    await this.#counters.lock(async counts => {
+      let counter = counts.get(cacheKey)
 
-    const timeout = this.#timeouts.get(cacheKey)
+      if (counter === undefined) {
+        counter = { value: 0 }
+        counts.set(cacheKey, counter)
+      }
 
-    if (timeout === undefined)
-      return
-    clearTimeout(timeout)
-    this.#timeouts.delete(cacheKey)
+      counter.value++
+      clearTimeout(counter.timeout)
+    })
   }
 
   async decrement<K, D, F>(cacheKey: string, settings: QuerySettings<K, D, F>) {
-    const count = this.#counts.get(cacheKey)
-
-    if (count === undefined)
-      return
-
-    if (count > 1) {
-      this.#counts.set(cacheKey, count - 1)
-      return
-    }
-
-    this.#counts.delete(cacheKey)
-
-    const current = this.#states.get(cacheKey)
-
-    if (current?.real?.current.expiration === undefined)
-      return
-
-    const erase = async () => {
+    const eraseAfterTimeout = async () => {
       if (!this.#mounted)
         return
 
-      const count = this.#counts.get(cacheKey)
+      const counter = this.#counters.inner.get(cacheKey)
 
-      if (count !== undefined)
+      if (counter === undefined)
         return
 
-      this.#timeouts.delete(cacheKey)
+      if (counter.value > 0)
+        return
+
       await this.delete(cacheKey, settings)
     }
 
-    if (Date.now() > current.real.current.expiration) {
-      await erase()
-      return
-    }
+    await this.#counters.lock(async (counters) => {
+      const counter = counters.get(cacheKey)
 
-    const delay = current.real.current.expiration - Date.now()
-    const timeout = setTimeout(erase, delay)
-    this.#timeouts.set(cacheKey, timeout)
+      if (counter === undefined)
+        return
+
+      counter.value--
+
+      if (counter.value > 0)
+        return
+
+      const current = this.#states.get(cacheKey)
+      const expiration = current?.real?.current.expiration
+
+      if (expiration === undefined)
+        return
+
+      if (Date.now() > expiration) {
+        await this.delete(cacheKey, settings)
+        return
+      }
+
+      const delay = expiration - Date.now()
+      counter.timeout = setTimeout(eraseAfterTimeout, delay)
+    })
   }
 }
