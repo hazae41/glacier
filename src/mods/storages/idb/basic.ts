@@ -1,3 +1,4 @@
+import { Optional } from "@hazae41/option"
 import { Err, Ok, Result } from "@hazae41/result"
 import { AsyncStorage, AsyncStorageSettings } from "mods/storages/storage.js"
 import { StoredState } from "mods/types/state.js"
@@ -121,7 +122,7 @@ export class IDBStorage implements AsyncStorage {
   }
 
   #get<T>(store: IDBObjectStore, key: string) {
-    return new Promise<T | undefined>((ok, err) => {
+    return new Promise<Optional<T>>((ok, err) => {
       const req = store.get(key)
 
       req.onerror = () => err(req.error)
@@ -129,7 +130,7 @@ export class IDBStorage implements AsyncStorage {
     })
   }
 
-  async get<D, F>(cacheKey: string, settings: AsyncStorageSettings<D, F> = {}) {
+  async get<D, F>(cacheKey: string, settings: AsyncStorageSettings<D, F>) {
     const { keySerializer, valueSerializer } = settings
 
     const key = keySerializer
@@ -162,7 +163,7 @@ export class IDBStorage implements AsyncStorage {
     })
   }
 
-  async set<D, F>(cacheKey: string, state: StoredState<D, F>, settings: AsyncStorageSettings<D, F> = {}) {
+  async set<D, F>(cacheKey: string, state: StoredState<D, F>, settings: AsyncStorageSettings<D, F>) {
     const { keySerializer, valueSerializer } = settings
 
     const key = keySerializer
@@ -190,7 +191,7 @@ export class IDBStorage implements AsyncStorage {
     })
   }
 
-  async delete<D, F>(cacheKey: string, settings: AsyncStorageSettings<D, F> = {}) {
+  async delete<D, F>(cacheKey: string, settings: AsyncStorageSettings<D, F>) {
     const { keySerializer } = settings
 
     const key = keySerializer

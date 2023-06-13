@@ -1,3 +1,4 @@
+import { Optional } from "@hazae41/option"
 import { Panic } from "@hazae41/result"
 import { ChildrenProps } from "libs/react/props/children.js"
 import { Core } from "mods/core/core.js"
@@ -6,7 +7,7 @@ import * as React from "react"
 import { createContext, useContext, useEffect, useRef } from "react"
 
 export const CoreContext =
-  createContext<Core | undefined>(undefined)
+  createContext<Optional<Core>>(undefined)
 
 export function useCore() {
   const core = useContext(CoreContext)

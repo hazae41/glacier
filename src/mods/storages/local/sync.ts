@@ -79,7 +79,7 @@ export class SyncLocalStorage implements SyncStorage {
     }
   }
 
-  get<D, F>(cacheKey: string, settings: SyncStorageSettings<D, F> = {}) {
+  get<D, F>(cacheKey: string, settings: SyncStorageSettings<D, F>) {
     const { keySerializer, valueSerializer } = settings
 
     const key = keySerializer
@@ -101,7 +101,7 @@ export class SyncLocalStorage implements SyncStorage {
     return state
   }
 
-  set<D, F>(cacheKey: string, state: StoredState<D, F>, settings: SyncStorageSettings<D, F> = {}) {
+  set<D, F>(cacheKey: string, state: StoredState<D, F>, settings: SyncStorageSettings<D, F>) {
     const { keySerializer, valueSerializer } = settings
 
     const key = keySerializer
@@ -118,7 +118,7 @@ export class SyncLocalStorage implements SyncStorage {
     localStorage.setItem(this.prefix + key, item)
   }
 
-  delete<D, F>(cacheKey: string, settings: SyncStorageSettings<D, F> = {}) {
+  delete<D, F>(cacheKey: string, settings: SyncStorageSettings<D, F>) {
     const { keySerializer } = settings
 
     const key = keySerializer

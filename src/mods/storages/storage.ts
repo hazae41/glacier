@@ -1,3 +1,4 @@
+import { Optional } from "@hazae41/option"
 import { Promiseable } from "libs/promises/promises.js"
 import { AsyncCoder, AsyncEncoder, SyncCoder, SyncEncoder } from "mods/serializers/serializer.js"
 import { StoredState } from "mods/types/state.js"
@@ -35,7 +36,7 @@ export interface SyncStorage {
    * @param shallow true = won't add this key to the garbage collector
    * @returns 
    */
-  get<D, F>(cacheKey: string, settings?: SyncStorageSettings<D, F>): StoredState<D, F> | undefined
+  get<D, F>(cacheKey: string, settings?: SyncStorageSettings<D, F>): Optional<StoredState<D, F>>
 
   /**
    * Set the given data to the given key
@@ -74,7 +75,7 @@ export interface AsyncStorage {
    * @param shallow true = won't add this key to the garbage collector
    * @returns 
    */
-  get<D, F>(key: string, settings?: AsyncStorageSettings<D, F>): Promiseable<StoredState<D, F> | undefined>
+  get<D, F>(key: string, settings?: AsyncStorageSettings<D, F>): Promiseable<Optional<StoredState<D, F>>>
 
   /**
    * Set the given data to the given key

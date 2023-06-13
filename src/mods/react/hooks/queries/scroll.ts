@@ -1,4 +1,4 @@
-import { Option } from "@hazae41/option";
+import { Option, Optional } from "@hazae41/option";
 import { Err, Ok, Result } from "@hazae41/result";
 import { Arrays } from "libs/arrays/arrays.js";
 import { useRenderRef } from "libs/react/ref.js";
@@ -15,7 +15,7 @@ import { State } from "mods/types/state.js";
 import { DependencyList, useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 export type ScrollSchemaFactory<K, D, F, DL extends DependencyList> =
-  (...deps: DL) => ScrollQuerySchema<K, D, F> | undefined
+  (...deps: DL) => Optional<ScrollQuerySchema<K, D, F>>
 
 export function useScrollQuery<K, D, F, DL extends DependencyList>(
   factory: ScrollSchemaFactory<K, D, F, DL>,
@@ -40,7 +40,7 @@ export interface ScrollQuery<K, D, F> extends Query<K, D[], F> {
   /**
    * The next key to be fetched
    */
-  peek(): K | undefined
+  peek(): Optional<K>
 }
 
 /**
@@ -51,8 +51,8 @@ export interface ScrollQuery<K, D, F> extends Query<K, D[], F> {
  * @returns 
  */
 export function useAnonymousScrollQuery<K, D, F>(
-  scroller: Scroller<K, D, F> | undefined,
-  fetcher: Fetcher<K, D, F> | undefined,
+  scroller: Optional<Scroller<K, D, F>>,
+  fetcher: Optional<Fetcher<K, D, F>>,
   settings: QuerySettings<K, D[], F> = {},
 ): ScrollQuery<K, D, F> {
   const core = useCore()

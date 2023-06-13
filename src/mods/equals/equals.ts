@@ -1,5 +1,7 @@
+import { Optional } from "@hazae41/option"
+
 export type Equalser =
-  (a: unknown, b: unknown) => boolean | undefined
+  (a: unknown, b: unknown) => Optional<boolean>
 
 export namespace Equals {
 

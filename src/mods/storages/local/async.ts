@@ -85,7 +85,7 @@ export class AsyncLocalStorage implements AsyncStorage {
     }
   }
 
-  async get<D, F>(cacheKey: string, settings: AsyncStorageSettings<D, F> = {}) {
+  async get<D, F>(cacheKey: string, settings: AsyncStorageSettings<D, F>) {
     const { keySerializer, valueSerializer } = settings
 
     const key = keySerializer
@@ -107,7 +107,7 @@ export class AsyncLocalStorage implements AsyncStorage {
     return state
   }
 
-  async set<D, F>(cacheKey: string, state: StoredState<D, F>, settings: AsyncStorageSettings<D, F> = {}) {
+  async set<D, F>(cacheKey: string, state: StoredState<D, F>, settings: AsyncStorageSettings<D, F>) {
     const { keySerializer, valueSerializer } = settings
 
     const key = keySerializer
@@ -124,7 +124,7 @@ export class AsyncLocalStorage implements AsyncStorage {
     localStorage.setItem(this.prefix + key, item)
   }
 
-  async delete<D, F>(cacheKey: string, settings: AsyncStorageSettings<D, F> = {}) {
+  async delete<D, F>(cacheKey: string, settings: AsyncStorageSettings<D, F>) {
     const { keySerializer } = settings
 
     const key = keySerializer

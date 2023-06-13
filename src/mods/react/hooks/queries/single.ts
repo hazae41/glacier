@@ -47,8 +47,8 @@ export interface SingleQuery<K, D, F> extends Query<K, D, F> {
  * @returns 
  */
 export function useAnonymousQuery<K, D, F>(
-  key: K | undefined,
-  fetcher: Fetcher<K, D, F> | undefined,
+  key: Optional<K>,
+  fetcher: Optional<Fetcher<K, D, F>>,
   settings: QuerySettings<K, D, F> = {},
 ): SingleQuery<K, D, F> {
   const core = useCore()
