@@ -1,5 +1,5 @@
-import { TimesInit } from "index.js"
 import { Core } from "mods/core/core.js"
+import { TimesInit } from "mods/result/times.js"
 
 export type Normalizer<D = unknown> =
   (data: D, more: NormalizerMore) => Promise<D>

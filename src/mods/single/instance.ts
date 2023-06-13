@@ -1,11 +1,12 @@
 import { Optional } from "@hazae41/option";
 import { Err, Ok } from "@hazae41/result";
-import { State, TimesInit } from "index.js";
 import { Core, MissingFetcherError } from "mods/core/core.js";
+import { TimesInit } from "mods/result/times.js";
 import { Fetcher } from "mods/types/fetcher.js";
 import { Instance } from "mods/types/instance.js";
 import { Mutator } from "mods/types/mutator.js";
 import { QueryParams } from "mods/types/params.js";
+import { State } from "mods/types/state.js";
 import { Updater } from "mods/types/updater.js";
 import { Simple } from "./helper.js";
 

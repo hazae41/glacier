@@ -1,6 +1,6 @@
 import { Option, Optional } from "@hazae41/option"
-import { FetchedInit } from "index.js"
 import { Promiseable } from "libs/promises/promises.js"
+import { FetchedInit } from "mods/result/fetched.js"
 import { State } from "./state.js"
 
 export type Mutator<D = unknown> =

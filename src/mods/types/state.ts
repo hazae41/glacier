@@ -1,4 +1,6 @@
-import { Data, Fail } from "index.js"
+import { Data } from "mods/result/data.js"
+import { Fail } from "mods/result/fail.js"
+
 
 export type StoredState<D = unknown, F = unknown> =
   | StoredState1<D, F>
