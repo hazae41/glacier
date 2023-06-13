@@ -1,6 +1,6 @@
 import { Mutex } from "@hazae41/mutex"
 import { Option, Optional, Some } from "@hazae41/option"
-import { Err, Ok, Panic, Result } from "@hazae41/result"
+import { Err, Ok, Result } from "@hazae41/result"
 import { Ortho } from "libs/ortho/ortho.js"
 import { Promiseable } from "libs/promises/promises.js"
 import { Time } from "libs/time/time.js"
@@ -173,15 +173,15 @@ export class Core {
     this.#aborters.get(cacheKey)?.abort(`Replaced`)
 
     return await mutex.lock(async () => {
-      this.#aborters.set(cacheKey, aborter)
-      this.aborters.publish(cacheKey, aborter)
+      try {
+        this.#aborters.set(cacheKey, aborter)
+        this.aborters.publish(cacheKey, aborter)
 
-      const result = await callback()
-
-      this.#aborters.delete(cacheKey)
-      this.aborters.publish(cacheKey, undefined)
-
-      return result
+        return await callback()
+      } finally {
+        this.#aborters.delete(cacheKey)
+        this.aborters.publish(cacheKey, undefined)
+      }
     })
   }
 
@@ -200,6 +200,7 @@ export class Core {
 
     if (settings.storage.storage.async)
       return new Err(new AsyncStorageError())
+
     const stored = settings.storage.storage.get<D, F>(cacheKey, settings.storage as any)
 
     if (stored === undefined) {
@@ -231,7 +232,10 @@ export class Core {
         return new Ok(state)
       }
 
-      throw new Panic(`Invalid stored state`)
+      const state = new RealState<D, F>(undefined)
+      this.#states.set(cacheKey, state)
+      this.states.publish(cacheKey, state)
+      return new Ok(state)
     }
 
     const { time, cooldown, expiration } = stored
@@ -255,7 +259,10 @@ export class Core {
       return new Ok(state)
     }
 
-    throw new Panic(`Invalid stored state`)
+    const state = new RealState<D, F>(undefined)
+    this.#states.set(cacheKey, state)
+    this.states.publish(cacheKey, state)
+    return new Ok(state)
   }
 
   async get<K, D, F>(cacheKey: string, settings: QuerySettings<K, D, F>): Promise<State<D, F>> {
@@ -302,7 +309,10 @@ export class Core {
         return state
       }
 
-      throw new Panic(`Invalid stored state`)
+      const state = new RealState<D, F>(undefined)
+      this.#states.set(cacheKey, state)
+      this.states.publish(cacheKey, state)
+      return state
     }
 
     const { time, cooldown, expiration } = stored
@@ -326,7 +336,10 @@ export class Core {
       return state
     }
 
-    throw new Panic(`Invalid stored state`)
+    const state = new RealState<D, F>(undefined)
+    this.#states.set(cacheKey, state)
+    this.states.publish(cacheKey, state)
+    return state
   }
 
   async #replace<K, D, F>(cacheKey: string, setter: Setter<D, F>, settings: QuerySettings<K, D, F>) {
@@ -573,7 +586,7 @@ export class Core {
     const count = this.#counts.get(cacheKey)
 
     if (count === undefined)
-      throw new Panic(`Count is undefined`)
+      return
 
     if (count > 1) {
       this.#counts.set(cacheKey, count - 1)

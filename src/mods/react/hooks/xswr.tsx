@@ -7,7 +7,7 @@ export type Maker = <K, D, F, O extends Instance<K, D, F>>(
 ) => Promise<O>
 
 export function useXSWR() {
-  const core = useCore()
+  const core = useCore().unwrap()
 
   const make = useCallback<Maker>(async (schema) => {
     return await schema.make(core)

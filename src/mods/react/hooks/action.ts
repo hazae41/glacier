@@ -25,7 +25,7 @@ export function useAnonymousAction<K, D, F, P extends []>(
   settings: QuerySettings<K, D, F>,
   deps: DependencyList
 ) {
-  const core = useCore()
+  const core = useCore().unwrap()
 
   const settingsRef = useRenderRef(settings)
 

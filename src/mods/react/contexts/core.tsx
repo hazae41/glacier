@@ -1,5 +1,4 @@
-import { Optional } from "@hazae41/option"
-import { Panic } from "@hazae41/result"
+import { Option, Optional } from "@hazae41/option"
 import { ChildrenProps } from "libs/react/props/children.js"
 import { Core } from "mods/core/core.js"
 import { GlobalSettings } from "mods/types/settings.js"
@@ -10,12 +9,7 @@ export const CoreContext =
   createContext<Optional<Core>>(undefined)
 
 export function useCore() {
-  const core = useContext(CoreContext)
-
-  if (core === undefined)
-    throw new Panic(`Core is undefined`)
-
-  return core
+  return Option.from(useContext(CoreContext))
 }
 
 export function useCoreProvider(settings: GlobalSettings) {

@@ -55,7 +55,7 @@ export function useAnonymousScrollQuery<K, D, F>(
   fetcher: Optional<Fetcher<K, D, F>>,
   settings: QuerySettings<K, D[], F> = {},
 ): ScrollQuery<K, D, F> {
-  const core = useCore()
+  const core = useCore().unwrap()
 
   const scrollerRef = useRenderRef(scroller)
   const fetcherRef = useRenderRef(fetcher)

@@ -51,7 +51,7 @@ export function useAnonymousQuery<K, D, F>(
   fetcher: Optional<Fetcher<K, D, F>>,
   settings: QuerySettings<K, D, F> = {},
 ): SingleQuery<K, D, F> {
-  const core = useCore()
+  const core = useCore().unwrap()
 
   const keyRef = useRenderRef(key)
   const fetcherRef = useRenderRef(fetcher)
