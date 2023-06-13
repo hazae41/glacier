@@ -11,19 +11,19 @@ import { SimpleQueryInstance } from "./instance.js";
 export function createQuerySchema<K extends undefined, D, F>(
   key: undefined,
   fetcher: Optional<Fetcher<K, D, F>>,
-  settings: Optional<QuerySettings<K, D, F>>
+  settings?: Optional<QuerySettings<K, D, F>>
 ): undefined
 
 export function createQuerySchema<K, D, F>(
   key: NonOptional<K>,
   fetcher: Optional<Fetcher<K, D, F>>,
-  settings: Optional<QuerySettings<K, D, F>>
+  settings?: Optional<QuerySettings<K, D, F>>
 ): SimpleQuerySchema<K, D, F>
 
 export function createQuerySchema<K, D, F>(
   key: Optional<K>,
   fetcher: Optional<Fetcher<K, D, F>>,
-  settings: Optional<QuerySettings<K, D, F>>,
+  settings?: Optional<QuerySettings<K, D, F>>,
 ): Optional<SimpleQuerySchema<K, D, F>>
 
 export function createQuerySchema<K, D, F>(
