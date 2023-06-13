@@ -116,7 +116,11 @@ export class Core {
 
   constructor(
     readonly settings: GlobalSettings
-  ) { }
+  ) {
+    new FinalizationRegistry(() => {
+      this.#clean()
+    }).register(this, undefined)
+  }
 
   get mounted() {
     return this.#mounted
@@ -126,9 +130,13 @@ export class Core {
     this.#mounted = true
   }
 
-  unmount() {
+  #clean() {
     for (const timeout of this.#timeouts.values())
       clearTimeout(timeout)
+  }
+
+  unmount() {
+    this.#clean()
     this.#mounted = false
   }
 
