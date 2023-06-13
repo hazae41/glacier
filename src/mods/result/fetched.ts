@@ -3,7 +3,7 @@ import { Data, DataInit } from "./data.js"
 import { Fail, FailInit } from "./fail.js"
 import { Times, TimesInit } from "./times.js"
 
-export type FetchedInit<D = unknown, F = unknown> =
+export type FetchedInit<D, F> =
   | DataInit<D>
   | FailInit<F>
 
@@ -15,7 +15,7 @@ export namespace FetchedInit {
 
 }
 
-export type Fetched<D = unknown, F = unknown> =
+export type Fetched<D, F> =
   | Data<D>
   | Fail<F>
 

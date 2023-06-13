@@ -2,7 +2,7 @@ import { Err } from "@hazae41/result"
 import { Promiseable } from "libs/promises/promises.js"
 import { Times, TimesInit } from "./times.js"
 
-export interface FailInit<T = unknown> extends TimesInit {
+export interface FailInit<T> extends TimesInit {
   readonly error: T
 }
 
@@ -22,7 +22,7 @@ export namespace Fail {
 
 }
 
-export class Fail<T = unknown> extends Err<T> implements FailInit<T>, Times {
+export class Fail<T> extends Err<T> implements FailInit<T>, Times {
 
   readonly error: T
 

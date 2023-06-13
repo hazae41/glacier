@@ -64,7 +64,7 @@ export class RealState<D, F> {
 
 }
 
-export class FakeState<D = unknown, F = unknown>  {
+export class FakeState<D, F>  {
 
   constructor(
     readonly fake?: FetchedState<D, F>,
@@ -93,11 +93,11 @@ export class FakeState<D = unknown, F = unknown>  {
 
 }
 
-export type FetchedState<D = unknown, F = unknown> =
+export type FetchedState<D, F> =
   | DataState<D, F>
   | FailState<D, F>
 
-export class DataState<D = unknown, F = unknown> {
+export class DataState<D, F> {
 
   constructor(
     readonly data: Data<D>
@@ -113,7 +113,7 @@ export class DataState<D = unknown, F = unknown> {
 
 }
 
-export class FailState<D = unknown, F = unknown> {
+export class FailState<D, F> {
 
   constructor(
     readonly error: Fail<F>,
