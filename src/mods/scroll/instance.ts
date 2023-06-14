@@ -1,5 +1,5 @@
 import { Option, Optional } from "@hazae41/option";
-import { Err, Ok, Result } from "@hazae41/result";
+import { Err, Result } from "@hazae41/result";
 import { Arrays } from "libs/arrays/arrays.js";
 import { AbortedError, CooldownError, Core, MissingFetcherError, PendingFetchError, ScrollError } from "mods/core/core.js";
 import { Fetcher } from "mods/types/fetcher.js";
@@ -81,12 +81,12 @@ export class ScrollQueryInstance<K, D, F>  {
     return this.scroller?.(Option.mapSync(this.state.real?.data?.inner, Arrays.last))
   }
 
-  async mutate(mutator: Mutator<D[], F>): Promise<Ok<State<D[], F>>> {
-    return new Ok(await this.core.mutate(this.cacheKey, mutator, this.settings))
+  async mutate(mutator: Mutator<D[], F>) {
+    return await this.core.mutate(this.cacheKey, mutator, this.settings)
   }
 
-  async delete(): Promise<Ok<State<D[], F>>> {
-    return new Ok(await this.core.delete(this.cacheKey, this.settings))
+  async delete() {
+    return await this.core.delete(this.cacheKey, this.settings)
   }
 
   async fetch(aborter = new AbortController()): Promise<Result<State<D[], F>, AbortedError | CooldownError | ScrollError | MissingFetcherError | PendingFetchError>> {
