@@ -91,7 +91,7 @@ export class SimpleQueryInstance<K, D, F>  {
     })
   }
 
-  async refetch(aborter = new AbortController()): Promise<Result<State<D, F>, AbortedError | CooldownError | MissingFetcherError>> {
+  async refetch(aborter = new AbortController()): Promise<Result<State<D, F>, AbortedError | MissingFetcherError>> {
     const { core, key, cacheKey, fetcher, settings } = this
 
     if (fetcher === undefined)

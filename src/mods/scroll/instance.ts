@@ -100,7 +100,7 @@ export class ScrollQueryInstance<K, D, F>  {
     })
   }
 
-  async refetch(aborter = new AbortController()): Promise<Result<State<D[], F>, AbortedError | CooldownError | ScrollError | MissingFetcherError>> {
+  async refetch(aborter = new AbortController()): Promise<Result<State<D[], F>, AbortedError | ScrollError | MissingFetcherError>> {
     const { core, scroller, cacheKey, fetcher, settings } = this
 
     if (fetcher === undefined)
@@ -111,7 +111,7 @@ export class ScrollQueryInstance<K, D, F>  {
     })
   }
 
-  async scroll(aborter = new AbortController()): Promise<Result<State<D[], F>, AbortedError | CooldownError | ScrollError | MissingFetcherError>> {
+  async scroll(aborter = new AbortController()): Promise<Result<State<D[], F>, AbortedError | ScrollError | MissingFetcherError>> {
     const { core, scroller, cacheKey, fetcher, settings } = this
 
     if (fetcher === undefined)
