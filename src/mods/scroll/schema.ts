@@ -3,7 +3,6 @@ import { Core } from "mods/core/core.js";
 import { Data } from "mods/result/data.js";
 import { Fetcher } from "mods/types/fetcher.js";
 import { NormalizerMore } from "mods/types/normalizer.js";
-import { QuerySchema } from "mods/types/schema.js";
 import { Scroller } from "mods/types/scroller.js";
 import { QuerySettings } from "mods/types/settings.js";
 import { Scroll } from "./helper.js";
@@ -22,7 +21,7 @@ export function createScrollQuerySchema<K, D, F>(
   return new ScrollQuerySchema<K, D, F>(key, scroller, fetcher, settings)
 }
 
-export class ScrollQuerySchema<K, D, F> implements QuerySchema<K, D, F, ScrollQueryInstance<K, D, F>> {
+export class ScrollQuerySchema<K, D, F> {
   readonly cacheKey: string
 
   constructor(

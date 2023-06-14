@@ -1,16 +1,19 @@
+import { Core } from "mods/core/core.js"
 import { useCore } from "mods/react/contexts/core.js"
-import { Instance, QuerySchema } from "mods/types/schema.js"
 import { useCallback } from "react"
 
-export type Maker = <K, D, F, O extends Instance<K, D, F>>(
-  schema: QuerySchema<K, D, F, O>
-) => Promise<O>
+export interface Makeable<T> {
+  make(core: Core): Promise<T>
+}
+
+export type Maker =
+  <T>(makeable: Makeable<T>) => Promise<T>
 
 export function useXSWR() {
   const core = useCore().unwrap()
 
-  const make = useCallback<Maker>(async (schema) => {
-    return await schema.make(core)
+  const make = useCallback<Maker>(async (makeable) => {
+    return await makeable.make(core)
   }, [core])
 
   return { core, make }
