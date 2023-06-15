@@ -1,8 +1,8 @@
 import { Option, Optional } from "@hazae41/option";
 import { Err, Result } from "@hazae41/result";
 import { Arrays } from "libs/arrays/arrays.js";
-import { AbortedError, CooldownError, Core, MissingFetcherError, PendingFetchError, ScrollError } from "mods/core/core.js";
-import { Fetcher } from "mods/types/fetcher.js";
+import { CooldownError, Core, MissingFetcherError, PendingFetchError, ScrollError } from "mods/core/core.js";
+import { FetchError, Fetcher } from "mods/types/fetcher.js";
 import { Mutator } from "mods/types/mutator.js";
 import { Scroller } from "mods/types/scroller.js";
 import { QuerySettings } from "mods/types/settings.js";
@@ -89,7 +89,7 @@ export class ScrollQueryInstance<K, D, F>  {
     return await this.core.delete(this.cacheKey, this.settings)
   }
 
-  async fetch(aborter = new AbortController()): Promise<Result<State<D[], F>, AbortedError | CooldownError | ScrollError | MissingFetcherError | PendingFetchError>> {
+  async fetch(aborter = new AbortController()): Promise<Result<State<D[], F>, FetchError | CooldownError | ScrollError | MissingFetcherError | PendingFetchError>> {
     const { core, scroller, cacheKey, fetcher, settings } = this
 
     if (fetcher === undefined)
@@ -100,7 +100,7 @@ export class ScrollQueryInstance<K, D, F>  {
     })
   }
 
-  async refetch(aborter = new AbortController()): Promise<Result<State<D[], F>, AbortedError | ScrollError | MissingFetcherError>> {
+  async refetch(aborter = new AbortController()): Promise<Result<State<D[], F>, FetchError | ScrollError | MissingFetcherError>> {
     const { core, scroller, cacheKey, fetcher, settings } = this
 
     if (fetcher === undefined)
@@ -111,7 +111,7 @@ export class ScrollQueryInstance<K, D, F>  {
     })
   }
 
-  async scroll(aborter = new AbortController()): Promise<Result<State<D[], F>, AbortedError | ScrollError | MissingFetcherError>> {
+  async scroll(aborter = new AbortController()): Promise<Result<State<D[], F>, FetchError | ScrollError | MissingFetcherError>> {
     const { core, scroller, cacheKey, fetcher, settings } = this
 
     if (fetcher === undefined)

@@ -1,6 +1,6 @@
 import { Err, Ok, Result } from "@hazae41/result";
-import { AbortedError, CooldownError, Core, MissingFetcherError, PendingFetchError } from "mods/core/core.js";
-import { Fetcher } from "mods/types/fetcher.js";
+import { CooldownError, Core, MissingFetcherError, PendingFetchError } from "mods/core/core.js";
+import { FetchError, Fetcher } from "mods/types/fetcher.js";
 import { Mutator } from "mods/types/mutator.js";
 import { QuerySettings } from "mods/types/settings.js";
 import { State } from "mods/types/state.js";
@@ -169,7 +169,7 @@ export class SimpleFetcherfulQueryInstance<K, D, F>  {
     return await this.core.delete(this.cacheKey, this.settings)
   }
 
-  async fetch(aborter = new AbortController()): Promise<Result<State<D, F>, AbortedError | CooldownError | PendingFetchError>> {
+  async fetch(aborter = new AbortController()): Promise<Result<State<D, F>, FetchError | CooldownError | PendingFetchError>> {
     const { core, key, cacheKey, fetcher, settings } = this
 
     return await core.lockOrError(cacheKey, aborter, async () => {
@@ -177,7 +177,7 @@ export class SimpleFetcherfulQueryInstance<K, D, F>  {
     })
   }
 
-  async refetch(aborter = new AbortController()): Promise<Result<State<D, F>, AbortedError>> {
+  async refetch(aborter = new AbortController()): Promise<Result<State<D, F>, FetchError>> {
     const { core, key, cacheKey, fetcher, settings } = this
 
     return await core.abortAndLock(cacheKey, aborter, async () => {
@@ -185,7 +185,7 @@ export class SimpleFetcherfulQueryInstance<K, D, F>  {
     })
   }
 
-  async update(updater: Updater<K, D, F>, aborter = new AbortController()): Promise<Result<State<D, F>, AbortedError>> {
+  async update(updater: Updater<K, D, F>, aborter = new AbortController()): Promise<Result<State<D, F>, FetchError>> {
     const { core, key, cacheKey, fetcher, settings } = this
 
     return await Simple.update(core, key, cacheKey, fetcher, updater, aborter, settings)

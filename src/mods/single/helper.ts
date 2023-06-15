@@ -1,11 +1,11 @@
 import { Option, Some } from "@hazae41/option";
 import { Err, Ok, Result } from "@hazae41/result";
 import { Time } from "libs/time/time.js";
-import { AbortedError, CooldownError, Core } from "mods/core/core.js";
+import { CooldownError, Core } from "mods/core/core.js";
 import { DEFAULT_SERIALIZER } from "mods/defaults.js";
 import { Fetched } from "mods/result/fetched.js";
 import { TimesInit } from "mods/result/times.js";
-import { Fetcher } from "mods/types/fetcher.js";
+import { FetchError, Fetcher } from "mods/types/fetcher.js";
 import { QuerySettings } from "mods/types/settings.js";
 import { State } from "mods/types/state.js";
 import { Updater } from "mods/types/updater.js";
@@ -28,8 +28,8 @@ export namespace Simple {
     fetcher: Fetcher<K, D, F>,
     aborter: AbortController,
     settings: QuerySettings<K, D, F>
-  ): Promise<Result<State<D, F>, AbortedError>> {
-    const aborted = await core.runWithTimeout(async signal => {
+  ): Promise<Result<State<D, F>, FetchError>> {
+    const aborted = await core.fetchWithTimeout(async signal => {
       return await fetcher(key, { signal })
     }, aborter, settings.timeout)
 
@@ -59,7 +59,7 @@ export namespace Simple {
     fetcher: Fetcher<K, D, F>,
     aborter: AbortController,
     settings: QuerySettings<K, D, F>
-  ): Promise<Result<State<D, F>, AbortedError | CooldownError>> {
+  ): Promise<Result<State<D, F>, FetchError | CooldownError>> {
     const previous = await core.get(cacheKey, settings)
 
     if (Time.isAfterNow(previous.real?.current.cooldown))
@@ -75,7 +75,7 @@ export namespace Simple {
     fetcher: Fetcher<K, D, F>,
     aborter: AbortController,
     settings: QuerySettings<K, D, F>
-  ): Promise<Result<State<D, F>, AbortedError>> {
+  ): Promise<Result<State<D, F>, FetchError>> {
     const previous = await core.get(cacheKey, settings)
 
     const cooldown = Option
@@ -107,7 +107,7 @@ export namespace Simple {
     updater: Updater<K, D, F>,
     aborter: AbortController,
     settings: QuerySettings<K, D, F>
-  ): Promise<Result<State<D, F>, AbortedError>> {
+  ): Promise<Result<State<D, F>, FetchError>> {
     const uuid = crypto.randomUUID()
 
     try {
@@ -120,7 +120,7 @@ export namespace Simple {
 
       const fetcher2 = result.value ?? fetcher
 
-      const aborted = await core.runWithTimeout(async (signal) => {
+      const aborted = await core.fetchWithTimeout(async (signal) => {
         return await fetcher2(key, { signal, cache: "reload" })
       }, aborter, settings.timeout)
 

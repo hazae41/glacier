@@ -2,11 +2,11 @@ import { Option, Some } from "@hazae41/option";
 import { Err, Ok, Result } from "@hazae41/result";
 import { Arrays } from "libs/arrays/arrays.js";
 import { Time } from "libs/time/time.js";
-import { AbortedError, CooldownError, Core, ScrollError } from "mods/core/core.js";
+import { CooldownError, Core, ScrollError } from "mods/core/core.js";
 import { DEFAULT_EQUALS, DEFAULT_SERIALIZER } from "mods/defaults.js";
 import { Fetched } from "mods/result/fetched.js";
 import { TimesInit } from "mods/result/times.js";
-import { Fetcher } from "mods/types/fetcher.js";
+import { FetchError, Fetcher } from "mods/types/fetcher.js";
 import { Scroller } from "mods/types/scroller.js";
 import { QuerySettings } from "mods/types/settings.js";
 import { State } from "mods/types/state.js";
@@ -39,7 +39,7 @@ export namespace Scroll {
     fetcher: Fetcher<K, D, F>,
     aborter: AbortController,
     settings: QuerySettings<K, D[], F>
-  ): Promise<Result<State<D[], F>, AbortedError | ScrollError>> {
+  ): Promise<Result<State<D[], F>, FetchError | ScrollError>> {
     const { equals = DEFAULT_EQUALS } = settings
 
     const key = scroller(undefined)
@@ -47,7 +47,7 @@ export namespace Scroll {
     if (key === undefined)
       return new Err(new ScrollError())
 
-    const aborted = await core.runWithTimeout(async (signal) => {
+    const aborted = await core.fetchWithTimeout(async (signal) => {
       return await fetcher(key, { signal })
     }, aborter, settings.timeout)
 
@@ -77,7 +77,7 @@ export namespace Scroll {
     fetcher: Fetcher<K, D, F>,
     aborter: AbortController,
     settings: QuerySettings<K, D[], F>
-  ): Promise<Result<State<D[], F>, AbortedError | CooldownError | ScrollError>> {
+  ): Promise<Result<State<D[], F>, FetchError | CooldownError | ScrollError>> {
     const previous = await core.get(cacheKey, settings)
 
     if (Time.isAfterNow(previous.real?.current.cooldown))
@@ -93,7 +93,7 @@ export namespace Scroll {
     fetcher: Fetcher<K, D, F>,
     aborter: AbortController,
     settings: QuerySettings<K, D[], F>
-  ): Promise<Result<State<D[], F>, AbortedError | CooldownError | ScrollError>> {
+  ): Promise<Result<State<D[], F>, FetchError | CooldownError | ScrollError>> {
     const previous = await core.get(cacheKey, settings)
 
     const cooldown = Option
@@ -125,7 +125,7 @@ export namespace Scroll {
     fetcher: Fetcher<K, D, F>,
     aborter: AbortController,
     settings: QuerySettings<K, D[], F>
-  ): Promise<Result<State<D[], F>, AbortedError | ScrollError>> {
+  ): Promise<Result<State<D[], F>, FetchError | ScrollError>> {
     const previous = await core.get(cacheKey, settings)
     const previousPages = previous.real?.data?.inner ?? []
     const previousPage = Arrays.last(previousPages)
@@ -134,7 +134,7 @@ export namespace Scroll {
     if (key === undefined)
       return new Err(new ScrollError())
 
-    const aborted = await core.runWithTimeout(async (signal) => {
+    const aborted = await core.fetchWithTimeout(async (signal) => {
       return await fetcher(key, { signal })
     }, aborter, settings.timeout)
 

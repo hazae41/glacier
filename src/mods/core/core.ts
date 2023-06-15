@@ -8,6 +8,7 @@ import { DEFAULT_EQUALS } from "mods/defaults.js"
 import { Data } from "mods/result/data.js"
 import { Fail } from "mods/result/fail.js"
 import { Fetched } from "mods/result/fetched.js"
+import { FetchError } from "mods/types/fetcher.js"
 import { Mutator, Setter } from "mods/types/mutator.js"
 import { GlobalSettings, QuerySettings } from "mods/types/settings.js"
 import { DataState, FailState, FakeState, RealState, State, StoredState } from "mods/types/state.js"
@@ -81,16 +82,6 @@ export class MissingFetcherError extends Error {
 
   constructor() {
     super(`Missing a fetcher`)
-  }
-
-}
-
-export class AbortedError extends Error {
-  readonly #class = AbortedError
-  readonly name = this.#class.name
-
-  static from(cause: unknown) {
-    return new AbortedError(`Aborted`, { cause })
   }
 
 }
@@ -521,22 +512,19 @@ export class Core {
     this.#getOrCreateOptimizers(cacheKey).delete(uuid)
   }
 
-  async runWithTimeout<T>(
-    callback: (signal: AbortSignal) => Promiseable<T>,
+  async fetchWithTimeout<T>(
+    callback: (signal: AbortSignal) => Promiseable<Result<T, FetchError>>,
     aborter: AbortController,
     delay?: number
-  ): Promise<Result<T, AbortedError>> {
+  ): Promise<Result<T, FetchError>> {
     const timeout = delay ? setTimeout(() => {
       aborter.abort(new TimeoutError())
     }, delay) : undefined
 
     try {
-      const result = await callback(aborter.signal)
-
-      if (aborter.signal.aborted)
-        return new Err(AbortedError.from(aborter.signal.reason))
-
-      return new Ok(result)
+      return await callback(aborter.signal)
+    } catch (e: unknown) {
+      return new Err(FetchError.from(e))
     } finally {
       clearTimeout(timeout)
     }
