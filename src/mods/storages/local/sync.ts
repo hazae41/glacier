@@ -1,6 +1,6 @@
 import { Err, Ok, Result } from "@hazae41/result"
-import { Identity } from "mods/serializers/serializer.js"
-import { SyncStorage, SyncStorageSettings } from "mods/storages/storage.js"
+import { SyncBicoder, SyncEncoder, SyncIdentity } from "mods/serializers/serializer.js"
+import { SyncStorage } from "mods/storages/storage.js"
 import { StoredState } from "mods/types/state.js"
 import { useEffect, useRef } from "react"
 import { StorageCreationError } from "../errors.js"
@@ -15,11 +15,11 @@ import { StorageCreationError } from "../errors.js"
  * 
  * @see AsyncLocalStorage
  */
-export function useSyncLocalStorage(prefix?: string) {
+export function useSyncLocalStorage(params?: SyncLocalStorageParams) {
   const storage = useRef<Result<SyncLocalStorage, StorageCreationError>>()
 
   if (!storage.current)
-    storage.current = SyncLocalStorage.tryCreate(prefix).ignore()
+    storage.current = SyncLocalStorage.tryCreate(params).ignore()
 
   useEffect(() => () => {
     if (!storage.current?.isOk())
@@ -28,6 +28,12 @@ export function useSyncLocalStorage(prefix?: string) {
   }, [])
 
   return storage.current
+}
+
+export interface SyncLocalStorageParams {
+  prefix?: string,
+  keySerializer?: SyncEncoder<string, string>,
+  valueSerializer?: SyncBicoder<StoredState<unknown, unknown>, string>
 }
 
 /**
@@ -40,7 +46,7 @@ export function useSyncLocalStorage(prefix?: string) {
  * 
  * @see AsyncLocalStorage
  */
-export class SyncLocalStorage implements SyncStorage<string, string> {
+export class SyncLocalStorage implements SyncStorage {
 
   readonly async = false as const
 
@@ -49,17 +55,21 @@ export class SyncLocalStorage implements SyncStorage<string, string> {
   #keys = new Map<string, number>()
 
   private constructor(
-    readonly prefix = "xswr:"
+    readonly prefix = "xswr:",
+    readonly keySerializer = SyncIdentity as SyncEncoder<string, string>,
+    readonly valueSerializer = JSON as SyncBicoder<StoredState<unknown, unknown>, string>
   ) {
     this.#onunload = () => this.collectSync()
     addEventListener("beforeunload", this.#onunload)
   }
 
-  static tryCreate(prefix?: string): Result<SyncLocalStorage, StorageCreationError> {
+  static tryCreate(params: SyncLocalStorageParams = {}): Result<SyncLocalStorage, StorageCreationError> {
+    const { prefix, keySerializer, valueSerializer } = params
+
     if (typeof localStorage === "undefined")
       return new Err(new StorageCreationError())
 
-    return new Ok(new SyncLocalStorage(prefix))
+    return new Ok(new SyncLocalStorage(prefix, keySerializer, valueSerializer))
   }
 
   async unmount() {
@@ -80,16 +90,14 @@ export class SyncLocalStorage implements SyncStorage<string, string> {
     }
   }
 
-  get<D, F>(cacheKey: string, settings: SyncStorageSettings<D, F, string, string>) {
-    const { keySerializer = Identity, valueSerializer = JSON } = settings
-
-    const key = keySerializer.stringify(cacheKey)
+  get(cacheKey: string) {
+    const key = this.keySerializer.stringify(cacheKey)
     const item = localStorage.getItem(this.prefix + key)
 
     if (item === null)
       return
 
-    const state = valueSerializer.parse(item)
+    const state = this.valueSerializer.parse(item)
 
     if (state.expiration !== undefined)
       this.#keys.set(key, state.expiration)
@@ -97,11 +105,9 @@ export class SyncLocalStorage implements SyncStorage<string, string> {
     return state
   }
 
-  set<D, F>(cacheKey: string, state: StoredState<D, F>, settings: SyncStorageSettings<D, F, string, string>) {
-    const { keySerializer = Identity, valueSerializer = JSON } = settings
-
-    const key = keySerializer.stringify(cacheKey)
-    const item = valueSerializer.stringify(state)
+  set(cacheKey: string, state: StoredState<unknown, unknown>) {
+    const key = this.keySerializer.stringify(cacheKey)
+    const item = this.valueSerializer.stringify(state)
 
     if (state.expiration !== undefined)
       this.#keys.set(key, state.expiration)
@@ -109,17 +115,16 @@ export class SyncLocalStorage implements SyncStorage<string, string> {
     localStorage.setItem(this.prefix + key, item)
   }
 
-  delete<D, F>(cacheKey: string, settings: SyncStorageSettings<D, F, string, string>) {
-    const { keySerializer = Identity } = settings
+  #delete(storageKey: string) {
+    this.#keys.delete(storageKey)
 
-    const key = keySerializer.stringify(cacheKey)
+    localStorage.removeItem(this.prefix + storageKey)
+  }
+
+  delete(cacheKey: string) {
+    const key = this.keySerializer.stringify(cacheKey)
 
     this.#delete(key)
   }
 
-  #delete(key: string) {
-    this.#keys.delete(key)
-
-    localStorage.removeItem(this.prefix + key)
-  }
 }

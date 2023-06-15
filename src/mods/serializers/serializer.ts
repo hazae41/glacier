@@ -12,21 +12,21 @@ export interface AsyncEncoder<I, O> {
   stringify(input: I): Promiseable<O>
 }
 
-export type Coder<I, O> =
-  | SyncCoder<I, O>
-  | AsyncCoder<I, O>
+export type Bicoder<I, O> =
+  | SyncBicoder<I, O>
+  | AsyncBicoder<I, O>
 
-export interface SyncCoder<I, O> {
+export interface SyncBicoder<I, O> {
   stringify(input: I): O
   parse(output: O): I
 }
 
-export interface AsyncCoder<I, O> {
+export interface AsyncBicoder<I, O> {
   stringify(input: I): Promiseable<O>
   parse(output: O): Promiseable<I>
 }
 
-export namespace Identity {
+export namespace SyncIdentity {
 
   export function stringify<T>(value: T) {
     return value

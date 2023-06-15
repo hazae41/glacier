@@ -1,7 +1,7 @@
 import { Bytes } from "@hazae41/bytes";
-import { AsyncCoder } from "mods/serializers/serializer.js";
+import { AsyncBicoder } from "mods/serializers/serializer.js";
 
-export class AesGcmCoder implements AsyncCoder<string, string> {
+export class AesGcmCoder implements AsyncBicoder<string, string> {
 
   constructor(
     readonly key: CryptoKey
