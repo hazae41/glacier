@@ -249,6 +249,11 @@ export class Core {
       return cached
 
     return await stateMutex.lock(async (stateSlot) => {
+      const cached = stateSlot.current
+
+      if (cached !== undefined)
+        return cached
+
       console.log("core.get", cacheKey)
       const stored = await settings.storage?.get(cacheKey)
       const state = this.unstore(stored, settings)
