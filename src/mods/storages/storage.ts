@@ -21,16 +21,6 @@ export interface SyncStorage {
   async: false
 
   /**
-   * No longer use this storage and garbage collect now
-   */
-  unmount(): void
-
-  /**
-   * Performs garbage collection on current keys
-   */
-  collect(): Promise<void>
-
-  /**
    * Get the data from the given key
    * @param cacheKey the given key
    * @param shallow true = won't add this key to the garbage collector
@@ -54,20 +44,11 @@ export interface SyncStorage {
    * @returns 
    */
   delete<D, F>(cacheKey: string, settings?: SyncStorageSettings<D, F>): void
+
 }
 
 export interface AsyncStorage {
   async: true
-
-  /**
-   * No longer use this storage and garbage collect now
-   */
-  unmount(): void
-
-  /**
-   * Performs garbage collection on current keys
-   */
-  collect(): Promise<void>
 
   /**
    * Get the data from the given key
@@ -93,4 +74,5 @@ export interface AsyncStorage {
    * @returns 
    */
   delete<D, F>(key: string, settings?: AsyncStorageSettings<D, F>): Promiseable<void>
+
 }
