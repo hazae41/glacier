@@ -136,6 +136,7 @@ export class Core {
       return metadata
 
     return await this.#metadatas.lock(async (inner) => {
+      console.log("creating metadata", cacheKey)
       let metadata = inner.get(cacheKey)
 
       if (metadata !== undefined)
@@ -245,6 +246,7 @@ export class Core {
       return cached
 
     return await stateMutex.lock(async (stateSlot) => {
+      console.log("core.get", cacheKey)
       const stored = await settings.storage?.get(cacheKey)
       const state = this.unstore(stored, settings)
       stateSlot.current = state
