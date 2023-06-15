@@ -10,7 +10,7 @@ import { Fail } from "mods/result/fail.js"
 import { Fetched } from "mods/result/fetched.js"
 import { Mutator, Setter } from "mods/types/mutator.js"
 import { GlobalSettings, QuerySettings } from "mods/types/settings.js"
-import { DataState, FailState, FakeState, RealState, State, StoredState } from "mods/types/state.js"
+import { DataState, FailState, FakeState, RealState, State, StoredState2 } from "mods/types/state.js"
 
 export type Listener<D, F> =
   (x: Optional<State<D, F>>) => void
@@ -204,18 +204,19 @@ export class Core {
       const { time, cooldown, expiration } = stored
       const times = { time, cooldown, expiration }
 
-      if (stored.data !== undefined) {
-        const data = new Data(stored.data, times)
-        const substate = new DataState<D, F>(data)
+      const data = Option.wrap(stored.data).mapSync(x => new Data(x, times))
+      const error = Option.wrap(stored.error).mapSync(x => new Fail(x, times))
+
+      if (error.isSome()) {
+        const substate = new FailState<D, F>(error.get(), data.get())
         const state = new RealState(substate)
         this.#states.set(cacheKey, state)
         this.states.publish(cacheKey, state)
         return new Ok(state)
       }
 
-      if (stored.error !== undefined) {
-        const fail = new Fail(stored.error, times)
-        const substate = new FailState<D, F>(fail)
+      if (data.isSome()) {
+        const substate = new DataState<D, F>(data.get())
         const state = new RealState(substate)
         this.#states.set(cacheKey, state)
         this.states.publish(cacheKey, state)
@@ -228,21 +229,19 @@ export class Core {
       return new Ok(state)
     }
 
-    const { time, cooldown, expiration } = stored
-    const times = { time, cooldown, expiration }
+    const data = Option.wrap(stored.data).mapSync(Data.from)
+    const error = Option.wrap(stored.error).mapSync(Fail.from)
 
-    if (stored.data !== undefined) {
-      const data = new Data(stored.data.inner, times)
-      const substate = new DataState<D, F>(data)
+    if (error.isSome()) {
+      const substate = new FailState<D, F>(error.get(), data.get())
       const state = new RealState(substate)
       this.#states.set(cacheKey, state)
       this.states.publish(cacheKey, state)
       return new Ok(state)
     }
 
-    if (stored.error !== undefined) {
-      const fail = new Fail(stored.error.inner, times)
-      const substate = new FailState<D, F>(fail)
+    if (data.isSome()) {
+      const substate = new DataState<D, F>(data.get())
       const state = new RealState(substate)
       this.#states.set(cacheKey, state)
       this.states.publish(cacheKey, state)
@@ -281,18 +280,19 @@ export class Core {
       const { time, cooldown, expiration } = stored
       const times = { time, cooldown, expiration }
 
-      if (stored.data !== undefined) {
-        const data = new Data(stored.data, times)
-        const substate = new DataState<D, F>(data)
+      const data = Option.wrap(stored.data).mapSync(x => new Data(x, times))
+      const error = Option.wrap(stored.error).mapSync(x => new Fail(x, times))
+
+      if (error.isSome()) {
+        const substate = new FailState<D, F>(error.get(), data.get())
         const state = new RealState(substate)
         this.#states.set(cacheKey, state)
         this.states.publish(cacheKey, state)
         return state
       }
 
-      if (stored.error !== undefined) {
-        const fail = new Fail(stored.error, times)
-        const substate = new FailState<D, F>(fail)
+      if (data.isSome()) {
+        const substate = new DataState<D, F>(data.get())
         const state = new RealState(substate)
         this.#states.set(cacheKey, state)
         this.states.publish(cacheKey, state)
@@ -305,21 +305,19 @@ export class Core {
       return state
     }
 
-    const { time, cooldown, expiration } = stored
-    const times = { time, cooldown, expiration }
+    const data = Option.wrap(stored.data).mapSync(Data.from)
+    const error = Option.wrap(stored.error).mapSync(Fail.from)
 
-    if (stored.data !== undefined) {
-      const data = new Data(stored.data.inner, times)
-      const substate = new DataState<D, F>(data)
+    if (error.isSome()) {
+      const substate = new FailState<D, F>(error.get(), data.get())
       const state = new RealState(substate)
       this.#states.set(cacheKey, state)
       this.states.publish(cacheKey, state)
       return state
     }
 
-    if (stored.error !== undefined) {
-      const fail = new Fail(stored.error.inner, times)
-      const substate = new FailState<D, F>(fail)
+    if (data.isSome()) {
+      const substate = new DataState<D, F>(data.get())
       const state = new RealState(substate)
       this.#states.set(cacheKey, state)
       this.states.publish(cacheKey, state)
@@ -372,17 +370,12 @@ export class Core {
         return next
       }
 
-      const { time, cooldown, expiration } = next.real.current
+      const data = next.real.data
+      const error = next.real.error
 
-      let stored: StoredState<D, F>
+      const expiration = next.current?.expiration
 
-      if (next.real.current.isData()) {
-        const data = { inner: next.real.current.data }
-        stored = { version: 2, data, time, cooldown, expiration }
-      } else {
-        const error = { inner: next.real.current.error }
-        stored = { version: 2, error, time, cooldown, expiration }
-      }
+      const stored: StoredState2<D, F> = { version: 2, data, error, expiration }
 
       await storage.storage.set(cacheKey, stored, storage as any)
       return next

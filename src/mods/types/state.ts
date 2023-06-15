@@ -1,5 +1,5 @@
-import { Data } from "mods/result/data.js"
-import { Fail } from "mods/result/fail.js"
+import { Data, DataInit } from "mods/result/data.js"
+import { Fail, FailInit } from "mods/result/fail.js"
 
 export type StoredState<D, F> =
   | StoredState1<D, F>
@@ -16,10 +16,8 @@ export interface StoredState1<D, F> {
 
 export interface StoredState2<D, F> {
   version: 2,
-  data?: { inner: D }
-  error?: { inner: F }
-  time: number,
-  cooldown?: number
+  data?: DataInit<D>
+  error?: FailInit<F>
   expiration?: number
 }
 
