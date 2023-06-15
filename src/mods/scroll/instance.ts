@@ -106,7 +106,7 @@ export class ScrollQueryInstance<K, D, F>  {
     if (fetcher === undefined)
       return new Err(new MissingFetcherError())
 
-    return await core.abortAndLock(cacheKey, aborter, async () => {
+    return await core.lockOrReplace(cacheKey, aborter, async () => {
       return await Scroll.first(core, scroller, cacheKey, fetcher, aborter, settings)
     })
   }
@@ -117,7 +117,7 @@ export class ScrollQueryInstance<K, D, F>  {
     if (fetcher === undefined)
       return new Err(new MissingFetcherError())
 
-    return await core.abortAndLock(cacheKey, aborter, async () => {
+    return await core.lockOrReplace(cacheKey, aborter, async () => {
       return await Scroll.scroll(core, scroller, cacheKey, fetcher, aborter, settings)
     })
   }

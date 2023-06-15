@@ -153,7 +153,7 @@ export class Core {
     })
   }
 
-  async abortAndLock<T, E>(cacheKey: string, aborter: AbortController, callback: () => Promise<Result<T, E>>): Promise<Result<T, E>> {
+  async lockOrReplace<T, E>(cacheKey: string, aborter: AbortController, callback: () => Promise<Result<T, E>>): Promise<Result<T, E>> {
     let mutex = this.#fetches.get(cacheKey)
 
     if (mutex === undefined) {

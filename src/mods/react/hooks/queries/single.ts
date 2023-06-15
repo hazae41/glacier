@@ -159,7 +159,7 @@ export function useAnonymousQuery<K, D, F>(
     if (fetcher === undefined)
       return new Err(new MissingFetcherError())
 
-    return await core.abortAndLock(cacheKey, aborter, async () => {
+    return await core.lockOrReplace(cacheKey, aborter, async () => {
       return await Simple.fetch(core, key, cacheKey, fetcher, aborter, settings)
     }).then(r => r.inspectSync(state => stateRef.current = state))
   }, [core, cacheKey])

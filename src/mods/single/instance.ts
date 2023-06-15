@@ -180,7 +180,7 @@ export class SimpleFetcherfulQueryInstance<K, D, F>  {
   async refetch(aborter = new AbortController()): Promise<Result<State<D, F>, FetchError>> {
     const { core, key, cacheKey, fetcher, settings } = this
 
-    return await core.abortAndLock(cacheKey, aborter, async () => {
+    return await core.lockOrReplace(cacheKey, aborter, async () => {
       return await Simple.fetch(core, key, cacheKey, fetcher, aborter, settings)
     })
   }
