@@ -366,10 +366,10 @@ export class Core {
       if (set.isNone())
         return previous
 
-      const next = set.get()
-
-      if (next === previous)
+      if (set.get() === previous)
         return previous
+
+      const next = set.get()
 
       this.#states.set(cacheKey, next)
       this.states.publish(cacheKey, next)
@@ -428,6 +428,9 @@ export class Core {
       const set = await setter(previous)
 
       if (set.isNone())
+        return new None()
+
+      if (set.get() === previous)
         return new None()
 
       let next = new RealState(set.get().real)
