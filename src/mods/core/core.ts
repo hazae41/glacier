@@ -11,7 +11,7 @@ import { Fetched } from "mods/result/fetched.js"
 import { AsyncCoder, Identity, SyncCoder } from "mods/serializers/serializer.js"
 import { Mutator, Setter } from "mods/types/mutator.js"
 import { GlobalSettings, QuerySettings, StorageQuerySettings } from "mods/types/settings.js"
-import { DataState, FailState, FakeState, RealState, State, StoredState, StoredState2 } from "mods/types/state.js"
+import { DataState, FailState, FakeState, RealState, State, StoredState2 } from "mods/types/state.js"
 
 export type Listener<D, F> =
   (x: Optional<State<D, F>>) => void
@@ -192,8 +192,7 @@ export class Core {
     if (StorageQuerySettings.isAsync(settings.storage))
       return new Err(new AsyncStorageError())
 
-    const { storage, keySerializer, valueSerializer } = settings.storage
-    const stored = storage.get(cacheKey, { keySerializer, valueSerializer })
+    const stored = settings.storage.storage.get(cacheKey, settings.storage)
 
     if (stored === undefined) {
       const state = new RealState<D, F>(undefined)
@@ -286,15 +285,9 @@ export class Core {
       return state
     }
 
-    let stored: Optional<StoredState<unknown, unknown>> = undefined
-
-    if (StorageQuerySettings.isAsync(settings.storage)) {
-      const { storage, keySerializer, valueSerializer } = settings.storage
-      stored = await storage.get(cacheKey, { keySerializer, valueSerializer })
-    } else {
-      const { storage, keySerializer, valueSerializer } = settings.storage
-      stored = storage.get(cacheKey, { keySerializer, valueSerializer })
-    }
+    const stored = StorageQuerySettings.isAsync(settings.storage)
+      ? await settings.storage.storage.get(cacheKey, settings.storage)
+      : settings.storage.storage.get(cacheKey, settings.storage);
 
     if (stored === undefined) {
       const state = new RealState<D, F>(undefined)
@@ -406,24 +399,35 @@ export class Core {
       this.#states.set(cacheKey, next)
       this.states.publish(cacheKey, next)
 
-      const { storage } = settings
-
-      if (!storage?.storage)
+      if (!settings.storage)
         return next
 
       if (next.real === undefined) {
-        await storage.storage.delete(cacheKey, storage as any)
+        if (StorageQuerySettings.isAsync(settings.storage))
+          await settings.storage.storage.delete(cacheKey, settings.storage)
+        else
+          settings.storage.storage.delete(cacheKey, settings.storage)
+
         return next
       }
 
+      const {
+        dataSerializer = Identity as AsyncCoder<D, unknown>,
+        errorSerializer = Identity as AsyncCoder<F, unknown>
+      } = settings.storage
+
       const { time, cooldown, expiration } = next.real.current
 
-      const data = next.real.data
-      const error = next.real.error
+      const data = await Option.map(next.real.data, d => d.map(dataSerializer.stringify))
+      const error = await Option.map(next.real.error, d => d.mapErr(errorSerializer.stringify))
 
-      const stored: StoredState2<D, F> = { version: 2, data, error, time, cooldown, expiration }
+      const stored: StoredState2<unknown, unknown> = { version: 2, data, error, time, cooldown, expiration }
 
-      await storage.storage.set(cacheKey, stored, storage as any)
+      if (StorageQuerySettings.isAsync(settings.storage))
+        await settings.storage.storage.set(cacheKey, stored, settings.storage)
+      else
+        settings.storage.storage.set(cacheKey, stored, settings.storage)
+
       return next
     })
   }
