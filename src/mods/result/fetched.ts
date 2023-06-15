@@ -32,21 +32,21 @@ export namespace Fetched {
       return Data.from<DataInit.Inner<T>>(init)
   }
 
-  export interface Wrapper<T> {
-    unwrap(): T
+  export type Timed<T> = T & {
     times?: Times
   }
 
-  export function rewrap<T extends Result.Infer<T>>(wrapper: T, times?: TimesInit): Fetched<Ok.Inner<T>, Err.Inner<T>>
+  export function rewrap<T extends Ok.Infer<T>>(result: Timed<T>, times?: TimesInit): Data<Ok.Inner<T>>
 
-  export function rewrap<T, E>(wrapper: Wrapper<T>, times?: TimesInit): Fetched<T, E>
+  export function rewrap<T extends Err.Infer<T>>(result: Timed<T>, times?: TimesInit): Fail<Err.Inner<T>>
 
-  export function rewrap<T, E>(wrapper: Wrapper<T>, times?: TimesInit) {
-    try {
-      return new Data(wrapper.unwrap(), wrapper.times ?? times)
-    } catch (error: unknown) {
-      return new Fail(error as E, wrapper.times ?? times)
-    }
+  export function rewrap<T extends Result.Infer<T>>(result: Timed<T>, times?: TimesInit): Fetched<Ok.Inner<T>, Err.Inner<T>>
+
+  export function rewrap<T extends Result.Infer<T>>(result: Timed<T>, times?: TimesInit): Fetched<Ok.Inner<T>, Err.Inner<T>> {
+    if (result.isErr())
+      return new Fail(result.get(), result.times ?? times)
+
+    return new Data(result.get(), result.times ?? times)
   }
 
 }
