@@ -384,12 +384,12 @@ export class Core {
         return next
       }
 
+      const { time, cooldown, expiration } = next.real.current
+
       const data = next.real.data
       const error = next.real.error
 
-      const expiration = next.current?.expiration
-
-      const stored: StoredState2<D, F> = { version: 2, data, error, expiration }
+      const stored: StoredState2<D, F> = { version: 2, data, error, time, cooldown, expiration }
 
       await storage.storage.set(cacheKey, stored, storage as any)
       return next

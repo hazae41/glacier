@@ -18,6 +18,8 @@ export interface StoredState2<D, F> {
   version: 2,
   data?: DataInit<D>
   error?: FailInit<F>
+  time: number,
+  cooldown?: number
   expiration?: number
 }
 
