@@ -1,5 +1,9 @@
 import { Promiseable } from "libs/promises/promises.js"
 
+export type Encoder<I, O> =
+  | SyncEncoder<I, O>
+  | AsyncEncoder<I, O>
+
 export interface SyncEncoder<I, O> {
   stringify(input: I): O
 }
@@ -7,6 +11,10 @@ export interface SyncEncoder<I, O> {
 export interface AsyncEncoder<I, O> {
   stringify(input: I): Promiseable<O>
 }
+
+export type Coder<I, O> =
+  | SyncCoder<I, O>
+  | AsyncCoder<I, O>
 
 export interface SyncCoder<I, O> {
   stringify(input: I): O

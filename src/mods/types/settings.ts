@@ -12,25 +12,29 @@ export interface GlobalSettings {
   readonly equals?: Equalser
 }
 
-export type StorageQuerySettings<D, F, K, V> =
-  | SyncStorageQuerySettings<D, F, K, V>
-  | AsyncStorageQuerySettings<D, F, K, V>
+export type StorageQuerySettings<DI, FI, DO = unknown, FO = unknown, K = unknown, V = unknown> =
+  | SyncStorageQuerySettings<DI, FI, DO, FO, K, V>
+  | AsyncStorageQuerySettings<DI, FI, DO, FO, K, V>
 
-export interface SyncStorageQuerySettings<D, F, K, V> {
+export interface SyncStorageQuerySettings<DI, FI, DO, FO, K, V> {
   readonly storage: SyncStorage<K, V>
   readonly keySerializer?: SyncEncoder<string, K>,
-  readonly valueSerializer?: SyncCoder<StoredState<D, F>, V>
+  readonly dataSerializer?: SyncCoder<DI, DO>
+  readonly errorSerializer?: SyncCoder<FI, FO>
+  readonly valueSerializer?: SyncCoder<StoredState<DO, FO>, V>
 }
 
-export interface AsyncStorageQuerySettings<D, F, K, V> {
+export interface AsyncStorageQuerySettings<DI, FI, DO, FO, K, V> {
   readonly storage: AsyncStorage<K, V>
   readonly keySerializer?: AsyncEncoder<string, K>,
-  readonly valueSerializer?: AsyncCoder<StoredState<D, F>, V>
+  readonly dataSerializer?: AsyncCoder<DI, DO>
+  readonly errorSerializer?: AsyncCoder<FI, FO>
+  readonly valueSerializer?: AsyncCoder<StoredState<DO, FO>, V>
 }
 
 export namespace StorageQuerySettings {
 
-  export function isAsync<D, F, K, V>(settings: StorageQuerySettings<D, F, K, V>): settings is AsyncStorageQuerySettings<D, F, K, V> {
+  export function isAsync<DI, FI, DO, FO, K, V>(settings: StorageQuerySettings<DI, FI, DO, FO, K, V>): settings is AsyncStorageQuerySettings<DI, FI, DO, FO, K, V> {
     return settings.storage.async
   }
 
@@ -41,7 +45,7 @@ export interface QuerySettings<K, D, F> {
   readonly cooldown?: number,
   readonly expiration?: number
 
-  readonly storage?: StorageQuerySettings<D, F, unknown, unknown>
+  readonly storage?: StorageQuerySettings<D, F>
   readonly keySerializer?: SyncEncoder<K, string>,
   readonly normalizer?: Normalizer<D>
   readonly equals?: Equalser,

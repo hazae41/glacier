@@ -1,7 +1,6 @@
 import { Mutex } from "@hazae41/mutex"
 import { None, Option, Optional, Some } from "@hazae41/option"
 import { Err, Ok, Result } from "@hazae41/result"
-import { Identity } from "index.js"
 import { Ortho } from "libs/ortho/ortho.js"
 import { Promiseable } from "libs/promises/promises.js"
 import { Time } from "libs/time/time.js"
@@ -9,6 +8,7 @@ import { DEFAULT_EQUALS } from "mods/defaults.js"
 import { Data } from "mods/result/data.js"
 import { Fail } from "mods/result/fail.js"
 import { Fetched } from "mods/result/fetched.js"
+import { AsyncCoder, Identity, SyncCoder } from "mods/serializers/serializer.js"
 import { Mutator, Setter } from "mods/types/mutator.js"
 import { GlobalSettings, QuerySettings, StorageQuerySettings } from "mods/types/settings.js"
 import { DataState, FailState, FakeState, RealState, State, StoredState, StoredState2 } from "mods/types/state.js"
@@ -192,8 +192,8 @@ export class Core {
     if (StorageQuerySettings.isAsync(settings.storage))
       return new Err(new AsyncStorageError())
 
-    const { storage, keySerializer = JSON, valueSerializer = JSON } = settings.storage
-    const stored = storage.get<D, F>(cacheKey, { keySerializer, valueSerializer })
+    const { storage, keySerializer, valueSerializer } = settings.storage
+    const stored = storage.get(cacheKey, { keySerializer, valueSerializer })
 
     if (stored === undefined) {
       const state = new RealState<D, F>(undefined)
@@ -202,12 +202,22 @@ export class Core {
       return new Ok(state)
     }
 
+    const {
+      dataSerializer = Identity as SyncCoder<D, unknown>,
+      errorSerializer = Identity as SyncCoder<F, unknown>
+    } = settings.storage
+
     if (stored.version === undefined) {
       const { time, cooldown, expiration } = stored
       const times = { time, cooldown, expiration }
 
-      const data = Option.wrap(stored.data).mapSync(x => new Data(x, times))
-      const error = Option.wrap(stored.error).mapSync(x => new Fail(x, times))
+      const data = Option.wrap(stored.data)
+        .mapSync(x => dataSerializer.parse(x) as D)
+        .mapSync(x => new Data(x, times))
+
+      const error = Option.wrap(stored.error)
+        .mapSync(x => errorSerializer.parse(x) as F)
+        .mapSync(x => new Fail(x, times))
 
       if (error.isSome()) {
         const substate = new FailState<D, F>(error.get(), data.get())
@@ -232,8 +242,8 @@ export class Core {
     }
 
     if (stored.version === 2) {
-      const data = Option.wrap(stored.data).mapSync(Data.from)
-      const error = Option.wrap(stored.error).mapSync(Fail.from)
+      const data = Option.wrap(stored.data).mapSync(x => Data.from(x).mapSync(dataSerializer.parse))
+      const error = Option.wrap(stored.error).mapSync(x => Fail.from(x).mapErrSync(errorSerializer.parse))
 
       if (error.isSome()) {
         const substate = new FailState<D, F>(error.get(), data.get())
@@ -276,14 +286,14 @@ export class Core {
       return state
     }
 
-    let stored: Optional<StoredState<D, F>> = undefined
+    let stored: Optional<StoredState<unknown, unknown>> = undefined
 
     if (StorageQuerySettings.isAsync(settings.storage)) {
       const { storage, keySerializer, valueSerializer } = settings.storage
-      stored = await storage.get<D, F>(cacheKey, { keySerializer, valueSerializer })
+      stored = await storage.get(cacheKey, { keySerializer, valueSerializer })
     } else {
-      const { storage, keySerializer = Identity, valueSerializer = JSON } = settings.storage
-      stored = storage.get<D, F>(cacheKey, { keySerializer, valueSerializer })
+      const { storage, keySerializer, valueSerializer } = settings.storage
+      stored = storage.get(cacheKey, { keySerializer, valueSerializer })
     }
 
     if (stored === undefined) {
@@ -293,12 +303,24 @@ export class Core {
       return state
     }
 
+    const {
+      dataSerializer = Identity as AsyncCoder<D, unknown>,
+      errorSerializer = Identity as AsyncCoder<F, unknown>
+    } = settings.storage
+
     if (stored.version === undefined) {
       const { time, cooldown, expiration } = stored
       const times = { time, cooldown, expiration }
 
-      const data = Option.wrap(stored.data).mapSync(x => new Data(x, times))
-      const error = Option.wrap(stored.error).mapSync(x => new Fail(x, times))
+      const data = await Option.wrap(stored.data)
+        .mapSync(async x => dataSerializer.parse(x) as D)
+        .mapSync(async x => new Data(await x, times))
+        .await()
+
+      const error = await Option.wrap(stored.error)
+        .mapSync(async x => errorSerializer.parse(x) as F)
+        .mapSync(async x => new Fail(await x, times))
+        .await()
 
       if (error.isSome()) {
         const substate = new FailState<D, F>(error.get(), data.get())
@@ -323,8 +345,8 @@ export class Core {
     }
 
     if (stored.version === 2) {
-      const data = Option.wrap(stored.data).mapSync(Data.from)
-      const error = Option.wrap(stored.error).mapSync(Fail.from)
+      const data = await Option.wrap(stored.data).map(x => Data.from(x).map(dataSerializer.parse))
+      const error = await Option.wrap(stored.error).map(x => Fail.from(x).mapErr(errorSerializer.parse))
 
       if (error.isSome()) {
         const substate = new FailState<D, F>(error.get(), data.get())

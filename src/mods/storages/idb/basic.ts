@@ -1,6 +1,6 @@
 import { Optional } from "@hazae41/option"
 import { Err, Ok, Result } from "@hazae41/result"
-import { Identity } from "index.js"
+import { Identity } from "mods/serializers/serializer.js"
 import { AsyncStorage, AsyncStorageSettings } from "mods/storages/storage.js"
 import { StoredState } from "mods/types/state.js"
 import { useEffect, useRef } from "react"
