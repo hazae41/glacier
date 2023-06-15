@@ -1,5 +1,5 @@
 import { Mutex } from "@hazae41/mutex"
-import { Option, Optional, Some } from "@hazae41/option"
+import { None, Option, Optional, Some } from "@hazae41/option"
 import { Err, Ok, Result } from "@hazae41/result"
 import { Ortho } from "libs/ortho/ortho.js"
 import { Promiseable } from "libs/promises/promises.js"
@@ -333,7 +333,14 @@ export class Core {
     return state
   }
 
-  async #replace<K, D, F>(cacheKey: string, setter: Setter<D, F>, settings: QuerySettings<K, D, F>) {
+  /**
+   * Set full state and store it in storage
+   * @param cacheKey 
+   * @param setter 
+   * @param settings 
+   * @returns 
+   */
+  async set<K, D, F>(cacheKey: string, setter: Setter<D, F>, settings: QuerySettings<K, D, F>) {
     let mutex = this.#replaces.get(cacheKey)
 
     if (mutex === undefined) {
@@ -343,38 +350,43 @@ export class Core {
 
     return await mutex.lock(async () => {
       const previous = await this.get(cacheKey, settings)
-      const state = await setter(previous)
+      const set = await setter(previous)
 
-      if (state === previous)
-        return state
+      if (set.isNone())
+        return previous
 
-      this.#states.set(cacheKey, state)
-      this.states.publish(cacheKey, state)
+      const next = set.get()
+
+      if (next === previous)
+        return previous
+
+      this.#states.set(cacheKey, next)
+      this.states.publish(cacheKey, next)
 
       const { storage } = settings
 
       if (!storage?.storage)
-        return state
+        return next
 
-      if (state.real === undefined) {
+      if (next.real === undefined) {
         await storage.storage.delete(cacheKey, storage as any)
-        return state
+        return next
       }
 
-      const { time, cooldown, expiration } = state.real.current
+      const { time, cooldown, expiration } = next.real.current
 
       let stored: StoredState<D, F>
 
-      if (state.real.current.isData()) {
-        const data = { inner: state.real.current.data }
+      if (next.real.current.isData()) {
+        const data = { inner: next.real.current.data }
         stored = { version: 2, data, time, cooldown, expiration }
       } else {
-        const error = { inner: state.real.current.error }
+        const error = { inner: next.real.current.error }
         stored = { version: 2, error, time, cooldown, expiration }
       }
 
       await storage.storage.set(cacheKey, stored, storage as any)
-      return state
+      return next
     })
   }
 
@@ -397,28 +409,25 @@ export class Core {
   }
 
   /**
-   * Apply fetched result to previous state, optimize it, and publish it
+   * Set real state, compare times, optimize
    * @param cacheKey 
-   * @param previous 
-   * @param fetched 
+   * @param setter 
    * @param settings 
    * @returns 
    */
-  async mutate<K, D, F>(cacheKey: string, mutator: Mutator<D, F>, settings: QuerySettings<K, D, F>): Promise<State<D, F>> {
-    return await this.#replace(cacheKey, async (previous) => {
-      const { equals = DEFAULT_EQUALS } = settings
+  async update<K, D, F>(cacheKey: string, setter: Setter<D, F>, settings: QuerySettings<K, D, F>) {
+    const { equals = DEFAULT_EQUALS } = settings
 
-      const init = await mutator(previous)
+    return await this.set(cacheKey, async (previous) => {
+      const set = await setter(previous)
 
-      if (init.isNone())
-        return previous
+      if (set.isNone())
+        return new None()
 
-      const fetched = Option.mapSync(init.get(), Fetched.from)
-
-      let next: RealState<D, F> = this.#mergeRealStateWithFetched(previous, fetched)
+      let next = new RealState(set.get().real)
 
       if (next.real && previous.real && Time.isBefore(next.real?.current.time, previous.real.current.time))
-        return previous
+        return new None()
 
       if (next.real?.current.isData())
         next = new RealState(new DataState(await this.#normalize(next.real.current, settings)))
@@ -430,7 +439,31 @@ export class Core {
         next = new RealState(new FailState(new Fail(previous.real.current.inner, next.real.current), previous.real.data))
 
       const optimizers = this.#getOrCreateOptimizers<D, F>(cacheKey)
-      return await this.#reoptimize(next, optimizers)
+      const optimized = await this.#reoptimize(next, optimizers)
+
+      return new Some(optimized)
+    }, settings)
+  }
+
+  /**
+   * Apply fetched result to previous state, optimize it, and publish it
+   * @param cacheKey 
+   * @param previous 
+   * @param fetched 
+   * @param settings 
+   * @returns 
+   */
+  async mutate<K, D, F>(cacheKey: string, mutator: Mutator<D, F>, settings: QuerySettings<K, D, F>) {
+    return await this.update(cacheKey, async (previous) => {
+      const mutate = await mutator(previous)
+
+      if (mutate.isNone())
+        return new None()
+
+      const fetched = Option.mapSync(mutate.get(), Fetched.from)
+      const next = this.#mergeRealStateWithFetched(previous, fetched)
+
+      return new Some(next)
     }, settings)
   }
 
@@ -479,15 +512,16 @@ export class Core {
   }
 
   async reoptimize<K, D, F>(cacheKey: string, settings: QuerySettings<K, D, F>) {
-    return await this.#replace(cacheKey, async (previous) => {
+    return await this.set(cacheKey, async (previous) => {
       const optimizers = this.#getOrCreateOptimizers<D, F>(cacheKey)
+      const optimized = await this.#reoptimize(previous, optimizers)
 
-      return this.#reoptimize(previous, optimizers)
+      return new Some(optimized)
     }, settings)
   }
 
   async optimize<K, D, F>(cacheKey: string, uuid: string, optimizer: Mutator<D, F>, settings: QuerySettings<K, D, F>) {
-    return await this.#replace(cacheKey, async (previous) => {
+    return await this.set(cacheKey, async (previous) => {
       const optimizers = this.#getOrCreateOptimizers<D, F>(cacheKey)
 
       if (optimizers.has(uuid)) {
@@ -501,10 +535,12 @@ export class Core {
       const optimized = await optimizer(previous)
 
       if (optimized.isNone())
-        return previous
+        return new None()
 
       const fetched = Option.mapSync(optimized.get(), Fetched.from)
-      return this.#mergeFakeStateWithFetched(previous, fetched)
+      const next = this.#mergeFakeStateWithFetched(previous, fetched)
+
+      return new Some(next)
     }, settings)
   }
 
