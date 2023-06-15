@@ -8,7 +8,6 @@ import { DEFAULT_EQUALS } from "mods/defaults.js"
 import { Data } from "mods/result/data.js"
 import { Fail } from "mods/result/fail.js"
 import { Fetched } from "mods/result/fetched.js"
-import { FetchError } from "mods/types/fetcher.js"
 import { Mutator, Setter } from "mods/types/mutator.js"
 import { GlobalSettings, QuerySettings } from "mods/types/settings.js"
 import { DataState, FailState, FakeState, RealState, State, StoredState } from "mods/types/state.js"
@@ -409,7 +408,7 @@ export class Core {
   }
 
   /**
-   * Set real state, compare times, optimize
+   * Set real state, compare times, compare data/error, and then reoptimize
    * @param cacheKey 
    * @param setter 
    * @param settings 
@@ -446,7 +445,7 @@ export class Core {
   }
 
   /**
-   * Apply fetched result to previous state, optimize it, and publish it
+   * Apply fetched result to previous state, and update it
    * @param cacheKey 
    * @param previous 
    * @param fetched 
@@ -548,19 +547,17 @@ export class Core {
     this.#getOrCreateOptimizers(cacheKey).delete(uuid)
   }
 
-  async fetchWithTimeout<T>(
-    callback: (signal: AbortSignal) => Promiseable<Result<T, FetchError>>,
+  async runWithTimeout<T>(
+    callback: (signal: AbortSignal) => Promiseable<T>,
     aborter: AbortController,
     delay?: number
-  ): Promise<Result<T, FetchError>> {
+  ): Promise<T> {
     const timeout = delay ? setTimeout(() => {
       aborter.abort(new TimeoutError())
     }, delay) : undefined
 
     try {
       return await callback(aborter.signal)
-    } catch (e: unknown) {
-      return new Err(FetchError.from(e))
     } finally {
       clearTimeout(timeout)
     }

@@ -47,7 +47,7 @@ export namespace Scroll {
     if (key === undefined)
       return new Err(new ScrollError())
 
-    const aborted = await core.fetchWithTimeout(async (signal) => {
+    const aborted = await core.runWithTimeout(async (signal) => {
       return await fetcher(key, { signal })
     }, aborter, settings.timeout)
 
@@ -134,7 +134,7 @@ export namespace Scroll {
     if (key === undefined)
       return new Err(new ScrollError())
 
-    const aborted = await core.fetchWithTimeout(async (signal) => {
+    const aborted = await core.runWithTimeout(async (signal) => {
       return await fetcher(key, { signal })
     }, aborter, settings.timeout)
 

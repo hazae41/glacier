@@ -29,7 +29,7 @@ export namespace Simple {
     aborter: AbortController,
     settings: QuerySettings<K, D, F>
   ): Promise<Result<State<D, F>, FetchError>> {
-    const aborted = await core.fetchWithTimeout(async signal => {
+    const aborted = await core.runWithTimeout(async signal => {
       return await fetcher(key, { signal })
     }, aborter, settings.timeout)
 
@@ -120,7 +120,7 @@ export namespace Simple {
 
       const fetcher2 = result.value ?? fetcher
 
-      const aborted = await core.fetchWithTimeout(async (signal) => {
+      const aborted = await core.runWithTimeout(async (signal) => {
         return await fetcher2(key, { signal, cache: "reload" })
       }, aborter, settings.timeout)
 
