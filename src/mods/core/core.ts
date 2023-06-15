@@ -229,20 +229,27 @@ export class Core {
       return new Ok(state)
     }
 
-    const data = Option.wrap(stored.data).mapSync(Data.from)
-    const error = Option.wrap(stored.error).mapSync(Fail.from)
+    if (stored.version === 2) {
+      const data = Option.wrap(stored.data).mapSync(Data.from)
+      const error = Option.wrap(stored.error).mapSync(Fail.from)
 
-    if (error.isSome()) {
-      const substate = new FailState<D, F>(error.get(), data.get())
-      const state = new RealState(substate)
-      this.#states.set(cacheKey, state)
-      this.states.publish(cacheKey, state)
-      return new Ok(state)
-    }
+      if (error.isSome()) {
+        const substate = new FailState<D, F>(error.get(), data.get())
+        const state = new RealState(substate)
+        this.#states.set(cacheKey, state)
+        this.states.publish(cacheKey, state)
+        return new Ok(state)
+      }
 
-    if (data.isSome()) {
-      const substate = new DataState<D, F>(data.get())
-      const state = new RealState(substate)
+      if (data.isSome()) {
+        const substate = new DataState<D, F>(data.get())
+        const state = new RealState(substate)
+        this.#states.set(cacheKey, state)
+        this.states.publish(cacheKey, state)
+        return new Ok(state)
+      }
+
+      const state = new RealState<D, F>(undefined)
       this.#states.set(cacheKey, state)
       this.states.publish(cacheKey, state)
       return new Ok(state)
@@ -305,20 +312,27 @@ export class Core {
       return state
     }
 
-    const data = Option.wrap(stored.data).mapSync(Data.from)
-    const error = Option.wrap(stored.error).mapSync(Fail.from)
+    if (stored.version === 2) {
+      const data = Option.wrap(stored.data).mapSync(Data.from)
+      const error = Option.wrap(stored.error).mapSync(Fail.from)
 
-    if (error.isSome()) {
-      const substate = new FailState<D, F>(error.get(), data.get())
-      const state = new RealState(substate)
-      this.#states.set(cacheKey, state)
-      this.states.publish(cacheKey, state)
-      return state
-    }
+      if (error.isSome()) {
+        const substate = new FailState<D, F>(error.get(), data.get())
+        const state = new RealState(substate)
+        this.#states.set(cacheKey, state)
+        this.states.publish(cacheKey, state)
+        return state
+      }
 
-    if (data.isSome()) {
-      const substate = new DataState<D, F>(data.get())
-      const state = new RealState(substate)
+      if (data.isSome()) {
+        const substate = new DataState<D, F>(data.get())
+        const state = new RealState(substate)
+        this.#states.set(cacheKey, state)
+        this.states.publish(cacheKey, state)
+        return state
+      }
+
+      const state = new RealState<D, F>(undefined)
       this.#states.set(cacheKey, state)
       this.states.publish(cacheKey, state)
       return state
