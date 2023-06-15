@@ -1,7 +1,7 @@
 import { Bytes } from "@hazae41/bytes"
 import { AsyncEncoder } from "mods/serializers/serializer.js"
 
-export class HmacEncoder implements AsyncEncoder<string> {
+export class HmacEncoder implements AsyncEncoder<string, string> {
 
   constructor(
     readonly key: CryptoKey

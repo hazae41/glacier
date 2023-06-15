@@ -1,6 +1,7 @@
 import { Mutex } from "@hazae41/mutex"
 import { None, Option, Optional, Some } from "@hazae41/option"
 import { Err, Ok, Result } from "@hazae41/result"
+import { Identity } from "index.js"
 import { Ortho } from "libs/ortho/ortho.js"
 import { Promiseable } from "libs/promises/promises.js"
 import { Time } from "libs/time/time.js"
@@ -9,8 +10,8 @@ import { Data } from "mods/result/data.js"
 import { Fail } from "mods/result/fail.js"
 import { Fetched } from "mods/result/fetched.js"
 import { Mutator, Setter } from "mods/types/mutator.js"
-import { GlobalSettings, QuerySettings } from "mods/types/settings.js"
-import { DataState, FailState, FakeState, RealState, State, StoredState2 } from "mods/types/state.js"
+import { GlobalSettings, QuerySettings, StorageQuerySettings } from "mods/types/settings.js"
+import { DataState, FailState, FakeState, RealState, State, StoredState, StoredState2 } from "mods/types/state.js"
 
 export type Listener<D, F> =
   (x: Optional<State<D, F>>) => void
@@ -188,10 +189,11 @@ export class Core {
       return new Ok(state)
     }
 
-    if (settings.storage.storage.async)
+    if (StorageQuerySettings.isAsync(settings.storage))
       return new Err(new AsyncStorageError())
 
-    const stored = settings.storage.storage.get<D, F>(cacheKey, settings.storage as any)
+    const { storage, keySerializer = JSON, valueSerializer = JSON } = settings.storage
+    const stored = storage.get<D, F>(cacheKey, { keySerializer, valueSerializer })
 
     if (stored === undefined) {
       const state = new RealState<D, F>(undefined)
@@ -274,7 +276,15 @@ export class Core {
       return state
     }
 
-    const stored = await settings.storage.storage.get<D, F>(cacheKey, settings.storage as any)
+    let stored: Optional<StoredState<D, F>> = undefined
+
+    if (StorageQuerySettings.isAsync(settings.storage)) {
+      const { storage, keySerializer, valueSerializer } = settings.storage
+      stored = await storage.get<D, F>(cacheKey, { keySerializer, valueSerializer })
+    } else {
+      const { storage, keySerializer = Identity, valueSerializer = JSON } = settings.storage
+      stored = storage.get<D, F>(cacheKey, { keySerializer, valueSerializer })
+    }
 
     if (stored === undefined) {
       const state = new RealState<D, F>(undefined)

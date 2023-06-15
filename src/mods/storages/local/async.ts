@@ -1,4 +1,5 @@
 import { Err, Ok, Result } from "@hazae41/result"
+import { Identity } from "index.js"
 import { StoredState } from "mods/types/state.js"
 import { useEffect, useRef } from "react"
 import { StorageCreationError } from "../errors.js"
@@ -45,7 +46,7 @@ export function useAsyncLocalStorage(prefix?: string) {
  * @see SyncLocalStorage
  * @see useFallback
  */
-export class AsyncLocalStorage implements AsyncStorage {
+export class AsyncLocalStorage implements AsyncStorage<string, string> {
 
   readonly async = true as const
 
@@ -85,21 +86,16 @@ export class AsyncLocalStorage implements AsyncStorage {
     }
   }
 
-  async get<D, F>(cacheKey: string, settings: AsyncStorageSettings<D, F>) {
-    const { keySerializer, valueSerializer } = settings
+  async get<D, F>(cacheKey: string, settings: AsyncStorageSettings<D, F, string, string>) {
+    const { keySerializer = Identity, valueSerializer = JSON } = settings
 
-    const key = keySerializer
-      ? await keySerializer.stringify(cacheKey)
-      : cacheKey
-
+    const key = await keySerializer.stringify(cacheKey)
     const item = localStorage.getItem(this.prefix + key)
 
     if (item === null)
       return
 
-    const state = valueSerializer
-      ? await valueSerializer.parse(item)
-      : JSON.parse(item) as StoredState<D, F>
+    const state = await valueSerializer.parse(item)
 
     if (state.expiration !== undefined)
       this.#keys.set(key, state.expiration)
@@ -107,16 +103,11 @@ export class AsyncLocalStorage implements AsyncStorage {
     return state
   }
 
-  async set<D, F>(cacheKey: string, state: StoredState<D, F>, settings: AsyncStorageSettings<D, F>) {
-    const { keySerializer, valueSerializer } = settings
+  async set<D, F>(cacheKey: string, state: StoredState<D, F>, settings: AsyncStorageSettings<D, F, string, string>) {
+    const { keySerializer = Identity, valueSerializer = JSON } = settings
 
-    const key = keySerializer
-      ? await keySerializer.stringify(cacheKey)
-      : cacheKey
-
-    const item = valueSerializer
-      ? await valueSerializer.stringify(state)
-      : JSON.stringify(state)
+    const key = await keySerializer.stringify(cacheKey)
+    const item = await valueSerializer.stringify(state)
 
     if (state.expiration !== undefined)
       this.#keys.set(key, state.expiration)
@@ -124,12 +115,10 @@ export class AsyncLocalStorage implements AsyncStorage {
     localStorage.setItem(this.prefix + key, item)
   }
 
-  async delete<D, F>(cacheKey: string, settings: AsyncStorageSettings<D, F>) {
-    const { keySerializer } = settings
+  async delete<D, F>(cacheKey: string, settings: AsyncStorageSettings<D, F, string, string>) {
+    const { keySerializer = Identity } = settings
 
-    const key = keySerializer
-      ? await keySerializer.stringify(cacheKey)
-      : cacheKey
+    const key = await keySerializer.stringify(cacheKey)
 
     await this.#delete(key)
   }

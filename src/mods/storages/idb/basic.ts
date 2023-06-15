@@ -1,5 +1,6 @@
 import { Optional } from "@hazae41/option"
 import { Err, Ok, Result } from "@hazae41/result"
+import { Identity } from "index.js"
 import { AsyncStorage, AsyncStorageSettings } from "mods/storages/storage.js"
 import { StoredState } from "mods/types/state.js"
 import { useEffect, useRef } from "react"
@@ -20,7 +21,7 @@ export function useIDBStorage(name?: string) {
   return storage.current
 }
 
-export class IDBStorage implements AsyncStorage {
+export class IDBStorage implements AsyncStorage<string, unknown> {
 
   readonly async = true as const
 
@@ -130,12 +131,10 @@ export class IDBStorage implements AsyncStorage {
     })
   }
 
-  async get<D, F>(cacheKey: string, settings: AsyncStorageSettings<D, F>) {
-    const { keySerializer, valueSerializer } = settings
+  async get<D, F>(cacheKey: string, settings: AsyncStorageSettings<D, F, string, unknown>) {
+    const { keySerializer = Identity, valueSerializer = Identity } = settings
 
-    const key = keySerializer
-      ? await keySerializer.stringify(cacheKey)
-      : cacheKey
+    const key = await keySerializer.stringify(cacheKey)
 
     const value = await this.#transact(await this.#database, async store => {
       return await this.#get(store, key)
@@ -144,9 +143,7 @@ export class IDBStorage implements AsyncStorage {
     if (value === undefined)
       return undefined
 
-    const state = valueSerializer
-      ? await valueSerializer.parse(value as string)
-      : value as StoredState<D, F>
+    const state = await valueSerializer.parse(value) as StoredState<D, F>
 
     if (state.expiration !== undefined)
       this.#keys.set(key, state.expiration)
@@ -163,16 +160,11 @@ export class IDBStorage implements AsyncStorage {
     })
   }
 
-  async set<D, F>(cacheKey: string, state: StoredState<D, F>, settings: AsyncStorageSettings<D, F>) {
-    const { keySerializer, valueSerializer } = settings
+  async set<D, F>(cacheKey: string, state: StoredState<D, F>, settings: AsyncStorageSettings<D, F, string, unknown>) {
+    const { keySerializer = Identity, valueSerializer = Identity } = settings
 
-    const key = keySerializer
-      ? await keySerializer.stringify(cacheKey)
-      : cacheKey
-
-    const value = valueSerializer
-      ? await valueSerializer.stringify(state)
-      : state
+    const key = await keySerializer.stringify(cacheKey)
+    const value = await valueSerializer.stringify(state)
 
     if (state.expiration !== undefined)
       this.#keys.set(key, state.expiration)
@@ -191,12 +183,10 @@ export class IDBStorage implements AsyncStorage {
     })
   }
 
-  async delete<D, F>(cacheKey: string, settings: AsyncStorageSettings<D, F>) {
-    const { keySerializer } = settings
+  async delete<D, F>(cacheKey: string, settings: AsyncStorageSettings<D, F, string, unknown>) {
+    const { keySerializer = Identity } = settings
 
-    const key = keySerializer
-      ? await keySerializer.stringify(cacheKey)
-      : cacheKey
+    const key = await keySerializer.stringify(cacheKey)
 
     this.#keys.delete(key)
 

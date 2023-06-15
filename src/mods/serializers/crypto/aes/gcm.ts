@@ -1,7 +1,7 @@
 import { Bytes } from "@hazae41/bytes";
 import { AsyncCoder } from "mods/serializers/serializer.js";
 
-export class AesGcmCoder implements AsyncCoder<unknown> {
+export class AesGcmCoder implements AsyncCoder<string, string> {
 
   constructor(
     readonly key: CryptoKey
@@ -25,12 +25,11 @@ export class AesGcmCoder implements AsyncCoder<unknown> {
     return new AesGcmCoder(key)
   }
 
-  async stringify<T>(value: T) {
+  async stringify(input: string) {
     const iv = Bytes.random(12)
     const ivtext = Bytes.toBase64(iv)
 
-    const plaintext = JSON.stringify(value)
-    const plain = Bytes.fromUtf8(plaintext)
+    const plain = Bytes.fromUtf8(input)
 
     const cipher = await crypto.subtle.encrypt({ name: "AES-GCM", iv }, this.key, plain)
     const ciphertext = Bytes.toBase64(new Uint8Array(cipher))
@@ -38,15 +37,15 @@ export class AesGcmCoder implements AsyncCoder<unknown> {
     return ivtext + "." + ciphertext
   }
 
-  async parse<T>(text: string) {
-    const [ivtext, ciphertext] = text.split(".")
+  async parse(output: string) {
+    const [ivtext, ciphertext] = output.split(".")
 
     const iv = Bytes.fromBase64(ivtext)
     const cipher = Bytes.fromBase64(ciphertext)
 
     const plain = await crypto.subtle.decrypt({ name: "AES-GCM", iv }, this.key, cipher)
-    const plaintext = Bytes.toUtf8(new Uint8Array(plain))
+    const input = Bytes.toUtf8(new Uint8Array(plain))
 
-    return JSON.parse(plaintext) as T
+    return input
   }
 }

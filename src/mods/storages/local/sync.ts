@@ -1,4 +1,5 @@
 import { Err, Ok, Result } from "@hazae41/result"
+import { Identity } from "index.js"
 import { SyncStorage, SyncStorageSettings } from "mods/storages/storage.js"
 import { StoredState } from "mods/types/state.js"
 import { useEffect, useRef } from "react"
@@ -39,7 +40,7 @@ export function useSyncLocalStorage(prefix?: string) {
  * 
  * @see AsyncLocalStorage
  */
-export class SyncLocalStorage implements SyncStorage {
+export class SyncLocalStorage implements SyncStorage<string, string> {
 
   readonly async = false as const
 
@@ -79,21 +80,16 @@ export class SyncLocalStorage implements SyncStorage {
     }
   }
 
-  get<D, F>(cacheKey: string, settings: SyncStorageSettings<D, F>) {
-    const { keySerializer, valueSerializer } = settings
+  get<D, F>(cacheKey: string, settings: SyncStorageSettings<D, F, string, string>) {
+    const { keySerializer = Identity, valueSerializer = JSON } = settings
 
-    const key = keySerializer
-      ? keySerializer.stringify(cacheKey)
-      : cacheKey
-
+    const key = keySerializer.stringify(cacheKey)
     const item = localStorage.getItem(this.prefix + key)
 
     if (item === null)
       return
 
-    const state = valueSerializer
-      ? valueSerializer.parse(item)
-      : JSON.parse(item) as StoredState<D, F>
+    const state = valueSerializer.parse(item)
 
     if (state.expiration !== undefined)
       this.#keys.set(key, state.expiration)
@@ -101,16 +97,11 @@ export class SyncLocalStorage implements SyncStorage {
     return state
   }
 
-  set<D, F>(cacheKey: string, state: StoredState<D, F>, settings: SyncStorageSettings<D, F>) {
-    const { keySerializer, valueSerializer } = settings
+  set<D, F>(cacheKey: string, state: StoredState<D, F>, settings: SyncStorageSettings<D, F, string, string>) {
+    const { keySerializer = Identity, valueSerializer = JSON } = settings
 
-    const key = keySerializer
-      ? keySerializer.stringify(cacheKey)
-      : cacheKey
-
-    const item = valueSerializer
-      ? valueSerializer.stringify(state)
-      : JSON.stringify(state)
+    const key = keySerializer.stringify(cacheKey)
+    const item = valueSerializer.stringify(state)
 
     if (state.expiration !== undefined)
       this.#keys.set(key, state.expiration)
@@ -118,12 +109,10 @@ export class SyncLocalStorage implements SyncStorage {
     localStorage.setItem(this.prefix + key, item)
   }
 
-  delete<D, F>(cacheKey: string, settings: SyncStorageSettings<D, F>) {
-    const { keySerializer } = settings
+  delete<D, F>(cacheKey: string, settings: SyncStorageSettings<D, F, string, string>) {
+    const { keySerializer = Identity } = settings
 
-    const key = keySerializer
-      ? keySerializer.stringify(cacheKey)
-      : cacheKey
+    const key = keySerializer.stringify(cacheKey)
 
     this.#delete(key)
   }
