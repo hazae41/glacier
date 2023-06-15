@@ -11,7 +11,7 @@ import { Fetched } from "mods/result/fetched.js"
 import { SyncBicoder, SyncIdentity } from "mods/serializers/serializer.js"
 import { Mutator, Setter } from "mods/types/mutator.js"
 import { GlobalSettings, QuerySettings } from "mods/types/settings.js"
-import { DataState, FailState, FakeState, RealState, State, StoredState2 } from "mods/types/state.js"
+import { DataState, FailState, FakeState, RealState, State, StoredState } from "mods/types/state.js"
 
 export type Listener<D, F> =
   (x: Optional<State<D, F>>) => void
@@ -193,80 +193,7 @@ export class Core {
       return new Err(new AsyncStorageError())
 
     const stored = settings.storage.get(cacheKey)
-
-    if (stored === undefined) {
-      const state = new RealState<D, F>(undefined)
-      this.#states.set(cacheKey, state)
-      this.states.publish(cacheKey, state)
-      return new Ok(state)
-    }
-
-    const {
-      dataSerializer = SyncIdentity as SyncBicoder<D, unknown>,
-      errorSerializer = SyncIdentity as SyncBicoder<F, unknown>
-    } = settings
-
-    if (stored.version === undefined) {
-      const { time, cooldown, expiration } = stored
-      const times = { time, cooldown, expiration }
-
-      const data = Option.wrap(stored.data)
-        .mapSync(x => dataSerializer.parse(x) as D)
-        .mapSync(x => new Data(x, times))
-
-      const error = Option.wrap(stored.error)
-        .mapSync(x => errorSerializer.parse(x) as F)
-        .mapSync(x => new Fail(x, times))
-
-      if (error.isSome()) {
-        const substate = new FailState<D, F>(error.get(), data.get())
-        const state = new RealState(substate)
-        this.#states.set(cacheKey, state)
-        this.states.publish(cacheKey, state)
-        return new Ok(state)
-      }
-
-      if (data.isSome()) {
-        const substate = new DataState<D, F>(data.get())
-        const state = new RealState(substate)
-        this.#states.set(cacheKey, state)
-        this.states.publish(cacheKey, state)
-        return new Ok(state)
-      }
-
-      const state = new RealState<D, F>(undefined)
-      this.#states.set(cacheKey, state)
-      this.states.publish(cacheKey, state)
-      return new Ok(state)
-    }
-
-    if (stored.version === 2) {
-      const data = Option.wrap(stored.data).mapSync(x => Data.from(x).mapSync(dataSerializer.parse))
-      const error = Option.wrap(stored.error).mapSync(x => Fail.from(x).mapErrSync(errorSerializer.parse))
-
-      if (error.isSome()) {
-        const substate = new FailState<D, F>(error.get(), data.get())
-        const state = new RealState(substate)
-        this.#states.set(cacheKey, state)
-        this.states.publish(cacheKey, state)
-        return new Ok(state)
-      }
-
-      if (data.isSome()) {
-        const substate = new DataState<D, F>(data.get())
-        const state = new RealState(substate)
-        this.#states.set(cacheKey, state)
-        this.states.publish(cacheKey, state)
-        return new Ok(state)
-      }
-
-      const state = new RealState<D, F>(undefined)
-      this.#states.set(cacheKey, state)
-      this.states.publish(cacheKey, state)
-      return new Ok(state)
-    }
-
-    const state = new RealState<D, F>(undefined)
+    const state = this.unstore(stored, settings)
     this.#states.set(cacheKey, state)
     this.states.publish(cacheKey, state)
     return new Ok(state)
@@ -278,91 +205,69 @@ export class Core {
     if (cached !== undefined)
       return cached
 
-    if (!settings.storage) {
-      const state = new RealState<D, F>(undefined)
-      this.#states.set(cacheKey, state)
-      this.states.publish(cacheKey, state)
-      return state
-    }
+    const stored = await settings.storage?.get(cacheKey)
+    const state = this.unstore(stored, settings)
+    this.#states.set(cacheKey, state)
+    this.states.publish(cacheKey, state)
+    return state
+  }
 
-    const stored = await settings.storage.get(cacheKey)
-
-    if (stored === undefined) {
-      const state = new RealState<D, F>(undefined)
-      this.#states.set(cacheKey, state)
-      this.states.publish(cacheKey, state)
-      return state
-    }
-
+  store<K, D, F>(state: State<D, F>, settings: QuerySettings<K, D, F>): Optional<StoredState<unknown, unknown>> {
     const {
       dataSerializer = SyncIdentity as SyncBicoder<D, unknown>,
       errorSerializer = SyncIdentity as SyncBicoder<F, unknown>
     } = settings
 
+    if (state.real === undefined)
+      return undefined
+
+    const { time, cooldown, expiration } = state.real.current
+
+    const data = Option.mapSync(state.real.data, d => d.mapSync(dataSerializer.stringify))
+    const error = Option.mapSync(state.real.error, d => d.mapErrSync(errorSerializer.stringify))
+
+    return { version: 2, data, error, time, cooldown, expiration }
+  }
+
+  unstore<K, D, F>(stored: Optional<StoredState<unknown, unknown>>, settings: QuerySettings<K, D, F>): State<D, F> {
+    const {
+      dataSerializer = SyncIdentity as SyncBicoder<D, unknown>,
+      errorSerializer = SyncIdentity as SyncBicoder<F, unknown>
+    } = settings
+
+    if (stored === undefined)
+      return new RealState<D, F>(undefined)
+
     if (stored.version === undefined) {
       const { time, cooldown, expiration } = stored
       const times = { time, cooldown, expiration }
 
-      const data = Option.wrap(stored.data)
-        .mapSync(x => dataSerializer.parse(x) as D)
-        .mapSync(x => new Data(x, times))
+      const data = Option.wrap(stored.data).mapSync(x => new Data(dataSerializer.parse(x) as D, times))
+      const error = Option.wrap(stored.error).mapSync(x => new Fail(errorSerializer.parse(x) as F, times))
 
-      const error = Option.wrap(stored.error)
-        .mapSync(x => errorSerializer.parse(x) as F)
-        .mapSync(x => new Fail(x, times))
+      if (error.isSome())
+        return new RealState(new FailState<D, F>(error.get(), data.get()))
 
-      if (error.isSome()) {
-        const substate = new FailState<D, F>(error.get(), data.get())
-        const state = new RealState(substate)
-        this.#states.set(cacheKey, state)
-        this.states.publish(cacheKey, state)
-        return state
-      }
+      if (data.isSome())
+        return new RealState(new DataState<D, F>(data.get()))
 
-      if (data.isSome()) {
-        const substate = new DataState<D, F>(data.get())
-        const state = new RealState(substate)
-        this.#states.set(cacheKey, state)
-        this.states.publish(cacheKey, state)
-        return state
-      }
-
-      const state = new RealState<D, F>(undefined)
-      this.#states.set(cacheKey, state)
-      this.states.publish(cacheKey, state)
-      return state
+      return new RealState<D, F>(undefined)
     }
 
     if (stored.version === 2) {
       const data = Option.wrap(stored.data).mapSync(x => Data.from(x).mapSync(dataSerializer.parse))
       const error = Option.wrap(stored.error).mapSync(x => Fail.from(x).mapErrSync(errorSerializer.parse))
 
-      if (error.isSome()) {
-        const substate = new FailState<D, F>(error.get(), data.get())
-        const state = new RealState(substate)
-        this.#states.set(cacheKey, state)
-        this.states.publish(cacheKey, state)
-        return state
-      }
+      if (error.isSome())
+        return new RealState(new FailState<D, F>(error.get(), data.get()))
 
-      if (data.isSome()) {
-        const substate = new DataState<D, F>(data.get())
-        const state = new RealState(substate)
-        this.#states.set(cacheKey, state)
-        this.states.publish(cacheKey, state)
-        return state
-      }
+      if (data.isSome())
+        return new RealState(new DataState<D, F>(data.get()))
 
-      const state = new RealState<D, F>(undefined)
-      this.#states.set(cacheKey, state)
-      this.states.publish(cacheKey, state)
-      return state
+      return new RealState<D, F>(undefined)
     }
 
-    const state = new RealState<D, F>(undefined)
-    this.#states.set(cacheKey, state)
-    this.states.publish(cacheKey, state)
-    return state
+    return new RealState<D, F>(undefined)
   }
 
   /**
@@ -398,22 +303,12 @@ export class Core {
       if (!settings.storage)
         return next
 
-      if (next.real === undefined) {
+      const stored = this.store(next, settings)
+
+      if (stored === undefined) {
         await settings.storage.delete(cacheKey)
         return next
       }
-
-      const {
-        dataSerializer = SyncIdentity as SyncBicoder<D, unknown>,
-        errorSerializer = SyncIdentity as SyncBicoder<F, unknown>
-      } = settings
-
-      const { time, cooldown, expiration } = next.real.current
-
-      const data = Option.mapSync(next.real.data, d => d.mapSync(dataSerializer.stringify))
-      const error = Option.mapSync(next.real.error, d => d.mapErrSync(errorSerializer.stringify))
-
-      const stored: StoredState2<unknown, unknown> = { version: 2, data, error, time, cooldown, expiration }
 
       await settings.storage.set(cacheKey, stored)
       return next
