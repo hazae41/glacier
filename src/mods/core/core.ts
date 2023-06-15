@@ -130,11 +130,14 @@ export class Core {
   }
 
   async #getOrCreateMetadata(cacheKey: string) {
+    console.log("getting metadata", cacheKey)
     const metadata = this.#metadatas.inner.get(cacheKey)
+    console.log("metadata", cacheKey, metadata)
 
     if (metadata !== undefined)
       return metadata
 
+    console.log("no metadata", cacheKey)
     return await this.#metadatas.lock(async (inner) => {
       console.log("creating metadata", cacheKey)
       let metadata = inner.get(cacheKey)
