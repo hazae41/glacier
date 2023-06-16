@@ -190,11 +190,14 @@ export class Core {
   }
 
   async lockOrError<D, F>(cacheKey: string, aborter: AbortController, callback: () => Promise<Result<State<D, F>, FetchError>>): Promise<Result<Result<State<D, F>, FetchError>, PendingFetchError>> {
-    const { pendingMutex } = await this.#getOrCreateMetadata(cacheKey)
+    const { pendingMutex, pendingLockMutex } = await this.#getOrCreateMetadata(cacheKey)
 
-    await pendingMutex.lock(async () => { })
-    const pendingLock = new Future<void>()
-    pendingMutex.lock(() => pendingLock.promise)
+    const pendingLock = await pendingLockMutex.lock(async () => {
+      await pendingMutex.lock(async () => { })
+      const pendingLock = new Future<void>()
+      pendingMutex.lock(() => pendingLock.promise)
+      return pendingLock
+    })
 
     try {
       if (pendingMutex.inner.current !== undefined)
@@ -207,11 +210,14 @@ export class Core {
   }
 
   async lockOrReplace<D, F>(cacheKey: string, aborter: AbortController, callback: () => Promise<Result<State<D, F>, FetchError>>): Promise<Result<State<D, F>, FetchError>> {
-    const { pendingMutex } = await this.#getOrCreateMetadata(cacheKey)
+    const { pendingMutex, pendingLockMutex } = await this.#getOrCreateMetadata(cacheKey)
 
-    await pendingMutex.lock(async () => { })
-    const pendingLock = new Future<void>()
-    pendingMutex.lock(() => pendingLock.promise)
+    const pendingLock = await pendingLockMutex.lock(async () => {
+      await pendingMutex.lock(async () => { })
+      const pendingLock = new Future<void>()
+      pendingMutex.lock(() => pendingLock.promise)
+      return pendingLock
+    })
 
     try {
       pendingMutex.inner.current?.aborter.abort(`Replaced`)
@@ -223,11 +229,14 @@ export class Core {
   }
 
   async lockOrJoin<D, F>(cacheKey: string, aborter: AbortController, callback: () => Promise<Result<State<D, F>, FetchError>>): Promise<Result<State<D, F>, FetchError>> {
-    const { pendingMutex } = await this.#getOrCreateMetadata(cacheKey)
+    const { pendingMutex, pendingLockMutex } = await this.#getOrCreateMetadata(cacheKey)
 
-    await pendingMutex.lock(async () => { })
-    const pendingLock = new Future<void>()
-    pendingMutex.lock(() => pendingLock.promise)
+    const pendingLock = await pendingLockMutex.lock(async () => {
+      await pendingMutex.lock(async () => { })
+      const pendingLock = new Future<void>()
+      pendingMutex.lock(() => pendingLock.promise)
+      return pendingLock
+    })
 
     try {
       if (pendingMutex.inner.current !== undefined)
