@@ -119,7 +119,7 @@ export class Core {
     }).register(this, undefined)
   }
 
-  async clean() {
+  clean() {
     for (const metadata of this.#metadatas.inner.values())
       clearTimeout(metadata.counterMutex.inner.timeout)
     this.#mounted = false
