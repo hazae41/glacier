@@ -172,13 +172,13 @@ export class Core {
     const { fetchMutex, pendingMutex } = await this.#getOrCreateMetadata(cacheKey)
 
     return await fetchMutex.lock(async () => {
+      const promise = callback()
+
+      pendingMutex.inner.current = { aborter, promise }
+      this.aborters.publish(cacheKey, aborter)
+      pendingLock.resolve()
+
       try {
-        const promise = callback()
-
-        pendingMutex.inner.current = { aborter, promise }
-        this.aborters.publish(cacheKey, aborter)
-        pendingLock.resolve()
-
         return await promise
       } finally {
         await pendingMutex.lock(async (pendingSlot) => {
@@ -192,11 +192,11 @@ export class Core {
   async lockOrError<D, F>(cacheKey: string, aborter: AbortController, callback: () => Promise<Result<State<D, F>, FetchError>>): Promise<Result<Result<State<D, F>, FetchError>, PendingFetchError>> {
     const { pendingMutex } = await this.#getOrCreateMetadata(cacheKey)
 
+    await pendingMutex.lock(async () => { })
     const pendingLock = new Future<void>()
+    pendingMutex.lock(() => pendingLock.promise)
 
     try {
-      await pendingMutex.lock(() => pendingLock.promise)
-
       if (pendingMutex.inner.current !== undefined)
         return new Err(new PendingFetchError())
 
@@ -209,11 +209,11 @@ export class Core {
   async lockOrReplace<D, F>(cacheKey: string, aborter: AbortController, callback: () => Promise<Result<State<D, F>, FetchError>>): Promise<Result<State<D, F>, FetchError>> {
     const { pendingMutex } = await this.#getOrCreateMetadata(cacheKey)
 
+    await pendingMutex.lock(async () => { })
     const pendingLock = new Future<void>()
+    pendingMutex.lock(() => pendingLock.promise)
 
     try {
-      await pendingMutex.lock(() => pendingLock.promise)
-
       pendingMutex.inner.current?.aborter.abort(`Replaced`)
 
       return await this.lockOrWait(cacheKey, pendingLock, aborter, callback)
