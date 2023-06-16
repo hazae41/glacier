@@ -1,7 +1,8 @@
 import { Option, Optional } from "@hazae41/option";
-import { Err, Result } from "@hazae41/result";
+import { Err, Ok, Result } from "@hazae41/result";
 import { Arrays } from "libs/arrays/arrays.js";
-import { CooldownError, Core, MissingFetcherError, PendingFetchError, ScrollError } from "mods/core/core.js";
+import { Time } from "libs/time/time.js";
+import { CooldownError, Core, MissingFetcherError, PendingFetchError } from "mods/core/core.js";
 import { FetchError, Fetcher } from "mods/types/fetcher.js";
 import { Mutator } from "mods/types/mutator.js";
 import { Scroller } from "mods/types/scroller.js";
@@ -89,37 +90,43 @@ export class ScrollQueryInstance<K, D, F>  {
     return await this.core.delete(this.cacheKey, this.settings)
   }
 
-  async fetch(aborter = new AbortController()): Promise<Result<State<D[], F>, FetchError | CooldownError | ScrollError | MissingFetcherError | PendingFetchError>> {
+  async fetch(aborter = new AbortController()): Promise<Result<Result<State<D[], F>, FetchError>, CooldownError | PendingFetchError | MissingFetcherError>> {
     const { core, scroller, cacheKey, fetcher, settings } = this
 
     if (fetcher === undefined)
       return new Err(new MissingFetcherError())
 
-    return await core.lockOrError(cacheKey, aborter, async () => {
-      return await Scroll.firstOrError(core, scroller, cacheKey, fetcher, aborter, settings)
-    })
+    if (Time.isAfterNow(this.real?.current.cooldown))
+      return new Err(new CooldownError())
+
+    const result = await core.lockOrError(cacheKey, aborter, async () =>
+      await Scroll.first(core, scroller, cacheKey, fetcher, aborter, settings))
+
+    return result
   }
 
-  async refetch(aborter = new AbortController()): Promise<Result<State<D[], F>, FetchError | ScrollError | MissingFetcherError>> {
+  async refetch(aborter = new AbortController()): Promise<Result<Result<State<D[], F>, FetchError>, MissingFetcherError>> {
     const { core, scroller, cacheKey, fetcher, settings } = this
 
     if (fetcher === undefined)
       return new Err(new MissingFetcherError())
 
-    return await core.lockOrReplace(cacheKey, aborter, async () => {
-      return await Scroll.first(core, scroller, cacheKey, fetcher, aborter, settings)
-    })
+    const result = await core.lockOrReplace(cacheKey, aborter, async () =>
+      await Scroll.first(core, scroller, cacheKey, fetcher, aborter, settings))
+
+    return new Ok(result)
   }
 
-  async scroll(aborter = new AbortController()): Promise<Result<State<D[], F>, FetchError | ScrollError | MissingFetcherError>> {
+  async scroll(aborter = new AbortController()): Promise<Result<Result<State<D[], F>, FetchError>, MissingFetcherError>> {
     const { core, scroller, cacheKey, fetcher, settings } = this
 
     if (fetcher === undefined)
       return new Err(new MissingFetcherError())
 
-    return await core.lockOrReplace(cacheKey, aborter, async () => {
-      return await Scroll.scroll(core, scroller, cacheKey, fetcher, aborter, settings)
-    })
+    const result = await core.lockOrReplace(cacheKey, aborter, async () =>
+      await Scroll.scroll(core, scroller, cacheKey, fetcher, aborter, settings))
+
+    return new Ok(result)
   }
 
 }

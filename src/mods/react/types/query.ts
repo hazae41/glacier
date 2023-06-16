@@ -1,7 +1,9 @@
 import { Result } from "@hazae41/result"
+import { CooldownError, MissingFetcherError, MissingKeyError, PendingFetchError } from "mods/core/core.js"
 import { Data } from "mods/result/data.js"
 import { Fail } from "mods/result/fail.js"
 import { Fetched } from "mods/result/fetched.js"
+import { FetchError } from "mods/types/fetcher.js"
 import { Mutator } from "mods/types/mutator.js"
 import { FetchedState, State } from "mods/types/state.js"
 
@@ -65,29 +67,29 @@ export interface Query<K, D, F> {
    * Fetch with cooldown
    * @example You want to fetch and don't care if it's cooldowned
    */
-  fetch(aborter?: AbortController): Promise<Result<State<D, F>, Error>>
+  fetch(aborter?: AbortController): Promise<Result<Result<State<D, F>, FetchError>, CooldownError | PendingFetchError | MissingFetcherError | MissingKeyError>>
 
   /**
    * Fetch without cooldown
    * @example User clicked on the refresh button
    * @example You just made a POST request and want to get some fresh data
    */
-  refetch(aborter?: AbortController): Promise<Result<State<D, F>, Error>>
+  refetch(aborter?: AbortController): Promise<Result<Result<State<D, F>, FetchError>, MissingFetcherError | MissingKeyError>>
 
   /**
    * Mutate the cache
    * @param res 
    */
-  mutate(mutator: Mutator<D, F>): Promise<Result<State<D, F>, Error>>
+  mutate(mutator: Mutator<D, F>): Promise<Result<State<D, F>, MissingKeyError>>
 
   /**
    * Clear the cache
    */
-  clear(): Promise<Result<State<D, F>, Error>>
+  clear(): Promise<Result<State<D, F>, MissingKeyError>>
 
   /**
    * Suspend until the next state change, also launches an undeduped fetch
    */
-  suspend(): Promise<void>
+  suspend(): Promise<Result<Result<State<D, F>, FetchError>, MissingFetcherError | MissingKeyError>>
 
 }

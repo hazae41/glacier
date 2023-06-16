@@ -1,5 +1,6 @@
 import { Option, Optional } from "@hazae41/option";
 import { Err, Ok, Result } from "@hazae41/result";
+import { Time } from "libs/time/time.js";
 import { CooldownError, Core, MissingFetcherError, PendingFetchError } from "mods/core/core.js";
 import { FetchError, Fetcher } from "mods/types/fetcher.js";
 import { Mutator } from "mods/types/mutator.js";
@@ -170,26 +171,33 @@ export class SimpleFetcherfulQueryInstance<K, D, F>  {
     return await this.core.delete(this.cacheKey, this.settings)
   }
 
-  async fetch(aborter = new AbortController()): Promise<Result<State<D, F>, FetchError | CooldownError | PendingFetchError>> {
+  async fetch(aborter = new AbortController()): Promise<Result<Result<State<D, F>, FetchError>, CooldownError | PendingFetchError>> {
     const { core, key, cacheKey, fetcher, settings } = this
 
-    return await core.lockOrError(cacheKey, aborter, async () => {
-      return await Simple.fetchOrError(core, key, cacheKey, fetcher, aborter, settings)
-    })
+    if (Time.isAfterNow(this.real?.current.cooldown))
+      return new Err(new CooldownError())
+
+    const result = await core.lockOrError(cacheKey, aborter, async () =>
+      await Simple.fetch(core, key, cacheKey, fetcher, aborter, settings))
+
+    return result
   }
 
-  async refetch(aborter = new AbortController()): Promise<Result<State<D, F>, FetchError>> {
+  async refetch(aborter = new AbortController()): Promise<Result<Result<State<D, F>, FetchError>, never>> {
     const { core, key, cacheKey, fetcher, settings } = this
 
-    return await core.lockOrReplace(cacheKey, aborter, async () => {
-      return await Simple.fetch(core, key, cacheKey, fetcher, aborter, settings)
-    })
+    const result = await core.lockOrReplace(cacheKey, aborter, async () =>
+      await Simple.fetch(core, key, cacheKey, fetcher, aborter, settings))
+
+    return new Ok(result)
   }
 
-  async update(updater: Updater<K, D, F>, aborter = new AbortController()): Promise<Result<State<D, F>, FetchError>> {
+  async update(updater: Updater<K, D, F>, aborter = new AbortController()): Promise<Result<Result<State<D, F>, FetchError>, never>> {
     const { core, key, cacheKey, fetcher, settings } = this
 
-    return await Simple.update(core, key, cacheKey, fetcher, updater, aborter, settings)
+    const result = await Simple.update(core, key, cacheKey, fetcher, updater, aborter, settings)
+
+    return new Ok(result)
   }
 
 }

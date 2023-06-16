@@ -1,8 +1,7 @@
-import { Option, Some } from "@hazae41/option";
+import { Some } from "@hazae41/option";
 import { Err, Ok, Result } from "@hazae41/result";
 import { Arrays } from "libs/arrays/arrays.js";
-import { Time } from "libs/time/time.js";
-import { CooldownError, Core, ScrollError } from "mods/core/core.js";
+import { Core } from "mods/core/core.js";
 import { DEFAULT_EQUALS, DEFAULT_SERIALIZER } from "mods/defaults.js";
 import { Fetched } from "mods/result/fetched.js";
 import { TimesInit } from "mods/result/times.js";
@@ -39,13 +38,13 @@ export namespace Scroll {
     fetcher: Fetcher<K, D, F>,
     aborter: AbortController,
     settings: QuerySettings<K, D[], F>
-  ): Promise<Result<State<D[], F>, FetchError | ScrollError>> {
+  ): Promise<Result<State<D[], F>, FetchError>> {
     const { equals = DEFAULT_EQUALS } = settings
 
     const key = scroller(undefined)
 
     if (key === undefined)
-      return new Err(new ScrollError())
+      return new Err(new FetchError(`Can't scroll`))
 
     const aborted = await core.runWithTimeout(async (signal) => {
       return await fetcher(key, { signal })
@@ -70,44 +69,6 @@ export namespace Scroll {
     }, settings))
   }
 
-  export async function firstOrError<K, D, F>(
-    core: Core,
-    scroller: Scroller<K, D, F>,
-    cacheKey: string,
-    fetcher: Fetcher<K, D, F>,
-    aborter: AbortController,
-    settings: QuerySettings<K, D[], F>
-  ): Promise<Result<State<D[], F>, FetchError | CooldownError | ScrollError>> {
-    const previous = await core.get(cacheKey, settings)
-
-    if (Time.isAfterNow(previous.real?.current.cooldown))
-      return new Err(new CooldownError())
-
-    return await first(core, scroller, cacheKey, fetcher, aborter, settings)
-  }
-
-  export async function firstOrWait<K, D, F>(
-    core: Core,
-    scroller: Scroller<K, D, F>,
-    cacheKey: string,
-    fetcher: Fetcher<K, D, F>,
-    aborter: AbortController,
-    settings: QuerySettings<K, D[], F>
-  ): Promise<Result<State<D[], F>, FetchError | CooldownError | ScrollError>> {
-    const previous = await core.get(cacheKey, settings)
-
-    const cooldown = Option
-      .wrap(previous.real?.current.cooldown)
-      .mapSync(Time.toDelay)
-      .filterSync(x => x > 0)
-
-    if (cooldown.isSome())
-      await new Promise(ok => setTimeout(ok, cooldown.get()))
-
-    return await first(core, scroller, cacheKey, fetcher, aborter, settings)
-  }
-
-
   /**
    * Scroll to the next page
    * @param core 
@@ -125,14 +86,14 @@ export namespace Scroll {
     fetcher: Fetcher<K, D, F>,
     aborter: AbortController,
     settings: QuerySettings<K, D[], F>
-  ): Promise<Result<State<D[], F>, FetchError | ScrollError>> {
+  ): Promise<Result<State<D[], F>, FetchError>> {
     const previous = await core.get(cacheKey, settings)
     const previousPages = previous.real?.data?.inner ?? []
     const previousPage = Arrays.last(previousPages)
     const key = scroller(previousPage)
 
     if (key === undefined)
-      return new Err(new ScrollError())
+      return new Err(new FetchError(`Can't scroll`))
 
     const aborted = await core.runWithTimeout(async (signal) => {
       return await fetcher(key, { signal })

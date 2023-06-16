@@ -1,7 +1,6 @@
-import { Option, Some } from "@hazae41/option";
-import { Err, Ok, Result } from "@hazae41/result";
-import { Time } from "libs/time/time.js";
-import { CooldownError, Core } from "mods/core/core.js";
+import { Some } from "@hazae41/option";
+import { Ok, Result } from "@hazae41/result";
+import { Core } from "mods/core/core.js";
 import { DEFAULT_SERIALIZER } from "mods/defaults.js";
 import { Fetched } from "mods/result/fetched.js";
 import { TimesInit } from "mods/result/times.js";
@@ -40,53 +39,6 @@ export namespace Simple {
     const timed = Fetched.from(aborted.get()).setTimes(times)
 
     return new Ok(await core.mutate(cacheKey, () => new Some(timed), settings))
-  }
-
-  /**
-   * Unlocked fetch
-   * @param core 
-   * @param key 
-   * @param cacheKey 
-   * @param fetcher 
-   * @param aborter 
-   * @param settings 
-   * @returns 
-   */
-  export async function fetchOrError<K, D, F>(
-    core: Core,
-    key: K,
-    cacheKey: string,
-    fetcher: Fetcher<K, D, F>,
-    aborter: AbortController,
-    settings: QuerySettings<K, D, F>
-  ): Promise<Result<State<D, F>, FetchError | CooldownError>> {
-    const previous = await core.get(cacheKey, settings)
-
-    if (Time.isAfterNow(previous.real?.current.cooldown))
-      return new Err(new CooldownError())
-
-    return await fetch(core, key, cacheKey, fetcher, aborter, settings)
-  }
-
-  export async function fetchOrWait<K, D, F>(
-    core: Core,
-    key: K,
-    cacheKey: string,
-    fetcher: Fetcher<K, D, F>,
-    aborter: AbortController,
-    settings: QuerySettings<K, D, F>
-  ): Promise<Result<State<D, F>, FetchError>> {
-    const previous = await core.get(cacheKey, settings)
-
-    const cooldown = Option
-      .wrap(previous.real?.current.cooldown)
-      .mapSync(Time.toDelay)
-      .filterSync(x => x > 0)
-
-    if (cooldown.isSome())
-      await new Promise(ok => setTimeout(ok, cooldown.get()))
-
-    return await fetch(core, key, cacheKey, fetcher, aborter, settings)
   }
 
   /**

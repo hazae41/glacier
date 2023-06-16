@@ -40,4 +40,14 @@ export class Ortho<K, S> {
   off(key: K, listener: (x: S) => void) {
     this.#listeners.erase(key, listener)
   }
+
+  once(key: K, listener: (x: S) => void) {
+    const listener2 = (x: S) => {
+      this.off(key, listener2)
+      listener(x)
+    }
+
+    this.on(key, listener2)
+  }
+
 }

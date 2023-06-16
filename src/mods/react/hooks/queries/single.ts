@@ -2,12 +2,13 @@ import { Option, Optional } from "@hazae41/option";
 import { Err, Ok, Result } from "@hazae41/result";
 import { useAsyncMemo } from "libs/react/memo.js";
 import { useRenderRef } from "libs/react/ref.js";
-import { MissingFetcherError, MissingKeyError } from "mods/core/core.js";
+import { Time } from "libs/time/time.js";
+import { CooldownError, MissingFetcherError, MissingKeyError } from "mods/core/core.js";
 import { useCore } from "mods/react/contexts/core.js";
 import { Query } from "mods/react/types/query.js";
 import { Simple } from "mods/single/helper.js";
 import { SimpleQuerySchema } from "mods/single/schema.js";
-import { Fetcher } from "mods/types/fetcher.js";
+import { FetchError, Fetcher } from "mods/types/fetcher.js";
 import { Mutator } from "mods/types/mutator.js";
 import { QuerySettings } from "mods/types/settings.js";
 import { State } from "mods/types/state.js";
@@ -37,7 +38,7 @@ export interface SingleQuery<K, D, F> extends Query<K, D, F> {
    * @param updater Mutation function
    * @param aborter Custom AbortController
    */
-  update(updater: Updater<K, D, F>, aborter?: AbortController): Promise<Result<State<D, F>, Error>>
+  update(updater: Updater<K, D, F>, aborter?: AbortController): Promise<Result<Result<State<D, F>, FetchError>, MissingFetcherError | MissingKeyError>>
 }
 
 /**
@@ -115,9 +116,9 @@ export function useAnonymousQuery<K, D, F>(
     if (cacheKey === undefined)
       return new Err(new MissingKeyError())
 
-    stateRef.current = await core.mutate(cacheKey, mutator, settingsRef.current)
+    const state = await core.mutate(cacheKey, mutator, settingsRef.current)
 
-    return new Ok(stateRef.current)
+    return new Ok(state)
   }, [core, cacheKeyPromise])
 
   const clear = useCallback(async () => {
@@ -126,9 +127,9 @@ export function useAnonymousQuery<K, D, F>(
     if (cacheKey === undefined)
       return new Err(new MissingKeyError())
 
-    stateRef.current = await core.delete(cacheKey, settingsRef.current)
+    const state = await core.delete(cacheKey, settingsRef.current)
 
-    return new Ok(stateRef.current)
+    return new Ok(state)
   }, [core, cacheKeyPromise])
 
   const fetch = useCallback(async (aborter = new AbortController()) => {
@@ -146,9 +147,13 @@ export function useAnonymousQuery<K, D, F>(
     if (fetcher === undefined)
       return new Err(new MissingFetcherError())
 
-    return await core.lockOrError(cacheKey, aborter, async () => {
-      return await Simple.fetchOrError(core, key, cacheKey, fetcher, aborter, settings)
-    }).then(r => r.inspectSync(state => stateRef.current = state))
+    if (Time.isAfterNow(stateRef.current?.real?.current.cooldown))
+      return new Err(new CooldownError())
+
+    const result = await core.lockOrError(cacheKey, aborter, async () =>
+      await Simple.fetch(core, key, cacheKey, fetcher, aborter, settings))
+
+    return result
   }, [core, cacheKeyPromise])
 
   const refetch = useCallback(async (aborter = new AbortController()) => {
@@ -166,9 +171,10 @@ export function useAnonymousQuery<K, D, F>(
     if (fetcher === undefined)
       return new Err(new MissingFetcherError())
 
-    return await core.lockOrReplace(cacheKey, aborter, async () => {
-      return await Simple.fetch(core, key, cacheKey, fetcher, aborter, settings)
-    }).then(r => r.inspectSync(state => stateRef.current = state))
+    const result = await core.lockOrReplace(cacheKey, aborter, async () =>
+      await Simple.fetch(core, key, cacheKey, fetcher, aborter, settings))
+
+    return new Ok(result)
   }, [core, cacheKeyPromise])
 
   const update = useCallback(async (updater: Updater<K, D, F>, aborter = new AbortController()) => {
@@ -186,29 +192,30 @@ export function useAnonymousQuery<K, D, F>(
     if (fetcher === undefined)
       return new Err(new MissingFetcherError())
 
-    return await Simple
-      .update(core, key, cacheKey, fetcher, updater, aborter, settings)
-      .then(r => r.inspectSync(state => stateRef.current = state))
+    const result = await Simple.update(core, key, cacheKey, fetcher, updater, aborter, settings)
+
+    return new Ok(result)
   }, [core, cacheKeyPromise])
 
-  const suspend = useCallback(async (aborter = new AbortController()): Promise<void> => {
+  const suspend = useCallback(async (aborter = new AbortController()) => {
     const cacheKey = await cacheKeyPromise
 
     if (cacheKey === undefined)
-      throw new MissingKeyError()
+      return new Err(new MissingKeyError())
 
     const key = keyRef.current
     const fetcher = fetcherRef.current
     const settings = settingsRef.current
 
     if (key === undefined)
-      throw new MissingKeyError()
+      return new Err(new MissingKeyError())
     if (fetcher === undefined)
-      throw new MissingFetcherError()
+      return new Err(new MissingFetcherError())
 
-    stateRef.current = await core.lockOrReplace(cacheKey, aborter, async () => {
-      return await Simple.fetchOrWait(core, key, cacheKey, fetcher, aborter, settings)
-    }).then(r => r.unwrap())
+    const result = await core.lockOrJoin(cacheKey, aborter, async () =>
+      await Simple.fetch(core, key, cacheKey, fetcher, aborter, settings))
+
+    return new Ok(result)
   }, [core, cacheKeyPromise])
 
   const state = stateRef.current

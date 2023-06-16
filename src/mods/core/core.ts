@@ -1,6 +1,7 @@
 import { Mutex } from "@hazae41/mutex"
 import { None, Option, Optional, Some } from "@hazae41/option"
-import { Err, Result } from "@hazae41/result"
+import { Err, Ok, Result } from "@hazae41/result"
+import { FetchError } from "index.js"
 import { Ortho } from "libs/ortho/ortho.js"
 import { Promiseable } from "libs/promises/promises.js"
 import { Time } from "libs/time/time.js"
@@ -95,9 +96,14 @@ interface Slot<T> {
   current?: T
 }
 
+interface Pending<D, F> {
+  aborter: AbortController
+  promise: Promise<Result<State<D, F>, FetchError>>
+}
+
 export interface Metadata {
   readonly stateMutex: Mutex<Slot<State<any, any>>>,
-  readonly aborterMutex: Mutex<Slot<AbortController>>,
+  readonly aborterMutex: Mutex<Slot<Pending<any, any>>>,
   readonly optimizersMutex: Mutex<Map<string, Mutator<any, any>>>
   readonly counterMutex: Mutex<Counter>,
 }
@@ -126,7 +132,7 @@ export class Core {
   }
 
   getAborterSync(cacheKey: string): Optional<AbortController> {
-    return this.#metadatas.inner.get(cacheKey)?.aborterMutex.inner.current
+    return this.#metadatas.inner.get(cacheKey)?.aborterMutex.inner.current?.aborter
   }
 
   getStateSync<D, F>(cacheKey: string): Optional<State<D, F>> {
@@ -157,41 +163,48 @@ export class Core {
     })
   }
 
-  async lockOrError<T, E>(cacheKey: string, aborter: AbortController, callback: () => Promise<Result<T, E>>): Promise<Result<T, E | PendingFetchError>> {
+  async lockOrWait<D, F>(cacheKey: string, aborter: AbortController, callback: () => Promise<Result<State<D, F>, FetchError>>): Promise<Result<State<D, F>, FetchError>> {
     const { aborterMutex } = await this.#getOrCreateMetadata(cacheKey)
 
-    if (aborterMutex.inner.current !== undefined)
-      return new Err(new PendingFetchError())
-
-    return await aborterMutex.lock(async (aborterSlot) => {
+    return await aborterMutex.lock(async (pendingSlot) => {
       try {
-        aborterSlot.current = aborter
+        const promise = callback()
+
+        pendingSlot.current = { aborter, promise }
         this.aborters.publish(cacheKey, aborter)
 
-        return await callback()
+        return await promise
       } finally {
-        aborterSlot.current = undefined
+        pendingSlot.current = undefined
         this.aborters.publish(cacheKey, undefined)
       }
     })
   }
 
-  async lockOrReplace<T, E>(cacheKey: string, aborter: AbortController, callback: () => Promise<Result<T, E>>): Promise<Result<T, E>> {
+  async lockOrError<D, F>(cacheKey: string, aborter: AbortController, callback: () => Promise<Result<State<D, F>, FetchError>>): Promise<Result<Result<State<D, F>, FetchError>, PendingFetchError>> {
     const { aborterMutex } = await this.#getOrCreateMetadata(cacheKey)
 
-    aborterMutex.inner.current?.abort(`Replaced`)
+    if (aborterMutex.inner.current !== undefined)
+      return new Err(new PendingFetchError())
 
-    return await aborterMutex.lock(async (aborterSlot) => {
-      try {
-        aborterSlot.current = aborter
-        this.aborters.publish(cacheKey, aborter)
+    return new Ok(await this.lockOrWait(cacheKey, aborter, callback))
+  }
 
-        return await callback()
-      } finally {
-        aborterSlot.current = undefined
-        this.aborters.publish(cacheKey, undefined)
-      }
-    })
+  async lockOrReplace<D, F>(cacheKey: string, aborter: AbortController, callback: () => Promise<Result<State<D, F>, FetchError>>): Promise<Result<State<D, F>, FetchError>> {
+    const { aborterMutex } = await this.#getOrCreateMetadata(cacheKey)
+
+    aborterMutex.inner.current?.aborter.abort(`Replaced`)
+
+    return await this.lockOrWait(cacheKey, aborter, callback)
+  }
+
+  async lockOrJoin<D, F>(cacheKey: string, aborter: AbortController, callback: () => Promise<Result<State<D, F>, FetchError>>): Promise<Result<State<D, F>, FetchError>> {
+    const { aborterMutex } = await this.#getOrCreateMetadata(cacheKey)
+
+    if (aborterMutex.inner.current !== undefined)
+      return await aborterMutex.inner.current.promise
+
+    return await this.lockOrWait(cacheKey, aborter, callback)
   }
 
   async get<K, D, F>(cacheKey: string, settings: QuerySettings<K, D, F>): Promise<State<D, F>> {
