@@ -1,5 +1,4 @@
-import { Future } from "@hazae41/future"
-import { Mutex } from "@hazae41/mutex"
+import { Lock, Mutex } from "@hazae41/mutex"
 import { None, Option, Optional, Some } from "@hazae41/option"
 import { Result } from "@hazae41/result"
 import { FetchError } from "index.js"
@@ -84,9 +83,7 @@ interface Pending<D, F> {
 
 export interface Metadata {
   readonly stateMutex: Mutex<Slot<State<any, any>>>,
-  readonly pendingMutex: Mutex<Slot<Pending<any, any>>>,
-  readonly fetchMutex: Mutex<void>,
-  readonly pendingLockMutex: Mutex<void>
+  readonly pendingMutex: Mutex<Mutex<Slot<Pending<any, any>>>>,
   readonly optimizersMutex: Mutex<Map<string, Mutator<any, any>>>
   readonly counterMutex: Mutex<Counter>,
 }
@@ -115,7 +112,7 @@ export class Core {
   }
 
   getAborterSync(cacheKey: string): Optional<AbortController> {
-    return this.#metadatas.inner.get(cacheKey)?.pendingMutex.inner.current?.aborter
+    return this.#metadatas.inner.get(cacheKey)?.pendingMutex.inner.inner.current?.aborter
   }
 
   getStateSync<D, F>(cacheKey: string): Optional<State<D, F>> {
@@ -135,77 +132,58 @@ export class Core {
         return metadata
 
       const stateMutex = new Mutex({})
-      const pendingMutex = new Mutex({})
-      const fetchMutex = new Mutex(undefined)
-      const pendingLockMutex = new Mutex(undefined)
+      const pendingMutex = new Mutex(new Mutex({}))
       const counterMutex = new Mutex({ value: 0 })
       const optimizersMutex = new Mutex(new Map())
 
-      metadata = { stateMutex, pendingMutex, fetchMutex, pendingLockMutex, counterMutex, optimizersMutex }
+      metadata = { stateMutex, pendingMutex, counterMutex, optimizersMutex }
 
       inner.set(cacheKey, metadata)
       return metadata
     })
   }
 
-  async lockOrWait<D, F>(cacheKey: string, pendingLock: Future<void>, aborter: AbortController, callback: () => Promise<Result<State<D, F>, FetchError>>): Promise<Result<State<D, F>, FetchError>> {
-    const { fetchMutex, pendingMutex } = await this.#getOrCreateMetadata(cacheKey)
+  async lockOrWait<D, F>(cacheKey: string, pendingLock: Lock<Mutex<Slot<Pending<D, F>>>>, aborter: AbortController, callback: () => Promise<Result<State<D, F>, FetchError>>): Promise<Result<State<D, F>, FetchError>> {
+    const fetchLock = await pendingLock.inner.acquire()
 
-    return await fetchMutex.lock(async () => {
+    try {
       const promise = callback()
 
-      pendingMutex.inner.current = { aborter, promise }
+      fetchLock.inner.current = { aborter, promise }
       this.aborters.publish(cacheKey, aborter)
-      pendingLock.resolve()
+      pendingLock.release()
 
-      try {
-        return await promise
-      } finally {
-        await pendingMutex.lock(async (pendingSlot) => {
-          pendingSlot.current = undefined
-          this.aborters.publish(cacheKey, undefined)
-        })
-      }
-    })
+      return await promise
+    } finally {
+      fetchLock.inner.current = undefined
+      this.aborters.publish(cacheKey, undefined)
+      pendingLock.release()
+      fetchLock.release()
+    }
   }
 
   async lockOrReplace<D, F>(cacheKey: string, aborter: AbortController, callback: () => Promise<Result<State<D, F>, FetchError>>): Promise<Result<State<D, F>, FetchError>> {
-    const { pendingMutex, pendingLockMutex } = await this.#getOrCreateMetadata(cacheKey)
+    const { pendingMutex } = await this.#getOrCreateMetadata(cacheKey)
 
-    const pendingLock = await pendingLockMutex.lock(async () => {
-      await pendingMutex.lock(async () => { })
-      const pendingLock = new Future<void>()
-      pendingMutex.lock(() => pendingLock.promise)
-      return pendingLock
-    })
+    const pendingLock = await pendingMutex.acquire()
+    const pending = pendingLock.inner.inner.current
 
-    try {
-      pendingMutex.inner.current?.aborter.abort(`Replaced`)
+    if (pending !== undefined)
+      pending.aborter.abort(`Replaced`)
 
-      return await this.lockOrWait(cacheKey, pendingLock, aborter, callback)
-    } finally {
-      pendingLock.resolve()
-    }
+    return await this.lockOrWait(cacheKey, pendingLock, aborter, callback)
   }
 
   async lockOrJoin<D, F>(cacheKey: string, aborter: AbortController, callback: () => Promise<Result<State<D, F>, FetchError>>): Promise<Result<State<D, F>, FetchError>> {
-    const { pendingMutex, pendingLockMutex } = await this.#getOrCreateMetadata(cacheKey)
+    const { pendingMutex } = await this.#getOrCreateMetadata(cacheKey)
 
-    const pendingLock = await pendingLockMutex.lock(async () => {
-      await pendingMutex.lock(async () => { })
-      const pendingLock = new Future<void>()
-      pendingMutex.lock(() => pendingLock.promise)
-      return pendingLock
-    })
+    const pendingLock = await pendingMutex.acquire()
+    const pending = pendingLock.inner.inner.current
 
-    try {
-      if (pendingMutex.inner.current !== undefined)
-        return await pendingMutex.inner.current.promise
+    if (pending !== undefined)
+      return await pending.promise
 
-      return await this.lockOrWait(cacheKey, pendingLock, aborter, callback)
-    } finally {
-      pendingLock.resolve()
-    }
+    return await this.lockOrWait(cacheKey, pendingLock, aborter, callback)
   }
 
   async #get<K, D, F>(cacheKey: string, stateSlot: Slot<State<D, F>>, settings: QuerySettings<K, D, F>): Promise<State<D, F>> {
