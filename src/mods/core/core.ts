@@ -72,7 +72,6 @@ export interface Metadata {
   mutex: Mutex<void>,
   counter: number,
   state?: State<any, any>,
-  stored?: StoredState<any, any>,
   timeout?: NodeJS.Timeout
   aborter?: AbortController
   promise?: Promise<Result<State<any, any>, FetchError>>
@@ -81,10 +80,12 @@ export interface Metadata {
 
 export class Core {
 
-  readonly states = new Ortho<string, State<any, any>>()
-  readonly aborters = new Ortho<string, Optional<AbortController>>()
+  readonly onState = new Ortho<string, State<any, any>>()
+  readonly onAborter = new Ortho<string, Optional<AbortController>>()
 
   readonly #metadatas = new Map<string, Metadata>()
+
+  readonly #storeds = new Map<string, Optional<StoredState<unknown, unknown>>>()
 
   #mounted = true
 
@@ -111,7 +112,11 @@ export class Core {
   }
 
   getStoredSync(cacheKey: string): Optional<StoredState<unknown, unknown>> {
-    return this.#metadatas.get(cacheKey)?.stored
+    return this.#storeds.get(cacheKey)
+  }
+
+  setStoredSync(cacheKey: string, stored: Optional<StoredState<unknown, unknown>>) {
+    this.#storeds.set(cacheKey, stored)
   }
 
   #getOrCreateMetadata(cacheKey: string) {
@@ -141,14 +146,14 @@ export class Core {
 
       metadata.promise = promise
       metadata.aborter = aborter
-      this.aborters.publish(cacheKey, aborter)
+      this.onAborter.publish(cacheKey, aborter)
 
       return await promise
     } finally {
       if (metadata.aborter === aborter) {
         metadata.aborter = undefined
         metadata.promise = undefined
-        this.aborters.publish(cacheKey, undefined)
+        this.onAborter.publish(cacheKey, undefined)
       }
     }
   }
@@ -164,14 +169,14 @@ export class Core {
 
       metadata.aborter = aborter
       metadata.promise = promise
-      this.aborters.publish(cacheKey, aborter)
+      this.onAborter.publish(cacheKey, aborter)
 
       return await promise
     } finally {
       if (metadata.aborter === aborter) {
         metadata.aborter = undefined
         metadata.promise = undefined
-        this.aborters.publish(cacheKey, undefined)
+        this.onAborter.publish(cacheKey, undefined)
       }
     }
   }
@@ -183,8 +188,8 @@ export class Core {
     const stored = await settings.storage?.get(metadata.cacheKey)
     const state = await this.unstore(stored, settings)
     metadata.state = state
-    metadata.stored = stored
-    this.states.publish(metadata.cacheKey, state)
+    this.#storeds.set(metadata.cacheKey, stored)
+    this.onState.publish(metadata.cacheKey, state)
     return state
   }
 
@@ -277,8 +282,8 @@ export class Core {
       const stored = await this.store(next, settings)
 
       metadata.state = next
-      metadata.stored = stored
-      this.states.publish(cacheKey, next)
+      this.#storeds.set(cacheKey, stored)
+      this.onState.publish(cacheKey, next)
 
       if (!settings.storage)
         return next
