@@ -1,7 +1,6 @@
 import { Option, Optional } from "@hazae41/option";
 import { Err, Ok, Result } from "@hazae41/result";
 import { Arrays } from "libs/arrays/arrays.js";
-import { useAsyncMemo } from "libs/react/memo.js";
 import { useRenderRef } from "libs/react/ref.js";
 import { Time } from "libs/time/time.js";
 import { CooldownError, MissingFetcherError, MissingKeyError } from "mods/core/core.js";
@@ -67,8 +66,8 @@ export function useAnonymousScrollQuery<K, D, F>(
     return scroller?.()
   }, [scroller])
 
-  const [cacheKey, cacheKeyPromise] = useAsyncMemo(async () => {
-    return await Option.map(key, () => Scroll.getCacheKey(key, settingsRef.current))
+  const cacheKey = useMemo(() => {
+    return Option.mapSync(key, () => Scroll.getCacheKey(key, settingsRef.current))
   }, [key])
 
   const [, setCounter] = useState(0)
@@ -119,30 +118,24 @@ export function useAnonymousScrollQuery<K, D, F>(
   }, [core, cacheKey])
 
   const mutate = useCallback(async (mutator: Mutator<D[], F>) => {
-    const cacheKey = await cacheKeyPromise
-
     if (cacheKey === undefined)
       return new Err(new MissingKeyError())
 
     const state = await core.mutate(cacheKey, mutator, settingsRef.current)
 
     return new Ok(state)
-  }, [core, cacheKeyPromise])
+  }, [core, cacheKey])
 
   const clear = useCallback(async () => {
-    const cacheKey = await cacheKeyPromise
-
     if (cacheKey === undefined)
       return new Err(new MissingKeyError())
 
     const state = await core.delete(cacheKey, settingsRef.current)
 
     return new Ok(state)
-  }, [core, cacheKeyPromise])
+  }, [core, cacheKey])
 
   const fetch = useCallback(async (aborter = new AbortController()) => {
-    const cacheKey = await cacheKeyPromise
-
     if (cacheKey === undefined)
       return new Err(new MissingKeyError())
 
@@ -162,11 +155,9 @@ export function useAnonymousScrollQuery<K, D, F>(
       await Scroll.first(core, scroller, cacheKey, fetcher, aborter, settings))
 
     return result
-  }, [core, cacheKeyPromise])
+  }, [core, cacheKey])
 
   const refetch = useCallback(async (aborter = new AbortController()) => {
-    const cacheKey = await cacheKeyPromise
-
     if (cacheKey === undefined)
       return new Err(new MissingKeyError())
 
@@ -183,11 +174,9 @@ export function useAnonymousScrollQuery<K, D, F>(
       await Scroll.first(core, scroller, cacheKey, fetcher, aborter, settings))
 
     return new Ok(result)
-  }, [core, cacheKeyPromise])
+  }, [core, cacheKey])
 
   const scroll = useCallback(async (aborter = new AbortController()) => {
-    const cacheKey = await cacheKeyPromise
-
     if (cacheKey === undefined)
       return new Err(new MissingKeyError())
 
@@ -204,11 +193,9 @@ export function useAnonymousScrollQuery<K, D, F>(
       await Scroll.scroll(core, scroller, cacheKey, fetcher, aborter, settings))
 
     return new Ok(result)
-  }, [core, cacheKeyPromise])
+  }, [core, cacheKey])
 
   const suspend = useCallback(async (aborter = new AbortController()) => {
-    const cacheKey = await cacheKeyPromise
-
     if (cacheKey === undefined)
       throw new MissingKeyError()
 
@@ -225,7 +212,7 @@ export function useAnonymousScrollQuery<K, D, F>(
       await Scroll.first(core, scroller, cacheKey, fetcher, aborter, settings))
 
     return new Ok(result)
-  }, [core, cacheKeyPromise])
+  }, [core, cacheKey])
 
   const state = stateRef.current
   const aborter = aborterRef.current
