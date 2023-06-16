@@ -340,8 +340,7 @@ export class Core {
       if (next.real?.current.isFail() && previous.real?.current.isFail() && equals(next.real.current.inner, previous.real.current.inner))
         next = new RealState(new FailState(new Fail(previous.real.current.inner, next.real.current), previous.real.data))
 
-      const optimized = await this.#reoptimize(metadata, next)
-      return new Some(optimized)
+      return new Some(await this.#reoptimize(metadata, next))
     }, settings)
   }
 
