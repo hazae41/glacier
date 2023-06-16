@@ -67,25 +67,15 @@ export class MissingFetcherError extends Error {
 
 }
 
-interface Counter {
-  value: number,
-  timeout?: NodeJS.Timeout
-}
-
-interface Slot<T> {
-  current?: T
-}
-
-interface Pending<D, F> {
-  aborter: AbortController
-  promise: Promise<Result<State<D, F>, FetchError>>
-}
-
 export interface Metadata {
-  readonly stateMutex: Mutex<Slot<State<any, any>>>,
-  readonly pendingMutex: Mutex<Slot<Pending<any, any>>>,
-  readonly optimizersMutex: Mutex<Map<string, Mutator<any, any>>>
-  readonly counterMutex: Mutex<Counter>,
+  cacheKey: string,
+  mutex: Mutex<void>,
+  counter: number,
+  state?: State<any, any>,
+  timeout?: NodeJS.Timeout
+  aborter?: AbortController
+  promise?: Promise<Result<State<any, any>, FetchError>>
+  optimizers: Map<string, Mutator<any, any>>
 }
 
 export class Core {
@@ -93,7 +83,7 @@ export class Core {
   readonly states = new Ortho<string, State<any, any>>()
   readonly aborters = new Ortho<string, Optional<AbortController>>()
 
-  readonly #metadatas = new Mutex(new Map<string, Metadata>())
+  readonly #metadatas = new Map<string, Metadata>()
 
   #mounted = true
 
@@ -106,119 +96,96 @@ export class Core {
   }
 
   clean() {
-    for (const metadata of this.#metadatas.inner.values())
-      clearTimeout(metadata.counterMutex.inner.timeout)
+    for (const metadata of this.#metadatas.values())
+      clearTimeout(metadata.timeout)
     this.#mounted = false
   }
 
   getAborterSync(cacheKey: string): Optional<AbortController> {
-    return this.#metadatas.inner.get(cacheKey)?.pendingMutex.inner.current?.aborter
+    return this.#metadatas.get(cacheKey)?.aborter
   }
 
   getStateSync<D, F>(cacheKey: string): Optional<State<D, F>> {
-    return this.#metadatas.inner.get(cacheKey)?.stateMutex.inner.current
+    return this.#metadatas.get(cacheKey)?.state
   }
 
-  async #getOrCreateMetadata(cacheKey: string) {
-    const metadata = this.#metadatas.inner.get(cacheKey)
+  #getOrCreateMetadata(cacheKey: string) {
+    let metadata = this.#metadatas.get(cacheKey)
 
     if (metadata !== undefined)
       return metadata
 
-    return await this.#metadatas.lock(async (inner) => {
-      let metadata = inner.get(cacheKey)
+    const mutex = new Mutex(metadata)
+    const counter = 0
+    const optimizers = new Map()
 
-      if (metadata !== undefined)
-        return metadata
+    metadata = { cacheKey, mutex, counter, optimizers }
 
-      const stateMutex = new Mutex({})
-      const pendingMutex = new Mutex({})
-      const counterMutex = new Mutex({ value: 0 })
-      const optimizersMutex = new Mutex(new Map())
-
-      metadata = { stateMutex, pendingMutex, counterMutex, optimizersMutex }
-
-      inner.set(cacheKey, metadata)
-      return metadata
-    })
+    this.#metadatas.set(cacheKey, metadata)
+    return metadata
   }
 
   async lockOrReplace<D, F>(cacheKey: string, aborter: AbortController, callback: () => Promise<Result<State<D, F>, FetchError>>): Promise<Result<State<D, F>, FetchError>> {
-    const { pendingMutex } = await this.#getOrCreateMetadata(cacheKey)
+    const metadata = this.#getOrCreateMetadata(cacheKey)
 
-    const pendingLock = await pendingMutex.acquire()
-    const pending = pendingLock.inner.current
-
-    if (pending !== undefined) {
-      pendingLock.release()
-      pending.aborter.abort(`Replaced`)
-    }
+    if (metadata.aborter !== undefined)
+      metadata.aborter.abort()
 
     try {
       const promise = callback()
 
-      pendingLock.inner.current = { promise, aborter }
+      metadata.promise = promise
+      metadata.aborter = aborter
       this.aborters.publish(cacheKey, aborter)
-      pendingLock.release()
 
       return await promise
     } finally {
-      const pendingLock = await pendingMutex.acquire()
-      pendingLock.inner.current = undefined
-      this.aborters.publish(cacheKey, undefined)
-      pendingLock.release()
+      if (metadata.aborter === aborter) {
+        metadata.aborter = undefined
+        metadata.promise = undefined
+        this.aborters.publish(cacheKey, undefined)
+      }
     }
   }
 
   async lockOrJoin<D, F>(cacheKey: string, aborter: AbortController, callback: () => Promise<Result<State<D, F>, FetchError>>): Promise<Result<State<D, F>, FetchError>> {
-    const { pendingMutex } = await this.#getOrCreateMetadata(cacheKey)
+    const metadata = this.#getOrCreateMetadata(cacheKey)
 
-    const pendingLock = await pendingMutex.acquire()
-    const pending = pendingLock.inner.current
-
-    if (pending !== undefined) {
-      pendingLock.release()
-      return await pending.promise
-    }
+    if (metadata.promise !== undefined)
+      return await metadata.promise
 
     try {
       const promise = callback()
 
-      pendingLock.inner.current = { promise, aborter }
+      metadata.aborter = aborter
+      metadata.promise = promise
       this.aborters.publish(cacheKey, aborter)
-      pendingLock.release()
 
       return await promise
     } finally {
-      const pendingLock = await pendingMutex.acquire()
-      pendingLock.inner.current = undefined
-      this.aborters.publish(cacheKey, undefined)
-      pendingLock.release()
+      if (metadata.aborter === aborter) {
+        metadata.aborter = undefined
+        metadata.promise = undefined
+        this.aborters.publish(cacheKey, undefined)
+      }
     }
   }
 
-  async #get<K, D, F>(cacheKey: string, stateSlot: Slot<State<D, F>>, settings: QuerySettings<K, D, F>): Promise<State<D, F>> {
-    const cached = stateSlot.current
+  async #get<K, D, F>(metadata: Metadata, settings: QuerySettings<K, D, F>): Promise<State<D, F>> {
+    if (metadata.state !== undefined)
+      return metadata.state
 
-    if (cached !== undefined)
-      return cached
-
-    const stored = await settings.storage?.get(cacheKey)
+    const stored = await settings.storage?.get(metadata.cacheKey)
     const state = await this.unstore(stored, settings)
-    stateSlot.current = state
-    this.states.publish(cacheKey, state)
+    metadata.state = state
+    this.states.publish(metadata.cacheKey, state)
     return state
   }
 
   async get<K, D, F>(cacheKey: string, settings: QuerySettings<K, D, F>): Promise<State<D, F>> {
-    const { stateMutex } = await this.#getOrCreateMetadata(cacheKey)
+    const metadata = this.#getOrCreateMetadata(cacheKey)
 
-    const cached = stateMutex.inner.current
-
-    if (cached !== undefined)
-      return cached
-
-    return await stateMutex.lock(async (stateSlot) => await this.#get(cacheKey, stateSlot, settings))
+    return await metadata.mutex.lock(async () => await this.#get(metadata, settings))
   }
 
   async store<K, D, F>(state: State<D, F>, settings: QuerySettings<K, D, F>): Promise<Optional<StoredState<unknown, unknown>>> {
@@ -287,10 +254,10 @@ export class Core {
    * @returns 
    */
   async set<K, D, F>(cacheKey: string, setter: Setter<D, F>, settings: QuerySettings<K, D, F>) {
-    const { stateMutex } = await this.#getOrCreateMetadata(cacheKey)
+    const metadata = this.#getOrCreateMetadata(cacheKey)
 
-    return await stateMutex.lock(async (stateSlot) => {
-      const previous = await this.#get(cacheKey, stateSlot, settings)
+    return await metadata.mutex.lock(async () => {
+      const previous = await this.#get(metadata, settings)
 
       const set = await setter(previous)
 
@@ -302,7 +269,7 @@ export class Core {
 
       const next = set.get()
 
-      stateSlot.current = next
+      metadata.state = next
       this.states.publish(cacheKey, next)
 
       if (!settings.storage)
@@ -348,6 +315,8 @@ export class Core {
   async update<K, D, F>(cacheKey: string, setter: Setter<D, F>, settings: QuerySettings<K, D, F>) {
     const { equals = DEFAULT_EQUALS } = settings
 
+    const metadata = this.#getOrCreateMetadata(cacheKey)
+
     return await this.set(cacheKey, async (previous) => {
       const set = await setter(previous)
 
@@ -371,11 +340,7 @@ export class Core {
       if (next.real?.current.isFail() && previous.real?.current.isFail() && equals(next.real.current.inner, previous.real.current.inner))
         next = new RealState(new FailState(new Fail(previous.real.current.inner, next.real.current), previous.real.data))
 
-      const { optimizersMutex } = await this.#getOrCreateMetadata(cacheKey)
-
-      const optimized = await optimizersMutex.lock(async (optimizers) =>
-        await this.#reoptimize(next, optimizers))
-
+      const optimized = await this.#reoptimize(metadata, next)
       return new Some(optimized)
     }, settings)
   }
@@ -418,10 +383,10 @@ export class Core {
    * @param optimizers 
    * @returns 
    */
-  async #reoptimize<D, F>(state: State<D, F>, optimizers: Map<string, Mutator<D, F>>): Promise<State<D, F>> {
+  async #reoptimize<D, F>(metadata: Metadata, state: State<D, F>): Promise<State<D, F>> {
     let reoptimized: State<D, F> = new RealState(state.real)
 
-    for (const optimizer of optimizers.values()) {
+    for (const optimizer of metadata.optimizers.values()) {
       const optimized = await optimizer(reoptimized)
 
       if (optimized.isNone())
@@ -435,46 +400,40 @@ export class Core {
   }
 
   async reoptimize<K, D, F>(cacheKey: string, settings: QuerySettings<K, D, F>) {
+    const metadata = this.#getOrCreateMetadata(cacheKey)
+
     return await this.set(cacheKey, async (previous) => {
-      const { optimizersMutex } = await this.#getOrCreateMetadata(cacheKey)
-
-      const optimized = await optimizersMutex.lock(async (optimizers) =>
-        await this.#reoptimize(previous, optimizers))
-
-      return new Some(optimized)
+      return new Some(await this.#reoptimize(metadata, previous))
     }, settings)
   }
 
   async optimize<K, D, F>(cacheKey: string, uuid: string, optimizer: Mutator<D, F>, settings: QuerySettings<K, D, F>) {
+    const metadata = this.#getOrCreateMetadata(cacheKey)
+
     return await this.set(cacheKey, async (previous) => {
-      const { optimizersMutex } = await this.#getOrCreateMetadata(cacheKey)
 
-      return await optimizersMutex.lock(async (optimizers) => {
-        if (optimizers.has(uuid)) {
-          optimizers.delete(uuid)
+      if (metadata.optimizers.has(uuid)) {
+        metadata.optimizers.delete(uuid)
 
-          previous = await this.#reoptimize(previous, optimizers)
-        }
+        previous = await this.#reoptimize(metadata, previous)
+      }
 
-        optimizers.set(uuid, optimizer)
+      metadata.optimizers.set(uuid, optimizer)
 
-        const optimized = await optimizer(previous)
+      const optimized = await optimizer(previous)
 
-        if (optimized.isNone())
-          return new None()
+      if (optimized.isNone())
+        return new None()
 
-        const fetched = Option.mapSync(optimized.get(), Fetched.from)
-        const next = this.#mergeFakeStateWithFetched(previous, fetched)
+      const fetched = Option.mapSync(optimized.get(), Fetched.from)
+      const next = this.#mergeFakeStateWithFetched(previous, fetched)
 
-        return new Some(next)
-      })
+      return new Some(next)
     }, settings)
   }
 
   async deoptimize(cacheKey: string, uuid: string) {
-    const { optimizersMutex } = await this.#getOrCreateMetadata(cacheKey)
-
-    return await optimizersMutex.lock(async (optimizers) => optimizers.delete(uuid))
+    return this.#getOrCreateMetadata(cacheKey).optimizers.delete(uuid)
   }
 
   async runWithTimeout<T>(
@@ -526,45 +485,41 @@ export class Core {
   }
 
   async increment<K, D, F>(cacheKey: string, settings: QuerySettings<K, D, F>) {
-    const { counterMutex } = await this.#getOrCreateMetadata(cacheKey)
+    const metadata = this.#getOrCreateMetadata(cacheKey)
 
-    await counterMutex.lock(async (counter) => {
-      counter.value++
-      clearTimeout(counter.timeout)
-      counter.timeout = undefined
-    })
+    metadata.counter++
+    clearTimeout(metadata.timeout)
+    metadata.timeout = undefined
   }
 
   async decrement<K, D, F>(cacheKey: string, settings: QuerySettings<K, D, F>) {
-    const { counterMutex, stateMutex } = await this.#getOrCreateMetadata(cacheKey)
+    const metadata = this.#getOrCreateMetadata(cacheKey)
 
     const eraseAfterTimeout = async () => {
       if (!this.#mounted)
         return
 
-      if (counterMutex.inner.value > 0)
+      if (metadata.counter > 0)
         return
       await this.delete(cacheKey, settings)
     }
 
-    await counterMutex.lock(async (counter) => {
-      counter.value--
+    metadata.counter--
 
-      if (counter.value > 0)
-        return
+    if (metadata.counter > 0)
+      return
 
-      const expiration = stateMutex.inner.current?.real?.current.expiration
+    const expiration = metadata.state?.real?.current.expiration
 
-      if (expiration === undefined)
-        return
+    if (expiration === undefined)
+      return
 
-      if (Date.now() > expiration) {
-        await this.delete(cacheKey, settings)
-        return
-      }
+    if (Date.now() > expiration) {
+      await this.delete(cacheKey, settings)
+      return
+    }
 
-      const delay = expiration - Date.now()
-      counter.timeout = setTimeout(eraseAfterTimeout, delay)
-    })
+    const delay = expiration - Date.now()
+    metadata.timeout = setTimeout(eraseAfterTimeout, delay)
   }
 }
