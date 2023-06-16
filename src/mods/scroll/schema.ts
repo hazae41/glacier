@@ -22,7 +22,7 @@ export function createScrollQuerySchema<K, D, F>(
 }
 
 export class ScrollQuerySchema<K, D, F> {
-  readonly cacheKey: string
+  readonly cacheKey: Promise<string>
 
   constructor(
     readonly key: K,
@@ -34,7 +34,7 @@ export class ScrollQuerySchema<K, D, F> {
   }
 
   async make(core: Core) {
-    return await ScrollQueryInstance.make(core, this.key, this.cacheKey, this.scroller, this.fetcher, this.settings)
+    return await ScrollQueryInstance.make(core, this.key, await this.cacheKey, this.scroller, this.fetcher, this.settings)
   }
 
   async normalize(data: D[], more: NormalizerMore) {

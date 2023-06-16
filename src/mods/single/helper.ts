@@ -12,13 +12,13 @@ import { Updater } from "mods/types/updater.js";
 
 export namespace Simple {
 
-  export function getCacheKey<K, D, F>(key: K, settings: QuerySettings<K, D, F>) {
+  export async function getCacheKey<K, D, F>(key: K, settings: QuerySettings<K, D, F>) {
     if (typeof key === "string")
       return key
 
     const { keySerializer = DEFAULT_SERIALIZER } = settings
 
-    return keySerializer.stringify(key)
+    return await keySerializer.stringify(key)
   }
 
   export async function fetch<K, D, F>(

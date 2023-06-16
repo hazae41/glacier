@@ -13,13 +13,13 @@ import { State } from "mods/types/state.js";
 
 export namespace Scroll {
 
-  export function getCacheKey<K, D, F>(key: K, settings: QuerySettings<K, D, F>) {
+  export async function getCacheKey<K, D, F>(key: K, settings: QuerySettings<K, D, F>) {
     if (typeof key === "string")
       return key
 
     const { keySerializer = DEFAULT_SERIALIZER } = settings
 
-    return `scroll:${keySerializer.stringify(key)}`
+    return `scroll:${await keySerializer.stringify(key)}`
   }
 
   /**
