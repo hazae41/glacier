@@ -191,24 +191,24 @@ export function useAnonymousQuery<K, D, F>(
       .then(r => r.inspectSync(state => stateRef.current = state))
   }, [core, cacheKeyPromise])
 
-  const suspend = useCallback(async (aborter = new AbortController()) => {
+  const suspend = useCallback(async (aborter = new AbortController()): Promise<void> => {
     const cacheKey = await cacheKeyPromise
 
     if (cacheKey === undefined)
-      return new Err(new MissingKeyError())
+      throw new MissingKeyError()
 
     const key = keyRef.current
     const fetcher = fetcherRef.current
     const settings = settingsRef.current
 
     if (key === undefined)
-      return new Err(new MissingKeyError())
+      throw new MissingKeyError()
     if (fetcher === undefined)
-      return new Err(new MissingFetcherError())
+      throw new MissingFetcherError()
 
-    return await core.lockOrError(cacheKey, aborter, async () => {
+    stateRef.current = await core.lockOrReplace(cacheKey, aborter, async () => {
       return await Simple.fetchOrWait(core, key, cacheKey, fetcher, aborter, settings)
-    }).then(r => r.inspectSync(state => stateRef.current = state))
+    }).then(r => r.unwrap())
   }, [core, cacheKeyPromise])
 
   const state = stateRef.current

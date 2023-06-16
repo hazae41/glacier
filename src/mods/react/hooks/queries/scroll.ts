@@ -199,24 +199,24 @@ export function useAnonymousScrollQuery<K, D, F>(
     }).then(r => r.inspectSync(state => stateRef.current = state))
   }, [core, cacheKeyPromise])
 
-  const suspend = useCallback(async (aborter = new AbortController()) => {
+  const suspend = useCallback(async (aborter = new AbortController()): Promise<void> => {
     const cacheKey = await cacheKeyPromise
 
     if (cacheKey === undefined)
-      return new Err(new MissingKeyError())
+      throw new MissingKeyError()
 
     const scroller = scrollerRef.current
     const fetcher = fetcherRef.current
     const settings = settingsRef.current
 
     if (scroller === undefined)
-      return new Err(new MissingKeyError())
+      throw new MissingKeyError()
     if (fetcher === undefined)
-      return new Err(new MissingFetcherError())
+      throw new MissingFetcherError()
 
-    return await core.lockOrReplace(cacheKey, aborter, async () => {
+    stateRef.current = await core.lockOrReplace(cacheKey, aborter, async () => {
       return await Scroll.firstOrWait(core, scroller, cacheKey, fetcher, aborter, settings)
-    }).then(r => r.inspectSync(state => stateRef.current = state))
+    }).then(r => r.unwrap())
   }, [core, cacheKeyPromise])
 
   const state = stateRef.current

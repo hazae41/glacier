@@ -88,6 +88,6 @@ export interface Query<K, D, F> {
   /**
    * Suspend until the next state change, also launches an undeduped fetch
    */
-  suspend(): Promise<Result<State<D, F>, Error>>
+  suspend(): Promise<void>
 
 }
