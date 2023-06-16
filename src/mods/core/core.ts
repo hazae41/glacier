@@ -85,7 +85,7 @@ export class Core {
 
   readonly #metadatas = new Map<string, Metadata>()
 
-  readonly #storeds = new Map<string, Optional<StoredState<unknown, unknown>>>()
+  readonly #storeds = new Map<string, Option<StoredState<unknown, unknown>>>()
 
   #mounted = true
 
@@ -111,12 +111,15 @@ export class Core {
     return this.#metadatas.get(cacheKey)?.state
   }
 
-  getStoredSync(cacheKey: string): Optional<StoredState<unknown, unknown>> {
+  getStoredSync(cacheKey: string): Optional<Option<StoredState<unknown, unknown>>> {
     return this.#storeds.get(cacheKey)
   }
 
-  setStoredSync(cacheKey: string, stored: Optional<StoredState<unknown, unknown>>) {
-    this.#storeds.set(cacheKey, stored)
+  setStoredSync(cacheKey: string, stored: Optional<Option<StoredState<unknown, unknown>>>) {
+    if (stored === undefined)
+      this.#storeds.delete(cacheKey)
+    else
+      this.#storeds.set(cacheKey, stored)
   }
 
   #getOrCreateMetadata(cacheKey: string) {
@@ -188,7 +191,7 @@ export class Core {
     const stored = await settings.storage?.get(metadata.cacheKey)
     const state = await this.unstore(stored, settings)
     metadata.state = state
-    this.#storeds.set(metadata.cacheKey, stored)
+    this.#storeds.set(metadata.cacheKey, Option.wrap(stored))
     this.onState.publish(metadata.cacheKey, state)
     return state
   }
@@ -282,7 +285,7 @@ export class Core {
       const stored = await this.store(next, settings)
 
       metadata.state = next
-      this.#storeds.set(cacheKey, stored)
+      this.#storeds.set(cacheKey, Option.wrap(stored))
       this.onState.publish(cacheKey, next)
 
       if (!settings.storage)
