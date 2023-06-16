@@ -177,7 +177,7 @@ export class SimpleFetcherfulQueryInstance<K, D, F>  {
     if (Time.isAfterNow(this.real?.current.cooldown))
       return new Err(new CooldownError())
 
-    const result = await core.lockOrJoin(cacheKey, aborter, async () =>
+    const result = await core.fetchOrJoin(cacheKey, aborter, async () =>
       await Simple.fetch(core, key, cacheKey, fetcher, aborter, settings))
 
     return new Ok(result)
@@ -186,7 +186,7 @@ export class SimpleFetcherfulQueryInstance<K, D, F>  {
   async refetch(aborter = new AbortController()): Promise<Result<Result<State<D, F>, FetchError>, never>> {
     const { core, key, cacheKey, fetcher, settings } = this
 
-    const result = await core.lockOrReplace(cacheKey, aborter, async () =>
+    const result = await core.fetchOrReplace(cacheKey, aborter, async () =>
       await Simple.fetch(core, key, cacheKey, fetcher, aborter, settings))
 
     return new Ok(result)

@@ -151,7 +151,7 @@ export function useAnonymousScrollQuery<K, D, F>(
     if (Time.isAfterNow(stateRef.current?.real?.current.cooldown))
       return new Err(new CooldownError())
 
-    const result = await core.lockOrJoin(cacheKey, aborter, async () =>
+    const result = await core.fetchOrJoin(cacheKey, aborter, async () =>
       await Scroll.first(core, scroller, cacheKey, fetcher, aborter, settings))
 
     return new Ok(result)
@@ -170,7 +170,7 @@ export function useAnonymousScrollQuery<K, D, F>(
     if (fetcher === undefined)
       return new Err(new MissingFetcherError())
 
-    const result = await core.lockOrReplace(cacheKey, aborter, async () =>
+    const result = await core.fetchOrReplace(cacheKey, aborter, async () =>
       await Scroll.first(core, scroller, cacheKey, fetcher, aborter, settings))
 
     return new Ok(result)
@@ -189,7 +189,7 @@ export function useAnonymousScrollQuery<K, D, F>(
     if (fetcher === undefined)
       return new Err(new MissingFetcherError())
 
-    const result = await core.lockOrReplace(cacheKey, aborter, async () =>
+    const result = await core.fetchOrReplace(cacheKey, aborter, async () =>
       await Scroll.scroll(core, scroller, cacheKey, fetcher, aborter, settings))
 
     return new Ok(result)
@@ -208,7 +208,7 @@ export function useAnonymousScrollQuery<K, D, F>(
     if (fetcher === undefined)
       throw new MissingFetcherError()
 
-    const result = await core.lockOrJoin(cacheKey, aborter, async () =>
+    const result = await core.fetchOrJoin(cacheKey, aborter, async () =>
       await Scroll.first(core, scroller, cacheKey, fetcher, aborter, settings))
 
     return new Ok(result)

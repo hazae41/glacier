@@ -125,7 +125,7 @@ export class Core {
     return metadata
   }
 
-  async lockOrReplace<D, F>(cacheKey: string, aborter: AbortController, callback: () => Promise<Result<State<D, F>, FetchError>>): Promise<Result<State<D, F>, FetchError>> {
+  async fetchOrReplace<D, F>(cacheKey: string, aborter: AbortController, callback: () => Promise<Result<State<D, F>, FetchError>>): Promise<Result<State<D, F>, FetchError>> {
     const metadata = this.#getOrCreateMetadata(cacheKey)
 
     if (metadata.aborter !== undefined)
@@ -148,7 +148,7 @@ export class Core {
     }
   }
 
-  async lockOrJoin<D, F>(cacheKey: string, aborter: AbortController, callback: () => Promise<Result<State<D, F>, FetchError>>): Promise<Result<State<D, F>, FetchError>> {
+  async fetchOrJoin<D, F>(cacheKey: string, aborter: AbortController, callback: () => Promise<Result<State<D, F>, FetchError>>): Promise<Result<State<D, F>, FetchError>> {
     const metadata = this.#getOrCreateMetadata(cacheKey)
 
     if (metadata.promise !== undefined)
