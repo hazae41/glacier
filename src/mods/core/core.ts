@@ -143,7 +143,7 @@ export class Core {
     })
   }
 
-  async lockOrWait<D, F>(cacheKey: string, pendingLock: Lock<Mutex<Slot<Pending<D, F>>>>, aborter: AbortController, callback: () => Promise<Result<State<D, F>, FetchError>>): Promise<Result<State<D, F>, FetchError>> {
+  async #lock<D, F>(cacheKey: string, pendingLock: Lock<Mutex<Slot<Pending<D, F>>>>, aborter: AbortController, callback: () => Promise<Result<State<D, F>, FetchError>>): Promise<Result<State<D, F>, FetchError>> {
     const fetchLock = await pendingLock.inner.acquire()
 
     try {
@@ -171,7 +171,7 @@ export class Core {
     if (pending !== undefined)
       pending.aborter.abort(`Replaced`)
 
-    return await this.lockOrWait(cacheKey, pendingLock, aborter, callback)
+    return await this.#lock(cacheKey, pendingLock, aborter, callback)
   }
 
   async lockOrJoin<D, F>(cacheKey: string, aborter: AbortController, callback: () => Promise<Result<State<D, F>, FetchError>>): Promise<Result<State<D, F>, FetchError>> {
@@ -183,7 +183,7 @@ export class Core {
     if (pending !== undefined)
       return await pending.promise
 
-    return await this.lockOrWait(cacheKey, pendingLock, aborter, callback)
+    return await this.#lock(cacheKey, pendingLock, aborter, callback)
   }
 
   async #get<K, D, F>(cacheKey: string, stateSlot: Slot<State<D, F>>, settings: QuerySettings<K, D, F>): Promise<State<D, F>> {
