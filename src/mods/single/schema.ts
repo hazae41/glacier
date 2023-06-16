@@ -60,7 +60,7 @@ export type SimpleQuerySchema<K, D, F> =
   | SimpleFetcherfulQuerySchema<K, D, F>
 
 export class SimpleFetcherlessQuerySchema<K, D, F>  {
-  readonly cacheKey: Promise<string>
+  readonly cacheKey: string
 
   constructor(
     readonly key: K,
@@ -71,7 +71,7 @@ export class SimpleFetcherlessQuerySchema<K, D, F>  {
   }
 
   async make(core: Core) {
-    return await SimpleFetcherlessQueryInstance.make(core, this.key, await this.cacheKey, this.fetcher, this.settings)
+    return await SimpleFetcherlessQueryInstance.make(core, this.key, this.cacheKey, this.fetcher, this.settings)
   }
 
   async normalize(data: D, more: NormalizerMore) {
@@ -90,7 +90,7 @@ export class SimpleFetcherlessQuerySchema<K, D, F>  {
 }
 
 export class SimpleFetcherfulQuerySchema<K, D, F> {
-  readonly cacheKey: Promise<string>
+  readonly cacheKey: string
 
   constructor(
     readonly key: K,
@@ -101,7 +101,7 @@ export class SimpleFetcherfulQuerySchema<K, D, F> {
   }
 
   async make(core: Core) {
-    return await SimpleFetcherfulQueryInstance.make(core, this.key, await this.cacheKey, this.fetcher, this.settings)
+    return await SimpleFetcherfulQueryInstance.make(core, this.key, this.cacheKey, this.fetcher, this.settings)
   }
 
   async normalize(data: D, more: NormalizerMore) {

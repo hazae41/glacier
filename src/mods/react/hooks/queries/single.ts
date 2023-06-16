@@ -1,6 +1,5 @@
 import { Option, Optional } from "@hazae41/option";
 import { Err, Ok, Result } from "@hazae41/result";
-import { useAsyncMemo } from "libs/react/memo.js";
 import { useRenderRef } from "libs/react/ref.js";
 import { Time } from "libs/time/time.js";
 import { CooldownError, MissingFetcherError, MissingKeyError } from "mods/core/core.js";
@@ -59,8 +58,8 @@ export function useAnonymousQuery<K, D, F>(
   const fetcherRef = useRenderRef(fetcher)
   const settingsRef = useRenderRef({ ...core.settings, ...settings })
 
-  const [cacheKey, cacheKeyPromise] = useAsyncMemo(async () => {
-    return await Option.map(key, () => Simple.getCacheKey(key, settingsRef.current))
+  const cacheKey = useMemo(() => {
+    return Option.mapSync(key, () => Simple.getCacheKey(key, settingsRef.current))
   }, [key])
 
   const [, setCounter] = useState(0)
@@ -111,30 +110,24 @@ export function useAnonymousQuery<K, D, F>(
   }, [core, cacheKey])
 
   const mutate = useCallback(async (mutator: Mutator<D, F>) => {
-    const cacheKey = await cacheKeyPromise
-
     if (cacheKey === undefined)
       return new Err(new MissingKeyError())
 
     const state = await core.mutate(cacheKey, mutator, settingsRef.current)
 
     return new Ok(state)
-  }, [core, cacheKeyPromise])
+  }, [core, cacheKey])
 
   const clear = useCallback(async () => {
-    const cacheKey = await cacheKeyPromise
-
     if (cacheKey === undefined)
       return new Err(new MissingKeyError())
 
     const state = await core.delete(cacheKey, settingsRef.current)
 
     return new Ok(state)
-  }, [core, cacheKeyPromise])
+  }, [core, cacheKey])
 
   const fetch = useCallback(async (aborter = new AbortController()) => {
-    const cacheKey = await cacheKeyPromise
-
     if (cacheKey === undefined)
       return new Err(new MissingKeyError())
 
@@ -154,11 +147,9 @@ export function useAnonymousQuery<K, D, F>(
       await Simple.fetch(core, key, cacheKey, fetcher, aborter, settings))
 
     return result
-  }, [core, cacheKeyPromise])
+  }, [core, cacheKey])
 
   const refetch = useCallback(async (aborter = new AbortController()) => {
-    const cacheKey = await cacheKeyPromise
-
     if (cacheKey === undefined)
       return new Err(new MissingKeyError())
 
@@ -175,11 +166,9 @@ export function useAnonymousQuery<K, D, F>(
       await Simple.fetch(core, key, cacheKey, fetcher, aborter, settings))
 
     return new Ok(result)
-  }, [core, cacheKeyPromise])
+  }, [core, cacheKey])
 
   const update = useCallback(async (updater: Updater<K, D, F>, aborter = new AbortController()) => {
-    const cacheKey = await cacheKeyPromise
-
     if (cacheKey === undefined)
       return new Err(new MissingKeyError())
 
@@ -195,11 +184,9 @@ export function useAnonymousQuery<K, D, F>(
     const result = await Simple.update(core, key, cacheKey, fetcher, updater, aborter, settings)
 
     return new Ok(result)
-  }, [core, cacheKeyPromise])
+  }, [core, cacheKey])
 
   const suspend = useCallback(async (aborter = new AbortController()) => {
-    const cacheKey = await cacheKeyPromise
-
     if (cacheKey === undefined)
       return new Err(new MissingKeyError())
 
@@ -216,7 +203,7 @@ export function useAnonymousQuery<K, D, F>(
       await Simple.fetch(core, key, cacheKey, fetcher, aborter, settings))
 
     return new Ok(result)
-  }, [core, cacheKeyPromise])
+  }, [core, cacheKey])
 
   const state = stateRef.current
   const aborter = aborterRef.current
