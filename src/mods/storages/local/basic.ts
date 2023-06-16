@@ -3,7 +3,7 @@ import { Bicoder, Encoder, SyncIdentity } from "mods/serializers/serializer.js"
 import { StoredState } from "mods/types/state.js"
 import { useEffect, useRef } from "react"
 import { StorageCreationError } from "../errors.js"
-import { AsyncStorage } from "../storage.js"
+import { Storage } from "../storage.js"
 
 /**
  * Asynchronous local storage
@@ -39,7 +39,6 @@ export interface AsyncLocalStorageParams {
   valueSerializer?: Bicoder<StoredState<unknown, unknown>, string>
 }
 
-
 /**
  * Asynchronous local storage
  * 
@@ -53,7 +52,7 @@ export interface AsyncLocalStorageParams {
  * @see SyncLocalStorage
  * @see useFallback
  */
-export class AsyncLocalStorage implements AsyncStorage {
+export class AsyncLocalStorage implements Storage {
 
   readonly async = true as const
 

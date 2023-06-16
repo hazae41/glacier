@@ -49,12 +49,12 @@ export class ScrollQueryInstance<K, D, F>  {
     return new ScrollQueryInstance(core, key, cacheKey, scroller, fetcher, settings)
   }
 
-  get state() {
-    return this.core.getSync(this.cacheKey, this.settings).unwrap()
+  get state(): State<D[], F> {
+    return Option.unwrap(this.core.getStateSync<D[], F>(this.cacheKey))
   }
 
-  get aborter() {
-    return this.core.getAborter(this.cacheKey)
+  get aborter(): Optional<AbortController> {
+    return this.core.getAborterSync(this.cacheKey)
   }
 
   get current() {
@@ -78,7 +78,7 @@ export class ScrollQueryInstance<K, D, F>  {
   }
 
   peek() {
-    return this.scroller?.(Option.mapSync(this.state.real?.data?.inner, Arrays.last))
+    return this.scroller?.(Option.mapSync(this.real?.data?.inner, Arrays.last))
   }
 
   async mutate(mutator: Mutator<D[], F>) {

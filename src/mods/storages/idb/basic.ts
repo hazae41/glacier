@@ -1,7 +1,7 @@
 import { Optional } from "@hazae41/option"
 import { Err, Ok, Result } from "@hazae41/result"
 import { Bicoder, Encoder, SyncIdentity } from "mods/serializers/serializer.js"
-import { AsyncStorage } from "mods/storages/storage.js"
+import { Storage } from "mods/storages/storage.js"
 import { StoredState } from "mods/types/state.js"
 import { useEffect, useRef } from "react"
 import { StorageCreationError } from "../errors.js"
@@ -27,7 +27,7 @@ export interface IDBStorageParams {
   valueSerializer?: Bicoder<StoredState<unknown, unknown>, string>
 }
 
-export class IDBStorage implements AsyncStorage {
+export class IDBStorage implements Storage {
 
   readonly async = true as const
 

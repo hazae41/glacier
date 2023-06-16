@@ -1,6 +1,6 @@
 import { Mutex } from "@hazae41/mutex"
 import { None, Option, Optional, Some } from "@hazae41/option"
-import { Err, Ok, Result } from "@hazae41/result"
+import { Err, Result } from "@hazae41/result"
 import { Ortho } from "libs/ortho/ortho.js"
 import { Promiseable } from "libs/promises/promises.js"
 import { Time } from "libs/time/time.js"
@@ -125,8 +125,12 @@ export class Core {
     this.#mounted = false
   }
 
-  getAborter(cacheKey: string) {
+  getAborterSync(cacheKey: string): Optional<AbortController> {
     return this.#metadatas.inner.get(cacheKey)?.aborterMutex.inner.current
+  }
+
+  getStateSync<D, F>(cacheKey: string): Optional<State<D, F>> {
+    return this.#metadatas.inner.get(cacheKey)?.stateMutex.inner.current
   }
 
   async #getOrCreateMetadata(cacheKey: string) {
@@ -151,25 +155,6 @@ export class Core {
       inner.set(cacheKey, metadata)
       return metadata
     })
-  }
-
-  #getOrCreateMetadataSync(cacheKey: string) {
-    const inner = this.#metadatas.inner
-
-    let metadata = inner.get(cacheKey)
-
-    if (metadata !== undefined)
-      return metadata
-
-    const stateMutex = new Mutex({})
-    const aborterMutex = new Mutex({})
-    const counterMutex = new Mutex({ value: 0 })
-    const optimizersMutex = new Mutex(new Map())
-
-    metadata = { stateMutex, aborterMutex, counterMutex, optimizersMutex }
-
-    inner.set(cacheKey, metadata)
-    return metadata
   }
 
   async lockOrError<T, E>(cacheKey: string, aborter: AbortController, callback: () => Promise<Result<T, E>>): Promise<Result<T, E | PendingFetchError>> {
@@ -207,33 +192,6 @@ export class Core {
         this.aborters.publish(cacheKey, undefined)
       }
     })
-  }
-
-  getSync<K, D, F>(cacheKey: string, settings: QuerySettings<K, D, F>): Result<State<D, F>, AsyncStorageError> {
-    const { stateMutex } = this.#getOrCreateMetadataSync(cacheKey)
-
-    const cached = stateMutex.inner.current
-
-    if (cached !== undefined)
-      return new Ok(cached)
-
-    const stateSlot = stateMutex.inner
-
-    if (!settings.storage) {
-      const state = new RealState<D, F>(undefined)
-      stateSlot.current = state
-      this.states.publish(cacheKey, state)
-      return new Ok(state)
-    }
-
-    if (settings.storage.async)
-      return new Err(new AsyncStorageError())
-
-    const stored = settings.storage.get(cacheKey)
-    const state = this.unstore(stored, settings)
-    stateSlot.current = state
-    this.states.publish(cacheKey, state)
-    return new Ok(state)
   }
 
   async get<K, D, F>(cacheKey: string, settings: QuerySettings<K, D, F>): Promise<State<D, F>> {
@@ -510,9 +468,7 @@ export class Core {
   async deoptimize(cacheKey: string, uuid: string) {
     const { optimizersMutex } = await this.#getOrCreateMetadata(cacheKey)
 
-    return await optimizersMutex.lock(async (optimizers) => {
-      optimizers.delete(uuid)
-    })
+    return await optimizersMutex.lock(async (optimizers) => optimizers.delete(uuid))
   }
 
   async runWithTimeout<T>(

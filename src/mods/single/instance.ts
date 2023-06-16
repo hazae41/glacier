@@ -1,3 +1,4 @@
+import { Option, Optional } from "@hazae41/option";
 import { Err, Ok, Result } from "@hazae41/result";
 import { CooldownError, Core, MissingFetcherError, PendingFetchError } from "mods/core/core.js";
 import { FetchError, Fetcher } from "mods/types/fetcher.js";
@@ -47,12 +48,12 @@ export class SimpleFetcherlessQueryInstance<K, D, F>  {
     return new SimpleFetcherlessQueryInstance(core, key, cacheKey, fetcher, settings)
   }
 
-  get state() {
-    return this.core.getSync(this.cacheKey, this.settings).unwrap()
+  get state(): State<D, F> {
+    return Option.unwrap(this.core.getStateSync<D, F>(this.cacheKey))
   }
 
-  get aborter() {
-    return this.core.getAborter(this.cacheKey)
+  get aborter(): Optional<AbortController> {
+    return this.core.getAborterSync(this.cacheKey)
   }
 
   get current() {
@@ -133,12 +134,12 @@ export class SimpleFetcherfulQueryInstance<K, D, F>  {
     return new SimpleFetcherfulQueryInstance(core, key, cacheKey, fetcher, settings)
   }
 
-  get state() {
-    return this.core.getSync(this.cacheKey, this.settings).unwrap()
+  get state(): State<D, F> {
+    return Option.unwrap(this.core.getStateSync<D, F>(this.cacheKey))
   }
 
-  get aborter() {
-    return this.core.getAborter(this.cacheKey)
+  get aborter(): Optional<AbortController> {
+    return this.core.getAborterSync(this.cacheKey)
   }
 
   get current() {

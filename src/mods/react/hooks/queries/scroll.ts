@@ -80,8 +80,8 @@ export function useAnonymousScrollQuery<K, D, F>(
     if (cacheKey === undefined)
       return
 
-    stateRef.current = core.getSync<K, D[], F>(cacheKey, settingsRef.current).ok().inner
-    aborterRef.current = core.getAborter(cacheKey)
+    stateRef.current = core.getStateSync<D[], F>(cacheKey)
+    aborterRef.current = core.getAborterSync(cacheKey)
   }, [core, cacheKey])
 
   const setState = useCallback((state: State<D[], F>) => {
