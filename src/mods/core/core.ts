@@ -106,6 +106,7 @@ export interface Metadata {
   readonly stateMutex: Mutex<Slot<State<any, any>>>,
   readonly pendingMutex: Mutex<Slot<Pending<any, any>>>,
   readonly fetchMutex: Mutex<void>,
+  readonly pendingLockMutex: Mutex<void>
   readonly optimizersMutex: Mutex<Map<string, Mutator<any, any>>>
   readonly counterMutex: Mutex<Counter>,
 }
@@ -156,10 +157,11 @@ export class Core {
       const stateMutex = new Mutex({})
       const pendingMutex = new Mutex({})
       const fetchMutex = new Mutex(undefined)
+      const pendingLockMutex = new Mutex(undefined)
       const counterMutex = new Mutex({ value: 0 })
       const optimizersMutex = new Mutex(new Map())
 
-      metadata = { stateMutex, pendingMutex, fetchMutex, counterMutex, optimizersMutex }
+      metadata = { stateMutex, pendingMutex, fetchMutex, pendingLockMutex, counterMutex, optimizersMutex }
 
       inner.set(cacheKey, metadata)
       return metadata
@@ -223,11 +225,11 @@ export class Core {
   async lockOrJoin<D, F>(cacheKey: string, aborter: AbortController, callback: () => Promise<Result<State<D, F>, FetchError>>): Promise<Result<State<D, F>, FetchError>> {
     const { pendingMutex } = await this.#getOrCreateMetadata(cacheKey)
 
+    await pendingMutex.lock(async () => { })
     const pendingLock = new Future<void>()
+    pendingMutex.lock(() => pendingLock.promise)
 
     try {
-      await pendingMutex.lock(() => pendingLock.promise)
-
       if (pendingMutex.inner.current !== undefined)
         return await pendingMutex.inner.current.promise
 
