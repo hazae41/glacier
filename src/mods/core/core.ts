@@ -208,25 +208,16 @@ export class Core {
   }
 
   async #get<K, D, F>(cacheKey: string, stateSlot: Slot<State<D, F>>, settings: QuerySettings<K, D, F>): Promise<State<D, F>> {
-    const { stateMutex } = await this.#getOrCreateMetadata(cacheKey)
-
-    const cached = stateMutex.inner.current
+    const cached = stateSlot.current
 
     if (cached !== undefined)
       return cached
 
-    return await stateMutex.lock(async (stateSlot) => {
-      const cached = stateSlot.current
-
-      if (cached !== undefined)
-        return cached
-
-      const stored = await settings.storage?.get(cacheKey)
-      const state = await this.unstore(stored, settings)
-      stateSlot.current = state
-      this.states.publish(cacheKey, state)
-      return state
-    })
+    const stored = await settings.storage?.get(cacheKey)
+    const state = await this.unstore(stored, settings)
+    stateSlot.current = state
+    this.states.publish(cacheKey, state)
+    return state
   }
 
   async get<K, D, F>(cacheKey: string, settings: QuerySettings<K, D, F>): Promise<State<D, F>> {
@@ -237,9 +228,7 @@ export class Core {
     if (cached !== undefined)
       return cached
 
-    return await stateMutex.lock(async (stateSlot) => {
-      return await this.#get(cacheKey, stateSlot, settings)
-    })
+    return await stateMutex.lock(async (stateSlot) => await this.#get(cacheKey, stateSlot, settings))
   }
 
   async store<K, D, F>(state: State<D, F>, settings: QuerySettings<K, D, F>): Promise<Optional<StoredState<unknown, unknown>>> {
