@@ -72,6 +72,7 @@ export interface Metadata {
   mutex: Mutex<void>,
   counter: number,
   state?: State<any, any>,
+  stored?: StoredState<any, any>,
   timeout?: NodeJS.Timeout
   aborter?: AbortController
   promise?: Promise<Result<State<any, any>, FetchError>>
@@ -107,6 +108,10 @@ export class Core {
 
   getStateSync<D, F>(cacheKey: string): Optional<State<D, F>> {
     return this.#metadatas.get(cacheKey)?.state
+  }
+
+  getStoredSync(cacheKey: string): Optional<StoredState<unknown, unknown>> {
+    return this.#metadatas.get(cacheKey)?.stored
   }
 
   #getOrCreateMetadata(cacheKey: string) {
@@ -178,6 +183,7 @@ export class Core {
     const stored = await settings.storage?.get(metadata.cacheKey)
     const state = await this.unstore(stored, settings)
     metadata.state = state
+    metadata.stored = stored
     this.states.publish(metadata.cacheKey, state)
     return state
   }
@@ -268,14 +274,14 @@ export class Core {
         return previous
 
       const next = set.get()
+      const stored = await this.store(next, settings)
 
       metadata.state = next
+      metadata.stored = stored
       this.states.publish(cacheKey, next)
 
       if (!settings.storage)
         return next
-
-      const stored = await this.store(next, settings)
 
       if (stored === undefined) {
         await settings.storage.delete(cacheKey)
