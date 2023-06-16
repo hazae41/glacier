@@ -207,7 +207,7 @@ export class Core {
     return await this.lockOrWait(cacheKey, aborter, callback)
   }
 
-  async get<K, D, F>(cacheKey: string, settings: QuerySettings<K, D, F>): Promise<State<D, F>> {
+  async #get<K, D, F>(cacheKey: string, stateSlot: Slot<State<D, F>>, settings: QuerySettings<K, D, F>): Promise<State<D, F>> {
     const { stateMutex } = await this.#getOrCreateMetadata(cacheKey)
 
     const cached = stateMutex.inner.current
@@ -226,6 +226,19 @@ export class Core {
       stateSlot.current = state
       this.states.publish(cacheKey, state)
       return state
+    })
+  }
+
+  async get<K, D, F>(cacheKey: string, settings: QuerySettings<K, D, F>): Promise<State<D, F>> {
+    const { stateMutex } = await this.#getOrCreateMetadata(cacheKey)
+
+    const cached = stateMutex.inner.current
+
+    if (cached !== undefined)
+      return cached
+
+    return await stateMutex.lock(async (stateSlot) => {
+      return await this.#get(cacheKey, stateSlot, settings)
     })
   }
 
@@ -298,7 +311,8 @@ export class Core {
     const { stateMutex } = await this.#getOrCreateMetadata(cacheKey)
 
     return await stateMutex.lock(async (stateSlot) => {
-      const previous = await this.get(cacheKey, settings)
+      const previous = await this.#get(cacheKey, stateSlot, settings)
+
       const set = await setter(previous)
 
       if (set.isNone())
