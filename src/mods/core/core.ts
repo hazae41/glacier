@@ -1,4 +1,4 @@
-import { Lock, Mutex } from "@hazae41/mutex"
+import { Mutex } from "@hazae41/mutex"
 import { None, Option, Optional, Some } from "@hazae41/option"
 import { Result } from "@hazae41/result"
 import { FetchError } from "index.js"
@@ -83,7 +83,7 @@ interface Pending<D, F> {
 
 export interface Metadata {
   readonly stateMutex: Mutex<Slot<State<any, any>>>,
-  readonly pendingMutex: Mutex<Mutex<Slot<Pending<any, any>>>>,
+  readonly pendingMutex: Mutex<Slot<Pending<any, any>>>,
   readonly optimizersMutex: Mutex<Map<string, Mutator<any, any>>>
   readonly counterMutex: Mutex<Counter>,
 }
@@ -112,7 +112,7 @@ export class Core {
   }
 
   getAborterSync(cacheKey: string): Optional<AbortController> {
-    return this.#metadatas.inner.get(cacheKey)?.pendingMutex.inner.inner.current?.aborter
+    return this.#metadatas.inner.get(cacheKey)?.pendingMutex.inner.current?.aborter
   }
 
   getStateSync<D, F>(cacheKey: string): Optional<State<D, F>> {
@@ -132,7 +132,7 @@ export class Core {
         return metadata
 
       const stateMutex = new Mutex({})
-      const pendingMutex = new Mutex(new Mutex({}))
+      const pendingMutex = new Mutex({})
       const counterMutex = new Mutex({ value: 0 })
       const optimizersMutex = new Mutex(new Map())
 
@@ -143,49 +143,58 @@ export class Core {
     })
   }
 
-  async #lock<D, F>(cacheKey: string, pendingLock: Lock<Mutex<Slot<Pending<D, F>>>>, aborter: AbortController, callback: () => Promise<Result<State<D, F>, FetchError>>): Promise<Result<State<D, F>, FetchError>> {
-    const fetchLock = await pendingLock.inner.acquire()
+  async lockOrReplace<D, F>(cacheKey: string, aborter: AbortController, callback: () => Promise<Result<State<D, F>, FetchError>>): Promise<Result<State<D, F>, FetchError>> {
+    const { pendingMutex } = await this.#getOrCreateMetadata(cacheKey)
+
+    const pendingLock = await pendingMutex.acquire()
+    const pending = pendingLock.inner.current
+
+    if (pending !== undefined) {
+      pendingLock.release()
+      pending.aborter.abort(`Replaced`)
+    }
 
     try {
       const promise = callback()
 
-      fetchLock.inner.current = { aborter, promise }
+      pendingLock.inner.current = { promise, aborter }
       this.aborters.publish(cacheKey, aborter)
       pendingLock.release()
 
       return await promise
     } finally {
-      fetchLock.inner.current = undefined
+      const pendingLock = await pendingMutex.acquire()
+      pendingLock.inner.current = undefined
       this.aborters.publish(cacheKey, undefined)
       pendingLock.release()
-      fetchLock.release()
     }
-  }
-
-  async lockOrReplace<D, F>(cacheKey: string, aborter: AbortController, callback: () => Promise<Result<State<D, F>, FetchError>>): Promise<Result<State<D, F>, FetchError>> {
-    const { pendingMutex } = await this.#getOrCreateMetadata(cacheKey)
-
-    const pendingLock = await pendingMutex.acquire()
-    const pending = pendingLock.inner.inner.current
-
-    if (pending !== undefined)
-      pending.aborter.abort(`Replaced`)
-
-    return await this.#lock(cacheKey, pendingLock, aborter, callback)
   }
 
   async lockOrJoin<D, F>(cacheKey: string, aborter: AbortController, callback: () => Promise<Result<State<D, F>, FetchError>>): Promise<Result<State<D, F>, FetchError>> {
     const { pendingMutex } = await this.#getOrCreateMetadata(cacheKey)
 
     const pendingLock = await pendingMutex.acquire()
-    const pending = pendingLock.inner.inner.current
+    const pending = pendingLock.inner.current
 
     if (pending !== undefined) {
       pendingLock.release()
       return await pending.promise
     }
 
-    return await this.#lock(cacheKey, pendingLock, aborter, callback)
+    try {
+      const promise = callback()
+
+      pendingLock.inner.current = { promise, aborter }
+      this.aborters.publish(cacheKey, aborter)
+      pendingLock.release()
+
+      return await promise
+    } finally {
+      const pendingLock = await pendingMutex.acquire()
+      pendingLock.inner.current = undefined
+      this.aborters.publish(cacheKey, undefined)
+      pendingLock.release()
+    }
   }
 
   async #get<K, D, F>(cacheKey: string, stateSlot: Slot<State<D, F>>, settings: QuerySettings<K, D, F>): Promise<State<D, F>> {
