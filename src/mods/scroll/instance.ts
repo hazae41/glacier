@@ -2,7 +2,7 @@ import { Option, Optional } from "@hazae41/option";
 import { Err, Ok, Result } from "@hazae41/result";
 import { Arrays } from "libs/arrays/arrays.js";
 import { Time } from "libs/time/time.js";
-import { CooldownError, Core, MissingFetcherError, PendingFetchError } from "mods/core/core.js";
+import { CooldownError, Core, MissingFetcherError } from "mods/core/core.js";
 import { FetchError, Fetcher } from "mods/types/fetcher.js";
 import { Mutator } from "mods/types/mutator.js";
 import { Scroller } from "mods/types/scroller.js";
@@ -90,7 +90,7 @@ export class ScrollQueryInstance<K, D, F>  {
     return await this.core.delete(this.cacheKey, this.settings)
   }
 
-  async fetch(aborter = new AbortController()): Promise<Result<Result<State<D[], F>, FetchError>, CooldownError | PendingFetchError | MissingFetcherError>> {
+  async fetch(aborter = new AbortController()): Promise<Result<Result<State<D[], F>, FetchError>, CooldownError | MissingFetcherError>> {
     const { core, scroller, cacheKey, fetcher, settings } = this
 
     if (fetcher === undefined)
@@ -99,10 +99,10 @@ export class ScrollQueryInstance<K, D, F>  {
     if (Time.isAfterNow(this.real?.current.cooldown))
       return new Err(new CooldownError())
 
-    const result = await core.lockOrError(cacheKey, aborter, async () =>
+    const result = await core.lockOrJoin(cacheKey, aborter, async () =>
       await Scroll.first(core, scroller, cacheKey, fetcher, aborter, settings))
 
-    return result
+    return new Ok(result)
   }
 
   async refetch(aborter = new AbortController()): Promise<Result<Result<State<D[], F>, FetchError>, MissingFetcherError>> {

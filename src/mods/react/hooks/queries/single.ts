@@ -143,10 +143,10 @@ export function useAnonymousQuery<K, D, F>(
     if (Time.isAfterNow(stateRef.current?.real?.current.cooldown))
       return new Err(new CooldownError())
 
-    const result = await core.lockOrError(cacheKey, aborter, async () =>
+    const result = await core.lockOrJoin(cacheKey, aborter, async () =>
       await Simple.fetch(core, key, cacheKey, fetcher, aborter, settings))
 
-    return result
+    return new Ok(result)
   }, [core, cacheKey])
 
   const refetch = useCallback(async (aborter = new AbortController()) => {

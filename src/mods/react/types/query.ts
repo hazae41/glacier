@@ -1,5 +1,5 @@
 import { Result } from "@hazae41/result"
-import { CooldownError, MissingFetcherError, MissingKeyError, PendingFetchError } from "mods/core/core.js"
+import { CooldownError, MissingFetcherError, MissingKeyError } from "mods/core/core.js"
 import { Data } from "mods/result/data.js"
 import { Fail } from "mods/result/fail.js"
 import { Fetched } from "mods/result/fetched.js"
@@ -67,7 +67,7 @@ export interface Query<K, D, F> {
    * Fetch with cooldown
    * @example You want to fetch and don't care if it's cooldowned
    */
-  fetch(aborter?: AbortController): Promise<Result<Result<State<D, F>, FetchError>, CooldownError | PendingFetchError | MissingFetcherError | MissingKeyError>>
+  fetch(aborter?: AbortController): Promise<Result<Result<State<D, F>, FetchError>, CooldownError | MissingFetcherError | MissingKeyError>>
 
   /**
    * Fetch without cooldown

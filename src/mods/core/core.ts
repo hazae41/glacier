@@ -1,7 +1,7 @@
 import { Future } from "@hazae41/future"
 import { Mutex } from "@hazae41/mutex"
 import { None, Option, Optional, Some } from "@hazae41/option"
-import { Err, Ok, Result } from "@hazae41/result"
+import { Result } from "@hazae41/result"
 import { FetchError } from "index.js"
 import { Ortho } from "libs/ortho/ortho.js"
 import { Promiseable } from "libs/promises/promises.js"
@@ -24,16 +24,6 @@ export class AsyncStorageError extends Error {
 
   constructor() {
     super(`Storage is asynchronous`)
-  }
-
-}
-
-export class PendingFetchError extends Error {
-  readonly #class = PendingFetchError
-  readonly name = this.#class.name
-
-  constructor() {
-    super(`A fetch is already pending`)
   }
 
 }
@@ -177,26 +167,6 @@ export class Core {
         })
       }
     })
-  }
-
-  async lockOrError<D, F>(cacheKey: string, aborter: AbortController, callback: () => Promise<Result<State<D, F>, FetchError>>): Promise<Result<Result<State<D, F>, FetchError>, PendingFetchError>> {
-    const { pendingMutex, pendingLockMutex } = await this.#getOrCreateMetadata(cacheKey)
-
-    const pendingLock = await pendingLockMutex.lock(async () => {
-      await pendingMutex.lock(async () => { })
-      const pendingLock = new Future<void>()
-      pendingMutex.lock(() => pendingLock.promise)
-      return pendingLock
-    })
-
-    try {
-      if (pendingMutex.inner.current !== undefined)
-        return new Err(new PendingFetchError())
-
-      return new Ok(await this.lockOrWait(cacheKey, pendingLock, aborter, callback))
-    } finally {
-      pendingLock.resolve()
-    }
   }
 
   async lockOrReplace<D, F>(cacheKey: string, aborter: AbortController, callback: () => Promise<Result<State<D, F>, FetchError>>): Promise<Result<State<D, F>, FetchError>> {
