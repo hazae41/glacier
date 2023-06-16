@@ -58,16 +58,6 @@ export class CooldownError extends Error {
 
 }
 
-export class ScrollError extends Error {
-  readonly #class = ScrollError
-  readonly name = this.#class.name
-
-  constructor() {
-    super(`Scroller returned undefined`)
-  }
-
-}
-
 export class MissingKeyError extends Error {
   readonly #class = MissingKeyError
   readonly name = this.#class.name
