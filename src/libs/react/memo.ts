@@ -1,5 +1,5 @@
 import { Optional } from "@hazae41/option";
-import { DependencyList, Dispatch, SetStateAction, useMemo, useState } from "react";
+import { DependencyList, Dispatch, SetStateAction, useEffect, useMemo, useState } from "react";
 
 
 export type Setter<T> = Dispatch<SetStateAction<T>>
@@ -12,10 +12,12 @@ export function useAsyncMemo<T>(factory: () => Promise<T>, deps: DependencyList)
   const [state, setState] = useState<T>()
 
   const promise = useMemo(() => {
-    const promise = factory()
-    promise.then(setState).catch(throwSync(setState))
-    return promise
+    return factory()
   }, deps)
+
+  useEffect(() => {
+    promise.then(setState).catch(throwSync(setState))
+  }, [promise])
 
   return [state, promise]
 }
