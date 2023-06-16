@@ -8,7 +8,7 @@ import { DEFAULT_EQUALS } from "mods/defaults.js"
 import { Data } from "mods/result/data.js"
 import { Fail } from "mods/result/fail.js"
 import { Fetched } from "mods/result/fetched.js"
-import { SyncBicoder, SyncIdentity } from "mods/serializers/serializer.js"
+import { Bicoder, SyncIdentity } from "mods/serializers/serializer.js"
 import { Mutator, Setter } from "mods/types/mutator.js"
 import { GlobalSettings, QuerySettings } from "mods/types/settings.js"
 import { DataState, FailState, FakeState, RealState, State, StoredState } from "mods/types/state.js"
@@ -209,17 +209,17 @@ export class Core {
         return cached
 
       const stored = await settings.storage?.get(cacheKey)
-      const state = this.unstore(stored, settings)
+      const state = await this.unstore(stored, settings)
       stateSlot.current = state
       this.states.publish(cacheKey, state)
       return state
     })
   }
 
-  store<K, D, F>(state: State<D, F>, settings: QuerySettings<K, D, F>): Optional<StoredState<unknown, unknown>> {
+  async store<K, D, F>(state: State<D, F>, settings: QuerySettings<K, D, F>): Promise<Optional<StoredState<unknown, unknown>>> {
     const {
-      dataSerializer = SyncIdentity as SyncBicoder<D, unknown>,
-      errorSerializer = SyncIdentity as SyncBicoder<F, unknown>
+      dataSerializer = SyncIdentity as Bicoder<D, unknown>,
+      errorSerializer = SyncIdentity as Bicoder<F, unknown>
     } = settings
 
     if (state.real === undefined)
@@ -227,16 +227,16 @@ export class Core {
 
     const { time, cooldown, expiration } = state.real.current
 
-    const data = Option.mapSync(state.real.data, d => d.mapSync(dataSerializer.stringify))
-    const error = Option.mapSync(state.real.error, d => d.mapErrSync(errorSerializer.stringify))
+    const data = await Option.map(state.real.data, d => d.map(dataSerializer.stringify))
+    const error = await Option.map(state.real.error, d => d.mapErr(errorSerializer.stringify))
 
     return { version: 2, data, error, time, cooldown, expiration }
   }
 
-  unstore<K, D, F>(stored: Optional<StoredState<unknown, unknown>>, settings: QuerySettings<K, D, F>): State<D, F> {
+  async unstore<K, D, F>(stored: Optional<StoredState<unknown, unknown>>, settings: QuerySettings<K, D, F>): Promise<State<D, F>> {
     const {
-      dataSerializer = SyncIdentity as SyncBicoder<D, unknown>,
-      errorSerializer = SyncIdentity as SyncBicoder<F, unknown>
+      dataSerializer = SyncIdentity as Bicoder<D, unknown>,
+      errorSerializer = SyncIdentity as Bicoder<F, unknown>
     } = settings
 
     if (stored === undefined)
@@ -259,8 +259,8 @@ export class Core {
     }
 
     if (stored.version === 2) {
-      const data = Option.wrap(stored.data).mapSync(x => Data.from(x).mapSync(dataSerializer.parse))
-      const error = Option.wrap(stored.error).mapSync(x => Fail.from(x).mapErrSync(errorSerializer.parse))
+      const data = await Option.wrap(stored.data).map(x => Data.from(x).map(dataSerializer.parse))
+      const error = await Option.wrap(stored.error).map(x => Fail.from(x).mapErr(errorSerializer.parse))
 
       if (error.isSome())
         return new RealState(new FailState<D, F>(error.get(), data.get()))
@@ -302,7 +302,7 @@ export class Core {
       if (!settings.storage)
         return next
 
-      const stored = this.store(next, settings)
+      const stored = await this.store(next, settings)
 
       if (stored === undefined) {
         await settings.storage.delete(cacheKey)

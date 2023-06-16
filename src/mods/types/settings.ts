@@ -1,5 +1,5 @@
 import { Equalser } from "mods/equals/equals.js"
-import { SyncBicoder, SyncEncoder } from "mods/serializers/serializer.js"
+import { Bicoder, SyncEncoder } from "mods/serializers/serializer.js"
 import { Storage } from "mods/storages/storage.js"
 import { Normalizer } from "mods/types/normalizer.js"
 
@@ -19,8 +19,9 @@ export interface QuerySettings<K, D, F> {
   readonly storage?: Storage
 
   readonly keySerializer?: SyncEncoder<K, string>,
-  readonly dataSerializer?: SyncBicoder<D, unknown>
-  readonly errorSerializer?: SyncBicoder<F, unknown>
+
+  readonly dataSerializer?: Bicoder<D, unknown>
+  readonly errorSerializer?: Bicoder<F, unknown>
 
   readonly normalizer?: Normalizer<D>
   readonly equals?: Equalser,
