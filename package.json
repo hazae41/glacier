@@ -23,6 +23,7 @@
   },
   "dependencies": {
     "@hazae41/bytes": "^1.1.21",
+    "@hazae41/future": "^1.0.3",
     "@hazae41/mutex": "^1.2.8",
     "@hazae41/option": "^1.0.15",
     "@hazae41/result": "^1.0.48"

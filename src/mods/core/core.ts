@@ -1,3 +1,4 @@
+import { Future } from "@hazae41/future"
 import { Mutex } from "@hazae41/mutex"
 import { None, Option, Optional, Some } from "@hazae41/option"
 import { Err, Ok, Result } from "@hazae41/result"
@@ -104,6 +105,7 @@ interface Pending<D, F> {
 export interface Metadata {
   readonly stateMutex: Mutex<Slot<State<any, any>>>,
   readonly pendingMutex: Mutex<Slot<Pending<any, any>>>,
+  readonly fetchMutex: Mutex<void>,
   readonly optimizersMutex: Mutex<Map<string, Mutator<any, any>>>
   readonly counterMutex: Mutex<Counter>,
 }
@@ -153,30 +155,34 @@ export class Core {
 
       const stateMutex = new Mutex({})
       const pendingMutex = new Mutex({})
+      const fetchMutex = new Mutex(undefined)
       const counterMutex = new Mutex({ value: 0 })
       const optimizersMutex = new Mutex(new Map())
 
-      metadata = { stateMutex, pendingMutex, counterMutex, optimizersMutex }
+      metadata = { stateMutex, pendingMutex, fetchMutex, counterMutex, optimizersMutex }
 
       inner.set(cacheKey, metadata)
       return metadata
     })
   }
 
-  async lockOrWait<D, F>(cacheKey: string, aborter: AbortController, callback: () => Promise<Result<State<D, F>, FetchError>>): Promise<Result<State<D, F>, FetchError>> {
-    const { pendingMutex } = await this.#getOrCreateMetadata(cacheKey)
+  async lockOrWait<D, F>(cacheKey: string, pendingLock: Future<void>, aborter: AbortController, callback: () => Promise<Result<State<D, F>, FetchError>>): Promise<Result<State<D, F>, FetchError>> {
+    const { fetchMutex, pendingMutex } = await this.#getOrCreateMetadata(cacheKey)
 
-    return await pendingMutex.lock(async (pendingSlot) => {
+    return await fetchMutex.lock(async () => {
       try {
         const promise = callback()
 
-        pendingSlot.current = { aborter, promise }
+        pendingMutex.inner.current = { aborter, promise }
         this.aborters.publish(cacheKey, aborter)
+        pendingLock.resolve()
 
         return await promise
       } finally {
-        pendingSlot.current = undefined
-        this.aborters.publish(cacheKey, undefined)
+        await pendingMutex.lock(async (pendingSlot) => {
+          pendingSlot.current = undefined
+          this.aborters.publish(cacheKey, undefined)
+        })
       }
     })
   }
@@ -184,27 +190,51 @@ export class Core {
   async lockOrError<D, F>(cacheKey: string, aborter: AbortController, callback: () => Promise<Result<State<D, F>, FetchError>>): Promise<Result<Result<State<D, F>, FetchError>, PendingFetchError>> {
     const { pendingMutex } = await this.#getOrCreateMetadata(cacheKey)
 
-    if (pendingMutex.inner.current !== undefined)
-      return new Err(new PendingFetchError())
+    const pendingLock = new Future<void>()
 
-    return new Ok(await this.lockOrWait(cacheKey, aborter, callback))
+    try {
+      await pendingMutex.lock(() => pendingLock.promise)
+
+      if (pendingMutex.inner.current !== undefined)
+        return new Err(new PendingFetchError())
+
+      return new Ok(await this.lockOrWait(cacheKey, pendingLock, aborter, callback))
+    } finally {
+      pendingLock.resolve()
+    }
   }
 
   async lockOrReplace<D, F>(cacheKey: string, aborter: AbortController, callback: () => Promise<Result<State<D, F>, FetchError>>): Promise<Result<State<D, F>, FetchError>> {
     const { pendingMutex } = await this.#getOrCreateMetadata(cacheKey)
 
-    pendingMutex.inner.current?.aborter.abort(`Replaced`)
+    const pendingLock = new Future<void>()
 
-    return await this.lockOrWait(cacheKey, aborter, callback)
+    try {
+      await pendingMutex.lock(() => pendingLock.promise)
+
+      pendingMutex.inner.current?.aborter.abort(`Replaced`)
+
+      return await this.lockOrWait(cacheKey, pendingLock, aborter, callback)
+    } finally {
+      pendingLock.resolve()
+    }
   }
 
   async lockOrJoin<D, F>(cacheKey: string, aborter: AbortController, callback: () => Promise<Result<State<D, F>, FetchError>>): Promise<Result<State<D, F>, FetchError>> {
     const { pendingMutex } = await this.#getOrCreateMetadata(cacheKey)
 
-    if (pendingMutex.inner.current !== undefined)
-      return await pendingMutex.inner.current.promise
+    const pendingLock = new Future<void>()
 
-    return await this.lockOrWait(cacheKey, aborter, callback)
+    try {
+      await pendingMutex.lock(() => pendingLock.promise)
+
+      if (pendingMutex.inner.current !== undefined)
+        return await pendingMutex.inner.current.promise
+
+      return await this.lockOrWait(cacheKey, pendingLock, aborter, callback)
+    } finally {
+      pendingLock.resolve()
+    }
   }
 
   async #get<K, D, F>(cacheKey: string, stateSlot: Slot<State<D, F>>, settings: QuerySettings<K, D, F>): Promise<State<D, F>> {
