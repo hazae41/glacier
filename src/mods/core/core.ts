@@ -180,8 +180,10 @@ export class Core {
     const pendingLock = await pendingMutex.acquire()
     const pending = pendingLock.inner.inner.current
 
-    if (pending !== undefined)
+    if (pending !== undefined) {
+      pendingLock.release()
       return await pending.promise
+    }
 
     return await this.#lock(cacheKey, pendingLock, aborter, callback)
   }
