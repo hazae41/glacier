@@ -98,14 +98,16 @@ export function useAnonymousQuery<K, D, F>(
     if (cacheKey === undefined)
       return
 
-    core.onState.on(cacheKey, setState)
-    core.onAborter.on(cacheKey, setAborter)
+    const offState = core.onState.addListener(cacheKey, e => setState(e.detail))
+    const offAborter = core.onAborter.addListener(cacheKey, e => setAborter(e.detail))
+
     core.increment(cacheKey, settingsRef.current)
 
     return () => {
       core.decrement(cacheKey, settingsRef.current)
-      core.onState.off(cacheKey, setState)
-      core.onAborter.off(cacheKey, setAborter)
+
+      offState()
+      offAborter()
     }
   }, [core, cacheKey])
 

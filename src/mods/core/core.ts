@@ -14,9 +14,6 @@ import { Mutator, Setter } from "mods/types/mutator.js"
 import { GlobalSettings, QuerySettings } from "mods/types/settings.js"
 import { DataState, FailState, FakeState, RealState, State, StoredState } from "mods/types/state.js"
 
-export type Listener<D, F> =
-  (x: Optional<State<D, F>>) => void
-
 export class AsyncStorageError extends Error {
   readonly #class = AsyncStorageError
   readonly name = this.#class.name
@@ -67,25 +64,24 @@ export class MissingFetcherError extends Error {
 
 }
 
-export interface Metadata {
+export interface Metadata<D, F> {
   cacheKey: string,
   mutex: Mutex<void>,
   counter: number,
-  state?: State<any, any>,
+  state?: State<D, F>,
   timeout?: NodeJS.Timeout
   aborter?: AbortController
-  promise?: Promise<Result<State<any, any>, FetchError>>
-  optimizers: Map<string, Mutator<any, any>>
+  promise?: Promise<Result<State<D, F>, FetchError>>
+  optimizers: Map<string, Mutator<D, F>>
 }
 
 export class Core {
 
-  readonly onState = new Ortho<string, State<any, any>>()
-  readonly onAborter = new Ortho<string, Optional<AbortController>>()
+  readonly onState = new Ortho<State<any, any>>()
+  readonly onAborter = new Ortho<Optional<AbortController>>()
 
-  readonly #metadatas = new Map<string, Metadata>()
-
-  readonly #storeds = new Map<string, Option<StoredState<unknown, unknown>>>()
+  readonly #metadatas = new Map<string, Metadata<any, any>>()
+  readonly #storeds = new Map<string, Option<StoredState>>()
 
   #mounted = true
 
@@ -111,18 +107,18 @@ export class Core {
     return this.#metadatas.get(cacheKey)?.state
   }
 
-  getStoredSync(cacheKey: string): Optional<Option<StoredState<unknown, unknown>>> {
+  getStoredSync(cacheKey: string): Optional<Option<StoredState>> {
     return this.#storeds.get(cacheKey)
   }
 
-  setStoredSync(cacheKey: string, stored: Optional<Option<StoredState<unknown, unknown>>>) {
+  setStoredSync(cacheKey: string, stored: Optional<Option<StoredState>>) {
     if (stored === undefined)
       this.#storeds.delete(cacheKey)
     else
       this.#storeds.set(cacheKey, stored)
   }
 
-  #getOrCreateMetadata(cacheKey: string) {
+  #getOrCreateMetadata<D, F>(cacheKey: string): Metadata<D, F> {
     let metadata = this.#metadatas.get(cacheKey)
 
     if (metadata !== undefined)
@@ -165,7 +161,7 @@ export class Core {
     const metadata = this.#getOrCreateMetadata(cacheKey)
 
     if (metadata.promise !== undefined)
-      return await metadata.promise
+      return await metadata.promise as Result<State<D, F>, FetchError>
 
     try {
       const promise = callback()
@@ -184,7 +180,7 @@ export class Core {
     }
   }
 
-  async #get<K, D, F>(metadata: Metadata, settings: QuerySettings<K, D, F>): Promise<State<D, F>> {
+  async #get<K, D, F>(metadata: Metadata<D, F>, settings: QuerySettings<K, D, F>): Promise<State<D, F>> {
     if (metadata.state !== undefined)
       return metadata.state
 
@@ -197,12 +193,12 @@ export class Core {
   }
 
   async get<K, D, F>(cacheKey: string, settings: QuerySettings<K, D, F>): Promise<State<D, F>> {
-    const metadata = this.#getOrCreateMetadata(cacheKey)
+    const metadata = this.#getOrCreateMetadata<D, F>(cacheKey)
 
     return await metadata.mutex.lock(async () => await this.#get(metadata, settings))
   }
 
-  async store<K, D, F>(state: State<D, F>, settings: QuerySettings<K, D, F>): Promise<Optional<StoredState<unknown, unknown>>> {
+  async store<K, D, F>(state: State<D, F>, settings: QuerySettings<K, D, F>): Promise<Optional<StoredState>> {
     const {
       dataSerializer = SyncIdentity as Bicoder<D, unknown>,
       errorSerializer = SyncIdentity as Bicoder<F, unknown>
@@ -219,7 +215,7 @@ export class Core {
     return { version: 2, data, error, time, cooldown, expiration }
   }
 
-  async unstore<K, D, F>(stored: Optional<StoredState<unknown, unknown>>, settings: QuerySettings<K, D, F>): Promise<State<D, F>> {
+  async unstore<K, D, F>(stored: Optional<StoredState>, settings: QuerySettings<K, D, F>): Promise<State<D, F>> {
     const {
       dataSerializer = SyncIdentity as Bicoder<D, unknown>,
       errorSerializer = SyncIdentity as Bicoder<F, unknown>
@@ -268,7 +264,7 @@ export class Core {
    * @returns 
    */
   async set<K, D, F>(cacheKey: string, setter: Setter<D, F>, settings: QuerySettings<K, D, F>) {
-    const metadata = this.#getOrCreateMetadata(cacheKey)
+    const metadata = this.#getOrCreateMetadata<D, F>(cacheKey)
 
     return await metadata.mutex.lock(async () => {
       const previous = await this.#get(metadata, settings)
@@ -329,7 +325,7 @@ export class Core {
   async update<K, D, F>(cacheKey: string, setter: Setter<D, F>, settings: QuerySettings<K, D, F>) {
     const { equals = DEFAULT_EQUALS } = settings
 
-    const metadata = this.#getOrCreateMetadata(cacheKey)
+    const metadata = this.#getOrCreateMetadata<D, F>(cacheKey)
 
     return await this.set(cacheKey, async (previous) => {
       const set = await setter(previous)
@@ -396,7 +392,7 @@ export class Core {
    * @param optimizers 
    * @returns 
    */
-  async #reoptimize<D, F>(metadata: Metadata, state: State<D, F>): Promise<State<D, F>> {
+  async #reoptimize<D, F>(metadata: Metadata<D, F>, state: State<D, F>): Promise<State<D, F>> {
     let reoptimized: State<D, F> = new RealState(state.real)
 
     for (const optimizer of metadata.optimizers.values()) {
@@ -413,7 +409,7 @@ export class Core {
   }
 
   async reoptimize<K, D, F>(cacheKey: string, settings: QuerySettings<K, D, F>) {
-    const metadata = this.#getOrCreateMetadata(cacheKey)
+    const metadata = this.#getOrCreateMetadata<D, F>(cacheKey)
 
     return await this.set(cacheKey, async (previous) => {
       return new Some(await this.#reoptimize(metadata, previous))
@@ -421,7 +417,7 @@ export class Core {
   }
 
   async optimize<K, D, F>(cacheKey: string, uuid: string, optimizer: Mutator<D, F>, settings: QuerySettings<K, D, F>) {
-    const metadata = this.#getOrCreateMetadata(cacheKey)
+    const metadata = this.#getOrCreateMetadata<D, F>(cacheKey)
 
     return await this.set(cacheKey, async (previous) => {
 

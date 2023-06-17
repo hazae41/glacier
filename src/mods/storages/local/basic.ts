@@ -36,7 +36,7 @@ export function useAsyncLocalStorage(params?: AsyncLocalStorageParams) {
 export interface AsyncLocalStorageParams {
   prefix?: string,
   keySerializer?: Encoder<string, string>,
-  valueSerializer?: Bicoder<StoredState<unknown, unknown>, string>
+  valueSerializer?: Bicoder<StoredState, string>
 }
 
 /**
@@ -53,7 +53,6 @@ export interface AsyncLocalStorageParams {
  * @see useFallback
  */
 export class AsyncLocalStorage implements Storage {
-
   readonly async = true as const
 
   readonly #onunload: () => void
@@ -63,7 +62,7 @@ export class AsyncLocalStorage implements Storage {
   private constructor(
     readonly prefix = "xswr:",
     readonly keySerializer = SyncIdentity as Encoder<string, string>,
-    readonly valueSerializer = JSON as Bicoder<StoredState<unknown, unknown>, string>
+    readonly valueSerializer = JSON as Bicoder<StoredState, string>
   ) {
     this.#onunload = () => this.collectSync()
     addEventListener("beforeunload", this.#onunload)
@@ -111,7 +110,7 @@ export class AsyncLocalStorage implements Storage {
     return state
   }
 
-  async set(cacheKey: string, state: StoredState<unknown, unknown>) {
+  async set(cacheKey: string, state: StoredState) {
     const key = await this.keySerializer.stringify(cacheKey)
     const item = await this.valueSerializer.stringify(state)
 

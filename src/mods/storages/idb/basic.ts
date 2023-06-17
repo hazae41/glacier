@@ -24,11 +24,10 @@ export function useIDBStorage(params?: IDBStorageParams) {
 export interface IDBStorageParams {
   name?: string,
   keySerializer?: Encoder<string, string>,
-  valueSerializer?: Bicoder<StoredState<unknown, unknown>, string>
+  valueSerializer?: Bicoder<StoredState, string>
 }
 
 export class IDBStorage implements Storage {
-
   readonly async = true as const
 
   readonly #database: Promise<IDBDatabase>
@@ -40,7 +39,7 @@ export class IDBStorage implements Storage {
   private constructor(
     readonly name = "xswr",
     readonly keySerializer = SyncIdentity as Encoder<string, string>,
-    readonly valueSerializer = SyncIdentity as Bicoder<StoredState<unknown, unknown>, unknown>
+    readonly valueSerializer = SyncIdentity as Bicoder<StoredState, unknown>
   ) {
     this.#database = this.#load()
 
@@ -168,7 +167,7 @@ export class IDBStorage implements Storage {
     })
   }
 
-  async set(cacheKey: string, state: StoredState<unknown, unknown>) {
+  async set(cacheKey: string, state: StoredState) {
     const key = await this.keySerializer.stringify(cacheKey)
     const value = await this.valueSerializer.stringify(state)
 

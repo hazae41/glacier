@@ -1,23 +1,23 @@
 import { Data, DataInit } from "mods/result/data.js"
 import { Fail, FailInit } from "mods/result/fail.js"
 
-export type StoredState<D, F> =
-  | StoredState1<D, F>
-  | StoredState2<D, F>
+export type StoredState =
+  | StoredState1
+  | StoredState2
 
-export interface StoredState1<D, F> {
+export interface StoredState1 {
   version?: undefined,
-  data?: D
-  error?: F
+  data?: unknown
+  error?: unknown
   time: number,
   cooldown?: number
   expiration?: number
 }
 
-export interface StoredState2<D, F> {
+export interface StoredState2 {
   version: 2,
-  data?: DataInit<D>
-  error?: FailInit<F>
+  data?: DataInit<unknown>
+  error?: FailInit<unknown>
   time: number,
   cooldown?: number
   expiration?: number

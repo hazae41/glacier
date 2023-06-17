@@ -1,53 +1,25 @@
-import { MapOfArrays } from "libs/ortho/map-of-arrays.js"
-
 /**
  * Orthogonal state publisher
  */
-export class Ortho<K, S> {
+export class Ortho<T> extends EventTarget {
 
-  #listeners = new MapOfArrays<K, (x: S) => void>()
-
-  /**
-   * Publish a value to all listeners of key
-   * @param key 
-   * @param value 
-   * @returns 
-   */
-  publish(key: K, value: S) {
-    const listeners = this.#listeners.get(key)
-
-    if (listeners === undefined)
-      return
-
-    for (const listener of listeners)
-      listener(value)
+  constructor() {
+    super()
   }
 
-  /**
-   * Add a listener to a key
-   * @param key 
-   * @param listener 
-   */
-  on(key: K, listener: (x: S) => void) {
-    this.#listeners.push(key, listener)
+  publish(key: string, detail: T) {
+    const event = new CustomEvent(key, { detail })
+    this.dispatchEvent(event)
   }
 
-  /**
-   * Remove a listener from a key
-   * @param key 
-   * @param listener 
-   */
-  off(key: K, listener: (x: S) => void) {
-    this.#listeners.erase(key, listener)
+  addListener(key: string, listener: (event: CustomEvent<T>) => void) {
+    this.addEventListener(key, listener as any, { passive: true })
+    return () => this.removeEventListener(key, listener as any)
   }
 
-  once(key: K, listener: (x: S) => void) {
-    const listener2 = (x: S) => {
-      this.off(key, listener2)
-      listener(x)
-    }
-
-    this.on(key, listener2)
+  removeListener(key: string, listener: (event: CustomEvent<T>) => void) {
+    this.removeEventListener(key, listener as any)
+    return () => this.addEventListener(key, listener as any, { passive: true })
   }
 
 }

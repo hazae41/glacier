@@ -10,15 +10,15 @@ test("Ortho", async () => {
   let a = 0
   let b = 0
 
-  const ortho = new Ortho<string, number>()
+  const ortho = new Ortho<number>()
 
-  const fa = (x: number) => { a = x }
-  const fb = (x: number) => { b = x }
+  const fa = (e: CustomEvent<number>) => { a = e.detail }
+  const fb = (e: CustomEvent<number>) => { b = e.detail }
 
-  ortho.on("test", fa)
-  ortho.on("test", fb)
+  ortho.addListener("test", fa)
+  ortho.addListener("test", fb)
 
-  ortho.off("test", fb)
+  ortho.removeListener("test", fb)
 
   ortho.publish("test", 123)
 
