@@ -7,7 +7,7 @@ export class Ortho<T> extends EventTarget {
     super()
   }
 
-  publish(key: string, detail: T) {
+  dispatch(key: string, detail: T) {
     const event = new CustomEvent(key, { detail })
     this.dispatchEvent(event)
   }

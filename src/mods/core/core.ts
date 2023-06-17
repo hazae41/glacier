@@ -145,14 +145,14 @@ export class Core {
 
       metadata.promise = promise
       metadata.aborter = aborter
-      this.onAborter.publish(cacheKey, aborter)
+      this.onAborter.dispatch(cacheKey, aborter)
 
       return await promise
     } finally {
       if (metadata.aborter === aborter) {
         metadata.aborter = undefined
         metadata.promise = undefined
-        this.onAborter.publish(cacheKey, undefined)
+        this.onAborter.dispatch(cacheKey, undefined)
       }
     }
   }
@@ -168,14 +168,14 @@ export class Core {
 
       metadata.aborter = aborter
       metadata.promise = promise
-      this.onAborter.publish(cacheKey, aborter)
+      this.onAborter.dispatch(cacheKey, aborter)
 
       return await promise
     } finally {
       if (metadata.aborter === aborter) {
         metadata.aborter = undefined
         metadata.promise = undefined
-        this.onAborter.publish(cacheKey, undefined)
+        this.onAborter.dispatch(cacheKey, undefined)
       }
     }
   }
@@ -188,7 +188,7 @@ export class Core {
     const state = await this.unstore(stored, settings)
     metadata.state = state
     this.#storeds.set(metadata.cacheKey, Option.wrap(stored))
-    this.onState.publish(metadata.cacheKey, state)
+    this.onState.dispatch(metadata.cacheKey, state)
     return state
   }
 
@@ -282,7 +282,7 @@ export class Core {
 
       metadata.state = next
       this.#storeds.set(cacheKey, Option.wrap(stored))
-      this.onState.publish(cacheKey, next)
+      this.onState.dispatch(cacheKey, next)
 
       if (!settings.storage)
         return next

@@ -20,7 +20,7 @@ test("Ortho", async () => {
 
   ortho.removeListener("test", fb)
 
-  ortho.publish("test", 123)
+  ortho.dispatch("test", 123)
 
   assert(a === 123, `a should be 123`)
   assert(b === 0, `b should be 0`)
