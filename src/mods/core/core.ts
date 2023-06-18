@@ -174,7 +174,7 @@ export class Core {
     if (metadata.inner.state !== undefined)
       return metadata.inner.state
 
-    const stored = await settings.storage?.get(cacheKey)
+    const stored = await settings.storage?.get?.(cacheKey)
     const state = await this.unstore(stored, settings)
 
     metadata.inner.state = state
@@ -282,7 +282,7 @@ export class Core {
       if (!settings.storage)
         return next
 
-      await settings.storage.set(cacheKey, stored)
+      await settings.storage.set?.(cacheKey, stored)
       return next
     })
   }

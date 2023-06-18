@@ -13,7 +13,7 @@ export interface Storage {
    * @param shallow true = won't add this key to the garbage collector
    * @returns 
    */
-  get(cacheKey: string): Promiseable<Optional<RawState>>
+  get?(cacheKey: string): Promiseable<Optional<RawState>>
 
   /**
    * Set the given data to the given key
@@ -22,6 +22,6 @@ export interface Storage {
    * @param shallow true = won't add this key to the garbage collector
    * @returns 
    */
-  set(cacheKey: string, value: Optional<RawState>): Promiseable<void>
+  set?(cacheKey: string, value: Optional<RawState>): Promiseable<void>
 
 }
