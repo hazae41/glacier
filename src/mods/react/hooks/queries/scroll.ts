@@ -252,6 +252,7 @@ export function useAnonymousScrollQuery<K, D, F>(
     scroll,
     clear,
     suspend,
-    peek
-  }
+    peek,
+    ...settings
+  } satisfies ScrollQuery<K, D, F>
 }

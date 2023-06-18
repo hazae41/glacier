@@ -239,5 +239,6 @@ export function useAnonymousQuery<K, D, F>(
     update,
     clear,
     suspend,
-  }
+    ...settings
+  } satisfies SingleQuery<K, D, F>
 }
