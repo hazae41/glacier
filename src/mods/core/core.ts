@@ -81,7 +81,7 @@ export class Core {
 
   readonly #metadatas = new Map<string, Mutex<Metadata<any, any>>>()
 
-  readonly raw = new Map<string, Optional<RawState>>()
+  readonly raw = new Map<string, Option<RawState>>()
 
   #mounted = true
 
@@ -179,7 +179,7 @@ export class Core {
 
     metadata.inner.state = state
 
-    this.raw.set(cacheKey, stored)
+    this.raw.set(cacheKey, Option.wrap(stored))
 
     this.onState.dispatch(cacheKey, state)
 
@@ -275,7 +275,7 @@ export class Core {
 
       metadata.inner.state = next
 
-      this.raw.set(cacheKey, stored)
+      this.raw.set(cacheKey, Option.wrap(stored))
 
       this.onState.dispatch(cacheKey, next)
 
