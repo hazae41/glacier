@@ -1,6 +1,7 @@
+import { Optional } from "@hazae41/option"
 import { Err, Ok, Result } from "@hazae41/result"
 import { Bicoder, Encoder, SyncIdentity } from "mods/serializers/serializer.js"
-import { StoredState } from "mods/types/state.js"
+import { RawState } from "mods/types/state.js"
 import { useEffect, useRef } from "react"
 import { StorageCreationError } from "../errors.js"
 import { Storage } from "../storage.js"
@@ -36,7 +37,7 @@ export function useAsyncLocalStorage(params?: AsyncLocalStorageParams) {
 export interface AsyncLocalStorageParams {
   prefix?: string,
   keySerializer?: Encoder<string, string>,
-  valueSerializer?: Bicoder<StoredState, string>
+  valueSerializer?: Bicoder<RawState, string>
 }
 
 /**
@@ -57,12 +58,12 @@ export class AsyncLocalStorage implements Storage {
 
   readonly #onunload: () => void
 
-  #keys = new Map<string, number>()
+  #storageKeys = new Map<string, number>()
 
   private constructor(
     readonly prefix = "xswr:",
     readonly keySerializer = SyncIdentity as Encoder<string, string>,
-    readonly valueSerializer = JSON as Bicoder<StoredState, string>
+    readonly valueSerializer = JSON as Bicoder<RawState, string>
   ) {
     this.#onunload = () => this.collectSync()
     addEventListener("beforeunload", this.#onunload)
@@ -88,7 +89,7 @@ export class AsyncLocalStorage implements Storage {
   }
 
   collectSync() {
-    for (const [key, expiration] of this.#keys) {
+    for (const [key, expiration] of this.#storageKeys) {
       if (expiration > Date.now())
         continue
       this.#delete(key)
@@ -105,25 +106,28 @@ export class AsyncLocalStorage implements Storage {
     const state = await this.valueSerializer.parse(item)
 
     if (state.expiration !== undefined)
-      this.#keys.set(key, state.expiration)
+      this.#storageKeys.set(key, state.expiration)
 
     return state
   }
 
-  async set(cacheKey: string, state: StoredState) {
-    const key = await this.keySerializer.stringify(cacheKey)
-    const item = await this.valueSerializer.stringify(state)
+  async set(cacheKey: string, state: Optional<RawState>) {
+    if (state === undefined)
+      return await this.delete(cacheKey)
+
+    const storageKey = await this.keySerializer.stringify(cacheKey)
+    const storageItem = await this.valueSerializer.stringify(state)
 
     if (state.expiration !== undefined)
-      this.#keys.set(key, state.expiration)
+      this.#storageKeys.set(storageKey, state.expiration)
 
-    localStorage.setItem(this.prefix + key, item)
+    localStorage.setItem(this.prefix + storageKey, storageItem)
   }
 
-  async #delete(key: string) {
-    this.#keys.delete(key)
+  async #delete(storageKey: string) {
+    this.#storageKeys.delete(storageKey)
 
-    localStorage.removeItem(this.prefix + key)
+    localStorage.removeItem(this.prefix + storageKey)
   }
 
   async delete(cacheKey: string) {
@@ -131,4 +135,5 @@ export class AsyncLocalStorage implements Storage {
 
     await this.#delete(key)
   }
+
 }

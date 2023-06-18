@@ -1,11 +1,11 @@
 import { Data, DataInit } from "mods/result/data.js"
 import { Fail, FailInit } from "mods/result/fail.js"
 
-export type StoredState =
-  | StoredState1
-  | StoredState2
+export type RawState =
+  | RawState1
+  | RawState2
 
-export interface StoredState1 {
+export interface RawState1 {
   version?: undefined,
   data?: unknown
   error?: unknown
@@ -14,7 +14,7 @@ export interface StoredState1 {
   expiration?: number
 }
 
-export interface StoredState2 {
+export interface RawState2 {
   version: 2,
   data?: DataInit<unknown>
   error?: FailInit<unknown>

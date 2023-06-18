@@ -2,7 +2,7 @@ import { Optional } from "@hazae41/option"
 import { Err, Ok, Result } from "@hazae41/result"
 import { Bicoder, Encoder, SyncIdentity } from "mods/serializers/serializer.js"
 import { Storage } from "mods/storages/storage.js"
-import { StoredState } from "mods/types/state.js"
+import { RawState } from "mods/types/state.js"
 import { useEffect, useRef } from "react"
 import { StorageCreationError } from "../errors.js"
 
@@ -24,7 +24,7 @@ export function useIDBStorage(params?: IDBStorageParams) {
 export interface IDBStorageParams {
   name?: string,
   keySerializer?: Encoder<string, string>,
-  valueSerializer?: Bicoder<StoredState, string>
+  valueSerializer?: Bicoder<RawState, string>
 }
 
 export class IDBStorage implements Storage {
@@ -34,12 +34,12 @@ export class IDBStorage implements Storage {
 
   readonly #onunload: () => void
 
-  #keys = new Map<string, number>()
+  #storageKeys = new Map<string, number>()
 
   private constructor(
     readonly name = "xswr",
     readonly keySerializer = SyncIdentity as Encoder<string, string>,
-    readonly valueSerializer = SyncIdentity as Bicoder<StoredState, unknown>
+    readonly valueSerializer = SyncIdentity as Bicoder<RawState, unknown>
   ) {
     this.#database = this.#load()
 
@@ -78,7 +78,7 @@ export class IDBStorage implements Storage {
       if (keys === undefined)
         return
 
-      this.#keys = new Map(keys)
+      this.#storageKeys = new Map(keys)
 
       await this.#delete(store, "__keys").catch(console.error)
       await this.#collect(store).catch(console.error)
@@ -98,15 +98,15 @@ export class IDBStorage implements Storage {
    */
   async #unload() {
     await this.#transact(await this.#database, async store => {
-      await this.#set(store, "__keys", [...this.#keys])
+      await this.#set(store, "__keys", [...this.#storageKeys])
     }, "readwrite")
   }
 
   async #collect(store: IDBObjectStore) {
-    for (const [key, expiration] of this.#keys) {
+    for (const [key, expiration] of this.#storageKeys) {
       if (expiration > Date.now())
         continue
-      this.#keys.delete(key)
+      this.#storageKeys.delete(key)
       await this.#delete(store, key)
     }
   }
@@ -153,7 +153,7 @@ export class IDBStorage implements Storage {
     const state = await this.valueSerializer.parse(value)
 
     if (state.expiration !== undefined)
-      this.#keys.set(key, state.expiration)
+      this.#storageKeys.set(key, state.expiration)
 
     return state
   }
@@ -167,21 +167,24 @@ export class IDBStorage implements Storage {
     })
   }
 
-  async set(cacheKey: string, state: StoredState) {
-    const key = await this.keySerializer.stringify(cacheKey)
-    const value = await this.valueSerializer.stringify(state)
+  async set(cacheKey: string, state: Optional<RawState>) {
+    if (state === undefined)
+      return await this.delete(cacheKey)
+
+    const storageKey = await this.keySerializer.stringify(cacheKey)
+    const storageValue = await this.valueSerializer.stringify(state)
 
     if (state.expiration !== undefined)
-      this.#keys.set(key, state.expiration)
+      this.#storageKeys.set(storageKey, state.expiration)
 
     return await this.#transact(await this.#database, async store => {
-      return await this.#set(store, key, value)
+      return await this.#set(store, storageKey, storageValue)
     }, "readwrite")
   }
 
-  #delete(store: IDBObjectStore, key: string) {
+  #delete(store: IDBObjectStore, storageKey: string) {
     return new Promise<void>((ok, err) => {
-      const req = store.delete(key)
+      const req = store.delete(storageKey)
 
       req.onerror = () => err(req.error)
       req.onsuccess = () => ok()
@@ -189,12 +192,12 @@ export class IDBStorage implements Storage {
   }
 
   async delete(cacheKey: string) {
-    const key = await this.keySerializer.stringify(cacheKey)
+    const storageKey = await this.keySerializer.stringify(cacheKey)
 
-    this.#keys.delete(key)
+    this.#storageKeys.delete(storageKey)
 
     await this.#transact(await this.#database, async store => {
-      await this.#delete(store, key)
+      await this.#delete(store, storageKey)
     }, "readwrite")
   }
 

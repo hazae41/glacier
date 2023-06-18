@@ -12,7 +12,7 @@ import { Fetched } from "mods/result/fetched.js"
 import { Bicoder, SyncIdentity } from "mods/serializers/serializer.js"
 import { Mutator, Setter } from "mods/types/mutator.js"
 import { GlobalSettings, QuerySettings } from "mods/types/settings.js"
-import { DataState, FailState, FakeState, RealState, State, StoredState } from "mods/types/state.js"
+import { DataState, FailState, FakeState, RawState, RealState, State } from "mods/types/state.js"
 
 export class AsyncStorageError extends Error {
   readonly #class = AsyncStorageError
@@ -81,7 +81,6 @@ export class Core {
   readonly onAborter = new Ortho<Optional<AbortController>>()
 
   readonly #metadatas = new Map<string, Metadata<any, any>>()
-  readonly #storeds = new Map<string, Option<StoredState>>()
 
   #mounted = true
 
@@ -105,17 +104,6 @@ export class Core {
 
   getStateSync<D, F>(cacheKey: string): Optional<State<D, F>> {
     return this.#metadatas.get(cacheKey)?.state
-  }
-
-  getStoredSync(cacheKey: string): Optional<Option<StoredState>> {
-    return this.#storeds.get(cacheKey)
-  }
-
-  setStoredSync(cacheKey: string, stored: Optional<Option<StoredState>>) {
-    if (stored === undefined)
-      this.#storeds.delete(cacheKey)
-    else
-      this.#storeds.set(cacheKey, stored)
   }
 
   #getOrCreateMetadata<D, F>(cacheKey: string): Metadata<D, F> {
@@ -186,9 +174,11 @@ export class Core {
 
     const stored = await settings.storage?.get(metadata.cacheKey)
     const state = await this.unstore(stored, settings)
+
     metadata.state = state
-    this.#storeds.set(metadata.cacheKey, Option.wrap(stored))
+
     this.onState.dispatch(metadata.cacheKey, state)
+
     return state
   }
 
@@ -198,7 +188,7 @@ export class Core {
     return await metadata.mutex.lock(async () => await this.#get(metadata, settings))
   }
 
-  async store<K, D, F>(state: State<D, F>, settings: QuerySettings<K, D, F>): Promise<Optional<StoredState>> {
+  async store<K, D, F>(state: State<D, F>, settings: QuerySettings<K, D, F>): Promise<Optional<RawState>> {
     const {
       dataSerializer = SyncIdentity as Bicoder<D, unknown>,
       errorSerializer = SyncIdentity as Bicoder<F, unknown>
@@ -215,7 +205,7 @@ export class Core {
     return { version: 2, data, error, time, cooldown, expiration }
   }
 
-  async unstore<K, D, F>(stored: Optional<StoredState>, settings: QuerySettings<K, D, F>): Promise<State<D, F>> {
+  async unstore<K, D, F>(stored: Optional<RawState>, settings: QuerySettings<K, D, F>): Promise<State<D, F>> {
     const {
       dataSerializer = SyncIdentity as Bicoder<D, unknown>,
       errorSerializer = SyncIdentity as Bicoder<F, unknown>
@@ -281,16 +271,11 @@ export class Core {
       const stored = await this.store(next, settings)
 
       metadata.state = next
-      this.#storeds.set(cacheKey, Option.wrap(stored))
+
       this.onState.dispatch(cacheKey, next)
 
       if (!settings.storage)
         return next
-
-      if (stored === undefined) {
-        await settings.storage.delete(cacheKey)
-        return next
-      }
 
       await settings.storage.set(cacheKey, stored)
       return next
