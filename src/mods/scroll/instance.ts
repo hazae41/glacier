@@ -10,14 +10,14 @@ import { QuerySettings } from "mods/types/settings.js";
 import { State } from "mods/types/state.js";
 import { Scroll } from "./helper.js";
 
-export class ScrollQueryInstance<K, D, F>  {
+export class ScrollFetcherfulQueryInstance<K, D, F>  {
   readonly core: Core
 
   readonly key: K
   readonly cacheKey: string
 
   readonly scroller: Scroller<K, D, F>
-  readonly fetcher?: Fetcher<K, D, F>
+  readonly fetcher: Fetcher<K, D, F>
 
   readonly settings: QuerySettings<K, D[], F>
 
@@ -28,7 +28,7 @@ export class ScrollQueryInstance<K, D, F>  {
     cacheKey: string,
 
     scroller: Scroller<K, D, F>,
-    fetcher: Optional<Fetcher<K, D, F>>,
+    fetcher: Fetcher<K, D, F>,
     settings: QuerySettings<K, D[], F>,
   ) {
     this.core = core
@@ -42,12 +42,12 @@ export class ScrollQueryInstance<K, D, F>  {
     this.settings = settings
   }
 
-  static async make<K, D, F>(core: Core, key: K, cacheKey: string, scroller: Scroller<K, D, F>, fetcher: Optional<Fetcher<K, D, F>>, qsettings: QuerySettings<K, D[], F>) {
+  static async make<K, D, F>(core: Core, key: K, cacheKey: string, scroller: Scroller<K, D, F>, fetcher: Fetcher<K, D, F>, qsettings: QuerySettings<K, D[], F>) {
     const settings = { ...core.settings, ...qsettings }
 
     await core.get(cacheKey, settings)
 
-    return new ScrollQueryInstance(core, key, cacheKey, scroller, fetcher, settings)
+    return new ScrollFetcherfulQueryInstance(core, key, cacheKey, scroller, fetcher, settings)
   }
 
   get state(): State<D[], F> {
@@ -90,11 +90,8 @@ export class ScrollQueryInstance<K, D, F>  {
     return await this.core.delete(this.cacheKey, this.settings)
   }
 
-  async fetch(aborter = new AbortController()): Promise<Result<Result<State<D[], F>, FetchError>, CooldownError | MissingFetcherError>> {
+  async fetch(aborter = new AbortController()): Promise<Result<Result<State<D[], F>, FetchError>, CooldownError>> {
     const { core, scroller, cacheKey, fetcher, settings } = this
-
-    if (fetcher === undefined)
-      return new Err(new MissingFetcherError())
 
     if (Time.isAfterNow(this.real?.current.cooldown))
       return new Err(new CooldownError())
@@ -105,11 +102,8 @@ export class ScrollQueryInstance<K, D, F>  {
     return new Ok(result)
   }
 
-  async refetch(aborter = new AbortController()): Promise<Result<Result<State<D[], F>, FetchError>, MissingFetcherError>> {
+  async refetch(aborter = new AbortController()): Promise<Result<Result<State<D[], F>, FetchError>, never>> {
     const { core, scroller, cacheKey, fetcher, settings } = this
-
-    if (fetcher === undefined)
-      return new Err(new MissingFetcherError())
 
     const result = await core.fetchOrReplace(cacheKey, aborter, async () =>
       await Scroll.first(core, scroller, cacheKey, fetcher, aborter, settings))
@@ -117,16 +111,108 @@ export class ScrollQueryInstance<K, D, F>  {
     return new Ok(result)
   }
 
-  async scroll(aborter = new AbortController()): Promise<Result<Result<State<D[], F>, FetchError>, MissingFetcherError>> {
+  async scroll(aborter = new AbortController()): Promise<Result<Result<State<D[], F>, FetchError>, never>> {
     const { core, scroller, cacheKey, fetcher, settings } = this
-
-    if (fetcher === undefined)
-      return new Err(new MissingFetcherError())
 
     const result = await core.fetchOrReplace(cacheKey, aborter, async () =>
       await Scroll.scroll(core, scroller, cacheKey, fetcher, aborter, settings))
 
     return new Ok(result)
+  }
+
+}
+
+export class ScrollFetcherlessQueryInstance<K, D, F>  {
+  readonly core: Core
+
+  readonly key: K
+  readonly cacheKey: string
+
+  readonly scroller: Scroller<K, D, F>
+  readonly fetcher: undefined
+
+  readonly settings: QuerySettings<K, D[], F>
+
+  private constructor(
+    core: Core,
+
+    key: K,
+    cacheKey: string,
+
+    scroller: Scroller<K, D, F>,
+    fetcher: undefined,
+
+    settings: QuerySettings<K, D[], F>,
+  ) {
+    this.core = core
+
+    this.key = key
+    this.cacheKey = cacheKey
+
+    this.scroller = scroller
+    this.fetcher = fetcher
+
+    this.settings = settings
+  }
+
+  static async make<K, D, F>(core: Core, key: K, cacheKey: string, scroller: Scroller<K, D, F>, fetcher: undefined, qsettings: QuerySettings<K, D[], F>) {
+    const settings = { ...core.settings, ...qsettings }
+
+    await core.get(cacheKey, settings)
+
+    return new ScrollFetcherlessQueryInstance(core, key, cacheKey, scroller, fetcher, settings)
+  }
+
+  get state(): State<D[], F> {
+    return Option.unwrap(this.core.getStateSync<D[], F>(this.cacheKey))
+  }
+
+  get aborter(): Optional<AbortController> {
+    return this.core.getAborterSync(this.cacheKey)
+  }
+
+  get current() {
+    return this.state.current
+  }
+
+  get data() {
+    return this.state.data
+  }
+
+  get error() {
+    return this.state.error
+  }
+
+  get real() {
+    return this.state.real
+  }
+
+  get fake() {
+    return this.state.fake
+  }
+
+  peek() {
+    return this.scroller?.(Option.mapSync(this.real?.data?.inner, Arrays.last))
+  }
+
+  async mutate(mutator: Mutator<D[], F>) {
+    return await this.core.mutate(this.cacheKey, mutator, this.settings)
+  }
+
+  async delete() {
+    return await this.core.delete(this.cacheKey, this.settings)
+  }
+
+  async fetch(aborter = new AbortController()): Promise<Result<never, MissingFetcherError>> {
+    return new Err(new MissingFetcherError())
+  }
+
+  async refetch(aborter = new AbortController()): Promise<Result<never, MissingFetcherError>> {
+    return new Err(new MissingFetcherError())
+  }
+
+  async scroll(aborter = new AbortController()): Promise<Result<never, MissingFetcherError>> {
+    return new Err(new MissingFetcherError())
   }
 
 }

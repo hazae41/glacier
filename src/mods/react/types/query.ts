@@ -1,11 +1,11 @@
 import { Result } from "@hazae41/result"
-import { QuerySettings } from "index.js"
 import { CooldownError, MissingFetcherError, MissingKeyError } from "mods/core/core.js"
 import { Data } from "mods/result/data.js"
 import { Fail } from "mods/result/fail.js"
 import { Fetched } from "mods/result/fetched.js"
 import { FetchError } from "mods/types/fetcher.js"
 import { Mutator } from "mods/types/mutator.js"
+import { QuerySettings } from "mods/types/settings.js"
 import { FetchedState, State } from "mods/types/state.js"
 
 export interface Query<K, D, F> extends Omit<QuerySettings<K, D, F>, "time" | "cooldown" | "expiration"> {

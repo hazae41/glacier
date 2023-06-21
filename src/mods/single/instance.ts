@@ -30,6 +30,7 @@ export class SimpleFetcherlessQueryInstance<K, D, F>  {
     cacheKey: string,
 
     fetcher: undefined,
+
     settings: QuerySettings<K, D, F>,
   ) {
     this.core = core
@@ -116,6 +117,7 @@ export class SimpleFetcherfulQueryInstance<K, D, F>  {
     cacheKey: string,
 
     fetcher: Fetcher<K, D, F>,
+
     settings: QuerySettings<K, D, F>,
   ) {
     this.core = core
