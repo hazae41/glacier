@@ -1,11 +1,11 @@
+import { Optional } from "@hazae41/option"
 import { Core } from "mods/core/core.js"
-import { TimesInit } from "mods/result/times.js"
+import { Fetched } from "mods/result/fetched.js"
 
-export type Normalizer<D> =
-  (data: D, more: NormalizerMore) => Promise<D>
+export type Normalizer<D, F> =
+  (fetched: Optional<Fetched<D, F>>, more: NormalizerMore) => Promise<Fetched<D, F>>
 
 export interface NormalizerMore {
   readonly core: Core,
-  readonly times?: TimesInit,
   readonly shallow?: boolean,
 }

@@ -23,6 +23,6 @@ export interface QuerySettings<K, D, F> {
   readonly dataSerializer?: Bicoder<D, unknown>
   readonly errorSerializer?: Bicoder<F, unknown>
 
-  readonly normalizer?: Normalizer<D>
+  readonly normalizer?: Normalizer<D, F>
   readonly equals?: Equalser,
 }

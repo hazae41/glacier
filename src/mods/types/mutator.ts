@@ -7,4 +7,4 @@ export type Mutator<D, F> =
   (previous: State<D, F>) => Promiseable<Option<Optional<FetchedInit<D, F>>>>
 
 export type Setter<D, F> =
-  (previous: State<D, F>) => Promiseable<Option<State<D, F>>>
+  (previous: State<D, F>) => Promiseable<State<D, F>>

@@ -62,7 +62,7 @@ export namespace Scroll {
 
       const prenormalized = await core.prenormalize(timed, settings)
 
-      if (previous.real?.data && equals(prenormalized.inner[0], previous.real.data.inner[0]))
+      if (prenormalized?.isData() && previous.real?.data && equals(prenormalized.inner[0], previous.real.data.inner[0]))
         return new Some(previous.real.data)
 
       return new Some(timed)

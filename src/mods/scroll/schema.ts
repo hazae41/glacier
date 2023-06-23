@@ -1,6 +1,6 @@
 import { Optional, Some } from "@hazae41/option";
 import { Core } from "mods/core/core.js";
-import { Data } from "mods/result/data.js";
+import { Fetched } from "mods/result/fetched.js";
 import { Fetcher } from "mods/types/fetcher.js";
 import { NormalizerMore } from "mods/types/normalizer.js";
 import { Scroller } from "mods/types/scroller.js";
@@ -60,17 +60,14 @@ export class ScrollFetcherfulQuerySchema<K, D, F> {
     return await ScrollFetcherfulQueryInstance.make(core, this.key, this.cacheKey, this.scroller, this.fetcher, this.settings)
   }
 
-  async normalize(data: D[], more: NormalizerMore) {
-    const { core, times, shallow } = more
+  async normalize(fetched: Optional<Fetched<D[], F>>, more: NormalizerMore) {
+    const { core, shallow } = more
 
     if (shallow)
       return
 
     const instance = await this.make(core)
-
-    await core.mutate(instance.cacheKey, () => {
-      return new Some(new Data(data, times))
-    }, instance.settings)
+    await instance.mutate(() => new Some(fetched))
   }
 
 }
@@ -91,17 +88,14 @@ export class ScrollFetcherlessQuerySchema<K, D, F> {
     return await ScrollFetcherlessQueryInstance.make(core, this.key, this.cacheKey, this.scroller, this.fetcher, this.settings)
   }
 
-  async normalize(data: D[], more: NormalizerMore) {
-    const { core, times, shallow } = more
+  async normalize(fetched: Optional<Fetched<D[], F>>, more: NormalizerMore) {
+    const { core, shallow } = more
 
     if (shallow)
       return
 
     const instance = await this.make(core)
-
-    await core.mutate(instance.cacheKey, () => {
-      return new Some(new Data(data, times))
-    }, instance.settings)
+    await instance.mutate(() => new Some(fetched))
   }
 
 }

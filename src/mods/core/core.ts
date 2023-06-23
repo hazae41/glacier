@@ -1,5 +1,5 @@
 import { Mutex } from "@hazae41/mutex"
-import { None, Option, Optional, Some } from "@hazae41/option"
+import { Option, Optional, Some } from "@hazae41/option"
 import { Result } from "@hazae41/result"
 import { Ortho } from "libs/ortho/ortho.js"
 import { Promiseable } from "libs/promises/promises.js"
@@ -261,16 +261,11 @@ export class Core {
 
     return await metadata.lock(async () => {
       const previous = await this.#get(cacheKey, settings)
+      const next = await setter(previous)
 
-      const set = await setter(previous)
-
-      if (set.isNone())
+      if (next === previous)
         return previous
 
-      if (set.get() === previous)
-        return previous
-
-      const next = set.get()
       const stored = await this.store(next, settings)
 
       metadata.inner.state = next
@@ -293,6 +288,7 @@ export class Core {
 
     if (fetched.isData())
       return new RealState(new DataState(fetched))
+
     return new RealState(new FailState(fetched, previous.real?.data))
   }
 
@@ -302,6 +298,7 @@ export class Core {
 
     if (fetched.isData())
       return new FakeState(new DataState(fetched), previous.real)
+
     return new FakeState(new FailState(fetched, previous.data), previous.real)
   }
 
@@ -318,21 +315,17 @@ export class Core {
     const metadata = this.#getOrCreateMetadata<D, F>(cacheKey)
 
     return await this.set(cacheKey, async (previous) => {
-      const set = await setter(previous)
+      const updated = await setter(previous)
 
-      if (set.isNone())
-        return new None()
+      if (updated === previous)
+        return previous
 
-      if (set.get() === previous)
-        return new None()
-
-      let next = new RealState(set.get().real)
+      let next = new RealState(updated.real)
 
       if (next.real && previous.real && Time.isBefore(next.real?.current.time, previous.real.current.time))
-        return new None()
+        return previous
 
-      if (next.real?.current.isData())
-        next = new RealState(new DataState(await this.#normalize(next.real.current, settings)))
+      next = this.#mergeRealStateWithFetched(next, await this.#normalize(next.real?.current, settings))
 
       if (next.real?.current.isData() && previous.real?.current.isData() && equals(next.real.current.inner, previous.real.current.inner))
         next = new RealState(new DataState(new Data(previous.real.current.inner, next.real.current)))
@@ -340,7 +333,7 @@ export class Core {
       if (next.real?.current.isFail() && previous.real?.current.isFail() && equals(next.real.current.inner, previous.real.current.inner))
         next = new RealState(new FailState(new Fail(previous.real.current.inner, next.real.current), previous.real.data))
 
-      return new Some(await this.#reoptimize(metadata.inner, next))
+      return await this.#reoptimize(metadata.inner, next)
     }, settings)
   }
 
@@ -357,12 +350,10 @@ export class Core {
       const mutate = await mutator(previous)
 
       if (mutate.isNone())
-        return new None()
+        return previous
 
       const fetched = Option.mapSync(mutate.get(), Fetched.from)
-      const next = this.#mergeRealStateWithFetched(previous, fetched)
-
-      return new Some(next)
+      return this.#mergeRealStateWithFetched(previous, fetched)
     }, settings)
   }
 
@@ -402,7 +393,7 @@ export class Core {
     const metadata = this.#getOrCreateMetadata<D, F>(cacheKey)
 
     return await this.set(cacheKey, async (previous) => {
-      return new Some(await this.#reoptimize(metadata.inner, previous))
+      return await this.#reoptimize(metadata.inner, previous)
     }, settings)
   }
 
@@ -422,12 +413,10 @@ export class Core {
       const optimized = await optimizer(previous)
 
       if (optimized.isNone())
-        return new None()
+        return previous
 
       const fetched = Option.mapSync(optimized.get(), Fetched.from)
-      const next = this.#mergeFakeStateWithFetched(previous, fetched)
-
-      return new Some(next)
+      return this.#mergeFakeStateWithFetched(previous, fetched)
     }, settings)
   }
 
@@ -457,14 +446,10 @@ export class Core {
    * @param settings 
    * @returns 
    */
-  async #normalize<K, D, F>(data: Data<D>, settings: QuerySettings<K, D, F>) {
+  async #normalize<K, D, F>(fetched: Optional<Fetched<D, F>>, settings: QuerySettings<K, D, F>) {
     if (settings.normalizer === undefined)
-      return data
-
-    const more = { core: this, times: data, shallow: false }
-    const normalized = await settings.normalizer(data.inner, more)
-
-    return new Data(normalized, data)
+      return fetched
+    return await settings.normalizer(fetched, { core: this, shallow: false })
   }
 
   /**
@@ -473,14 +458,10 @@ export class Core {
    * @param settings 
    * @returns 
    */
-  async prenormalize<K, D, F>(data: Data<D>, settings: QuerySettings<K, D, F>) {
+  async prenormalize<K, D, F>(fetched: Optional<Fetched<D, F>>, settings: QuerySettings<K, D, F>) {
     if (settings.normalizer === undefined)
-      return data
-
-    const more = { core: this, times: data, shallow: true }
-    const normalized = await settings.normalizer(data.inner, more)
-
-    return new Data(normalized, data)
+      return fetched
+    return await settings.normalizer(fetched, { core: this, shallow: true })
   }
 
   async increment<K, D, F>(cacheKey: string, settings: QuerySettings<K, D, F>) {
