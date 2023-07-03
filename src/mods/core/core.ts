@@ -263,6 +263,8 @@ export class Core {
       const previous = await this.#get(cacheKey, settings)
       const next = await setter(previous)
 
+      console.log("set", next)
+
       if (next === previous)
         return previous
 
