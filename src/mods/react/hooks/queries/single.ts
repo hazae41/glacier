@@ -29,7 +29,7 @@ export function useQuery<K, D, F, DL extends DependencyList>(
     return useSkeletonQuery()
 
   if (schema.settings.fetcher === undefined)
-    return useFetcherlessQuery(schema.settings)
+    return useFetcherlessQuery<K, D, F>(schema.settings)
 
   return useFetcherfulQuery<K, D, F>(schema.settings)
 }
@@ -183,7 +183,6 @@ export function useFetcherlessQuery<K, D, F>(
 
   const refetch = useCallback(async (aborter = new AbortController()) => {
     return new Err(new MissingFetcherError())
-
   }, [core, cacheKey])
 
   const update = useCallback(async (updater: Updater<K, D, F>, aborter = new AbortController()) => {
