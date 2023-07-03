@@ -4,7 +4,7 @@ import { useRenderRef } from "libs/react/ref.js";
 import { Time } from "libs/time/time.js";
 import { CooldownError, MissingFetcherError } from "mods/core/core.js";
 import { useCore } from "mods/react/contexts/core.js";
-import { Query } from "mods/react/types/query.js";
+import { FetcherfulQuery, FetcherlessQuery } from "mods/react/types/query.js";
 import { Simple } from "mods/single/helper.js";
 import { SimpleQuerySchema } from "mods/single/schema.js";
 import { FetchError } from "mods/types/fetcher.js";
@@ -26,27 +26,39 @@ export function useQuery<K, D, F, DL extends DependencyList>(
   }, deps)
 
   if (schema === undefined)
-    return useSkeletonQuery()
+    return useSimpleSkeletonQuery()
 
   if (schema.settings.fetcher === undefined)
-    return useFetcherlessQuery<K, D, F>(schema.settings)
+    return useSimpleFetcherlessQuery<K, D, F>(schema.settings)
 
-  return useFetcherfulQuery<K, D, F>(schema.settings)
+  return useSimpleFetcherfulQuery<K, D, F>(schema.settings)
 }
 
 /**
  * Query for a single resource
  */
-export interface SingleQuery<K, D, F> extends Query<K, D, F> {
+export interface SimpleFetcherfulQuery<K, D, F> extends FetcherfulQuery<K, D, F> {
   /**
    * Optimistic update
    * @param updater Mutation function
    * @param aborter Custom AbortController
    */
-  update(updater: Updater<K, D, F>, aborter?: AbortController): Promise<Result<Result<State<D, F>, FetchError>, MissingFetcherError>>
+  update(updater: Updater<K, D, F>, aborter?: AbortController): Promise<Result<Result<State<D, F>, FetchError>, never>>
 }
 
-export function useSkeletonQuery() {
+/**
+ * Query for a single resource
+ */
+export interface SimpleFetcherlessQuery<K, D, F> extends FetcherlessQuery<K, D, F> {
+  /**
+   * Optimistic update
+   * @param updater Mutation function
+   * @param aborter Custom AbortController
+   */
+  update(updater: Updater<K, D, F>, aborter?: AbortController): Promise<Result<never, MissingFetcherError>>
+}
+
+export function useSimpleSkeletonQuery() {
   useCore().unwrap()
 
   useRenderRef(undefined)
@@ -107,16 +119,9 @@ export function useSkeletonQuery() {
   return undefined
 }
 
-/**
- * Single query
- * @param key 
- * @param fetcher 
- * @param settings 
- * @returns 
- */
-export function useFetcherlessQuery<K, D, F>(
+export function useSimpleFetcherlessQuery<K, D, F>(
   settings: FetcherlessQuerySettings<K, D, F>,
-): SingleQuery<K, D, F> {
+): SimpleFetcherlessQuery<K, D, F> {
   const core = useCore().unwrap()
 
   const settingsRef = useRenderRef(settings)
@@ -225,12 +230,12 @@ export function useFetcherlessQuery<K, D, F>(
     clear,
     suspend,
     ...settings
-  } satisfies SingleQuery<K, D, F>
+  }
 }
 
-export function useFetcherfulQuery<K, D, F>(
+export function useSimpleFetcherfulQuery<K, D, F>(
   settings: FetcherfulQuerySettings<K, D, F>,
-): SingleQuery<K, D, F> {
+): SimpleFetcherfulQuery<K, D, F> {
   const core = useCore().unwrap()
 
   const settingsRef = useRenderRef(settings)
@@ -361,5 +366,5 @@ export function useFetcherfulQuery<K, D, F>(
     clear,
     suspend,
     ...settings
-  } satisfies SingleQuery<K, D, F>
+  }
 }

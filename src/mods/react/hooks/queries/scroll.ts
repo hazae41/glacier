@@ -3,9 +3,9 @@ import { Err, Ok, Result } from "@hazae41/result";
 import { Arrays } from "libs/arrays/arrays.js";
 import { useRenderRef } from "libs/react/ref.js";
 import { Time } from "libs/time/time.js";
-import { CooldownError, MissingFetcherError, MissingKeyError } from "mods/core/core.js";
+import { CooldownError, MissingFetcherError } from "mods/core/core.js";
 import { useCore } from "mods/react/contexts/core.js";
-import { Query } from "mods/react/types/query.js";
+import { FetcherfulQuery, FetcherlessQuery } from "mods/react/types/query.js";
 import { Scroll } from "mods/scroll/helper.js";
 import { ScrollQuerySchema } from "mods/scroll/schema.js";
 import { FetchError } from "mods/types/fetcher.js";
@@ -37,11 +37,26 @@ export function useScrollQuery<K, D, F, DL extends DependencyList>(
 /**
  * Query for a scrolling resource
  */
-export interface ScrollQuery<K, D, F> extends Query<K, D[], F> {
+export interface ScrollFetcherlessQuery<K, D, F> extends FetcherlessQuery<K, D[], F> {
   /**
    * Fetch the next page
    */
-  scroll(): Promise<Result<Result<State<D[], F>, FetchError>, MissingFetcherError | MissingKeyError>>
+  scroll(): Promise<Result<never, MissingFetcherError>>
+
+  /**
+   * The next key to be fetched
+   */
+  peek(): Optional<K>
+}
+
+/**
+ * Query for a scrolling resource
+ */
+export interface ScrollFetcherfulQuery<K, D, F> extends FetcherfulQuery<K, D[], F> {
+  /**
+   * Fetch the next page
+   */
+  scroll(): Promise<Result<Result<State<D[], F>, FetchError>, never>>
 
   /**
    * The next key to be fetched
@@ -123,7 +138,7 @@ export function useSkeletonScrollQuery() {
  */
 export function useFetcherlessScrollQuery<K, D, F>(
   settings: FetcherlessQuerySettings<K, D[], F> & ScrollQuerySettings<K, D, F>,
-): ScrollQuery<K, D, F> {
+): ScrollFetcherlessQuery<K, D, F> {
   const core = useCore().unwrap()
 
   const settingsRef = useRenderRef({ ...core.settings, ...settings })
@@ -234,12 +249,12 @@ export function useFetcherlessScrollQuery<K, D, F>(
     suspend,
     peek,
     ...settings
-  } satisfies ScrollQuery<K, D, F>
+  }
 }
 
 export function useFetcherfulScrollQuery<K, D, F>(
   settings: FetcherfulQuerySettings<K, D[], F> & ScrollQuerySettings<K, D, F>,
-): ScrollQuery<K, D, F> {
+): ScrollFetcherfulQuery<K, D, F> {
   const core = useCore().unwrap()
 
   const settingsRef = useRenderRef({ ...core.settings, ...settings })
@@ -312,9 +327,6 @@ export function useFetcherfulScrollQuery<K, D, F>(
   const refetch = useCallback(async (aborter = new AbortController()) => {
     const settings = settingsRef.current
 
-    if (settings.fetcher === undefined)
-      return new Err(new MissingFetcherError())
-
     const result = await core.fetchOrReplace(cacheKey, aborter, async () =>
       await Scroll.first(core, cacheKey, aborter, settings))
 
@@ -376,5 +388,5 @@ export function useFetcherfulScrollQuery<K, D, F>(
     suspend,
     peek,
     ...settings
-  } satisfies ScrollQuery<K, D, F>
+  }
 }
