@@ -87,11 +87,11 @@ export function useSimpleSkeletonQuery<K, D, F>(): SimpleSkeletonQuery<K, D, F> 
 
   useCallback(() => {
     // NOOP
-  }, [])
+  }, [core, cacheKey])
 
   useCallback(() => {
     // NOOP
-  }, [])
+  }, [core, cacheKey])
 
   useEffect(() => {
     // NOOP
@@ -152,12 +152,12 @@ export function useSimpleFetcherlessQuery<K, D, F>(
   const setState = useCallback((state: State<D, F>) => {
     stateRef.current = state
     setCounter(c => c + 1)
-  }, [])
+  }, [core, cacheKey])
 
   const setAborter = useCallback((aborter: Optional<AbortController>) => {
     aborterRef.current = aborter
     setCounter(c => c + 1)
-  }, [])
+  }, [core, cacheKey])
 
   useEffect(() => {
     if (stateRef.current != null)
@@ -253,7 +253,7 @@ export function useSimpleFetcherfulQuery<K, D, F>(
     return Simple.getCacheKey(settings.key, settingsRef.current)
   }, [settings.key])
 
-  const [counter, setCounter] = useState(0)
+  const [, setCounter] = useState(0)
 
   const stateRef = useRef<Optional<State<D, F>>>()
   const aborterRef = useRef<Optional<AbortController>>()
@@ -264,15 +264,14 @@ export function useSimpleFetcherfulQuery<K, D, F>(
   }, [core, cacheKey])
 
   const setState = useCallback((state: State<D, F>) => {
-    console.log("state", state)
     stateRef.current = state
     setCounter(c => c + 1)
-  }, [])
+  }, [core, cacheKey])
 
   const setAborter = useCallback((aborter: Optional<AbortController>) => {
     aborterRef.current = aborter
     setCounter(c => c + 1)
-  }, [])
+  }, [core, cacheKey])
 
   useEffect(() => {
     if (stateRef.current != null)

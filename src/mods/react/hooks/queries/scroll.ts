@@ -93,11 +93,11 @@ export function useSkeletonScrollQuery<K, D, F>(): ScrollSkeletonQuery<K, D, F> 
 
   useCallback(() => {
     // NOOP
-  }, [])
+  }, [core, cacheKey])
 
   useCallback(() => {
     // NOOP
-  }, [])
+  }, [core, cacheKey])
 
   useEffect(() => {
     // NOOP
@@ -169,12 +169,12 @@ export function useFetcherlessScrollQuery<K, D, F>(
   const setState = useCallback((state: State<D[], F>) => {
     stateRef.current = state
     setCounter(c => c + 1)
-  }, [])
+  }, [core, cacheKey])
 
   const setAborter = useCallback((aborter: Optional<AbortController>) => {
     aborterRef.current = aborter
     setCounter(c => c + 1)
-  }, [])
+  }, [core, cacheKey])
 
   useEffect(() => {
     if (stateRef.current != null)
@@ -285,12 +285,12 @@ export function useFetcherfulScrollQuery<K, D, F>(
   const setState = useCallback((state: State<D[], F>) => {
     stateRef.current = state
     setCounter(c => c + 1)
-  }, [])
+  }, [core, cacheKey])
 
   const setAborter = useCallback((aborter: Optional<AbortController>) => {
     aborterRef.current = aborter
     setCounter(c => c + 1)
-  }, [])
+  }, [core, cacheKey])
 
   useEffect(() => {
     if (stateRef.current != null)
