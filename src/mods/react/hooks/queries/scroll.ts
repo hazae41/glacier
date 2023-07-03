@@ -14,24 +14,21 @@ import { ScrollFetcherfulQuerySettings, ScrollFetcherlessQuerySettings } from "m
 import { State } from "mods/types/state.js";
 import { DependencyList, useCallback, useEffect, useMemo, useRef, useState } from "react";
 
-export type ScrollSchemaFactory<K, D, F, DL extends DependencyList> =
-  (...deps: DL) => Optional<ScrollQuerySchema<K, D, F>>
-
-export function useScrollQuery<K, D, F, DL extends DependencyList>(
-  factory: ScrollSchemaFactory<K, D, F, DL>,
+export function useScrollQuery<T extends Optional<ScrollQuerySchema<any, any, any>>, DL extends DependencyList>(
+  factory: (...deps: DL) => T,
   deps: DL
-) {
+): ScrollQuerySchema.Queried<T> {
   const schema = useMemo(() => {
     return factory(...deps)
   }, deps)
 
   if (schema === undefined)
-    return useSkeletonScrollQuery<K, D, F>()
+    return useSkeletonScrollQuery() as ScrollQuerySchema.Queried<T>
 
   if (schema.settings.fetcher === undefined)
-    return useFetcherlessScrollQuery<K, D, F>(schema.settings)
+    return useFetcherlessScrollQuery(schema.settings) as ScrollQuerySchema.Queried<T>
 
-  return useFetcherfulScrollQuery<K, D, F>(schema.settings)
+  return useFetcherfulScrollQuery(schema.settings) as ScrollQuerySchema.Queried<T>
 }
 
 export interface ScrollSkeletonQuery<K, D, F> extends SkeletonQuery<K, D[], F> {

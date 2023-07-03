@@ -1,4 +1,5 @@
 import { Optional, Some } from "@hazae41/option";
+import { ScrollFetcherfulQuery, ScrollFetcherlessQuery, ScrollSkeletonQuery } from "index.js";
 import { Core } from "mods/core/core.js";
 import { Fetched } from "mods/result/fetched.js";
 import { NormalizerMore } from "mods/types/normalizer.js";
@@ -29,6 +30,37 @@ export function createScrollQuerySchema<K, D, F>(
 export type ScrollQuerySchema<K, D, F> =
   | ScrollFetcherfulQuerySchema<K, D, F>
   | ScrollFetcherlessQuerySchema<K, D, F>
+
+export namespace ScrollQuerySchema {
+  export type Queried<T> =
+    | ScrollSkeletonQuerySchema.Queried<T>
+    | ScrollFetcherlessQuerySchema.Queried<T>
+    | ScrollFetcherfulQuerySchema.Queried<T>
+}
+
+export namespace ScrollSkeletonQuerySchema {
+  export type Queried<T> = T extends undefined ? ScrollSkeletonQuery<any, any, any> : never
+}
+
+export namespace ScrollFetcherlessQuerySchema {
+  export type Infer<T> = ScrollFetcherlessQuerySchema<K<T>, D<T>, F<T>>
+
+  export type Queried<T> = T extends ScrollFetcherlessQuerySchema<infer K, infer D, infer F> ? ScrollFetcherlessQuery<K, D, F> : never
+
+  export type K<T> = T extends ScrollFetcherlessQuerySchema<infer K, unknown, unknown> ? K : never
+  export type D<T> = T extends ScrollFetcherlessQuerySchema<unknown, infer D, unknown> ? D : never
+  export type F<T> = T extends ScrollFetcherlessQuerySchema<unknown, unknown, infer F> ? F : never
+}
+
+export namespace ScrollFetcherfulQuerySchema {
+  export type Infer<T> = ScrollFetcherfulQuerySchema<K<T>, D<T>, F<T>>
+
+  export type Queried<T> = T extends ScrollFetcherfulQuerySchema<infer K, infer D, infer F> ? ScrollFetcherfulQuery<K, D, F> : never
+
+  export type K<T> = T extends ScrollFetcherfulQuerySchema<infer K, unknown, unknown> ? K : never
+  export type D<T> = T extends ScrollFetcherfulQuerySchema<unknown, infer D, unknown> ? D : never
+  export type F<T> = T extends ScrollFetcherfulQuerySchema<unknown, unknown, infer F> ? F : never
+}
 
 export class ScrollFetcherfulQuerySchema<K, D, F> {
   readonly cacheKey: string
