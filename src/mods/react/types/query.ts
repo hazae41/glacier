@@ -5,68 +5,64 @@ import { Fail } from "mods/result/fail.js"
 import { Fetched } from "mods/result/fetched.js"
 import { FetchError } from "mods/types/fetcher.js"
 import { Mutator } from "mods/types/mutator.js"
-import { FetcherfulQuerySettings, FetcherlessQuerySettings } from "mods/types/settings.js"
+import { FetcherfulQuerySettings, FetcherlessQuerySettings, SkeletonQuerySettings } from "mods/types/settings.js"
 import { FetchedState, State } from "mods/types/state.js"
 
 export type Query<K, D, F> =
   | FetcherfulQuery<K, D, F>
   | FetcherlessQuery<K, D, F>
 
-export interface SkeletonQuery<K, D, F> {
-  /**
-   * Arbitrary key, must be serializable
-   */
-  key?: undefined
+export interface SkeletonQuery<K, D, F> extends Omit<SkeletonQuerySettings<K, D, F>, "time" | "cooldown" | "expiration"> {
 
   /**
    * Cache key, the serialized version of key
    */
-  cacheKey?: undefined,
+  readonly cacheKey?: undefined,
 
   /**
    * Current data or error (can be fake)
    */
-  current?: undefined
+  readonly current?: undefined
 
   /**
    * Data (or previous data if current error is some) (can be fake or fakely undefined)
    */
-  data?: undefined
+  readonly data?: undefined
 
   /**
    * Error (can be fake or fakely undefined)
    */
-  error?: undefined
+  readonly error?: undefined
 
   /**
    * Real state
    */
-  real?: undefined
+  readonly real?: undefined
 
   /**
    * Fake state (can be fakely undefined)
    */
-  fake?: undefined
+  readonly fake?: undefined
 
   /**
    * True if a fetch is ongoing (except those from update())
    */
-  fetching?: false
+  readonly fetching?: false
 
   /**
    * Abort controller, can be used to abort and check for abortion, present when a fetch is ongoing (except those from update())
    */
-  aborter?: undefined,
+  readonly aborter?: undefined,
 
   /**
    * Use this to check if the state has been loaded from async storage and is ready to be used
    */
-  ready?: false
+  readonly ready?: false
 
   /**
    * True if it's in a fake state
    */
-  optimistic?: false,
+  readonly optimistic?: false,
 
   /**
    * Mutate the cache
@@ -96,63 +92,60 @@ export interface SkeletonQuery<K, D, F> {
    * Suspend until the next state change, also launches an undeduped fetch
    */
   suspend(): Promise<Result<never, MissingKeyError>>
+
 }
 
 export interface FetcherfulQuery<K, D, F> extends Omit<FetcherfulQuerySettings<K, D, F>, "time" | "cooldown" | "expiration"> {
-  /**
-   * Arbitrary key, must be serializable
-   */
-  key: K
 
   /**
    * Cache key, the serialized version of key
    */
-  cacheKey?: string,
+  readonly cacheKey?: string,
 
   /**
    * Current data or error (can be fake)
    */
-  current?: Fetched<D, F>
+  readonly current?: Fetched<D, F>
 
   /**
    * Data (or previous data if current error is some) (can be fake or fakely undefined)
    */
-  data?: Data<D>
+  readonly data?: Data<D>
 
   /**
    * Error (can be fake or fakely undefined)
    */
-  error?: Fail<F>
+  readonly error?: Fail<F>
 
   /**
    * Real state
    */
-  real?: FetchedState<D, F>
+  readonly real?: FetchedState<D, F>
 
   /**
    * Fake state (can be fakely undefined)
    */
-  fake?: FetchedState<D, F>
+  readonly fake?: FetchedState<D, F>
 
   /**
    * True if a fetch is ongoing (except those from update())
    */
-  fetching: boolean
+  readonly fetching: boolean
 
   /**
    * Abort controller, can be used to abort and check for abortion, present when a fetch is ongoing (except those from update())
    */
-  aborter?: AbortController,
+  readonly aborter?: AbortController,
 
   /**
    * Use this to check if the state has been loaded from async storage and is ready to be used
    */
-  ready: boolean
+  readonly ready: boolean
 
   /**
    * True if it's in a fake state
    */
-  optimistic?: boolean,
+  readonly optimistic?: boolean,
 
   /**
    * Mutate the cache
@@ -182,63 +175,60 @@ export interface FetcherfulQuery<K, D, F> extends Omit<FetcherfulQuerySettings<K
    * Suspend until the next state change, also launches an undeduped fetch
    */
   suspend(): Promise<Result<Result<Result<State<D, F>, FetchError>, never>, never>>
+
 }
 
 export interface FetcherlessQuery<K, D, F> extends Omit<FetcherlessQuerySettings<K, D, F>, "time" | "cooldown" | "expiration"> {
-  /**
-   * Arbitrary key, must be serializable
-   */
-  key: K
 
   /**
    * Cache key, the serialized version of key
    */
-  cacheKey?: string,
+  readonly cacheKey?: string,
 
   /**
    * Current data or error (can be fake)
    */
-  current?: Fetched<D, F>
+  readonly current?: Fetched<D, F>
 
   /**
    * Data (or previous data if current error is some) (can be fake or fakely undefined)
    */
-  data?: Data<D>
+  readonly data?: Data<D>
 
   /**
    * Error (can be fake or fakely undefined)
    */
-  error?: Fail<F>
+  readonly error?: Fail<F>
 
   /**
    * Real state
    */
-  real?: FetchedState<D, F>
+  readonly real?: FetchedState<D, F>
 
   /**
    * Fake state (can be fakely undefined)
    */
-  fake?: FetchedState<D, F>
+  readonly fake?: FetchedState<D, F>
 
   /**
    * True if a fetch is ongoing (except those from update())
    */
-  fetching: boolean
+  readonly fetching: boolean
 
   /**
    * Abort controller, can be used to abort and check for abortion, present when a fetch is ongoing (except those from update())
    */
-  aborter?: AbortController,
+  readonly aborter?: AbortController,
 
   /**
    * Use this to check if the state has been loaded from async storage and is ready to be used
    */
-  ready: boolean
+  readonly ready: boolean
 
   /**
    * True if it's in a fake state
    */
-  optimistic?: boolean,
+  readonly optimistic?: boolean,
 
   /**
    * Mutate the cache

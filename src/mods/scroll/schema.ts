@@ -2,38 +2,28 @@ import { Optional, Some } from "@hazae41/option";
 import { Core } from "mods/core/core.js";
 import { Fetched } from "mods/result/fetched.js";
 import { NormalizerMore } from "mods/types/normalizer.js";
-import { Scroller } from "mods/types/scroller.js";
-import { FetcherfulQuerySettings, FetcherlessQuerySettings, QuerySettings, ScrollQuerySettings } from "mods/types/settings.js";
+import { ScrollFetcherfulQuerySettings, ScrollFetcherlessQuerySettings, ScrollQuerySettings } from "mods/types/settings.js";
 import { Scroll } from "./helper.js";
 import { ScrollFetcherfulQueryInstance, ScrollFetcherlessQueryInstance } from "./instance.js";
 
 export function createScrollQuerySchema<K, D, F>(
-  scroller: Scroller<K, D, F>,
-  settings: FetcherfulQuerySettings<K, D[], F> & ScrollQuerySettings<K, D, F>,
+  settings: ScrollFetcherfulQuerySettings<K, D, F>,
 ): ScrollFetcherfulQuerySchema<K, D, F>
 
 export function createScrollQuerySchema<K, D, F>(
-  scroller: Scroller<K, D, F>,
-  settings: FetcherlessQuerySettings<K, D[], F> & ScrollQuerySettings<K, D, F>,
+  settings: ScrollFetcherlessQuerySettings<K, D, F>,
 ): ScrollFetcherlessQuerySchema<K, D, F>
 
 export function createScrollQuerySchema<K, D, F>(
-  scroller: Scroller<K, D, F>,
-  settings: QuerySettings<K, D[], F> & ScrollQuerySettings<K, D, F>,
+  settings: ScrollQuerySettings<K, D, F>,
 ): ScrollQuerySchema<K, D, F>
 
 export function createScrollQuerySchema<K, D, F>(
-  scroller: Scroller<K, D, F>,
-  settings: QuerySettings<K, D[], F> & ScrollQuerySettings<K, D, F>,
+  settings: ScrollQuerySettings<K, D, F>,
 ) {
-  const key = scroller(undefined)
-
-  if (key === undefined)
-    return undefined
-
   if (settings.fetcher === undefined)
-    return new ScrollFetcherlessQuerySchema<K, D, F>(key, scroller, settings)
-  return new ScrollFetcherfulQuerySchema<K, D, F>(key, scroller, settings)
+    return new ScrollFetcherlessQuerySchema<K, D, F>(settings)
+  return new ScrollFetcherfulQuerySchema<K, D, F>(settings)
 }
 
 export type ScrollQuerySchema<K, D, F> =
@@ -44,11 +34,9 @@ export class ScrollFetcherfulQuerySchema<K, D, F> {
   readonly cacheKey: string
 
   constructor(
-    readonly key: K,
-    readonly scroller: Scroller<K, D, F>,
-    readonly settings: FetcherfulQuerySettings<K, D[], F> & ScrollQuerySettings<K, D, F>
+    readonly settings: ScrollFetcherfulQuerySettings<K, D, F>
   ) {
-    this.cacheKey = Scroll.getCacheKey(key, settings)
+    this.cacheKey = Scroll.getCacheKey(settings.key, settings)
   }
 
   async make(core: Core) {
@@ -71,11 +59,9 @@ export class ScrollFetcherlessQuerySchema<K, D, F> {
   readonly cacheKey: string
 
   constructor(
-    readonly key: K,
-    readonly scroller: Scroller<K, D, F>,
-    readonly settings: FetcherlessQuerySettings<K, D[], F> & ScrollQuerySettings<K, D, F>
+    readonly settings: ScrollFetcherlessQuerySettings<K, D, F>
   ) {
-    this.cacheKey = Scroll.getCacheKey(key, settings)
+    this.cacheKey = Scroll.getCacheKey(settings.key, settings)
   }
 
   async make(core: Core) {

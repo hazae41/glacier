@@ -5,7 +5,7 @@ import { Time } from "libs/time/time.js";
 import { CooldownError, Core, MissingFetcherError } from "mods/core/core.js";
 import { FetchError } from "mods/types/fetcher.js";
 import { Mutator } from "mods/types/mutator.js";
-import { FetcherfulQuerySettings, FetcherlessQuerySettings, QuerySettings, ScrollQuerySettings } from "mods/types/settings.js";
+import { ScrollFetcherfulQuerySettings, ScrollFetcherlessQuerySettings } from "mods/types/settings.js";
 import { State } from "mods/types/state.js";
 import { Scroll } from "./helper.js";
 
@@ -14,14 +14,14 @@ export class ScrollFetcherfulQueryInstance<K, D, F>  {
 
   readonly cacheKey: string
 
-  readonly settings: FetcherfulQuerySettings<K, D[], F> & ScrollQuerySettings<K, D, F>
+  readonly settings: ScrollFetcherfulQuerySettings<K, D, F>
 
   private constructor(
     core: Core,
 
     cacheKey: string,
 
-    settings: FetcherfulQuerySettings<K, D[], F> & ScrollQuerySettings<K, D, F>,
+    settings: ScrollFetcherfulQuerySettings<K, D, F>
   ) {
     this.core = core
 
@@ -30,7 +30,7 @@ export class ScrollFetcherfulQueryInstance<K, D, F>  {
     this.settings = settings
   }
 
-  static async make<K, D, F>(core: Core, cacheKey: string, qsettings: FetcherfulQuerySettings<K, D[], F> & ScrollQuerySettings<K, D, F>) {
+  static async make<K, D, F>(core: Core, cacheKey: string, qsettings: ScrollFetcherfulQuerySettings<K, D, F>) {
     const settings = { ...core.settings, ...qsettings }
 
     await core.get(cacheKey, settings)
@@ -115,14 +115,14 @@ export class ScrollFetcherlessQueryInstance<K, D, F>  {
 
   readonly cacheKey: string
 
-  readonly settings: QuerySettings<K, D[], F> & ScrollQuerySettings<K, D, F>
+  readonly settings: ScrollFetcherlessQuerySettings<K, D, F>
 
   private constructor(
     core: Core,
 
     cacheKey: string,
 
-    settings: FetcherlessQuerySettings<K, D[], F> & ScrollQuerySettings<K, D, F>,
+    settings: ScrollFetcherlessQuerySettings<K, D, F>
   ) {
     this.core = core
 
@@ -131,7 +131,7 @@ export class ScrollFetcherlessQueryInstance<K, D, F>  {
     this.settings = settings
   }
 
-  static async make<K, D, F>(core: Core, cacheKey: string, qsettings: FetcherlessQuerySettings<K, D[], F> & ScrollQuerySettings<K, D, F>) {
+  static async make<K, D, F>(core: Core, cacheKey: string, qsettings: ScrollFetcherlessQuerySettings<K, D, F>) {
     const settings = { ...core.settings, ...qsettings }
 
     await core.get(cacheKey, settings)

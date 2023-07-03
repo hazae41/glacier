@@ -16,7 +16,35 @@ export type QuerySettings<K, D, F> =
   | FetcherfulQuerySettings<K, D, F>
   | FetcherlessQuerySettings<K, D, F>
 
+export interface SkeletonQuerySettings<K, D, F> {
+  /**
+   * Arbitrary key, must be serializable
+   */
+  readonly key?: undefined
+
+  readonly timeout?: undefined,
+  readonly cooldown?: undefined,
+  readonly expiration?: undefined
+
+  readonly keySerializer?: undefined
+
+  readonly dataSerializer?: undefined
+  readonly errorSerializer?: undefined
+
+  readonly fetcher?: undefined
+  readonly normalizer?: undefined
+  readonly indexer?: undefined
+
+  readonly dataEqualser?: undefined
+  readonly errorEqualser?: undefined
+
+  readonly storage?: undefined
+}
+
 export interface FetcherfulQuerySettings<K, D, F> {
+  /**
+   * Arbitrary key, must be serializable
+   */
   readonly key: K
 
   readonly timeout?: number,
@@ -39,6 +67,9 @@ export interface FetcherfulQuerySettings<K, D, F> {
 }
 
 export interface FetcherlessQuerySettings<K, D, F> {
+  /**
+   * Arbitrary key, must be serializable
+   */
   readonly key: K
 
   readonly timeout?: number,
@@ -60,6 +91,14 @@ export interface FetcherlessQuerySettings<K, D, F> {
   readonly storage?: Storage
 }
 
-export interface ScrollQuerySettings<K, D, F> {
+export type ScrollQuerySettings<K, D, F> =
+  | ScrollFetcherlessQuerySettings<K, D, F>
+  | ScrollFetcherfulQuerySettings<K, D, F>
+
+export interface ScrollFetcherlessQuerySettings<K, D, F> extends FetcherlessQuerySettings<K, D[], F> {
+  readonly scroller: Scroller<K, D, F>
+}
+
+export interface ScrollFetcherfulQuerySettings<K, D, F> extends FetcherfulQuerySettings<K, D[], F> {
   readonly scroller: Scroller<K, D, F>
 }

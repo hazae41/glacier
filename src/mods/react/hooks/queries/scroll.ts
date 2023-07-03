@@ -10,7 +10,7 @@ import { Scroll } from "mods/scroll/helper.js";
 import { ScrollQuerySchema } from "mods/scroll/schema.js";
 import { FetchError } from "mods/types/fetcher.js";
 import { Mutator } from "mods/types/mutator.js";
-import { FetcherfulQuerySettings, FetcherlessQuerySettings, ScrollQuerySettings } from "mods/types/settings.js";
+import { ScrollFetcherfulQuerySettings, ScrollFetcherlessQuerySettings } from "mods/types/settings.js";
 import { State } from "mods/types/state.js";
 import { DependencyList, useCallback, useEffect, useMemo, useRef, useState } from "react";
 
@@ -149,7 +149,7 @@ export function useSkeletonScrollQuery<K, D, F>(): ScrollSkeletonQuery<K, D, F> 
  * @returns 
  */
 export function useFetcherlessScrollQuery<K, D, F>(
-  settings: FetcherlessQuerySettings<K, D[], F> & ScrollQuerySettings<K, D, F>,
+  settings: ScrollFetcherlessQuerySettings<K, D, F>,
 ): ScrollFetcherlessQuery<K, D, F> {
   const core = useCore().unwrap()
 
@@ -265,7 +265,7 @@ export function useFetcherlessScrollQuery<K, D, F>(
 }
 
 export function useFetcherfulScrollQuery<K, D, F>(
-  settings: FetcherfulQuerySettings<K, D[], F> & ScrollQuerySettings<K, D, F>,
+  settings: ScrollFetcherfulQuerySettings<K, D, F>,
 ): ScrollFetcherfulQuery<K, D, F> {
   const core = useCore().unwrap()
 

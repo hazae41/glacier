@@ -14,24 +14,21 @@ import { State } from "mods/types/state.js";
 import { Updater } from "mods/types/updater.js";
 import { DependencyList, useCallback, useEffect, useMemo, useRef, useState } from "react";
 
-export type SchemaFactory<K, D, F, DL extends DependencyList> =
-  (...deps: DL) => Optional<SimpleQuerySchema<K, D, F>>
-
-export function useQuery<K, D, F, DL extends DependencyList>(
-  factory: SchemaFactory<K, D, F, DL>,
+export function useQuery<T extends Optional<SimpleQuerySchema<any, any, any>>, DL extends DependencyList>(
+  factory: (...deps: DL) => T,
   deps: DL
-) {
+): SimpleQuerySchema.Queried<T> {
   const schema = useMemo(() => {
     return factory(...deps)
   }, deps)
 
   if (schema === undefined)
-    return useSimpleSkeletonQuery<K, D, F>()
+    return useSimpleSkeletonQuery() as SimpleQuerySchema.Queried<T>
 
   if (schema.settings.fetcher === undefined)
-    return useSimpleFetcherlessQuery<K, D, F>(schema.settings)
+    return useSimpleFetcherlessQuery(schema.settings) as SimpleQuerySchema.Queried<T>
 
-  return useSimpleFetcherfulQuery<K, D, F>(schema.settings)
+  return useSimpleFetcherfulQuery(schema.settings) as SimpleQuerySchema.Queried<T>
 }
 
 /**

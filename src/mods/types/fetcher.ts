@@ -13,7 +13,7 @@ export class FetchError extends Error {
 }
 
 export type Fetcher<K, D, F> =
-  (key: K, more?: FetcherMore) => Promise<Result<FetchedInit<D, F>, FetchError>>
+  (key: K, more?: FetcherMore) => Promiseable<Result<FetchedInit<D, F>, FetchError>>
 
 export interface FetcherMore {
   readonly signal?: AbortSignal,

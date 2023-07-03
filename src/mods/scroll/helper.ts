@@ -6,7 +6,7 @@ import { DEFAULT_EQUALS, DEFAULT_SERIALIZER } from "mods/defaults.js";
 import { Fetched } from "mods/result/fetched.js";
 import { TimesInit } from "mods/result/times.js";
 import { FetchError } from "mods/types/fetcher.js";
-import { FetcherfulQuerySettings, QuerySettings, ScrollQuerySettings } from "mods/types/settings.js";
+import { QuerySettings, ScrollFetcherfulQuerySettings } from "mods/types/settings.js";
 import { State } from "mods/types/state.js";
 
 export namespace Scroll {
@@ -34,7 +34,7 @@ export namespace Scroll {
     core: Core,
     cacheKey: string,
     aborter: AbortController,
-    settings: FetcherfulQuerySettings<K, D[], F> & ScrollQuerySettings<K, D, F>
+    settings: ScrollFetcherfulQuerySettings<K, D, F>
   ): Promise<Result<State<D[], F>, FetchError>> {
     const { dataEqualser = DEFAULT_EQUALS } = settings
 
@@ -80,7 +80,7 @@ export namespace Scroll {
     core: Core,
     cacheKey: string,
     aborter: AbortController,
-    settings: FetcherfulQuerySettings<K, D[], F> & ScrollQuerySettings<K, D, F>
+    settings: ScrollFetcherfulQuerySettings<K, D, F>
   ): Promise<Result<State<D[], F>, FetchError>> {
     const previous = await core.get(cacheKey, settings)
     const previousPages = previous.real?.data?.inner ?? []
