@@ -236,7 +236,7 @@ export function useFetcherlessScrollQuery<K, D, F>(
   const fake = state?.fake
 
   const peek = useCallback(() => {
-    return settings.scroller(Option.mapSync(state?.real?.data?.inner, Arrays.last))
+    return Option.mapSync(state?.real?.data?.inner, pages => settings.scroller(Arrays.last(pages)))
   }, [state?.real?.data, settings.scroller])
 
   return {
@@ -375,7 +375,7 @@ export function useFetcherfulScrollQuery<K, D, F>(
   const fake = state?.fake
 
   const peek = useCallback(() => {
-    return settings.scroller(Option.mapSync(state?.real?.data?.inner, Arrays.last))
+    return Option.mapSync(state?.real?.data?.inner, pages => settings.scroller(Arrays.last(pages)))
   }, [state?.real?.data, settings.scroller])
 
   return {

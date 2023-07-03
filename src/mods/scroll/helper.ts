@@ -38,13 +38,8 @@ export namespace Scroll {
   ): Promise<Result<State<D[], F>, FetchError>> {
     const { dataEqualser = DEFAULT_EQUALS } = settings
 
-    const key = settings.scroller(undefined)
-
-    if (key === undefined)
-      return new Err(new FetchError(`Can't scroll`))
-
     const aborted = await core.runWithTimeout(async (signal) => {
-      return await settings.fetcher(key, { signal })
+      return await settings.fetcher(settings.key, { signal })
     }, aborter, settings.timeout)
 
     if (aborted.isErr())

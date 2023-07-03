@@ -67,7 +67,7 @@ export class ScrollFetcherfulQueryInstance<K, D, F>  {
   }
 
   peek() {
-    return this.settings.scroller(Option.mapSync(this.real?.data?.inner, Arrays.last))
+    return Option.mapSync(this.real?.data?.inner, pages => this.settings.scroller(Arrays.last(pages)))
   }
 
   async mutate(mutator: Mutator<D[], F>) {
@@ -168,7 +168,7 @@ export class ScrollFetcherlessQueryInstance<K, D, F>  {
   }
 
   peek() {
-    return this.settings.scroller(Option.mapSync(this.real?.data?.inner, Arrays.last))
+    return Option.mapSync(this.real?.data?.inner, pages => this.settings.scroller(Arrays.last(pages)))
   }
 
   async mutate(mutator: Mutator<D[], F>) {
