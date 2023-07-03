@@ -26,7 +26,7 @@ export function createScrollQuerySchema<K, D, F>(
   scroller: Scroller<K, D, F>,
   settings: QuerySettings<K, D[], F>,
 ) {
-  const key = scroller()
+  const key = scroller(undefined)
 
   if (key === undefined)
     return undefined

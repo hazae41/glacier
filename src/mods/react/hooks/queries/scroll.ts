@@ -61,7 +61,7 @@ export function useAnonymousScrollQuery<K, D, F>(
   const settingsRef = useRenderRef({ ...core.settings, ...settings })
 
   const key = useMemo(() => {
-    return scroller?.()
+    return scroller?.(undefined)
   }, [scroller])
 
   const cacheKey = useMemo(() => {
