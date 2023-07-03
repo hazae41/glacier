@@ -9,6 +9,7 @@ import { FetcherfulQuerySettings, FetcherlessQuerySettings, SkeletonQuerySetting
 import { FetchedState, State } from "mods/types/state.js"
 
 export type Query<K, D, F> =
+  | SkeletonQuery<K, D, F>
   | FetcherfulQuery<K, D, F>
   | FetcherlessQuery<K, D, F>
 
