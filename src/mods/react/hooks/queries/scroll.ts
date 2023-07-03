@@ -8,7 +8,7 @@ import { useCore } from "mods/react/contexts/core.js";
 import { Query } from "mods/react/types/query.js";
 import { Scroll } from "mods/scroll/helper.js";
 import { ScrollQuerySchema } from "mods/scroll/schema.js";
-import { FetchError, Fetcher } from "mods/types/fetcher.js";
+import { FetchError } from "mods/types/fetcher.js";
 import { Mutator } from "mods/types/mutator.js";
 import { Scroller } from "mods/types/scroller.js";
 import { QuerySettings } from "mods/types/settings.js";
@@ -22,11 +22,11 @@ export function useScrollQuery<K, D, F, DL extends DependencyList>(
   factory: ScrollSchemaFactory<K, D, F, DL>,
   deps: DL
 ) {
-  const { scroller, fetcher, settings } = useMemo(() => {
+  const { scroller, settings } = useMemo(() => {
     return factory(...deps)
   }, deps) ?? {}
 
-  return useAnonymousScrollQuery<K, D, F>(scroller, fetcher, settings)
+  return useAnonymousScrollQuery<K, D, F>(scroller, settings)
 }
 
 /**
@@ -53,13 +53,11 @@ export interface ScrollQuery<K, D, F> extends Query<K, D[], F> {
  */
 export function useAnonymousScrollQuery<K, D, F>(
   scroller: Optional<Scroller<K, D, F>>,
-  fetcher: Optional<Fetcher<K, D, F>>,
   settings: QuerySettings<K, D[], F> = {},
 ): ScrollQuery<K, D, F> {
   const core = useCore().unwrap()
 
   const scrollerRef = useRenderRef(scroller)
-  const fetcherRef = useRenderRef(fetcher)
   const settingsRef = useRenderRef({ ...core.settings, ...settings })
 
   const key = useMemo(() => {
@@ -67,7 +65,7 @@ export function useAnonymousScrollQuery<K, D, F>(
   }, [scroller])
 
   const cacheKey = useMemo(() => {
-    return Option.mapSync(key, () => Scroll.getCacheKey(key, settingsRef.current))
+    return Option.mapSync(key, (key) => Scroll.getCacheKey(key, settingsRef.current))
   }, [key])
 
   const [, setCounter] = useState(0)
@@ -142,19 +140,18 @@ export function useAnonymousScrollQuery<K, D, F>(
       return new Err(new MissingKeyError())
 
     const scroller = scrollerRef.current
-    const fetcher = fetcherRef.current
     const settings = settingsRef.current
 
     if (scroller === undefined)
       return new Err(new MissingKeyError())
-    if (fetcher === undefined)
+    if (settings.fetcher === undefined)
       return new Err(new MissingFetcherError())
 
     if (Time.isAfterNow(stateRef.current?.real?.current.cooldown))
       return new Err(new CooldownError())
 
     const result = await core.fetchOrJoin(cacheKey, aborter, async () =>
-      await Scroll.first(core, scroller, cacheKey, fetcher, aborter, settings))
+      await Scroll.first(core, scroller, cacheKey, aborter, settings))
 
     return new Ok(result)
   }, [core, cacheKey])
@@ -164,16 +161,15 @@ export function useAnonymousScrollQuery<K, D, F>(
       return new Err(new MissingKeyError())
 
     const scroller = scrollerRef.current
-    const fetcher = fetcherRef.current
     const settings = settingsRef.current
 
     if (scroller === undefined)
       return new Err(new MissingKeyError())
-    if (fetcher === undefined)
+    if (settings.fetcher === undefined)
       return new Err(new MissingFetcherError())
 
     const result = await core.fetchOrReplace(cacheKey, aborter, async () =>
-      await Scroll.first(core, scroller, cacheKey, fetcher, aborter, settings))
+      await Scroll.first(core, scroller, cacheKey, aborter, settings))
 
     return new Ok(result)
   }, [core, cacheKey])
@@ -183,16 +179,15 @@ export function useAnonymousScrollQuery<K, D, F>(
       return new Err(new MissingKeyError())
 
     const scroller = scrollerRef.current
-    const fetcher = fetcherRef.current
     const settings = settingsRef.current
 
     if (scroller === undefined)
       return new Err(new MissingKeyError())
-    if (fetcher === undefined)
+    if (settings.fetcher === undefined)
       return new Err(new MissingFetcherError())
 
     const result = await core.fetchOrReplace(cacheKey, aborter, async () =>
-      await Scroll.scroll(core, scroller, cacheKey, fetcher, aborter, settings))
+      await Scroll.scroll(core, scroller, cacheKey, aborter, settings))
 
     return new Ok(result)
   }, [core, cacheKey])
@@ -202,16 +197,15 @@ export function useAnonymousScrollQuery<K, D, F>(
       throw new MissingKeyError()
 
     const scroller = scrollerRef.current
-    const fetcher = fetcherRef.current
     const settings = settingsRef.current
 
     if (scroller === undefined)
       throw new MissingKeyError()
-    if (fetcher === undefined)
+    if (settings.fetcher === undefined)
       throw new MissingFetcherError()
 
     const result = await core.fetchOrJoin(cacheKey, aborter, async () =>
-      await Scroll.first(core, scroller, cacheKey, fetcher, aborter, settings))
+      await Scroll.first(core, scroller, cacheKey, aborter, settings))
 
     return new Ok(result)
   }, [core, cacheKey])

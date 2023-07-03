@@ -7,7 +7,7 @@ import { useCore } from "mods/react/contexts/core.js";
 import { Query } from "mods/react/types/query.js";
 import { Simple } from "mods/single/helper.js";
 import { SimpleQuerySchema } from "mods/single/schema.js";
-import { FetchError, Fetcher } from "mods/types/fetcher.js";
+import { FetchError } from "mods/types/fetcher.js";
 import { Mutator } from "mods/types/mutator.js";
 import { QuerySettings } from "mods/types/settings.js";
 import { State } from "mods/types/state.js";
@@ -21,11 +21,11 @@ export function useQuery<K, D, F, DL extends DependencyList>(
   factory: SchemaFactory<K, D, F, DL>,
   deps: DL
 ) {
-  const { key, fetcher, settings } = useMemo(() => {
+  const { key, settings } = useMemo(() => {
     return factory(...deps)
   }, deps) ?? {}
 
-  return useAnonymousQuery<K, D, F>(key, fetcher, settings)
+  return useAnonymousQuery<K, D, F>(key, settings)
 }
 
 /**
@@ -49,17 +49,15 @@ export interface SingleQuery<K, D, F> extends Query<K, D, F> {
  */
 export function useAnonymousQuery<K, D, F>(
   key: Optional<K>,
-  fetcher: Optional<Fetcher<K, D, F>>,
   settings: QuerySettings<K, D, F> = {},
 ): SingleQuery<K, D, F> {
   const core = useCore().unwrap()
 
   const keyRef = useRenderRef(key)
-  const fetcherRef = useRenderRef(fetcher)
   const settingsRef = useRenderRef({ ...core.settings, ...settings })
 
   const cacheKey = useMemo(() => {
-    return Option.mapSync(key, () => Simple.getCacheKey(key, settingsRef.current))
+    return Option.mapSync(key, (key) => Simple.getCacheKey(key, settingsRef.current))
   }, [key])
 
   const [, setCounter] = useState(0)
@@ -134,8 +132,8 @@ export function useAnonymousQuery<K, D, F>(
       return new Err(new MissingKeyError())
 
     const key = keyRef.current
-    const fetcher = fetcherRef.current
     const settings = settingsRef.current
+    const fetcher = settings.fetcher
 
     if (key === undefined)
       return new Err(new MissingKeyError())
@@ -156,8 +154,8 @@ export function useAnonymousQuery<K, D, F>(
       return new Err(new MissingKeyError())
 
     const key = keyRef.current
-    const fetcher = fetcherRef.current
     const settings = settingsRef.current
+    const fetcher = settings.fetcher
 
     if (key === undefined)
       return new Err(new MissingKeyError())
@@ -175,8 +173,8 @@ export function useAnonymousQuery<K, D, F>(
       return new Err(new MissingKeyError())
 
     const key = keyRef.current
-    const fetcher = fetcherRef.current
     const settings = settingsRef.current
+    const fetcher = settings.fetcher
 
     if (key === undefined)
       return new Err(new MissingKeyError())
@@ -193,8 +191,8 @@ export function useAnonymousQuery<K, D, F>(
       return new Err(new MissingKeyError())
 
     const key = keyRef.current
-    const fetcher = fetcherRef.current
     const settings = settingsRef.current
+    const fetcher = settings.fetcher
 
     if (key === undefined)
       return new Err(new MissingKeyError())

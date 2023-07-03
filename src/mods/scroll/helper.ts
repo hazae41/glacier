@@ -5,9 +5,9 @@ import { Core } from "mods/core/core.js";
 import { DEFAULT_EQUALS, DEFAULT_SERIALIZER } from "mods/defaults.js";
 import { Fetched } from "mods/result/fetched.js";
 import { TimesInit } from "mods/result/times.js";
-import { FetchError, Fetcher } from "mods/types/fetcher.js";
+import { FetchError } from "mods/types/fetcher.js";
 import { Scroller } from "mods/types/scroller.js";
-import { QuerySettings } from "mods/types/settings.js";
+import { FetcherfulQuerySettings, QuerySettings } from "mods/types/settings.js";
 import { State } from "mods/types/state.js";
 
 export namespace Scroll {
@@ -35,9 +35,8 @@ export namespace Scroll {
     core: Core,
     scroller: Scroller<K, D, F>,
     cacheKey: string,
-    fetcher: Fetcher<K, D, F>,
     aborter: AbortController,
-    settings: QuerySettings<K, D[], F>
+    settings: FetcherfulQuerySettings<K, D[], F>
   ): Promise<Result<State<D[], F>, FetchError>> {
     const { dataEqualser = DEFAULT_EQUALS } = settings
 
@@ -47,14 +46,14 @@ export namespace Scroll {
       return new Err(new FetchError(`Can't scroll`))
 
     const aborted = await core.runWithTimeout(async (signal) => {
-      return await fetcher(key, { signal })
+      return await settings.fetcher(key, { signal })
     }, aborter, settings.timeout)
 
     if (aborted.isErr())
       return aborted
 
     const times = TimesInit.merge(aborted.get(), settings)
-    const timed = Fetched.from(aborted.get()).setTimes(times).mapSync(data => [data])
+    const timed = Fetched.from(aborted.get()).setTimes(times)
 
     return new Ok(await core.mutate(cacheKey, async (previous) => {
       if (timed.isErr())
@@ -83,9 +82,8 @@ export namespace Scroll {
     core: Core,
     scroller: Scroller<K, D, F>,
     cacheKey: string,
-    fetcher: Fetcher<K, D, F>,
     aborter: AbortController,
-    settings: QuerySettings<K, D[], F>
+    settings: FetcherfulQuerySettings<K, D[], F>
   ): Promise<Result<State<D[], F>, FetchError>> {
     const previous = await core.get(cacheKey, settings)
     const previousPages = previous.real?.data?.inner ?? []
@@ -96,7 +94,7 @@ export namespace Scroll {
       return new Err(new FetchError(`Can't scroll`))
 
     const aborted = await core.runWithTimeout(async (signal) => {
-      return await fetcher(key, { signal })
+      return await settings.fetcher(key, { signal })
     }, aborter, settings.timeout)
 
     if (aborted.isErr())
@@ -107,7 +105,7 @@ export namespace Scroll {
 
     return new Ok(await core.mutate(cacheKey, (previous) => {
       const previousPages = previous.real?.data?.inner ?? []
-      const paginated = timed.mapSync(data => [...previousPages, data])
+      const paginated = timed.mapSync(data => [...previousPages, ...data])
 
       return new Some(paginated)
     }, settings))

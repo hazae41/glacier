@@ -11,7 +11,11 @@ export interface GlobalSettings {
   readonly expiration?: number
 }
 
-export interface QuerySettings<K, D, F> {
+export type QuerySettings<K, D, F> =
+  | FetcherfulQuerySettings<K, D, F>
+  | FetcherlessQuerySettings<K, D, F>
+
+export interface FetcherfulQuerySettings<K, D, F> {
   readonly timeout?: number,
   readonly cooldown?: number,
   readonly expiration?: number
@@ -21,7 +25,27 @@ export interface QuerySettings<K, D, F> {
   readonly dataSerializer?: Bicoder<D, unknown>
   readonly errorSerializer?: Bicoder<F, unknown>
 
-  readonly fetcher?: Fetcher<K, D, F>
+  readonly fetcher: Fetcher<K, D, F>
+  readonly normalizer?: Normalizer<D, F>
+  readonly indexer?: Indexer<D, F>
+
+  readonly dataEqualser?: Equalser<D>,
+  readonly errorEqualser?: Equalser<F>
+
+  readonly storage?: Storage
+}
+
+export interface FetcherlessQuerySettings<K, D, F> {
+  readonly timeout?: number,
+  readonly cooldown?: number,
+  readonly expiration?: number
+
+  readonly keySerializer?: SyncEncoder<K, string>,
+
+  readonly dataSerializer?: Bicoder<D, unknown>
+  readonly errorSerializer?: Bicoder<F, unknown>
+
+  readonly fetcher?: undefined
   readonly normalizer?: Normalizer<D, F>
   readonly indexer?: Indexer<D, F>
 
