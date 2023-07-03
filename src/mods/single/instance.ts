@@ -70,11 +70,11 @@ export class SimpleFetcherlessQueryInstance<K, D, F>  {
   }
 
   async mutate(mutator: Mutator<D, F>) {
-    return new Ok(await this.core.mutate(this.cacheKey, mutator, this.settings))
+    return await this.core.mutate(this.cacheKey, mutator, this.settings)
   }
 
   async delete() {
-    return new Ok(await this.core.delete(this.cacheKey, this.settings))
+    return await this.core.delete(this.cacheKey, this.settings)
   }
 
   async fetch(aborter = new AbortController()): Promise<Result<never, MissingFetcherError>> {
