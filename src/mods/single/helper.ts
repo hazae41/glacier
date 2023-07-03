@@ -4,8 +4,8 @@ import { Core } from "mods/core/core.js";
 import { DEFAULT_SERIALIZER } from "mods/defaults.js";
 import { Fetched } from "mods/result/fetched.js";
 import { TimesInit } from "mods/result/times.js";
-import { FetchError, Fetcher } from "mods/types/fetcher.js";
-import { QuerySettings } from "mods/types/settings.js";
+import { FetchError } from "mods/types/fetcher.js";
+import { FetcherfulQuerySettings, QuerySettings } from "mods/types/settings.js";
 import { State } from "mods/types/state.js";
 import { Updater } from "mods/types/updater.js";
 
@@ -24,12 +24,11 @@ export namespace Simple {
     core: Core,
     key: K,
     cacheKey: string,
-    fetcher: Fetcher<K, D, F>,
     aborter: AbortController,
-    settings: QuerySettings<K, D, F>
+    settings: FetcherfulQuerySettings<K, D, F>
   ): Promise<Result<State<D, F>, FetchError>> {
     const aborted = await core.runWithTimeout(async signal => {
-      return await fetcher(key, { signal })
+      return await settings.fetcher(key, { signal })
     }, aborter, settings.timeout)
 
     if (aborted.isErr())
@@ -55,10 +54,9 @@ export namespace Simple {
     core: Core,
     key: K,
     cacheKey: string,
-    fetcher: Fetcher<K, D, F>,
     updater: Updater<K, D, F>,
     aborter: AbortController,
-    settings: QuerySettings<K, D, F>
+    settings: FetcherfulQuerySettings<K, D, F>
   ): Promise<Result<State<D, F>, FetchError>> {
     const uuid = crypto.randomUUID()
 
@@ -70,10 +68,10 @@ export namespace Simple {
       for (; !result.done; result = await generator.next())
         await core.optimize(cacheKey, uuid, result.value, settings)
 
-      const fetcher2 = result.value ?? fetcher
+      const fetcher = result.value ?? settings.fetcher
 
       const aborted = await core.runWithTimeout(async (signal) => {
-        return await fetcher2(key, { signal, cache: "reload" })
+        return await fetcher(key, { signal, cache: "reload" })
       }, aborter, settings.timeout)
 
       if (aborted.isErr()) {

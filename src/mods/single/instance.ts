@@ -2,9 +2,9 @@ import { Option, Optional } from "@hazae41/option";
 import { Err, Ok, Result } from "@hazae41/result";
 import { Time } from "libs/time/time.js";
 import { CooldownError, Core, MissingFetcherError } from "mods/core/core.js";
-import { FetchError, Fetcher } from "mods/types/fetcher.js";
+import { FetchError } from "mods/types/fetcher.js";
 import { Mutator } from "mods/types/mutator.js";
-import { QuerySettings } from "mods/types/settings.js";
+import { FetcherfulQuerySettings, FetcherlessQuerySettings } from "mods/types/settings.js";
 import { State } from "mods/types/state.js";
 import { Updater } from "mods/types/updater.js";
 import { Simple } from "./helper.js";
@@ -19,9 +19,7 @@ export class SimpleFetcherlessQueryInstance<K, D, F>  {
   readonly key: K
   readonly cacheKey: string
 
-  readonly fetcher: undefined
-
-  readonly settings: QuerySettings<K, D, F>
+  readonly settings: FetcherlessQuerySettings<K, D, F>
 
   private constructor(
     core: Core,
@@ -29,25 +27,21 @@ export class SimpleFetcherlessQueryInstance<K, D, F>  {
     key: K,
     cacheKey: string,
 
-    fetcher: undefined,
-
-    settings: QuerySettings<K, D, F>,
+    settings: FetcherlessQuerySettings<K, D, F>,
   ) {
     this.core = core
 
     this.key = key
     this.cacheKey = cacheKey
-
-    this.fetcher = fetcher
     this.settings = settings
   }
 
-  static async make<K, D, F>(core: Core, key: K, cacheKey: string, fetcher: undefined, qsettings: QuerySettings<K, D, F>) {
+  static async make<K, D, F>(core: Core, key: K, cacheKey: string, qsettings: FetcherlessQuerySettings<K, D, F>) {
     const settings = { ...core.settings, ...qsettings }
 
     await core.get(cacheKey, settings)
 
-    return new SimpleFetcherlessQueryInstance(core, key, cacheKey, fetcher, settings)
+    return new SimpleFetcherlessQueryInstance(core, key, cacheKey, settings)
   }
 
   get state(): State<D, F> {
@@ -106,9 +100,7 @@ export class SimpleFetcherfulQueryInstance<K, D, F>  {
   readonly key: K
   readonly cacheKey: string
 
-  readonly fetcher: Fetcher<K, D, F>
-
-  readonly settings: QuerySettings<K, D, F>
+  readonly settings: FetcherfulQuerySettings<K, D, F>
 
   private constructor(
     core: Core,
@@ -116,25 +108,22 @@ export class SimpleFetcherfulQueryInstance<K, D, F>  {
     key: K,
     cacheKey: string,
 
-    fetcher: Fetcher<K, D, F>,
-
-    settings: QuerySettings<K, D, F>,
+    settings: FetcherfulQuerySettings<K, D, F>,
   ) {
     this.core = core
 
     this.key = key
     this.cacheKey = cacheKey
 
-    this.fetcher = fetcher
     this.settings = settings
   }
 
-  static async make<K, D, F>(core: Core, key: K, cacheKey: string, fetcher: Fetcher<K, D, F>, qsettings: QuerySettings<K, D, F>) {
+  static async make<K, D, F>(core: Core, key: K, cacheKey: string, qsettings: FetcherfulQuerySettings<K, D, F>) {
     const settings = { ...core.settings, ...qsettings }
 
     await core.get(cacheKey, settings)
 
-    return new SimpleFetcherfulQueryInstance(core, key, cacheKey, fetcher, settings)
+    return new SimpleFetcherfulQueryInstance(core, key, cacheKey, settings)
   }
 
   get state(): State<D, F> {
@@ -174,30 +163,30 @@ export class SimpleFetcherfulQueryInstance<K, D, F>  {
   }
 
   async fetch(aborter = new AbortController()): Promise<Result<Result<State<D, F>, FetchError>, CooldownError>> {
-    const { core, key, cacheKey, fetcher, settings } = this
+    const { core, key, cacheKey, settings } = this
 
     if (Time.isAfterNow(this.real?.current.cooldown))
       return new Err(new CooldownError())
 
     const result = await core.fetchOrJoin(cacheKey, aborter, async () =>
-      await Simple.fetch(core, key, cacheKey, fetcher, aborter, settings))
+      await Simple.fetch(core, key, cacheKey, aborter, settings))
 
     return new Ok(result)
   }
 
   async refetch(aborter = new AbortController()): Promise<Result<Result<State<D, F>, FetchError>, never>> {
-    const { core, key, cacheKey, fetcher, settings } = this
+    const { core, key, cacheKey, settings } = this
 
     const result = await core.fetchOrReplace(cacheKey, aborter, async () =>
-      await Simple.fetch(core, key, cacheKey, fetcher, aborter, settings))
+      await Simple.fetch(core, key, cacheKey, aborter, settings))
 
     return new Ok(result)
   }
 
   async update(updater: Updater<K, D, F>, aborter = new AbortController()): Promise<Result<Result<State<D, F>, FetchError>, never>> {
-    const { core, key, cacheKey, fetcher, settings } = this
+    const { core, key, cacheKey, settings } = this
 
-    const result = await Simple.update(core, key, cacheKey, fetcher, updater, aborter, settings)
+    const result = await Simple.update(core, key, cacheKey, updater, aborter, settings)
 
     return new Ok(result)
   }

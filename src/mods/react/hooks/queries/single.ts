@@ -133,18 +133,17 @@ export function useAnonymousQuery<K, D, F>(
 
     const key = keyRef.current
     const settings = settingsRef.current
-    const fetcher = settings.fetcher
 
     if (key === undefined)
       return new Err(new MissingKeyError())
-    if (fetcher === undefined)
+    if (settings.fetcher === undefined)
       return new Err(new MissingFetcherError())
 
     if (Time.isAfterNow(stateRef.current?.real?.current.cooldown))
       return new Err(new CooldownError())
 
     const result = await core.fetchOrJoin(cacheKey, aborter, async () =>
-      await Simple.fetch(core, key, cacheKey, fetcher, aborter, settings))
+      await Simple.fetch(core, key, cacheKey, aborter, settings))
 
     return new Ok(result)
   }, [core, cacheKey])
@@ -155,15 +154,14 @@ export function useAnonymousQuery<K, D, F>(
 
     const key = keyRef.current
     const settings = settingsRef.current
-    const fetcher = settings.fetcher
 
     if (key === undefined)
       return new Err(new MissingKeyError())
-    if (fetcher === undefined)
+    if (settings.fetcher === undefined)
       return new Err(new MissingFetcherError())
 
     const result = await core.fetchOrReplace(cacheKey, aborter, async () =>
-      await Simple.fetch(core, key, cacheKey, fetcher, aborter, settings))
+      await Simple.fetch(core, key, cacheKey, aborter, settings))
 
     return new Ok(result)
   }, [core, cacheKey])
@@ -174,14 +172,13 @@ export function useAnonymousQuery<K, D, F>(
 
     const key = keyRef.current
     const settings = settingsRef.current
-    const fetcher = settings.fetcher
 
     if (key === undefined)
       return new Err(new MissingKeyError())
-    if (fetcher === undefined)
+    if (settings.fetcher === undefined)
       return new Err(new MissingFetcherError())
 
-    const result = await Simple.update(core, key, cacheKey, fetcher, updater, aborter, settings)
+    const result = await Simple.update(core, key, cacheKey, updater, aborter, settings)
 
     return new Ok(result)
   }, [core, cacheKey])
@@ -192,15 +189,14 @@ export function useAnonymousQuery<K, D, F>(
 
     const key = keyRef.current
     const settings = settingsRef.current
-    const fetcher = settings.fetcher
 
     if (key === undefined)
       return new Err(new MissingKeyError())
-    if (fetcher === undefined)
+    if (settings.fetcher === undefined)
       return new Err(new MissingFetcherError())
 
     const result = await core.fetchOrJoin(cacheKey, aborter, async () =>
-      await Simple.fetch(core, key, cacheKey, fetcher, aborter, settings))
+      await Simple.fetch(core, key, cacheKey, aborter, settings))
 
     return new Ok(result)
   }, [core, cacheKey])
