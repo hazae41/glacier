@@ -82,7 +82,7 @@ export function useSkeletonScrollQuery<K, D, F>(): ScrollSkeletonQuery<K, D, F> 
     // NOOP
   }, [undefined])
 
-  useState()
+  useState(0)
 
   useRef()
   useRef()
