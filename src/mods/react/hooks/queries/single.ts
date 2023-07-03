@@ -268,7 +268,6 @@ export function useSimpleFetcherfulQuery<K, D, F>(
   }, [])
 
   const setAborter = useCallback((aborter?: AbortController) => {
-    console.log("setaborter", aborter)
     aborterRef.current = aborter
     setCounter(c => c + 1)
   }, [])
@@ -285,7 +284,7 @@ export function useSimpleFetcherfulQuery<K, D, F>(
       return
 
     const offState = core.onState.addListener(cacheKey, e => setState(e.detail))
-    const offAborter = core.onAborter.addListener(cacheKey, e => setAborter(e.detail))
+    const offAborter = core.onAborter.addListener(cacheKey, e => console.log(e))
 
     core.increment(cacheKey, settingsRef.current)
 
