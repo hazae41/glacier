@@ -253,7 +253,8 @@ export function useSimpleFetcherfulQuery<K, D, F>(
     return Simple.getCacheKey(settings.key, settingsRef.current)
   }, [settings.key])
 
-  const [, setCounter] = useState(0)
+  const [counter, setCounter] = useState(0)
+  console.log(counter)
 
   const stateRef = useRef<Optional<State<D, F>>>()
   const aborterRef = useRef<Optional<AbortController>>()
@@ -286,7 +287,6 @@ export function useSimpleFetcherfulQuery<K, D, F>(
       return
 
     const offState = core.onState.addListener(cacheKey, e => setState(e.detail))
-    const offState2 = core.onState.addListener(cacheKey, console.log)
     const offAborter = core.onAborter.addListener(cacheKey, e => setAborter(e.detail))
 
     core.increment(cacheKey, settingsRef.current)
