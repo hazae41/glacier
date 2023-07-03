@@ -23,6 +23,7 @@ export function createQuerySchema<K, D, F>(
 ) {
   if (settings.fetcher === undefined)
     return new SimpleFetcherlessQuerySchema<K, D, F>(settings)
+
   return new SimpleFetcherfulQuerySchema<K, D, F>(settings)
 }
 
