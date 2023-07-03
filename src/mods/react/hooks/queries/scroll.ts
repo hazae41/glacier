@@ -14,9 +14,9 @@ import { ScrollFetcherfulQuerySettings, ScrollFetcherlessQuerySettings } from "m
 import { State } from "mods/types/state.js";
 import { DependencyList, useCallback, useEffect, useMemo, useRef, useState } from "react";
 
-export function useScrollQuery<T extends Optional<ScrollQuerySchema<any, any, any>>, DL extends DependencyList>(
-  factory: (...deps: DL) => T,
-  deps: DL
+export function useScrollQuery<T extends ScrollQuerySchema.Infer<T>, L extends DependencyList>(
+  factory: (...deps: L) => T,
+  deps: L
 ): ScrollQuerySchema.Queried<T> {
   const schema = useMemo(() => {
     return factory(...deps)

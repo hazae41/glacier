@@ -33,6 +33,11 @@ export type SimpleQuerySchema<K, D, F> =
   | SimpleFetcherfulQuerySchema<K, D, F>
 
 export namespace SimpleQuerySchema {
+  export type Infer<T> =
+    | undefined
+    | SimpleFetcherlessQuerySchema.Infer<T>
+    | SimpleFetcherfulQuerySchema.Infer<T>
+
   export type Queried<T> =
     | SimpleSkeletonQuerySchema.Queried<T>
     | SimpleFetcherlessQuerySchema.Queried<T>
@@ -48,9 +53,9 @@ export namespace SimpleFetcherlessQuerySchema {
 
   export type Queried<T> = T extends SimpleFetcherlessQuerySchema<infer K, infer D, infer F> ? SimpleFetcherlessQuery<K, D, F> : never
 
-  export type K<T> = T extends SimpleFetcherlessQuerySchema<infer K, unknown, unknown> ? K : never
-  export type D<T> = T extends SimpleFetcherlessQuerySchema<unknown, infer D, unknown> ? D : never
-  export type F<T> = T extends SimpleFetcherlessQuerySchema<unknown, unknown, infer F> ? F : never
+  export type K<T> = T extends SimpleFetcherlessQuerySchema<infer K, infer _D, infer _F> ? K : never
+  export type D<T> = T extends SimpleFetcherlessQuerySchema<infer _K, infer D, infer _F> ? D : never
+  export type F<T> = T extends SimpleFetcherlessQuerySchema<infer _K, infer _D, infer F> ? F : never
 }
 
 export namespace SimpleFetcherfulQuerySchema {
@@ -58,9 +63,9 @@ export namespace SimpleFetcherfulQuerySchema {
 
   export type Queried<T> = T extends SimpleFetcherfulQuerySchema<infer K, infer D, infer F> ? SimpleFetcherfulQuery<K, D, F> : never
 
-  export type K<T> = T extends SimpleFetcherfulQuerySchema<infer K, unknown, unknown> ? K : never
-  export type D<T> = T extends SimpleFetcherfulQuerySchema<unknown, infer D, unknown> ? D : never
-  export type F<T> = T extends SimpleFetcherfulQuerySchema<unknown, unknown, infer F> ? F : never
+  export type K<T> = T extends SimpleFetcherfulQuerySchema<infer K, infer _D, infer _F> ? K : never
+  export type D<T> = T extends SimpleFetcherfulQuerySchema<infer _K, infer D, infer _F> ? D : never
+  export type F<T> = T extends SimpleFetcherfulQuerySchema<infer _K, infer _D, infer F> ? F : never
 }
 
 export class SimpleFetcherlessQuerySchema<K, D, F>  {

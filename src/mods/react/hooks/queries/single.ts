@@ -1,4 +1,3 @@
-import { Optional } from "@hazae41/option";
 import { Err, Ok, Result } from "@hazae41/result";
 import { useRenderRef } from "libs/react/ref.js";
 import { Time } from "libs/time/time.js";
@@ -14,9 +13,9 @@ import { State } from "mods/types/state.js";
 import { Updater } from "mods/types/updater.js";
 import { DependencyList, useCallback, useEffect, useMemo, useRef, useState } from "react";
 
-export function useQuery<T extends Optional<SimpleQuerySchema<any, any, any>>, DL extends DependencyList>(
-  factory: (...deps: DL) => T,
-  deps: DL
+export function useQuery<T extends SimpleQuerySchema.Infer<T>, L extends DependencyList>(
+  factory: (...deps: L) => T,
+  deps: L
 ): SimpleQuerySchema.Queried<T> {
   const schema = useMemo(() => {
     return factory(...deps)
