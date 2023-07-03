@@ -8,6 +8,7 @@ export class Ortho<T> extends EventTarget {
   }
 
   dispatch(key: string, detail: T) {
+    console.log("detail", detail)
     const event = new CustomEvent(key, { detail })
     this.dispatchEvent(event)
   }

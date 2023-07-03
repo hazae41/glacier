@@ -221,6 +221,7 @@ export function useSimpleFetcherlessQuery<K, D, F>(
   const fake = state?.fake
 
   return {
+    ...settings,
     cacheKey,
     current,
     data,
@@ -236,8 +237,7 @@ export function useSimpleFetcherlessQuery<K, D, F>(
     refetch,
     update,
     clear,
-    suspend,
-    ...settings
+    suspend
   }
 }
 
@@ -357,6 +357,7 @@ export function useSimpleFetcherfulQuery<K, D, F>(
   const fake = state?.fake
 
   return {
+    ...settings,
     cacheKey,
     current,
     data,
@@ -372,7 +373,6 @@ export function useSimpleFetcherfulQuery<K, D, F>(
     refetch,
     update,
     clear,
-    suspend,
-    ...settings
+    suspend
   }
 }

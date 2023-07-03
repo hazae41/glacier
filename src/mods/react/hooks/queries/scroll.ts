@@ -240,6 +240,7 @@ export function useFetcherlessScrollQuery<K, D, F>(
   }, [state?.real?.data, settings.scroller])
 
   return {
+    ...settings,
     cacheKey,
     current,
     data,
@@ -257,7 +258,6 @@ export function useFetcherlessScrollQuery<K, D, F>(
     clear,
     suspend,
     peek,
-    ...settings
   }
 }
 
@@ -379,6 +379,7 @@ export function useFetcherfulScrollQuery<K, D, F>(
   }, [state?.real?.data, settings.scroller])
 
   return {
+    ...settings,
     cacheKey,
     current,
     data,
@@ -395,7 +396,6 @@ export function useFetcherfulScrollQuery<K, D, F>(
     scroll,
     clear,
     suspend,
-    peek,
-    ...settings
+    peek
   }
 }
