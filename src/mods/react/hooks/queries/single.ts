@@ -68,13 +68,13 @@ export interface SimpleFetcherlessQuery<K, D, F> extends FetcherlessQuery<K, D, 
 }
 
 export function useSimpleSkeletonQuery<K, D, F>(): SimpleSkeletonQuery<K, D, F> {
-  useCore().unwrap()
+  const core = useCore().unwrap()
 
   useRenderRef(undefined)
 
-  useMemo(() => {
+  const cacheKey = useMemo(() => {
     // NOOP
-  }, [])
+  }, [undefined])
 
   useState()
 
@@ -83,7 +83,7 @@ export function useSimpleSkeletonQuery<K, D, F>(): SimpleSkeletonQuery<K, D, F> 
 
   useMemo(() => {
     // NOOP
-  }, [])
+  }, [core, cacheKey])
 
   useCallback(() => {
     // NOOP
@@ -95,35 +95,35 @@ export function useSimpleSkeletonQuery<K, D, F>(): SimpleSkeletonQuery<K, D, F> 
 
   useEffect(() => {
     // NOOP
-  }, [])
+  }, [core, cacheKey])
 
   useEffect(() => {
     // NOOP
-  }, [])
+  }, [core, cacheKey])
 
   const mutate = useCallback(async (mutator: Mutator<D, F>) => {
     return new Err(new MissingKeyError())
-  }, [])
+  }, [core, cacheKey])
 
   const clear = useCallback(async () => {
     return new Err(new MissingKeyError())
-  }, [])
+  }, [core, cacheKey])
 
   const fetch = useCallback(async (aborter = new AbortController()) => {
     return new Err(new MissingKeyError())
-  }, [])
+  }, [core, cacheKey])
 
   const refetch = useCallback(async (aborter = new AbortController()) => {
     return new Err(new MissingKeyError())
-  }, [])
+  }, [core, cacheKey])
 
   const update = useCallback(async (updater: Updater<K, D, F>, aborter = new AbortController()) => {
     return new Err(new MissingKeyError())
-  }, [])
+  }, [core, cacheKey])
 
   const suspend = useCallback(async (aborter = new AbortController()) => {
     return new Err(new MissingKeyError())
-  }, [])
+  }, [core, cacheKey])
 
   return { mutate, clear, fetch, refetch, update, suspend }
 }
@@ -193,19 +193,19 @@ export function useSimpleFetcherlessQuery<K, D, F>(
 
   const fetch = useCallback(async (aborter = new AbortController()) => {
     return new Ok(new Err(new MissingFetcherError()))
-  }, [])
+  }, [core, cacheKey])
 
   const refetch = useCallback(async (aborter = new AbortController()) => {
     return new Ok(new Err(new MissingFetcherError()))
-  }, [])
+  }, [core, cacheKey])
 
   const update = useCallback(async (updater: Updater<K, D, F>, aborter = new AbortController()) => {
     return new Ok(new Err(new MissingFetcherError()))
-  }, [])
+  }, [core, cacheKey])
 
   const suspend = useCallback(async (aborter = new AbortController()) => {
     return new Ok(new Err(new MissingFetcherError()))
-  }, [])
+  }, [core, cacheKey])
 
   const state = stateRef.current
   const aborter = aborterRef.current
