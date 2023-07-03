@@ -183,7 +183,7 @@ export function useSimpleFetcherlessQuery<K, D, F>(
   }, [core, cacheKey])
 
   const fetch = useCallback(async (aborter = new AbortController()) => {
-    return new Err(new MissingFetcherError())
+    return new Ok(new Err(new MissingFetcherError()))
   }, [core, cacheKey])
 
   const refetch = useCallback(async (aborter = new AbortController()) => {
@@ -300,12 +300,12 @@ export function useSimpleFetcherfulQuery<K, D, F>(
     const settings = settingsRef.current
 
     if (Time.isAfterNow(stateRef.current?.real?.current.cooldown))
-      return new Err(new CooldownError())
+      return new Ok(new Err(new CooldownError()))
 
     const result = await core.fetchOrJoin(cacheKey, aborter, async () =>
       await Simple.fetch(core, cacheKey, aborter, settings))
 
-    return new Ok(result)
+    return new Ok(new Ok(result))
   }, [core, cacheKey])
 
   const refetch = useCallback(async (aborter = new AbortController()) => {
