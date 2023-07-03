@@ -130,7 +130,7 @@ export interface FetcherfulQuery<K, D, F> extends Omit<FetcherfulQuerySettings<K
   /**
    * True if a fetch is ongoing (except those from update())
    */
-  readonly fetching: boolean
+  readonly fetching?: boolean
 
   /**
    * Abort controller, can be used to abort and check for abortion, present when a fetch is ongoing (except those from update())
@@ -140,7 +140,7 @@ export interface FetcherfulQuery<K, D, F> extends Omit<FetcherfulQuerySettings<K
   /**
    * Use this to check if the state has been loaded from async storage and is ready to be used
    */
-  readonly ready: boolean
+  readonly ready?: boolean
 
   /**
    * True if it's in a fake state
@@ -213,7 +213,7 @@ export interface FetcherlessQuery<K, D, F> extends Omit<FetcherlessQuerySettings
   /**
    * True if a fetch is ongoing (except those from update())
    */
-  readonly fetching: boolean
+  readonly fetching?: boolean
 
   /**
    * Abort controller, can be used to abort and check for abortion, present when a fetch is ongoing (except those from update())
@@ -223,7 +223,7 @@ export interface FetcherlessQuery<K, D, F> extends Omit<FetcherlessQuerySettings
   /**
    * Use this to check if the state has been loaded from async storage and is ready to be used
    */
-  readonly ready: boolean
+  readonly ready?: boolean
 
   /**
    * True if it's in a fake state
