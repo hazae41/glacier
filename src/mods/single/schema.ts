@@ -7,27 +7,23 @@ import { Simple } from "./helper.js";
 import { SimpleFetcherfulQueryInstance, SimpleFetcherlessQueryInstance } from "./instance.js";
 
 export function createQuerySchema<K, D, F>(
-  key: K,
   settings: FetcherlessQuerySettings<K, D, F>
 ): SimpleFetcherlessQuerySchema<K, D, F>
 
 export function createQuerySchema<K, D, F>(
-  key: K,
   settings: FetcherfulQuerySettings<K, D, F>
 ): SimpleFetcherfulQuerySchema<K, D, F>
 
 export function createQuerySchema<K, D, F>(
-  key: K,
   settings: QuerySettings<K, D, F>,
 ): SimpleQuerySchema<K, D, F>
 
 export function createQuerySchema<K, D, F>(
-  key: K,
   settings: QuerySettings<K, D, F>,
 ) {
   if (settings.fetcher === undefined)
-    return new SimpleFetcherlessQuerySchema<K, D, F>(key, settings)
-  return new SimpleFetcherfulQuerySchema<K, D, F>(key, settings)
+    return new SimpleFetcherlessQuerySchema<K, D, F>(settings)
+  return new SimpleFetcherfulQuerySchema<K, D, F>(settings)
 }
 
 export type SimpleQuerySchema<K, D, F> =
@@ -38,14 +34,13 @@ export class SimpleFetcherlessQuerySchema<K, D, F>  {
   readonly cacheKey: string
 
   constructor(
-    readonly key: K,
     readonly settings: FetcherlessQuerySettings<K, D, F>
   ) {
-    this.cacheKey = Simple.getCacheKey(key, settings)
+    this.cacheKey = Simple.getCacheKey(settings.key, settings)
   }
 
   async make(core: Core) {
-    return await SimpleFetcherlessQueryInstance.make(core, this.key, this.cacheKey, this.settings)
+    return await SimpleFetcherlessQueryInstance.make(core, this.cacheKey, this.settings)
   }
 
   async normalize(fetched: Optional<Fetched<D, F>>, more: NormalizerMore) {
@@ -64,14 +59,13 @@ export class SimpleFetcherfulQuerySchema<K, D, F> {
   readonly cacheKey: string
 
   constructor(
-    readonly key: K,
     readonly settings: FetcherfulQuerySettings<K, D, F>
   ) {
-    this.cacheKey = Simple.getCacheKey(key, settings)
+    this.cacheKey = Simple.getCacheKey(settings.key, settings)
   }
 
   async make(core: Core) {
-    return await SimpleFetcherfulQueryInstance.make(core, this.key, this.cacheKey, this.settings)
+    return await SimpleFetcherfulQueryInstance.make(core, this.cacheKey, this.settings)
   }
 
   async normalize(fetched: Optional<Fetched<D, F>>, more: NormalizerMore) {

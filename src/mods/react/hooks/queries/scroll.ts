@@ -10,8 +10,7 @@ import { Scroll } from "mods/scroll/helper.js";
 import { ScrollQuerySchema } from "mods/scroll/schema.js";
 import { FetchError } from "mods/types/fetcher.js";
 import { Mutator } from "mods/types/mutator.js";
-import { Scroller } from "mods/types/scroller.js";
-import { QuerySettings } from "mods/types/settings.js";
+import { QuerySettings, ScrollQuerySettings } from "mods/types/settings.js";
 import { State } from "mods/types/state.js";
 import { DependencyList, useCallback, useEffect, useMemo, useRef, useState } from "react";
 
@@ -22,11 +21,14 @@ export function useScrollQuery<K, D, F, DL extends DependencyList>(
   factory: ScrollSchemaFactory<K, D, F, DL>,
   deps: DL
 ) {
-  const { scroller, settings } = useMemo(() => {
+  const schema = useMemo(() => {
     return factory(...deps)
-  }, deps) ?? {}
+  }, deps)
 
-  return useAnonymousScrollQuery<K, D, F>(scroller, settings)
+  if (schema === undefined)
+    return useSkeletonScrollQuery()
+
+  return useAnonymousScrollQuery<K, D, F>(schema.settings)
 }
 
 /**
@@ -44,6 +46,71 @@ export interface ScrollQuery<K, D, F> extends Query<K, D[], F> {
   peek(): Optional<K>
 }
 
+export function useSkeletonScrollQuery() {
+  useCore().unwrap()
+
+  useRenderRef(undefined)
+
+  useMemo(() => {
+    // NOOP
+  }, [])
+
+  useState()
+
+  useRef()
+  useRef()
+
+  useMemo(() => {
+    // NOOP
+  }, [])
+
+  useCallback(() => {
+    // NOOP
+  }, [])
+
+  useCallback(() => {
+    // NOOP
+  }, [])
+
+  useEffect(() => {
+    // NOOP
+  }, [])
+
+  useEffect(() => {
+    // NOOP
+  }, [])
+
+  useCallback(() => {
+    // NOOP
+  }, [])
+
+  useCallback(() => {
+    // NOOP
+  }, [])
+
+  useCallback(() => {
+    // NOOP
+  }, [])
+
+  useCallback(() => {
+    // NOOP
+  }, [])
+
+  useCallback(() => {
+    // NOOP
+  }, [])
+
+  useCallback(() => {
+    // NOOP
+  }, [])
+
+  useCallback(() => {
+    // NOOP
+  }, [])
+
+  return undefined
+}
+
 /**
  * Scroll query
  * @param scroller 
@@ -52,21 +119,15 @@ export interface ScrollQuery<K, D, F> extends Query<K, D[], F> {
  * @returns 
  */
 export function useAnonymousScrollQuery<K, D, F>(
-  scroller: Optional<Scroller<K, D, F>>,
-  settings: QuerySettings<K, D[], F> = {},
+  settings: QuerySettings<K, D[], F> & ScrollQuerySettings<K, D, F>,
 ): ScrollQuery<K, D, F> {
   const core = useCore().unwrap()
 
-  const scrollerRef = useRenderRef(scroller)
   const settingsRef = useRenderRef({ ...core.settings, ...settings })
 
-  const key = useMemo(() => {
-    return scroller?.(undefined)
-  }, [scroller])
-
   const cacheKey = useMemo(() => {
-    return Option.mapSync(key, (key) => Scroll.getCacheKey(key, settingsRef.current))
-  }, [key])
+    return Scroll.getCacheKey(settings.key, settingsRef.current)
+  }, [settings.key])
 
   const [, setCounter] = useState(0)
 
@@ -74,9 +135,6 @@ export function useAnonymousScrollQuery<K, D, F>(
   const aborterRef = useRef<AbortController>()
 
   useMemo(() => {
-    if (cacheKey === undefined)
-      return
-
     stateRef.current = core.getStateSync<D[], F>(cacheKey)
     aborterRef.current = core.getAborterSync(cacheKey)
   }, [core, cacheKey])
@@ -92,8 +150,6 @@ export function useAnonymousScrollQuery<K, D, F>(
   }, [])
 
   useEffect(() => {
-    if (cacheKey === undefined)
-      return
     if (stateRef.current !== undefined)
       return
 
@@ -101,9 +157,6 @@ export function useAnonymousScrollQuery<K, D, F>(
   }, [core, cacheKey, settings])
 
   useEffect(() => {
-    if (cacheKey === undefined)
-      return
-
     const offState = core.onState.addListener(cacheKey, e => setState(e.detail))
     const offAborter = core.onAborter.addListener(cacheKey, e => setAborter(e.detail))
 
@@ -118,32 +171,16 @@ export function useAnonymousScrollQuery<K, D, F>(
   }, [core, cacheKey])
 
   const mutate = useCallback(async (mutator: Mutator<D[], F>) => {
-    if (cacheKey === undefined)
-      return new Err(new MissingKeyError())
-
-    const state = await core.mutate(cacheKey, mutator, settingsRef.current)
-
-    return new Ok(state)
+    return await core.mutate(cacheKey, mutator, settingsRef.current)
   }, [core, cacheKey])
 
   const clear = useCallback(async () => {
-    if (cacheKey === undefined)
-      return new Err(new MissingKeyError())
-
-    const state = await core.delete(cacheKey, settingsRef.current)
-
-    return new Ok(state)
+    return await core.delete(cacheKey, settingsRef.current)
   }, [core, cacheKey])
 
   const fetch = useCallback(async (aborter = new AbortController()) => {
-    if (cacheKey === undefined)
-      return new Err(new MissingKeyError())
-
-    const scroller = scrollerRef.current
     const settings = settingsRef.current
 
-    if (scroller === undefined)
-      return new Err(new MissingKeyError())
     if (settings.fetcher === undefined)
       return new Err(new MissingFetcherError())
 
@@ -151,61 +188,43 @@ export function useAnonymousScrollQuery<K, D, F>(
       return new Err(new CooldownError())
 
     const result = await core.fetchOrJoin(cacheKey, aborter, async () =>
-      await Scroll.first(core, scroller, cacheKey, aborter, settings))
+      await Scroll.first(core, cacheKey, aborter, settings))
 
     return new Ok(result)
   }, [core, cacheKey])
 
   const refetch = useCallback(async (aborter = new AbortController()) => {
-    if (cacheKey === undefined)
-      return new Err(new MissingKeyError())
-
-    const scroller = scrollerRef.current
     const settings = settingsRef.current
 
-    if (scroller === undefined)
-      return new Err(new MissingKeyError())
     if (settings.fetcher === undefined)
       return new Err(new MissingFetcherError())
 
     const result = await core.fetchOrReplace(cacheKey, aborter, async () =>
-      await Scroll.first(core, scroller, cacheKey, aborter, settings))
+      await Scroll.first(core, cacheKey, aborter, settings))
 
     return new Ok(result)
   }, [core, cacheKey])
 
   const scroll = useCallback(async (aborter = new AbortController()) => {
-    if (cacheKey === undefined)
-      return new Err(new MissingKeyError())
-
-    const scroller = scrollerRef.current
     const settings = settingsRef.current
 
-    if (scroller === undefined)
-      return new Err(new MissingKeyError())
     if (settings.fetcher === undefined)
       return new Err(new MissingFetcherError())
 
     const result = await core.fetchOrReplace(cacheKey, aborter, async () =>
-      await Scroll.scroll(core, scroller, cacheKey, aborter, settings))
+      await Scroll.scroll(core, cacheKey, aborter, settings))
 
     return new Ok(result)
   }, [core, cacheKey])
 
   const suspend = useCallback(async (aborter = new AbortController()) => {
-    if (cacheKey === undefined)
-      throw new MissingKeyError()
-
-    const scroller = scrollerRef.current
     const settings = settingsRef.current
 
-    if (scroller === undefined)
-      throw new MissingKeyError()
     if (settings.fetcher === undefined)
       throw new MissingFetcherError()
 
     const result = await core.fetchOrJoin(cacheKey, aborter, async () =>
-      await Scroll.first(core, scroller, cacheKey, aborter, settings))
+      await Scroll.first(core, cacheKey, aborter, settings))
 
     return new Ok(result)
   }, [core, cacheKey])
@@ -225,11 +244,10 @@ export function useAnonymousScrollQuery<K, D, F>(
   const fake = state?.fake
 
   const peek = useCallback(() => {
-    return scroller?.(Option.mapSync(state?.real?.data?.inner, Arrays.last))
-  }, [state?.real?.data, scroller])
+    return settings.scroller?.(Option.mapSync(state?.real?.data?.inner, Arrays.last))
+  }, [state?.real?.data, settings.scroller])
 
   return {
-    key,
     cacheKey,
     current,
     data,

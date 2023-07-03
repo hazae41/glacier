@@ -6,8 +6,7 @@ import { DEFAULT_EQUALS, DEFAULT_SERIALIZER } from "mods/defaults.js";
 import { Fetched } from "mods/result/fetched.js";
 import { TimesInit } from "mods/result/times.js";
 import { FetchError } from "mods/types/fetcher.js";
-import { Scroller } from "mods/types/scroller.js";
-import { FetcherfulQuerySettings, QuerySettings } from "mods/types/settings.js";
+import { FetcherfulQuerySettings, QuerySettings, ScrollQuerySettings } from "mods/types/settings.js";
 import { State } from "mods/types/state.js";
 
 export namespace Scroll {
@@ -33,14 +32,13 @@ export namespace Scroll {
    */
   export async function first<K, D, F>(
     core: Core,
-    scroller: Scroller<K, D, F>,
     cacheKey: string,
     aborter: AbortController,
-    settings: FetcherfulQuerySettings<K, D[], F>
+    settings: FetcherfulQuerySettings<K, D[], F> & ScrollQuerySettings<K, D, F>
   ): Promise<Result<State<D[], F>, FetchError>> {
     const { dataEqualser = DEFAULT_EQUALS } = settings
 
-    const key = scroller(undefined)
+    const key = settings.scroller(undefined)
 
     if (key === undefined)
       return new Err(new FetchError(`Can't scroll`))
@@ -80,15 +78,14 @@ export namespace Scroll {
    */
   export async function scroll<K, D, F>(
     core: Core,
-    scroller: Scroller<K, D, F>,
     cacheKey: string,
     aborter: AbortController,
-    settings: FetcherfulQuerySettings<K, D[], F>
+    settings: FetcherfulQuerySettings<K, D[], F> & ScrollQuerySettings<K, D, F>
   ): Promise<Result<State<D[], F>, FetchError>> {
     const previous = await core.get(cacheKey, settings)
     const previousPages = previous.real?.data?.inner ?? []
     const previousPage = Arrays.last(previousPages)
-    const key = scroller(previousPage)
+    const key = settings.scroller(previousPage)
 
     if (key === undefined)
       return new Err(new FetchError(`Can't scroll`))

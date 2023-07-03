@@ -4,6 +4,7 @@ import { Storage } from "mods/storages/storage.js"
 import { Normalizer } from "mods/types/normalizer.js"
 import { Fetcher } from "./fetcher.js"
 import { Indexer } from "./indexer.js"
+import { Scroller } from "./scroller.js"
 
 export interface GlobalSettings {
   readonly timeout?: number,
@@ -16,6 +17,8 @@ export type QuerySettings<K, D, F> =
   | FetcherlessQuerySettings<K, D, F>
 
 export interface FetcherfulQuerySettings<K, D, F> {
+  readonly key: K
+
   readonly timeout?: number,
   readonly cooldown?: number,
   readonly expiration?: number
@@ -36,6 +39,8 @@ export interface FetcherfulQuerySettings<K, D, F> {
 }
 
 export interface FetcherlessQuerySettings<K, D, F> {
+  readonly key: K
+
   readonly timeout?: number,
   readonly cooldown?: number,
   readonly expiration?: number
@@ -53,4 +58,8 @@ export interface FetcherlessQuerySettings<K, D, F> {
   readonly errorEqualser?: Equalser<F>
 
   readonly storage?: Storage
+}
+
+export interface ScrollQuerySettings<K, D, F> {
+  readonly scroller: Scroller<K, D, F>
 }

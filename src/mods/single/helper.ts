@@ -22,13 +22,12 @@ export namespace Simple {
 
   export async function fetch<K, D, F>(
     core: Core,
-    key: K,
     cacheKey: string,
     aborter: AbortController,
     settings: FetcherfulQuerySettings<K, D, F>
   ): Promise<Result<State<D, F>, FetchError>> {
     const aborted = await core.runWithTimeout(async signal => {
-      return await settings.fetcher(key, { signal })
+      return await settings.fetcher(settings.key, { signal })
     }, aborter, settings.timeout)
 
     if (aborted.isErr())
@@ -52,7 +51,6 @@ export namespace Simple {
    */
   export async function update<K, D, F>(
     core: Core,
-    key: K,
     cacheKey: string,
     updater: Updater<K, D, F>,
     aborter: AbortController,
@@ -71,7 +69,7 @@ export namespace Simple {
       const fetcher = result.value ?? settings.fetcher
 
       const aborted = await core.runWithTimeout(async (signal) => {
-        return await fetcher(key, { signal, cache: "reload" })
+        return await fetcher(settings.key, { signal, cache: "reload" })
       }, aborter, settings.timeout)
 
       if (aborted.isErr()) {
