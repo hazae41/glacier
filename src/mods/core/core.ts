@@ -272,6 +272,8 @@ export class Core {
 
       this.raw.set(cacheKey, Option.wrap(stored))
 
+      await settings.indexer?.(next)
+
       this.onState.dispatch(cacheKey, next)
 
       if (!settings.storage)
@@ -310,7 +312,7 @@ export class Core {
    * @returns 
    */
   async update<K, D, F>(cacheKey: string, setter: Setter<D, F>, settings: QuerySettings<K, D, F>) {
-    const { equals = DEFAULT_EQUALS } = settings
+    const { dataEqualser = DEFAULT_EQUALS, errorEqualser = DEFAULT_EQUALS } = settings
 
     const metadata = this.#getOrCreateMetadata<D, F>(cacheKey)
 
@@ -327,10 +329,10 @@ export class Core {
 
       next = this.#mergeRealStateWithFetched(next, await this.#normalize(next.real?.current, settings))
 
-      if (next.real?.current.isData() && previous.real?.current.isData() && equals(next.real.current.inner, previous.real.current.inner))
+      if (next.real?.current.isData() && previous.real?.current.isData() && dataEqualser(next.real.current.inner, previous.real.current.inner))
         next = new RealState(new DataState(new Data(previous.real.current.inner, next.real.current)))
 
-      if (next.real?.current.isFail() && previous.real?.current.isFail() && equals(next.real.current.inner, previous.real.current.inner))
+      if (next.real?.current.isFail() && previous.real?.current.isFail() && errorEqualser(next.real.current.inner, previous.real.current.inner))
         next = new RealState(new FailState(new Fail(previous.real.current.inner, next.real.current), previous.real.data))
 
       return await this.#reoptimize(metadata.inner, next)

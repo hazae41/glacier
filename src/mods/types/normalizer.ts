@@ -7,5 +7,5 @@ export type Normalizer<D, F> =
 
 export interface NormalizerMore {
   readonly core: Core,
-  readonly shallow?: boolean,
+  readonly shallow: boolean,
 }

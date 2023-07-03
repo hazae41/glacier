@@ -39,7 +39,7 @@ export namespace Scroll {
     aborter: AbortController,
     settings: QuerySettings<K, D[], F>
   ): Promise<Result<State<D[], F>, FetchError>> {
-    const { equals = DEFAULT_EQUALS } = settings
+    const { dataEqualser = DEFAULT_EQUALS } = settings
 
     const key = scroller(undefined)
 
@@ -62,7 +62,7 @@ export namespace Scroll {
 
       const prenormalized = await core.prenormalize(timed, settings)
 
-      if (prenormalized?.isData() && previous.real?.data && equals(prenormalized.inner[0], previous.real.data.inner[0]))
+      if (prenormalized?.isData() && previous.real?.data && dataEqualser(prenormalized.inner, previous.real.data.inner))
         return new Some(previous.real.data)
 
       return new Some(timed)

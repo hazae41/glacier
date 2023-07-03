@@ -1,7 +1,7 @@
 import { Optional } from "@hazae41/option"
 
-export type Equalser =
-  (a: unknown, b: unknown) => Optional<boolean>
+export type Equalser<T> =
+  (a: T, b: T) => Optional<boolean>
 
 export namespace Equals {
 
