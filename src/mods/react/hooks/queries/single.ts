@@ -284,7 +284,7 @@ export function useSimpleFetcherfulQuery<K, D, F>(
     if (cacheKey == null)
       return
 
-    const offState = core.onState.addListener(cacheKey, e => setState(e.detail))
+    const offState = core.onState.addListener(cacheKey, e => console.log(e))
     const offAborter = core.onAborter.addListener(cacheKey, e => setAborter(e.detail))
 
     core.increment(cacheKey, settingsRef.current)
