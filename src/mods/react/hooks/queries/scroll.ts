@@ -3,9 +3,9 @@ import { Err, Ok, Result } from "@hazae41/result";
 import { Arrays } from "libs/arrays/arrays.js";
 import { useRenderRef } from "libs/react/ref.js";
 import { Time } from "libs/time/time.js";
-import { CooldownError, MissingFetcherError } from "mods/core/core.js";
+import { CooldownError, MissingFetcherError, MissingKeyError } from "mods/core/core.js";
 import { useCore } from "mods/react/contexts/core.js";
-import { FetcherfulQuery, FetcherlessQuery } from "mods/react/types/query.js";
+import { FetcherfulQuery, FetcherlessQuery, SkeletonQuery } from "mods/react/types/query.js";
 import { Scroll } from "mods/scroll/helper.js";
 import { ScrollQuerySchema } from "mods/scroll/schema.js";
 import { FetchError } from "mods/types/fetcher.js";
@@ -26,12 +26,24 @@ export function useScrollQuery<K, D, F, DL extends DependencyList>(
   }, deps)
 
   if (schema === undefined)
-    return useSkeletonScrollQuery()
+    return useSkeletonScrollQuery<K, D, F>()
 
   if (schema.settings.fetcher === undefined)
     return useFetcherlessScrollQuery<K, D, F>(schema.settings)
 
   return useFetcherfulScrollQuery<K, D, F>(schema.settings)
+}
+
+export interface ScrollSkeletonQuery<K, D, F> extends SkeletonQuery<K, D[], F> {
+  /**
+   * Fetch the next page
+   */
+  scroll(): Promise<Result<never, MissingKeyError>>
+
+  /**
+   * The next key to be fetched
+   */
+  peek(): undefined
 }
 
 /**
@@ -41,7 +53,7 @@ export interface ScrollFetcherlessQuery<K, D, F> extends FetcherlessQuery<K, D[]
   /**
    * Fetch the next page
    */
-  scroll(): Promise<Result<never, MissingFetcherError>>
+  scroll(): Promise<Result<Result<never, MissingFetcherError>, never>>
 
   /**
    * The next key to be fetched
@@ -56,7 +68,7 @@ export interface ScrollFetcherfulQuery<K, D, F> extends FetcherfulQuery<K, D[], 
   /**
    * Fetch the next page
    */
-  scroll(): Promise<Result<Result<State<D[], F>, FetchError>, never>>
+  scroll(): Promise<Result<Result<Result<State<D[], F>, FetchError>, never>, never>>
 
   /**
    * The next key to be fetched
@@ -64,7 +76,7 @@ export interface ScrollFetcherfulQuery<K, D, F> extends FetcherfulQuery<K, D[], 
   peek(): Optional<K>
 }
 
-export function useSkeletonScrollQuery() {
+export function useSkeletonScrollQuery<K, D, F>(): ScrollSkeletonQuery<K, D, F> {
   useCore().unwrap()
 
   useRenderRef(undefined)
@@ -98,35 +110,35 @@ export function useSkeletonScrollQuery() {
     // NOOP
   }, [])
 
-  useCallback(() => {
-    // NOOP
+  const mutate = useCallback(async (mutator: Mutator<D[], F>) => {
+    return new Err(new MissingKeyError())
   }, [])
 
-  useCallback(() => {
-    // NOOP
+  const clear = useCallback(async () => {
+    return new Err(new MissingKeyError())
   }, [])
 
-  useCallback(() => {
-    // NOOP
+  const fetch = useCallback(async (aborter = new AbortController()) => {
+    return new Err(new MissingKeyError())
   }, [])
 
-  useCallback(() => {
-    // NOOP
+  const refetch = useCallback(async (aborter = new AbortController()) => {
+    return new Err(new MissingKeyError())
   }, [])
 
-  useCallback(() => {
-    // NOOP
+  const scroll = useCallback(async (aborter = new AbortController()) => {
+    return new Err(new MissingKeyError())
   }, [])
 
-  useCallback(() => {
-    // NOOP
+  const suspend = useCallback(async (aborter = new AbortController()) => {
+    return new Err(new MissingKeyError())
   }, [])
 
-  useCallback(() => {
-    // NOOP
+  const peek = useCallback(() => {
+    return undefined
   }, [])
 
-  return undefined
+  return { mutate, clear, fetch, refetch, scroll, suspend, peek }
 }
 
 /**
@@ -189,28 +201,28 @@ export function useFetcherlessScrollQuery<K, D, F>(
   }, [core, cacheKey])
 
   const mutate = useCallback(async (mutator: Mutator<D[], F>) => {
-    return await core.mutate(cacheKey, mutator, settingsRef.current)
-  }, [core, cacheKey])
+    return new Ok(await core.mutate(cacheKey, mutator, settingsRef.current))
+  }, [])
 
   const clear = useCallback(async () => {
-    return await core.delete(cacheKey, settingsRef.current)
-  }, [core, cacheKey])
+    return new Ok(await core.delete(cacheKey, settingsRef.current))
+  }, [])
 
   const fetch = useCallback(async (aborter = new AbortController()) => {
     return new Ok(new Err(new MissingFetcherError()))
-  }, [core, cacheKey])
+  }, [])
 
   const refetch = useCallback(async (aborter = new AbortController()) => {
-    return new Err(new MissingFetcherError())
-  }, [core, cacheKey])
+    return new Ok(new Err(new MissingFetcherError()))
+  }, [])
 
   const scroll = useCallback(async (aborter = new AbortController()) => {
-    return new Err(new MissingFetcherError())
-  }, [core, cacheKey])
+    return new Ok(new Err(new MissingFetcherError()))
+  }, [])
 
   const suspend = useCallback(async (aborter = new AbortController()) => {
-    return new Err(new MissingFetcherError())
-  }, [core, cacheKey])
+    return new Ok(new Err(new MissingFetcherError()))
+  }, [])
 
   const state = stateRef.current
   const aborter = aborterRef.current
@@ -305,23 +317,23 @@ export function useFetcherfulScrollQuery<K, D, F>(
   }, [core, cacheKey])
 
   const mutate = useCallback(async (mutator: Mutator<D[], F>) => {
-    return await core.mutate(cacheKey, mutator, settingsRef.current)
+    return new Ok(await core.mutate(cacheKey, mutator, settingsRef.current))
   }, [core, cacheKey])
 
   const clear = useCallback(async () => {
-    return await core.delete(cacheKey, settingsRef.current)
+    return new Ok(await core.delete(cacheKey, settingsRef.current))
   }, [core, cacheKey])
 
   const fetch = useCallback(async (aborter = new AbortController()) => {
     const settings = settingsRef.current
 
     if (Time.isAfterNow(stateRef.current?.real?.current.cooldown))
-      return new Ok(new Err(new CooldownError()))
+      return new Ok(new Ok(new Err(new CooldownError())))
 
     const result = await core.fetchOrJoin(cacheKey, aborter, async () =>
       await Scroll.first(core, cacheKey, aborter, settings))
 
-    return new Ok(new Ok(result))
+    return new Ok(new Ok(new Ok(result)))
   }, [core, cacheKey])
 
   const refetch = useCallback(async (aborter = new AbortController()) => {
@@ -330,7 +342,7 @@ export function useFetcherfulScrollQuery<K, D, F>(
     const result = await core.fetchOrReplace(cacheKey, aborter, async () =>
       await Scroll.first(core, cacheKey, aborter, settings))
 
-    return new Ok(result)
+    return new Ok(new Ok(result))
   }, [core, cacheKey])
 
   const scroll = useCallback(async (aborter = new AbortController()) => {
@@ -339,7 +351,7 @@ export function useFetcherfulScrollQuery<K, D, F>(
     const result = await core.fetchOrReplace(cacheKey, aborter, async () =>
       await Scroll.scroll(core, cacheKey, aborter, settings))
 
-    return new Ok(result)
+    return new Ok(new Ok(result))
   }, [core, cacheKey])
 
   const suspend = useCallback(async (aborter = new AbortController()) => {
@@ -348,7 +360,7 @@ export function useFetcherfulScrollQuery<K, D, F>(
     const result = await core.fetchOrJoin(cacheKey, aborter, async () =>
       await Scroll.first(core, cacheKey, aborter, settings))
 
-    return new Ok(result)
+    return new Ok(new Ok(result))
   }, [core, cacheKey])
 
   const state = stateRef.current

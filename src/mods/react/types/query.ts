@@ -16,86 +16,86 @@ export interface SkeletonQuery<K, D, F> {
   /**
    * Arbitrary key, must be serializable
    */
-  key: undefined
+  key?: undefined
 
   /**
    * Cache key, the serialized version of key
    */
-  cacheKey?: string,
+  cacheKey?: undefined,
 
   /**
    * Current data or error (can be fake)
    */
-  current?: Fetched<D, F>
+  current?: undefined
 
   /**
    * Data (or previous data if current error is some) (can be fake or fakely undefined)
    */
-  data?: Data<D>
+  data?: undefined
 
   /**
    * Error (can be fake or fakely undefined)
    */
-  error?: Fail<F>
+  error?: undefined
 
   /**
    * Real state
    */
-  real?: FetchedState<D, F>
+  real?: undefined
 
   /**
    * Fake state (can be fakely undefined)
    */
-  fake?: FetchedState<D, F>
+  fake?: undefined
 
   /**
    * True if a fetch is ongoing (except those from update())
    */
-  fetching: boolean
+  fetching?: false
 
   /**
    * Abort controller, can be used to abort and check for abortion, present when a fetch is ongoing (except those from update())
    */
-  aborter?: AbortController,
+  aborter?: undefined,
 
   /**
    * Use this to check if the state has been loaded from async storage and is ready to be used
    */
-  ready: boolean
+  ready?: false
 
   /**
    * True if it's in a fake state
    */
-  optimistic?: boolean,
+  optimistic?: false,
 
   /**
    * Mutate the cache
    * @param res 
    */
-  mutate(mutator: Mutator<D, F>): Promise<State<D, F>>
+  mutate(mutator: Mutator<D, F>): Promise<Result<never, MissingKeyError>>
 
   /**
    * Clear the cache
    */
-  clear(): Promise<State<D, F>>
+  clear(): Promise<Result<never, MissingKeyError>>
 
   /**
    * Fetch with cooldown
    * @example You want to fetch and don't care if it's cooldowned
    */
-  fetch(aborter?: AbortController): Promise<Result<Result<Result<State<D, F>, FetchError>, CooldownError>, MissingKeyError>>
+  fetch(aborter?: AbortController): Promise<Result<never, MissingKeyError>>
 
   /**
    * Fetch without cooldown
    * @example User clicked on the refresh button
    * @example You just made a POST request and want to get some fresh data
    */
-  refetch(aborter?: AbortController): Promise<Result<Result<State<D, F>, FetchError>, MissingKeyError>>
+  refetch(aborter?: AbortController): Promise<Result<never, MissingKeyError>>
 
   /**
    * Suspend until the next state change, also launches an undeduped fetch
    */
-  suspend(): Promise<Result<Result<State<D, F>, FetchError>, never>>
+  suspend(): Promise<Result<never, MissingKeyError>>
 }
 
 export interface FetcherfulQuery<K, D, F> extends Omit<FetcherfulQuerySettings<K, D, F>, "time" | "cooldown" | "expiration"> {
@@ -158,30 +158,30 @@ export interface FetcherfulQuery<K, D, F> extends Omit<FetcherfulQuerySettings<K
    * Mutate the cache
    * @param res 
    */
-  mutate(mutator: Mutator<D, F>): Promise<State<D, F>>
+  mutate(mutator: Mutator<D, F>): Promise<Result<State<D, F>, never>>
 
   /**
    * Clear the cache
    */
-  clear(): Promise<State<D, F>>
+  clear(): Promise<Result<State<D, F>, never>>
 
   /**
    * Fetch with cooldown
    * @example You want to fetch and don't care if it's cooldowned
    */
-  fetch(aborter?: AbortController): Promise<Result<Result<Result<State<D, F>, FetchError>, CooldownError>, never>>
+  fetch(aborter?: AbortController): Promise<Result<Result<Result<Result<State<D, F>, FetchError>, CooldownError>, never>, never>>
 
   /**
    * Fetch without cooldown
    * @example User clicked on the refresh button
    * @example You just made a POST request and want to get some fresh data
    */
-  refetch(aborter?: AbortController): Promise<Result<Result<State<D, F>, FetchError>, never>>
+  refetch(aborter?: AbortController): Promise<Result<Result<Result<State<D, F>, FetchError>, never>, never>>
 
   /**
    * Suspend until the next state change, also launches an undeduped fetch
    */
-  suspend(): Promise<Result<Result<State<D, F>, FetchError>, never>>
+  suspend(): Promise<Result<Result<Result<State<D, F>, FetchError>, never>, never>>
 }
 
 export interface FetcherlessQuery<K, D, F> extends Omit<FetcherlessQuerySettings<K, D, F>, "time" | "cooldown" | "expiration"> {
@@ -244,12 +244,12 @@ export interface FetcherlessQuery<K, D, F> extends Omit<FetcherlessQuerySettings
    * Mutate the cache
    * @param res 
    */
-  mutate(mutator: Mutator<D, F>): Promise<State<D, F>>
+  mutate(mutator: Mutator<D, F>): Promise<Result<State<D, F>, never>>
 
   /**
    * Clear the cache
    */
-  clear(): Promise<State<D, F>>
+  clear(): Promise<Result<State<D, F>, never>>
 
   /**
    * Fetch with cooldown
@@ -262,11 +262,11 @@ export interface FetcherlessQuery<K, D, F> extends Omit<FetcherlessQuerySettings
    * @example User clicked on the refresh button
    * @example You just made a POST request and want to get some fresh data
    */
-  refetch(aborter?: AbortController): Promise<Result<never, MissingFetcherError>>
+  refetch(aborter?: AbortController): Promise<Result<Result<never, MissingFetcherError>, never>>
 
   /**
    * Suspend until the next state change, also launches an undeduped fetch
    */
-  suspend(): Promise<Result<never, MissingFetcherError>>
+  suspend(): Promise<Result<Result<never, MissingFetcherError>, never>>
 
 }

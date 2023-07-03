@@ -2,9 +2,9 @@ import { Optional } from "@hazae41/option";
 import { Err, Ok, Result } from "@hazae41/result";
 import { useRenderRef } from "libs/react/ref.js";
 import { Time } from "libs/time/time.js";
-import { CooldownError, MissingFetcherError } from "mods/core/core.js";
+import { CooldownError, MissingFetcherError, MissingKeyError } from "mods/core/core.js";
 import { useCore } from "mods/react/contexts/core.js";
-import { FetcherfulQuery, FetcherlessQuery } from "mods/react/types/query.js";
+import { FetcherfulQuery, FetcherlessQuery, SkeletonQuery } from "mods/react/types/query.js";
 import { Simple } from "mods/single/helper.js";
 import { SimpleQuerySchema } from "mods/single/schema.js";
 import { FetchError } from "mods/types/fetcher.js";
@@ -26,12 +26,24 @@ export function useQuery<K, D, F, DL extends DependencyList>(
   }, deps)
 
   if (schema === undefined)
-    return useSimpleSkeletonQuery()
+    return useSimpleSkeletonQuery<K, D, F>()
 
   if (schema.settings.fetcher === undefined)
     return useSimpleFetcherlessQuery<K, D, F>(schema.settings)
 
   return useSimpleFetcherfulQuery<K, D, F>(schema.settings)
+}
+
+/**
+ * Query for a single resource
+ */
+export interface SimpleSkeletonQuery<K, D, F> extends SkeletonQuery<K, D, F> {
+  /**
+   * Optimistic update
+   * @param updater Mutation function
+   * @param aborter Custom AbortController
+   */
+  update(updater: Updater<K, D, F>, aborter?: AbortController): Promise<Result<never, MissingKeyError>>
 }
 
 /**
@@ -43,7 +55,7 @@ export interface SimpleFetcherfulQuery<K, D, F> extends FetcherfulQuery<K, D, F>
    * @param updater Mutation function
    * @param aborter Custom AbortController
    */
-  update(updater: Updater<K, D, F>, aborter?: AbortController): Promise<Result<Result<State<D, F>, FetchError>, never>>
+  update(updater: Updater<K, D, F>, aborter?: AbortController): Promise<Result<Result<Result<State<D, F>, FetchError>, never>, never>>
 }
 
 /**
@@ -55,10 +67,10 @@ export interface SimpleFetcherlessQuery<K, D, F> extends FetcherlessQuery<K, D, 
    * @param updater Mutation function
    * @param aborter Custom AbortController
    */
-  update(updater: Updater<K, D, F>, aborter?: AbortController): Promise<Result<never, MissingFetcherError>>
+  update(updater: Updater<K, D, F>, aborter?: AbortController): Promise<Result<Result<never, MissingFetcherError>, never>>
 }
 
-export function useSimpleSkeletonQuery() {
+export function useSimpleSkeletonQuery<K, D, F>(): SimpleSkeletonQuery<K, D, F> {
   useCore().unwrap()
 
   useRenderRef(undefined)
@@ -92,31 +104,31 @@ export function useSimpleSkeletonQuery() {
     // NOOP
   }, [])
 
-  useCallback(() => {
-    // NOOP
+  const mutate = useCallback(async (mutator: Mutator<D, F>) => {
+    return new Err(new MissingKeyError())
   }, [])
 
-  useCallback(() => {
-    // NOOP
+  const clear = useCallback(async () => {
+    return new Err(new MissingKeyError())
   }, [])
 
-  useCallback(() => {
-    // NOOP
+  const fetch = useCallback(async (aborter = new AbortController()) => {
+    return new Err(new MissingKeyError())
   }, [])
 
-  useCallback(() => {
-    // NOOP
+  const refetch = useCallback(async (aborter = new AbortController()) => {
+    return new Err(new MissingKeyError())
   }, [])
 
-  useCallback(() => {
-    // NOOP
+  const update = useCallback(async (updater: Updater<K, D, F>, aborter = new AbortController()) => {
+    return new Err(new MissingKeyError())
   }, [])
 
-  useCallback(() => {
-    // NOOP
+  const suspend = useCallback(async (aborter = new AbortController()) => {
+    return new Err(new MissingKeyError())
   }, [])
 
-  return undefined
+  return { mutate, clear, fetch, refetch, update, suspend }
 }
 
 export function useSimpleFetcherlessQuery<K, D, F>(
@@ -175,28 +187,28 @@ export function useSimpleFetcherlessQuery<K, D, F>(
   }, [core, cacheKey])
 
   const mutate = useCallback(async (mutator: Mutator<D, F>) => {
-    return await core.mutate(cacheKey, mutator, settingsRef.current)
+    return new Ok(await core.mutate(cacheKey, mutator, settingsRef.current))
   }, [core, cacheKey])
 
   const clear = useCallback(async () => {
-    return await core.delete(cacheKey, settingsRef.current)
+    return new Ok(await core.delete(cacheKey, settingsRef.current))
   }, [core, cacheKey])
 
   const fetch = useCallback(async (aborter = new AbortController()) => {
     return new Ok(new Err(new MissingFetcherError()))
-  }, [core, cacheKey])
+  }, [])
 
   const refetch = useCallback(async (aborter = new AbortController()) => {
-    return new Err(new MissingFetcherError())
-  }, [core, cacheKey])
+    return new Ok(new Err(new MissingFetcherError()))
+  }, [])
 
   const update = useCallback(async (updater: Updater<K, D, F>, aborter = new AbortController()) => {
-    return new Err(new MissingFetcherError())
-  }, [core, cacheKey])
+    return new Ok(new Err(new MissingFetcherError()))
+  }, [])
 
   const suspend = useCallback(async (aborter = new AbortController()) => {
-    return new Err(new MissingFetcherError())
-  }, [core, cacheKey])
+    return new Ok(new Err(new MissingFetcherError()))
+  }, [])
 
   const state = stateRef.current
   const aborter = aborterRef.current
@@ -289,23 +301,23 @@ export function useSimpleFetcherfulQuery<K, D, F>(
   }, [core, cacheKey])
 
   const mutate = useCallback(async (mutator: Mutator<D, F>) => {
-    return await core.mutate(cacheKey, mutator, settingsRef.current)
+    return new Ok(await core.mutate(cacheKey, mutator, settingsRef.current))
   }, [core, cacheKey])
 
   const clear = useCallback(async () => {
-    return await core.delete(cacheKey, settingsRef.current)
+    return new Ok(await core.delete(cacheKey, settingsRef.current))
   }, [core, cacheKey])
 
   const fetch = useCallback(async (aborter = new AbortController()) => {
     const settings = settingsRef.current
 
     if (Time.isAfterNow(stateRef.current?.real?.current.cooldown))
-      return new Ok(new Err(new CooldownError()))
+      return new Ok(new Ok(new Err(new CooldownError())))
 
     const result = await core.fetchOrJoin(cacheKey, aborter, async () =>
       await Simple.fetch(core, cacheKey, aborter, settings))
 
-    return new Ok(new Ok(result))
+    return new Ok(new Ok(new Ok(result)))
   }, [core, cacheKey])
 
   const refetch = useCallback(async (aborter = new AbortController()) => {
@@ -314,7 +326,7 @@ export function useSimpleFetcherfulQuery<K, D, F>(
     const result = await core.fetchOrReplace(cacheKey, aborter, async () =>
       await Simple.fetch(core, cacheKey, aborter, settings))
 
-    return new Ok(result)
+    return new Ok(new Ok(result))
   }, [core, cacheKey])
 
   const update = useCallback(async (updater: Updater<K, D, F>, aborter = new AbortController()) => {
@@ -322,7 +334,7 @@ export function useSimpleFetcherfulQuery<K, D, F>(
 
     const result = await Simple.update(core, cacheKey, updater, aborter, settings)
 
-    return new Ok(result)
+    return new Ok(new Ok(result))
   }, [core, cacheKey])
 
   const suspend = useCallback(async (aborter = new AbortController()) => {
@@ -331,7 +343,7 @@ export function useSimpleFetcherfulQuery<K, D, F>(
     const result = await core.fetchOrJoin(cacheKey, aborter, async () =>
       await Simple.fetch(core, cacheKey, aborter, settings))
 
-    return new Ok(result)
+    return new Ok(new Ok(result))
   }, [core, cacheKey])
 
   const state = stateRef.current
