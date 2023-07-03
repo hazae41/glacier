@@ -2,6 +2,7 @@ import { Equalser } from "mods/equals/equals.js"
 import { Bicoder, SyncEncoder } from "mods/serializers/serializer.js"
 import { Storage } from "mods/storages/storage.js"
 import { Normalizer } from "mods/types/normalizer.js"
+import { Fetcher } from "./fetcher.js"
 import { Indexer } from "./indexer.js"
 
 export interface GlobalSettings {
@@ -20,6 +21,7 @@ export interface QuerySettings<K, D, F> {
   readonly dataSerializer?: Bicoder<D, unknown>
   readonly errorSerializer?: Bicoder<F, unknown>
 
+  readonly fetcher?: Fetcher<K, D, F>
   readonly normalizer?: Normalizer<D, F>
   readonly indexer?: Indexer<D, F>
 
