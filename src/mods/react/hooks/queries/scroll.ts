@@ -22,10 +22,10 @@ export function useScrollQuery<T extends ScrollQuerySchema.Infer<T>, L extends D
     return factory(...deps)
   }, deps)
 
-  if (schema === undefined)
+  if (schema == null)
     return useSkeletonScrollQuery() as ScrollQuerySchema.Queried<T>
 
-  if (schema.settings.fetcher === undefined)
+  if (schema.settings.fetcher == null)
     return useFetcherlessScrollQuery(schema.settings) as ScrollQuerySchema.Queried<T>
 
   return useFetcherfulScrollQuery(schema.settings) as ScrollQuerySchema.Queried<T>
@@ -158,8 +158,8 @@ export function useFetcherlessScrollQuery<K, D, F>(
 
   const [, setCounter] = useState(0)
 
-  const stateRef = useRef<State<D[], F>>()
-  const aborterRef = useRef<AbortController>()
+  const stateRef = useRef<Optional<State<D[], F>>>()
+  const aborterRef = useRef<Optional<AbortController>>()
 
   useMemo(() => {
     stateRef.current = core.getStateSync<D[], F>(cacheKey)
@@ -171,13 +171,13 @@ export function useFetcherlessScrollQuery<K, D, F>(
     setCounter(c => c + 1)
   }, [])
 
-  const setAborter = useCallback((aborter?: AbortController) => {
+  const setAborter = useCallback((aborter: Optional<AbortController>) => {
     aborterRef.current = aborter
     setCounter(c => c + 1)
   }, [])
 
   useEffect(() => {
-    if (stateRef.current !== undefined)
+    if (stateRef.current != null)
       return
 
     core.get(cacheKey, settingsRef.current).then(setState)
@@ -224,8 +224,8 @@ export function useFetcherlessScrollQuery<K, D, F>(
   const state = stateRef.current
   const aborter = aborterRef.current
 
-  const ready = state !== undefined
-  const fetching = aborter !== undefined
+  const ready = state != null
+  const fetching = aborter != null
   const optimistic = state?.isFake()
 
   const current = state?.current
@@ -274,8 +274,8 @@ export function useFetcherfulScrollQuery<K, D, F>(
 
   const [, setCounter] = useState(0)
 
-  const stateRef = useRef<State<D[], F>>()
-  const aborterRef = useRef<AbortController>()
+  const stateRef = useRef<Optional<State<D[], F>>>()
+  const aborterRef = useRef<Optional<AbortController>>()
 
   useMemo(() => {
     stateRef.current = core.getStateSync<D[], F>(cacheKey)
@@ -287,13 +287,13 @@ export function useFetcherfulScrollQuery<K, D, F>(
     setCounter(c => c + 1)
   }, [])
 
-  const setAborter = useCallback((aborter?: AbortController) => {
+  const setAborter = useCallback((aborter: Optional<AbortController>) => {
     aborterRef.current = aborter
     setCounter(c => c + 1)
   }, [])
 
   useEffect(() => {
-    if (stateRef.current !== undefined)
+    if (stateRef.current != null)
       return
 
     core.get(cacheKey, settingsRef.current).then(setState)
@@ -363,8 +363,8 @@ export function useFetcherfulScrollQuery<K, D, F>(
   const state = stateRef.current
   const aborter = aborterRef.current
 
-  const ready = state !== undefined
-  const fetching = aborter !== undefined
+  const ready = state != null
+  const fetching = aborter != null
   const optimistic = state?.isFake()
 
   const current = state?.current

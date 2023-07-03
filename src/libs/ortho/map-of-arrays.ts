@@ -22,7 +22,7 @@ export class MapOfArrays<K, V> {
   push(key: K, value: V) {
     const values = this.#map.get(key)
 
-    if (values !== undefined) {
+    if (values != null) {
       values.push(value)
       return
     }
@@ -39,7 +39,7 @@ export class MapOfArrays<K, V> {
   erase(key: K, value: V) {
     const values = this.#map.get(key)
 
-    if (values === undefined)
+    if (values == null)
       return
 
     const values2 = values.filter(it => it !== value)

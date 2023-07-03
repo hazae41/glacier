@@ -10,7 +10,7 @@ export function useError<K, D, F>(query: Query<K, D, F>, callback: (error: F) =>
   const { error } = query
 
   useEffect(() => {
-    if (error === undefined)
+    if (error == null)
       return
     callback(error.inner)
   }, [error])

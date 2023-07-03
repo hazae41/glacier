@@ -22,7 +22,7 @@ import { Storage } from "../storage.js"
 export function useAsyncLocalStorage(params?: AsyncLocalStorageParams) {
   const storage = useRef<Result<AsyncLocalStorage, StorageCreationError>>()
 
-  if (storage.current === undefined)
+  if (storage.current == null)
     storage.current = AsyncLocalStorage.tryCreate(params).ignore()
 
   useEffect(() => () => {
@@ -105,20 +105,20 @@ export class AsyncLocalStorage implements Storage {
 
     const state = await this.valueSerializer.parse(item)
 
-    if (state.expiration !== undefined)
+    if (state.expiration != null)
       this.#storageKeys.set(key, state.expiration)
 
     return state
   }
 
   async set(cacheKey: string, state: Optional<RawState>) {
-    if (state === undefined)
+    if (state == null)
       return await this.delete(cacheKey)
 
     const storageKey = await this.keySerializer.stringify(cacheKey)
     const storageItem = await this.valueSerializer.stringify(state)
 
-    if (state.expiration !== undefined)
+    if (state.expiration != null)
       this.#storageKeys.set(storageKey, state.expiration)
 
     localStorage.setItem(this.prefix + storageKey, storageItem)

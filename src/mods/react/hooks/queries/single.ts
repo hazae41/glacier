@@ -1,3 +1,4 @@
+import { Optional } from "@hazae41/option";
 import { Err, Ok, Result } from "@hazae41/result";
 import { useRenderRef } from "libs/react/ref.js";
 import { Time } from "libs/time/time.js";
@@ -21,10 +22,10 @@ export function useQuery<T extends SimpleQuerySchema.Infer<T>, L extends Depende
     return factory(...deps)
   }, deps)
 
-  if (schema === undefined)
+  if (schema == null)
     return useSimpleSkeletonQuery() as SimpleQuerySchema.Queried<T>
 
-  if (schema.settings.fetcher === undefined)
+  if (schema.settings.fetcher == null)
     return useSimpleFetcherlessQuery(schema.settings) as SimpleQuerySchema.Queried<T>
 
   return useSimpleFetcherfulQuery(schema.settings) as SimpleQuerySchema.Queried<T>
@@ -140,8 +141,8 @@ export function useSimpleFetcherlessQuery<K, D, F>(
 
   const [, setCounter] = useState(0)
 
-  const stateRef = useRef<State<D, F>>()
-  const aborterRef = useRef<AbortController>()
+  const stateRef = useRef<Optional<State<D, F>>>()
+  const aborterRef = useRef<Optional<AbortController>>()
 
   useMemo(() => {
     stateRef.current = core.getStateSync(cacheKey)
@@ -153,20 +154,20 @@ export function useSimpleFetcherlessQuery<K, D, F>(
     setCounter(c => c + 1)
   }, [])
 
-  const setAborter = useCallback((aborter?: AbortController) => {
+  const setAborter = useCallback((aborter: Optional<AbortController>) => {
     aborterRef.current = aborter
     setCounter(c => c + 1)
   }, [])
 
   useEffect(() => {
-    if (stateRef.current !== undefined)
+    if (stateRef.current != null)
       return
 
     core.get(cacheKey, settingsRef.current).then(setState)
   }, [core, cacheKey])
 
   useEffect(() => {
-    if (cacheKey === undefined)
+    if (cacheKey == null)
       return
 
     const offState = core.onState.addListener(cacheKey, e => setState(e.detail))
@@ -209,8 +210,8 @@ export function useSimpleFetcherlessQuery<K, D, F>(
   const state = stateRef.current
   const aborter = aborterRef.current
 
-  const ready = state !== undefined
-  const fetching = aborter !== undefined
+  const ready = state != null
+  const fetching = aborter != null
   const optimistic = state?.isFake()
 
   const current = state?.current
@@ -254,8 +255,8 @@ export function useSimpleFetcherfulQuery<K, D, F>(
 
   const [, setCounter] = useState(0)
 
-  const stateRef = useRef<State<D, F>>()
-  const aborterRef = useRef<AbortController>()
+  const stateRef = useRef<Optional<State<D, F>>>()
+  const aborterRef = useRef<Optional<AbortController>>()
 
   useMemo(() => {
     stateRef.current = core.getStateSync(cacheKey)
@@ -273,14 +274,14 @@ export function useSimpleFetcherfulQuery<K, D, F>(
   }, [])
 
   useEffect(() => {
-    if (stateRef.current !== undefined)
+    if (stateRef.current != null)
       return
 
     core.get(cacheKey, settingsRef.current).then(setState)
   }, [core, cacheKey])
 
   useEffect(() => {
-    if (cacheKey === undefined)
+    if (cacheKey == null)
       return
 
     const offState = core.onState.addListener(cacheKey, e => setState(e.detail))
@@ -345,8 +346,8 @@ export function useSimpleFetcherfulQuery<K, D, F>(
   const state = stateRef.current
   const aborter = aborterRef.current
 
-  const ready = state !== undefined
-  const fetching = aborter !== undefined
+  const ready = state != null
+  const fetching = aborter != null
   const optimistic = state?.isFake()
 
   const current = state?.current

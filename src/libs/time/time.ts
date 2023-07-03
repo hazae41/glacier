@@ -10,17 +10,17 @@ export namespace Time {
   }
 
   export function isBefore(left?: number, right?: number) {
-    if (left === undefined)
+    if (left == null)
       return
-    if (right === undefined)
+    if (right == null)
       return
     return left < right
   }
 
   export function isAfter(left?: number, right?: number) {
-    if (left === undefined)
+    if (left == null)
       return
-    if (right === undefined)
+    if (right == null)
       return
     return left > right
   }

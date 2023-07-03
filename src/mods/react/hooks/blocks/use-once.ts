@@ -11,7 +11,7 @@ export function useOnce<K, D, F>(query: Query<K, D, F>) {
   const { data, fetch } = query
 
   useEffect(() => {
-    if (data !== undefined)
+    if (data != null)
       return
     fetch().then(r => r.ignore())
   }, [data, fetch])

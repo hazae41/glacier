@@ -1,3 +1,4 @@
+import { Optional } from "@hazae41/option"
 import { Result } from "@hazae41/result"
 import { CooldownError, MissingFetcherError, MissingKeyError } from "mods/core/core.js"
 import { Data } from "mods/result/data.js"
@@ -53,7 +54,7 @@ export interface SkeletonQuery<K, D, F> extends Omit<SkeletonQuerySettings<K, D,
   /**
    * Abort controller, can be used to abort and check for abortion, present when a fetch is ongoing (except those from update())
    */
-  readonly aborter?: undefined,
+  readonly aborter?: Optional<never>,
 
   /**
    * Use this to check if the state has been loaded from async storage and is ready to be used
@@ -136,7 +137,7 @@ export interface FetcherfulQuery<K, D, F> extends Omit<FetcherfulQuerySettings<K
   /**
    * Abort controller, can be used to abort and check for abortion, present when a fetch is ongoing (except those from update())
    */
-  readonly aborter?: AbortController,
+  readonly aborter?: Optional<AbortController>,
 
   /**
    * Use this to check if the state has been loaded from async storage and is ready to be used
@@ -219,7 +220,7 @@ export interface FetcherlessQuery<K, D, F> extends Omit<FetcherlessQuerySettings
   /**
    * Abort controller, can be used to abort and check for abortion, present when a fetch is ongoing (except those from update())
    */
-  readonly aborter?: AbortController,
+  readonly aborter?: Optional<AbortController>,
 
   /**
    * Use this to check if the state has been loaded from async storage and is ready to be used

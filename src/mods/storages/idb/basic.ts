@@ -9,7 +9,7 @@ import { StorageCreationError } from "../errors.js"
 export function useIDBStorage(params?: IDBStorageParams) {
   const storage = useRef<Result<IDBStorage, StorageCreationError>>()
 
-  if (storage.current === undefined)
+  if (storage.current == null)
     storage.current = IDBStorage.tryCreate(params).ignore()
 
   useEffect(() => () => {
@@ -75,7 +75,7 @@ export class IDBStorage implements Storage {
     await this.#transact(database, async store => {
       const keys = await this.#get<[string, number][]>(store, "__keys")
 
-      if (keys === undefined)
+      if (keys == null)
         return
 
       this.#storageKeys = new Map(keys)
@@ -147,12 +147,12 @@ export class IDBStorage implements Storage {
       return await this.#get(store, key)
     }, "readonly")
 
-    if (value === undefined)
+    if (value == null)
       return undefined
 
     const state = await this.valueSerializer.parse(value)
 
-    if (state.expiration !== undefined)
+    if (state.expiration != null)
       this.#storageKeys.set(key, state.expiration)
 
     return state
@@ -168,13 +168,13 @@ export class IDBStorage implements Storage {
   }
 
   async set(cacheKey: string, state: Optional<RawState>) {
-    if (state === undefined)
+    if (state == null)
       return await this.delete(cacheKey)
 
     const storageKey = await this.keySerializer.stringify(cacheKey)
     const storageValue = await this.valueSerializer.stringify(state)
 
-    if (state.expiration !== undefined)
+    if (state.expiration != null)
       this.#storageKeys.set(storageKey, state.expiration)
 
     return await this.#transact(await this.#database, async store => {

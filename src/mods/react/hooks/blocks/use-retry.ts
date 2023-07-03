@@ -32,7 +32,7 @@ export function useRetry<K, D, F>(query: Query<K, D, F>, settings: RetrySettings
     if (!ready)
       return
 
-    if (error === undefined) {
+    if (error == null) {
       count.current = 0
       return
     }

@@ -15,7 +15,7 @@ export function useCore() {
 export function useCoreProvider(settings: GlobalSettings) {
   const coreRef = useRef<Core>()
 
-  if (coreRef.current === undefined)
+  if (coreRef.current == null)
     coreRef.current = new Core(settings)
 
   useEffect(() => () => {

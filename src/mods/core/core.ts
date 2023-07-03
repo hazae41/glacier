@@ -110,7 +110,7 @@ export class Core {
   #getOrCreateMetadata<D, F>(cacheKey: string): Mutex<Metadata<D, F>> {
     let metadata = this.#metadatas.get(cacheKey)
 
-    if (metadata !== undefined)
+    if (metadata != null)
       return metadata
 
     const counter = 0
@@ -125,7 +125,7 @@ export class Core {
   async fetchOrReplace<D, F>(cacheKey: string, aborter: AbortController, callback: () => Promise<Result<State<D, F>, FetchError>>): Promise<Result<State<D, F>, FetchError>> {
     const metadata = this.#getOrCreateMetadata(cacheKey)
 
-    if (metadata.inner.aborter !== undefined)
+    if (metadata.inner.aborter != null)
       metadata.inner.aborter.abort()
 
     try {
@@ -148,7 +148,7 @@ export class Core {
   async fetchOrJoin<D, F>(cacheKey: string, aborter: AbortController, callback: () => Promise<Result<State<D, F>, FetchError>>): Promise<Result<State<D, F>, FetchError>> {
     const metadata = this.#getOrCreateMetadata<D, F>(cacheKey)
 
-    if (metadata.inner.pending !== undefined)
+    if (metadata.inner.pending != null)
       return await metadata.inner.pending
 
     try {
@@ -171,7 +171,7 @@ export class Core {
   async #get<K, D, F>(cacheKey: string, settings: QuerySettings<K, D, F>): Promise<State<D, F>> {
     const metadata = this.#getOrCreateMetadata<D, F>(cacheKey)
 
-    if (metadata.inner.state !== undefined)
+    if (metadata.inner.state != null)
       return metadata.inner.state
 
     const stored = await settings.storage?.get?.(cacheKey)
@@ -197,7 +197,7 @@ export class Core {
       errorSerializer = SyncIdentity as Bicoder<F, unknown>
     } = settings
 
-    if (state.real === undefined)
+    if (state.real == null)
       return undefined
 
     const { time, cooldown, expiration } = state.real.current
@@ -214,10 +214,10 @@ export class Core {
       errorSerializer = SyncIdentity as Bicoder<F, unknown>
     } = settings
 
-    if (stored === undefined)
+    if (stored == null)
       return new RealState<D, F>(undefined)
 
-    if (stored.version === undefined) {
+    if (stored.version == null) {
       const { time, cooldown, expiration } = stored
       const times = { time, cooldown, expiration }
 
@@ -285,7 +285,7 @@ export class Core {
   }
 
   #mergeRealStateWithFetched<D, F>(previous: State<D, F>, fetched: Optional<Fetched<D, F>>): RealState<D, F> {
-    if (fetched === undefined)
+    if (fetched == null)
       return new RealState(undefined)
 
     if (fetched.isData())
@@ -295,7 +295,7 @@ export class Core {
   }
 
   #mergeFakeStateWithFetched<D, F>(previous: State<D, F>, fetched: Optional<Fetched<D, F>>): FakeState<D, F> {
-    if (fetched === undefined)
+    if (fetched == null)
       return new FakeState(undefined, previous.real)
 
     if (fetched.isData())
@@ -449,7 +449,7 @@ export class Core {
    * @returns 
    */
   async #normalize<K, D, F>(fetched: Optional<Fetched<D, F>>, settings: QuerySettings<K, D, F>) {
-    if (settings.normalizer === undefined)
+    if (settings.normalizer == null)
       return fetched
     return await settings.normalizer(fetched, { core: this, shallow: false })
   }
@@ -461,7 +461,7 @@ export class Core {
    * @returns 
    */
   async prenormalize<K, D, F>(fetched: Optional<Fetched<D, F>>, settings: QuerySettings<K, D, F>) {
-    if (settings.normalizer === undefined)
+    if (settings.normalizer == null)
       return fetched
     return await settings.normalizer(fetched, { core: this, shallow: true })
   }
@@ -493,7 +493,7 @@ export class Core {
 
     const expiration = metadata.inner.state?.real?.current.expiration
 
-    if (expiration === undefined)
+    if (expiration == null)
       return
 
     if (Date.now() > expiration) {

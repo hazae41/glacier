@@ -22,7 +22,7 @@ export function createScrollQuerySchema<K, D, F>(
 export function createScrollQuerySchema<K, D, F>(
   settings: ScrollQuerySettings<K, D, F>,
 ) {
-  if (settings.fetcher === undefined)
+  if (settings.fetcher == null)
     return new ScrollFetcherlessQuerySchema<K, D, F>(settings)
   return new ScrollFetcherfulQuerySchema<K, D, F>(settings)
 }

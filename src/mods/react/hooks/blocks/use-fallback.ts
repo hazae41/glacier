@@ -9,11 +9,11 @@ import { Fetched } from "mods/result/fetched.js"
  * @param fallback 
  */
 export function useFallback<K, D, F>(query: Query<K, D, F>, fallback?: Fetched<D, F>) {
-  if (fallback === undefined)
+  if (fallback == null)
     return
-  if (query.data !== undefined)
+  if (query.data != null)
     return
-  if (query.error !== undefined)
+  if (query.error != null)
     return
 
   if (fallback.isData())

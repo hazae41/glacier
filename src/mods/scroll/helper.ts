@@ -82,7 +82,7 @@ export namespace Scroll {
     const previousPage = Arrays.last(previousPages)
     const key = settings.scroller(previousPage)
 
-    if (key === undefined)
+    if (key == null)
       return new Err(new FetchError(`Can't scroll`))
 
     const aborted = await core.runWithTimeout(async (signal) => {
