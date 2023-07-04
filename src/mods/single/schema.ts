@@ -3,7 +3,7 @@ import { SimpleFetcherfulQuery, SimpleFetcherlessQuery, SimpleSkeletonQuery } fr
 import { Core } from "mods/core/core.js";
 import { Fetched } from "mods/result/fetched.js";
 import { NormalizerMore } from "mods/types/normalizer.js";
-import { FetcherfulQuerySettings, FetcherlessQuerySettings, QuerySettings } from "mods/types/settings.js";
+import { FetcherfulQuerySettings, FetcherlessQuerySettings, KeyedQuerySettings } from "mods/types/settings.js";
 import { Simple } from "./helper.js";
 import { SimpleFetcherfulQueryInstance, SimpleFetcherlessQueryInstance } from "./instance.js";
 
@@ -16,11 +16,11 @@ export function createQuerySchema<K, D, F>(
 ): SimpleFetcherfulQuerySchema<K, D, F>
 
 export function createQuerySchema<K, D, F>(
-  settings: QuerySettings<K, D, F>,
+  settings: KeyedQuerySettings<K, D, F>,
 ): SimpleQuerySchema<K, D, F>
 
 export function createQuerySchema<K, D, F>(
-  settings: QuerySettings<K, D, F>,
+  settings: KeyedQuerySettings<K, D, F>,
 ) {
   if (settings.fetcher == null)
     return new SimpleFetcherlessQuerySchema<K, D, F>(settings)

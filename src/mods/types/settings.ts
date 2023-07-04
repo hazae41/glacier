@@ -13,6 +13,11 @@ export interface GlobalSettings {
 }
 
 export type QuerySettings<K, D, F> =
+  | SkeletonQuerySettings<K, D, F>
+  | FetcherfulQuerySettings<K, D, F>
+  | FetcherlessQuerySettings<K, D, F>
+
+export type KeyedQuerySettings<K, D, F> =
   | FetcherfulQuerySettings<K, D, F>
   | FetcherlessQuerySettings<K, D, F>
 
@@ -20,25 +25,25 @@ export interface SkeletonQuerySettings<K, D, F> {
   /**
    * Arbitrary key, must be serializable
    */
-  readonly key?: undefined
+  readonly key?: K
 
-  readonly timeout?: undefined,
-  readonly cooldown?: undefined,
-  readonly expiration?: undefined
+  readonly timeout?: number,
+  readonly cooldown?: number,
+  readonly expiration?: number
 
-  readonly keySerializer?: undefined
+  readonly keySerializer?: SyncEncoder<K, string>,
 
-  readonly dataSerializer?: undefined
-  readonly errorSerializer?: undefined
+  readonly dataSerializer?: Bicoder<D, unknown>
+  readonly errorSerializer?: Bicoder<F, unknown>
 
-  readonly fetcher?: undefined
-  readonly normalizer?: undefined
-  readonly indexer?: undefined
+  readonly fetcher?: Fetcher<K, D, F>
+  readonly normalizer?: Normalizer<D, F>
+  readonly indexer?: Indexer<D, F>
 
-  readonly dataEqualser?: undefined
-  readonly errorEqualser?: undefined
+  readonly dataEqualser?: Equalser<D>,
+  readonly errorEqualser?: Equalser<F>
 
-  readonly storage?: undefined
+  readonly storage?: Storage
 }
 
 export interface FetcherfulQuerySettings<K, D, F> {
