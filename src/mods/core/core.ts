@@ -466,6 +466,15 @@ export class Core {
     return await settings.normalizer(fetched, { core: this, shallow: true })
   }
 
+  /**
+   * Assume cacheKey changed and reindex it
+   * @param cacheKey 
+   * @param settings 
+   */
+  async reindex<K, D, F>(cacheKey: string, settings: QuerySettings<K, D, F>) {
+    await settings.indexer?.(await this.get(cacheKey, settings), { core: this })
+  }
+
   async increment<K, D, F>(cacheKey: string, settings: QuerySettings<K, D, F>) {
     const metadata = this.#getOrCreateMetadata(cacheKey)
 
