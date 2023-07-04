@@ -8,17 +8,21 @@ import { Fetched } from "mods/result/fetched.js"
  * @param query 
  * @param fallback 
  */
-export function useFallback<K, D, F>(query: Query<K, D, F>, fallback?: Fetched<D, F>) {
-  if (fallback == null)
+export function useFallback<K, D, F>(query: Query<K, D, F>, factory?: () => Fetched<D, F>) {
+  if (factory == null)
     return
   if (query.data != null)
     return
   if (query.error != null)
     return
 
+  const fallback = factory()
+
   if (fallback.isData())
     Object.assign(query, { data: fallback })
+
   if (fallback.isFail())
     Object.assign(query, { error: fallback })
+
   Object.assign(query, { current: fallback })
 }
