@@ -272,7 +272,7 @@ export class Core {
 
       this.raw.set(cacheKey, Option.wrap(stored))
 
-      await settings.indexer?.(next)
+      await settings.indexer?.(next, { core: this })
 
       this.onState.dispatch(cacheKey, next)
 
