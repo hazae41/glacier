@@ -64,7 +64,7 @@ export class MissingFetcherError extends Error {
 
 }
 
-export interface Metadata<D, F> {
+export interface QueryMetadata<D, F> {
   cacheKey: string,
   counter: number,
   state?: State<D, F>,
@@ -79,7 +79,7 @@ export class Core {
   readonly onState = new Ortho<State<any, any>>()
   readonly onAborter = new Ortho<Optional<AbortController>>()
 
-  readonly #metadatas = new Map<string, Mutex<Metadata<any, any>>>()
+  readonly #queries = new Map<string, Mutex<QueryMetadata<any, any>>>()
 
   readonly raw = new Map<string, Option<RawState>>()
 
@@ -94,21 +94,21 @@ export class Core {
   }
 
   clean() {
-    for (const metadata of this.#metadatas.values())
+    for (const metadata of this.#queries.values())
       clearTimeout(metadata.inner.timeout)
     this.#mounted = false
   }
 
   getAborterSync(cacheKey: string): Optional<AbortController> {
-    return this.#metadatas.get(cacheKey)?.inner?.aborter
+    return this.#queries.get(cacheKey)?.inner?.aborter
   }
 
   getStateSync<D, F>(cacheKey: string): Optional<State<D, F>> {
-    return this.#metadatas.get(cacheKey)?.inner?.state
+    return this.#queries.get(cacheKey)?.inner?.state
   }
 
-  #getOrCreateMetadata<D, F>(cacheKey: string): Mutex<Metadata<D, F>> {
-    let metadata = this.#metadatas.get(cacheKey)
+  #getOrCreateMetadata<D, F>(cacheKey: string): Mutex<QueryMetadata<D, F>> {
+    let metadata = this.#queries.get(cacheKey)
 
     if (metadata != null)
       return metadata
@@ -118,7 +118,7 @@ export class Core {
 
     metadata = new Mutex({ cacheKey, counter, optimizers })
 
-    this.#metadatas.set(cacheKey, metadata)
+    this.#queries.set(cacheKey, metadata)
     return metadata
   }
 
@@ -375,7 +375,7 @@ export class Core {
    * @param optimizers 
    * @returns 
    */
-  async #reoptimize<D, F>(metadata: Metadata<D, F>, state: State<D, F>): Promise<State<D, F>> {
+  async #reoptimize<D, F>(metadata: QueryMetadata<D, F>, state: State<D, F>): Promise<State<D, F>> {
     let reoptimized: State<D, F> = new RealState(state.real)
 
     for (const optimizer of metadata.optimizers.values()) {
