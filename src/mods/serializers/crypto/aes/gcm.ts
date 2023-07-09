@@ -25,16 +25,24 @@ export class AesGcmCoder implements AsyncBicoder<string, string> {
     return new AesGcmCoder(key)
   }
 
+  async encrypt(plain: Uint8Array, iv: Uint8Array) {
+    return new Uint8Array(await crypto.subtle.encrypt({ name: "AES-GCM", iv }, this.key, plain))
+  }
+
   async stringify(input: string) {
     const iv = Bytes.random(12)
     const ivtext = Bytes.toBase64(iv)
 
     const plain = Bytes.fromUtf8(input)
 
-    const cipher = await crypto.subtle.encrypt({ name: "AES-GCM", iv }, this.key, plain)
-    const ciphertext = Bytes.toBase64(new Uint8Array(cipher))
+    const cipher = await this.encrypt(plain, iv)
+    const ciphertext = Bytes.toBase64(cipher)
 
     return ivtext + "." + ciphertext
+  }
+
+  async decrypt(cipher: Uint8Array, iv: Uint8Array) {
+    return new Uint8Array(await crypto.subtle.decrypt({ name: "AES-GCM", iv }, this.key, cipher))
   }
 
   async parse(output: string) {
@@ -43,8 +51,8 @@ export class AesGcmCoder implements AsyncBicoder<string, string> {
     const iv = Bytes.fromBase64(ivtext)
     const cipher = Bytes.fromBase64(ciphertext)
 
-    const plain = await crypto.subtle.decrypt({ name: "AES-GCM", iv }, this.key, cipher)
-    const input = Bytes.toUtf8(new Uint8Array(plain))
+    const plain = await this.decrypt(cipher, iv)
+    const input = Bytes.toUtf8(plain)
 
     return input
   }

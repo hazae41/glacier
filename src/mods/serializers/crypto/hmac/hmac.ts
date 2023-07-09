@@ -25,10 +25,12 @@ export class HmacEncoder implements AsyncEncoder<string, string> {
     return new HmacEncoder(key)
   }
 
-  async stringify(value: string) {
-    const hash = await crypto.subtle.sign({ name: "HMAC" }, this.key, Bytes.fromUtf8(value))
+  async hash(preimage: Uint8Array) {
+    return new Uint8Array(await crypto.subtle.sign({ name: "HMAC" }, this.key, preimage))
+  }
 
-    return Bytes.toBase64(new Uint8Array(hash))
+  async stringify(value: string) {
+    return Bytes.toBase64(await this.hash(Bytes.fromUtf8(value)))
   }
 
 }
