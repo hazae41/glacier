@@ -261,26 +261,26 @@ export class Core {
 
     return await metadata.lock(async () => {
       const previous = await this.#get(cacheKey, settings)
-      const next = await setter(previous)
+      const current = await setter(previous)
 
-      if (next === previous)
+      if (current === previous)
         return previous
 
-      const stored = await this.store(next, settings)
+      const stored = await this.store(current, settings)
 
-      metadata.inner.state = next
+      metadata.inner.state = current
 
       this.raw.set(cacheKey, Option.wrap(stored))
 
-      await settings.indexer?.(next, { core: this })
+      await settings.indexer?.({ current, previous }, { core: this })
 
-      this.onState.dispatch(cacheKey, next)
+      this.onState.dispatch(cacheKey, current)
 
       if (!settings.storage)
-        return next
+        return current
 
       await settings.storage.set?.(cacheKey, stored)
-      return next
+      return current
     })
   }
 
@@ -472,7 +472,8 @@ export class Core {
    * @param settings 
    */
   async reindex<K, D, F>(cacheKey: string, settings: QuerySettings<K, D, F>) {
-    await settings.indexer?.(await this.get(cacheKey, settings), { core: this })
+    const current = await this.get(cacheKey, settings)
+    await settings.indexer?.({ current }, { core: this })
   }
 
   async increment<K, D, F>(cacheKey: string, settings: QuerySettings<K, D, F>) {
