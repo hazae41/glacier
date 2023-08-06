@@ -271,15 +271,12 @@ export class Core {
       metadata.inner.state = current
 
       this.raw.set(cacheKey, Option.wrap(stored))
-
-      await settings.indexer?.({ current, previous }, { core: this })
-
       this.onState.dispatch(cacheKey, current)
 
-      if (!settings.storage)
-        return current
+      if (settings.storage)
+        await settings.storage.set?.(cacheKey, stored)
 
-      await settings.storage.set?.(cacheKey, stored)
+      await settings.indexer?.({ current, previous }, { core: this })
       return current
     })
   }
