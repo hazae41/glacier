@@ -79,7 +79,7 @@ export class Data<T> extends Ok<T> implements DataInit<T>, Times {
    * Transform Result<Promise<T>, E> into Promise<Result<T, E>>
    * @returns `await this.inner` if `Ok`, `this` if `Err`
    */
-  async await(): Promise<Data<Awaited<T>>> {
+  async await<T>(this: Data<PromiseLike<T>>): Promise<Data<Awaited<T>>> {
     return new Data(await this.inner, this)
   }
 
@@ -95,7 +95,7 @@ export class Data<T> extends Ok<T> implements DataInit<T>, Times {
    * Transform Result<Promise<T>, Promise<E>> into Promise<Result<T, E>>
    * @returns `await this.inner`
    */
-  async awaitAll(): Promise<Data<Awaited<T>>> {
+  async awaitAll<T>(this: Data<PromiseLike<T>>): Promise<Data<Awaited<T>>> {
     return await this.await()
   }
 

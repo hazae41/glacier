@@ -87,7 +87,7 @@ export class Fail<T> extends Err<T> implements FailInit<T>, Times {
    * Transform Result<T, Promise<E>> into Promise<Result<T, E>>
    * @returns `await this.inner` if `Err`, `this` if `Ok`
    */
-  async awaitErr(): Promise<Fail<Awaited<T>>> {
+  async awaitErr<T>(this: Fail<PromiseLike<T>>): Promise<Fail<Awaited<T>>> {
     return new Fail(await this.inner, this)
   }
 
@@ -95,7 +95,7 @@ export class Fail<T> extends Err<T> implements FailInit<T>, Times {
    * Transform Result<Promise<T>, Promise<E>> into Promise<Result<T, E>>
    * @returns `await this.inner`
    */
-  async awaitAll(): Promise<Fail<Awaited<T>>> {
+  async awaitAll<T>(this: Fail<PromiseLike<T>>): Promise<Fail<Awaited<T>>> {
     return await this.awaitErr()
   }
 
