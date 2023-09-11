@@ -41,7 +41,7 @@ export class Fail<T> extends Err<T> implements FailInit<T>, Times {
     this.expiration = expiration
   }
 
-  static from<T>(init: FailInit<T>) {
+  static from<T>(init: FailInit<T>): Fail<T> {
     const { error, time, cooldown, expiration } = init
 
     return new Fail(error, { time, cooldown, expiration })
@@ -63,7 +63,7 @@ export class Fail<T> extends Err<T> implements FailInit<T>, Times {
     return new Fail(inner, this)
   }
 
-  setTimes(times: TimesInit = {}) {
+  setTimes(times: TimesInit = {}): Fail<T> {
     return new Fail(this.inner, times)
   }
 

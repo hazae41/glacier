@@ -41,7 +41,7 @@ export class Data<T> extends Ok<T> implements DataInit<T>, Times {
     this.expiration = expiration
   }
 
-  static from<T>(init: DataInit<T>) {
+  static from<T>(init: DataInit<T>): Data<T> {
     const { data, time, cooldown, expiration } = init
 
     return new Data(data, { time, cooldown, expiration })
@@ -63,15 +63,15 @@ export class Data<T> extends Ok<T> implements DataInit<T>, Times {
     return this
   }
 
-  setTimes(times: TimesInit = {}) {
+  setTimes(times: TimesInit = {}): Data<T> {
     return new Data(this.inner, times)
   }
 
-  async map<U>(mapper: (data: T) => Promiseable<U>) {
+  async map<U>(mapper: (data: T) => Promiseable<U>): Promise<Data<U>> {
     return new Data<U>(await mapper(this.get()), this)
   }
 
-  mapSync<U>(mapper: (data: T) => U) {
+  mapSync<U>(mapper: (data: T) => U): Data<U> {
     return new Data<U>(mapper(this.get()), this)
   }
 
