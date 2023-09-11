@@ -1,3 +1,4 @@
+import { Base64 } from "@hazae41/base64"
 import { Bytes } from "@hazae41/bytes"
 import { AsyncEncoder } from "mods/serializers/serializer.js"
 
@@ -30,7 +31,7 @@ export class HmacEncoder implements AsyncEncoder<string, string> {
   }
 
   async stringify(value: string) {
-    return Bytes.toBase64(await this.hash(Bytes.fromUtf8(value)))
+    return Base64.get().tryEncode(await this.hash(Bytes.fromUtf8(value))).unwrap()
   }
 
 }

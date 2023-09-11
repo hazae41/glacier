@@ -1,3 +1,4 @@
+import { Base64 } from "@hazae41/base64";
 import { Bytes } from "@hazae41/bytes";
 import { AsyncBicoder } from "mods/serializers/serializer.js";
 
@@ -31,12 +32,12 @@ export class AesGcmCoder implements AsyncBicoder<string, string> {
 
   async stringify(input: string) {
     const iv = Bytes.random(12)
-    const ivtext = Bytes.toBase64(iv)
+    const ivtext = Base64.get().tryEncode(iv).unwrap()
 
     const plain = Bytes.fromUtf8(input)
 
     const cipher = await this.encrypt(plain, iv)
-    const ciphertext = Bytes.toBase64(cipher)
+    const ciphertext = Base64.get().tryEncode(cipher).unwrap()
 
     return ivtext + "." + ciphertext
   }
@@ -48,8 +49,8 @@ export class AesGcmCoder implements AsyncBicoder<string, string> {
   async parse(output: string) {
     const [ivtext, ciphertext] = output.split(".")
 
-    const iv = Bytes.fromBase64(ivtext)
-    const cipher = Bytes.fromBase64(ciphertext)
+    const iv = Base64.get().tryDecode(ivtext).unwrap().copyAndDispose()
+    const cipher = Base64.get().tryDecode(ciphertext).unwrap().copyAndDispose()
 
     const plain = await this.decrypt(cipher, iv)
     const input = Bytes.toUtf8(plain)
