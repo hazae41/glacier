@@ -22,7 +22,7 @@
     "prepare": "npm run build"
   },
   "dependencies": {
-    "@hazae41/base64": "^1.0.3",
+    "@hazae41/base64": "^1.0.6",
     "@hazae41/bytes": "^1.2.2",
     "@hazae41/future": "^1.0.3",
     "@hazae41/mutex": "^1.2.10",

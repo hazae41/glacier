@@ -32,12 +32,12 @@ export class AesGcmCoder implements AsyncBicoder<string, string> {
 
   async stringify(input: string) {
     const iv = Bytes.random(12)
-    const ivtext = Base64.get().tryEncode(iv).unwrap()
+    const ivtext = Base64.get().tryEncodePadded(iv).unwrap()
 
     const plain = Bytes.fromUtf8(input)
 
     const cipher = await this.encrypt(plain, iv)
-    const ciphertext = Base64.get().tryEncode(cipher).unwrap()
+    const ciphertext = Base64.get().tryEncodePadded(cipher).unwrap()
 
     return ivtext + "." + ciphertext
   }
@@ -49,8 +49,8 @@ export class AesGcmCoder implements AsyncBicoder<string, string> {
   async parse(output: string) {
     const [ivtext, ciphertext] = output.split(".")
 
-    const iv = Base64.get().tryDecode(ivtext).unwrap().copyAndDispose()
-    const cipher = Base64.get().tryDecode(ciphertext).unwrap().copyAndDispose()
+    const iv = Base64.get().tryDecodePadded(ivtext).unwrap().copyAndDispose()
+    const cipher = Base64.get().tryDecodePadded(ciphertext).unwrap().copyAndDispose()
 
     const plain = await this.decrypt(cipher, iv)
     const input = Bytes.toUtf8(plain)

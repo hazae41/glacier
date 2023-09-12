@@ -31,7 +31,7 @@ export class HmacEncoder implements AsyncEncoder<string, string> {
   }
 
   async stringify(value: string) {
-    return Base64.get().tryEncode(await this.hash(Bytes.fromUtf8(value))).unwrap()
+    return Base64.get().tryEncodePadded(await this.hash(Bytes.fromUtf8(value))).unwrap()
   }
 
 }
