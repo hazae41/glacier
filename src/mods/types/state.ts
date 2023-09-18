@@ -1,23 +1,23 @@
 import { Data, DataInit } from "mods/result/data.js"
 import { Fail, FailInit } from "mods/result/fail.js"
 
-export type RawState =
-  | RawState1
-  | RawState2
+export type RawState<D = unknown, E = unknown> =
+  | RawState1<D, E>
+  | RawState2<D, E>
 
-export interface RawState1 {
+export interface RawState1<D = unknown, F = unknown> {
   version?: undefined,
-  data?: unknown
-  error?: unknown
+  data?: D
+  error?: F
   time: number,
   cooldown?: number
   expiration?: number
 }
 
-export interface RawState2 {
+export interface RawState2<D = unknown, F = unknown> {
   version: 2,
-  data?: DataInit<unknown>
-  error?: FailInit<unknown>
+  data?: DataInit<D>
+  error?: FailInit<F>
   time: number,
   cooldown?: number
   expiration?: number
