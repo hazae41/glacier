@@ -1,5 +1,5 @@
 <div align="center">
-<img width="500" src="https://user-images.githubusercontent.com/4405263/269623949-10c3fb8c-c492-4284-b39a-e51132fb27c4.png" />
+<img src="https://user-images.githubusercontent.com/4405263/269623949-10c3fb8c-c492-4284-b39a-e51132fb27c4.png" />
 </div>
 
 ```bash
