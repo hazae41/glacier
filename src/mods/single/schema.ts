@@ -114,8 +114,6 @@ export class SimpleFetcherlessQuerySchema<K, D, F>  {
 }
 
 export class SimpleFetcherfulQuerySchema<K, D, F> {
-  // declare __query: SimpleFetcherfulQuery<K, D, F>
-
   readonly cacheKey: string
 
   constructor(
