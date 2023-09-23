@@ -2,8 +2,7 @@ import { Optional } from "@hazae41/option";
 import { Err, Ok, Result } from "@hazae41/result";
 import { useRenderRef } from "libs/react/ref.js";
 import { Time } from "libs/time/time.js";
-import { CooldownError, MissingFetcherError, MissingKeyError } from "mods/core/core.js";
-import { useCore } from "mods/react/contexts/core.js";
+import { CooldownError, MissingFetcherError, MissingKeyError, core } from "mods/core/core.js";
 import { FetcherfulQuery, FetcherlessQuery, SkeletonQuery } from "mods/react/types/query.js";
 import { Simple } from "mods/single/helper.js";
 import { SimpleQuerySchema } from "mods/single/schema.js";
@@ -68,8 +67,6 @@ export interface SimpleFetcherlessQuery<K, D, F> extends FetcherlessQuery<K, D, 
 }
 
 export function useSimpleSkeletonQuery<K, D, F>(): SimpleSkeletonQuery<K, D, F> {
-  const core = useCore().unwrap()
-
   useRenderRef(undefined)
 
   const cacheKey = useMemo(() => {
@@ -83,47 +80,47 @@ export function useSimpleSkeletonQuery<K, D, F>(): SimpleSkeletonQuery<K, D, F> 
 
   useMemo(() => {
     // NOOP
-  }, [core, cacheKey])
+  }, [cacheKey])
 
   useCallback(() => {
     // NOOP
-  }, [core, cacheKey])
+  }, [cacheKey])
 
   useCallback(() => {
     // NOOP
-  }, [core, cacheKey])
+  }, [cacheKey])
 
   useEffect(() => {
     // NOOP
-  }, [core, cacheKey])
+  }, [cacheKey])
 
   useEffect(() => {
     // NOOP
-  }, [core, cacheKey])
+  }, [cacheKey])
 
   const mutate = useCallback(async (mutator: Mutator<D, F>) => {
     return new Err(new MissingKeyError())
-  }, [core, cacheKey])
+  }, [cacheKey])
 
   const clear = useCallback(async () => {
     return new Err(new MissingKeyError())
-  }, [core, cacheKey])
+  }, [cacheKey])
 
   const fetch = useCallback(async (aborter = new AbortController()) => {
     return new Err(new MissingKeyError())
-  }, [core, cacheKey])
+  }, [cacheKey])
 
   const refetch = useCallback(async (aborter = new AbortController()) => {
     return new Err(new MissingKeyError())
-  }, [core, cacheKey])
+  }, [cacheKey])
 
   const update = useCallback(async (updater: Updater<K, D, F>, aborter = new AbortController()) => {
     return new Err(new MissingKeyError())
-  }, [core, cacheKey])
+  }, [cacheKey])
 
   const suspend = useCallback(async (aborter = new AbortController()) => {
     return new Err(new MissingKeyError())
-  }, [core, cacheKey])
+  }, [cacheKey])
 
   return { mutate, clear, fetch, refetch, update, suspend }
 }
@@ -131,8 +128,6 @@ export function useSimpleSkeletonQuery<K, D, F>(): SimpleSkeletonQuery<K, D, F> 
 export function useSimpleFetcherlessQuery<K, D, F>(
   settings: FetcherlessQuerySettings<K, D, F>,
 ): SimpleFetcherlessQuery<K, D, F> {
-  const core = useCore().unwrap()
-
   const settingsRef = useRenderRef(settings)
 
   const cacheKey = useMemo(() => {
@@ -147,24 +142,24 @@ export function useSimpleFetcherlessQuery<K, D, F>(
   useMemo(() => {
     stateRef.current = core.getStateSync(cacheKey)
     aborterRef.current = core.getAborterSync(cacheKey)
-  }, [core, cacheKey])
+  }, [cacheKey])
 
   const setState = useCallback((state: State<D, F>) => {
     stateRef.current = state
     setCounter(c => c + 1)
-  }, [core, cacheKey])
+  }, [cacheKey])
 
   const setAborter = useCallback((aborter: Optional<AbortController>) => {
     aborterRef.current = aborter
     setCounter(c => c + 1)
-  }, [core, cacheKey])
+  }, [cacheKey])
 
   useEffect(() => {
     if (stateRef.current != null)
       return
 
     core.get(cacheKey, settingsRef.current).then(setState)
-  }, [core, cacheKey])
+  }, [cacheKey])
 
   useEffect(() => {
     if (cacheKey == null)
@@ -181,31 +176,31 @@ export function useSimpleFetcherlessQuery<K, D, F>(
       offState()
       offAborter()
     }
-  }, [core, cacheKey])
+  }, [cacheKey])
 
   const mutate = useCallback(async (mutator: Mutator<D, F>) => {
     return new Ok(await core.mutate(cacheKey, mutator, settingsRef.current))
-  }, [core, cacheKey])
+  }, [cacheKey])
 
   const clear = useCallback(async () => {
     return new Ok(await core.delete(cacheKey, settingsRef.current))
-  }, [core, cacheKey])
+  }, [cacheKey])
 
   const fetch = useCallback(async (aborter = new AbortController()) => {
     return new Ok(new Err(new MissingFetcherError()))
-  }, [core, cacheKey])
+  }, [cacheKey])
 
   const refetch = useCallback(async (aborter = new AbortController()) => {
     return new Ok(new Err(new MissingFetcherError()))
-  }, [core, cacheKey])
+  }, [cacheKey])
 
   const update = useCallback(async (updater: Updater<K, D, F>, aborter = new AbortController()) => {
     return new Ok(new Err(new MissingFetcherError()))
-  }, [core, cacheKey])
+  }, [cacheKey])
 
   const suspend = useCallback(async (aborter = new AbortController()) => {
     return new Ok(new Err(new MissingFetcherError()))
-  }, [core, cacheKey])
+  }, [cacheKey])
 
   const state = stateRef.current
   const aborter = aborterRef.current
@@ -245,8 +240,6 @@ export function useSimpleFetcherlessQuery<K, D, F>(
 export function useSimpleFetcherfulQuery<K, D, F>(
   settings: FetcherfulQuerySettings<K, D, F>,
 ): SimpleFetcherfulQuery<K, D, F> {
-  const core = useCore().unwrap()
-
   const settingsRef = useRenderRef(settings)
 
   const cacheKey = useMemo(() => {
@@ -261,24 +254,24 @@ export function useSimpleFetcherfulQuery<K, D, F>(
   useMemo(() => {
     stateRef.current = core.getStateSync(cacheKey)
     aborterRef.current = core.getAborterSync(cacheKey)
-  }, [core, cacheKey])
+  }, [cacheKey])
 
   const setState = useCallback((state: State<D, F>) => {
     stateRef.current = state
     setCounter(c => c + 1)
-  }, [core, cacheKey])
+  }, [cacheKey])
 
   const setAborter = useCallback((aborter: Optional<AbortController>) => {
     aborterRef.current = aborter
     setCounter(c => c + 1)
-  }, [core, cacheKey])
+  }, [cacheKey])
 
   useEffect(() => {
     if (stateRef.current != null)
       return
 
     core.get(cacheKey, settingsRef.current).then(setState)
-  }, [core, cacheKey])
+  }, [cacheKey])
 
   useEffect(() => {
     if (cacheKey == null)
@@ -295,15 +288,15 @@ export function useSimpleFetcherfulQuery<K, D, F>(
       offState()
       offAborter()
     }
-  }, [core, cacheKey])
+  }, [cacheKey])
 
   const mutate = useCallback(async (mutator: Mutator<D, F>) => {
     return new Ok(await core.mutate(cacheKey, mutator, settingsRef.current))
-  }, [core, cacheKey])
+  }, [cacheKey])
 
   const clear = useCallback(async () => {
     return new Ok(await core.delete(cacheKey, settingsRef.current))
-  }, [core, cacheKey])
+  }, [cacheKey])
 
   const fetch = useCallback(async (aborter = new AbortController()) => {
     const settings = settingsRef.current
@@ -312,33 +305,33 @@ export function useSimpleFetcherfulQuery<K, D, F>(
       return new Ok(new Ok(new Err(new CooldownError())))
 
     const result = await core.fetchOrJoin(cacheKey, aborter, async () =>
-      await Simple.fetch(core, cacheKey, aborter, settings))
+      await Simple.fetch(cacheKey, aborter, settings))
 
     return new Ok(new Ok(new Ok(result)))
-  }, [core, cacheKey])
+  }, [cacheKey])
 
   const refetch = useCallback(async (aborter = new AbortController()) => {
     const settings = settingsRef.current
 
     const result = await core.fetchOrReplace(cacheKey, aborter, async () =>
-      await Simple.fetch(core, cacheKey, aborter, settings))
+      await Simple.fetch(cacheKey, aborter, settings))
 
     return new Ok(new Ok(result))
-  }, [core, cacheKey])
+  }, [cacheKey])
 
   const update = useCallback(async (updater: Updater<K, D, F>, aborter = new AbortController()) => {
     const settings = settingsRef.current
 
-    const result = await Simple.update(core, cacheKey, updater, aborter, settings)
+    const result = await Simple.update(cacheKey, updater, aborter, settings)
 
     return new Ok(new Ok(result))
-  }, [core, cacheKey])
+  }, [cacheKey])
 
   const suspend = useCallback(async (aborter = new AbortController()) => {
     const settings = settingsRef.current
 
     const result = await core.fetchOrJoin(cacheKey, aborter, async () =>
-      await Simple.fetch(core, cacheKey, aborter, settings))
+      await Simple.fetch(cacheKey, aborter, settings))
 
     return new Ok(new Ok(result))
   }, [core, cacheKey])

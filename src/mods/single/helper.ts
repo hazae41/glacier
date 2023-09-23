@@ -1,6 +1,6 @@
 import { Some } from "@hazae41/option";
 import { Ok, Result } from "@hazae41/result";
-import { Core } from "mods/core/core.js";
+import { core } from "mods/core/core.js";
 import { DEFAULT_SERIALIZER } from "mods/defaults.js";
 import { Fetched } from "mods/result/fetched.js";
 import { TimesInit } from "mods/result/times.js";
@@ -21,7 +21,6 @@ export namespace Simple {
   }
 
   export async function fetch<K, D, F>(
-    core: Core,
     cacheKey: string,
     aborter: AbortController,
     settings: FetcherfulQuerySettings<K, D, F>
@@ -50,7 +49,6 @@ export namespace Simple {
    * @returns 
    */
   export async function update<K, D, F>(
-    core: Core,
     cacheKey: string,
     updater: Updater<K, D, F>,
     aborter: AbortController,

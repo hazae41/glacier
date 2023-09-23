@@ -1,12 +1,12 @@
 {
   "type": "module",
-  "name": "@hazae41/xswr",
+  "name": "@hazae41/glacier",
   "version": "2.0.0-94",
   "author": "hazae41",
   "license": "MIT",
   "description": "Yet another React data (re)fetching library",
-  "homepage": "https://github.com/hazae41/xswr",
-  "repository": "github:hazae41/xswr",
+  "homepage": "https://github.com/hazae41/glacier",
+  "repository": "github:hazae41/glacier",
   "types": "./dist/types/index.d.ts",
   "module": "./dist/esm/index.mjs",
   "main": "./dist/cjs/index.cjs",
@@ -52,6 +52,7 @@
   },
   "keywords": [
     "xswr",
+    "glacier",
     "react",
     "esmodules",
     "fetch",

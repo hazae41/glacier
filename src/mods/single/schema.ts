@@ -1,6 +1,5 @@
 import { Optional, Some } from "@hazae41/option";
 import { SimpleFetcherfulQuery, SimpleFetcherlessQuery, SimpleSkeletonQuery } from "index.js";
-import { Core } from "mods/core/core.js";
 import { Fetched } from "mods/result/fetched.js";
 import { NormalizerMore } from "mods/types/normalizer.js";
 import { FetcherfulQuerySettings, FetcherlessQuerySettings, KeyedQuerySettings } from "mods/types/settings.js";
@@ -77,17 +76,17 @@ export class SimpleFetcherlessQuerySchema<K, D, F>  {
     this.cacheKey = Simple.getCacheKey(settings.key, settings)
   }
 
-  async make(core: Core) {
-    return await SimpleFetcherlessQueryInstance.make(core, this.cacheKey, this.settings)
+  async make() {
+    return await SimpleFetcherlessQueryInstance.make(this.cacheKey, this.settings)
   }
 
   async normalize(fetched: Optional<Fetched<D, F>>, more: NormalizerMore) {
-    const { core, shallow } = more
+    const { shallow } = more
 
     if (shallow)
       return
 
-    const instance = await this.make(core)
+    const instance = await this.make()
     await instance.mutate(() => new Some(fetched))
   }
 
@@ -104,17 +103,17 @@ export class SimpleFetcherfulQuerySchema<K, D, F> {
     this.cacheKey = Simple.getCacheKey(settings.key, settings)
   }
 
-  async make(core: Core) {
-    return await SimpleFetcherfulQueryInstance.make(core, this.cacheKey, this.settings)
+  async make() {
+    return await SimpleFetcherfulQueryInstance.make(this.cacheKey, this.settings)
   }
 
   async normalize(fetched: Optional<Fetched<D, F>>, more: NormalizerMore) {
-    const { core, shallow } = more
+    const { shallow } = more
 
     if (shallow)
       return
 
-    const instance = await this.make(core)
+    const instance = await this.make()
     await instance.mutate(() => new Some(fetched))
   }
 

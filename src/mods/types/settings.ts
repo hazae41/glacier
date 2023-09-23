@@ -6,12 +6,6 @@ import { Fetcher } from "./fetcher.js"
 import { Indexer } from "./indexer.js"
 import { Scroller } from "./scroller.js"
 
-export interface GlobalSettings {
-  readonly timeout?: number,
-  readonly cooldown?: number,
-  readonly expiration?: number
-}
-
 export type QuerySettings<K, D, F> =
   | SkeletonQuerySettings<K, D, F>
   | FetcherfulQuerySettings<K, D, F>

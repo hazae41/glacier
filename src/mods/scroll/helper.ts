@@ -1,7 +1,7 @@
 import { Some } from "@hazae41/option";
 import { Err, Ok, Result } from "@hazae41/result";
 import { Arrays } from "libs/arrays/arrays.js";
-import { Core } from "mods/core/core.js";
+import { core } from "mods/core/core.js";
 import { DEFAULT_EQUALS, DEFAULT_SERIALIZER } from "mods/defaults.js";
 import { Fetched } from "mods/result/fetched.js";
 import { TimesInit } from "mods/result/times.js";
@@ -31,7 +31,6 @@ export namespace Scroll {
    * @returns 
    */
   export async function first<K, D, F>(
-    core: Core,
     cacheKey: string,
     aborter: AbortController,
     settings: ScrollFetcherfulQuerySettings<K, D, F>
@@ -72,7 +71,6 @@ export namespace Scroll {
    * @returns 
    */
   export async function scroll<K, D, F>(
-    core: Core,
     cacheKey: string,
     aborter: AbortController,
     settings: ScrollFetcherfulQuerySettings<K, D, F>

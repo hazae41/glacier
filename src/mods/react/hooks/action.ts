@@ -3,7 +3,6 @@ import { useRenderRef } from "libs/react/ref.js";
 import { Simple } from "mods/single/helper.js";
 import { QuerySettings } from "mods/types/settings.js";
 import { DependencyList, useCallback, useMemo } from "react";
-import { useCore } from "../contexts/core.js";
 
 export type Action<K, D, F, P> =
   (key: K, params: P) => Result<D, F>
@@ -25,8 +24,6 @@ export function useAnonymousAction<K, D, F, P extends []>(
   settings: QuerySettings<K, D, F>,
   deps: DependencyList
 ) {
-  const core = useCore().unwrap()
-
   const settingsRef = useRenderRef(settings)
 
   const cacheKey = useMemo(() => {

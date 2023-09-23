@@ -11,7 +11,7 @@ import { Fetched } from "mods/result/fetched.js"
 import { Bicoder, SyncIdentity } from "mods/serializers/serializer.js"
 import { FetchError } from "mods/types/fetcher.js"
 import { Mutator, Setter } from "mods/types/mutator.js"
-import { GlobalSettings, QuerySettings } from "mods/types/settings.js"
+import { QuerySettings } from "mods/types/settings.js"
 import { DataState, FailState, FakeState, RawState, RealState, State } from "mods/types/state.js"
 
 export class AsyncStorageError extends Error {
@@ -85,9 +85,7 @@ export class Core {
 
   #mounted = true
 
-  constructor(
-    readonly settings: GlobalSettings
-  ) {
+  constructor() {
     new FinalizationRegistry(() => {
       this.clean()
     }).register(this, undefined)
@@ -276,7 +274,7 @@ export class Core {
       if (settings.storage)
         await settings.storage.set?.(cacheKey, stored)
 
-      await settings.indexer?.({ current, previous }, { core: this })
+      await settings.indexer?.({ current, previous })
       return current
     })
   }
@@ -448,7 +446,7 @@ export class Core {
   async #normalize<K, D, F>(fetched: Optional<Fetched<D, F>>, settings: QuerySettings<K, D, F>) {
     if (settings.normalizer == null)
       return fetched
-    return await settings.normalizer(fetched, { core: this, shallow: false })
+    return await settings.normalizer(fetched, { shallow: false })
   }
 
   /**
@@ -460,7 +458,7 @@ export class Core {
   async prenormalize<K, D, F>(fetched: Optional<Fetched<D, F>>, settings: QuerySettings<K, D, F>) {
     if (settings.normalizer == null)
       return fetched
-    return await settings.normalizer(fetched, { core: this, shallow: true })
+    return await settings.normalizer(fetched, { shallow: true })
   }
 
   /**
@@ -470,7 +468,7 @@ export class Core {
    */
   async reindex<K, D, F>(cacheKey: string, settings: QuerySettings<K, D, F>) {
     const current = await this.get(cacheKey, settings)
-    await settings.indexer?.({ current }, { core: this })
+    await settings.indexer?.({ current })
   }
 
   async increment<K, D, F>(cacheKey: string, settings: QuerySettings<K, D, F>) {
@@ -512,3 +510,5 @@ export class Core {
     metadata.inner.timeout = setTimeout(eraseAfterTimeout, delay)
   }
 }
+
+export const core = new Core()

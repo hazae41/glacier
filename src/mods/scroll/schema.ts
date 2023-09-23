@@ -1,6 +1,5 @@
 import { Optional, Some } from "@hazae41/option";
 import { ScrollFetcherfulQuery, ScrollFetcherlessQuery, ScrollSkeletonQuery } from "index.js";
-import { Core } from "mods/core/core.js";
 import { Fetched } from "mods/result/fetched.js";
 import { NormalizerMore } from "mods/types/normalizer.js";
 import { ScrollFetcherfulQuerySettings, ScrollFetcherlessQuerySettings, ScrollQuerySettings } from "mods/types/settings.js";
@@ -76,17 +75,17 @@ export class ScrollFetcherfulQuerySchema<K, D, F> {
     this.cacheKey = Scroll.getCacheKey(settings.key, settings)
   }
 
-  async make(core: Core) {
-    return await ScrollFetcherfulQueryInstance.make(core, this.cacheKey, this.settings)
+  async make() {
+    return await ScrollFetcherfulQueryInstance.make(this.cacheKey, this.settings)
   }
 
   async normalize(fetched: Optional<Fetched<D[], F>>, more: NormalizerMore) {
-    const { core, shallow } = more
+    const { shallow } = more
 
     if (shallow)
       return
 
-    const instance = await this.make(core)
+    const instance = await this.make()
     await instance.mutate(() => new Some(fetched))
   }
 
@@ -101,17 +100,17 @@ export class ScrollFetcherlessQuerySchema<K, D, F> {
     this.cacheKey = Scroll.getCacheKey(settings.key, settings)
   }
 
-  async make(core: Core) {
-    return await ScrollFetcherlessQueryInstance.make(core, this.cacheKey, this.settings)
+  async make() {
+    return await ScrollFetcherlessQueryInstance.make(this.cacheKey, this.settings)
   }
 
   async normalize(fetched: Optional<Fetched<D[], F>>, more: NormalizerMore) {
-    const { core, shallow } = more
+    const { shallow } = more
 
     if (shallow)
       return
 
-    const instance = await this.make(core)
+    const instance = await this.make()
     await instance.mutate(() => new Some(fetched))
   }
 
