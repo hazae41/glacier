@@ -167,7 +167,7 @@ export class IDBStorage implements Storage {
     })
   }
 
-  async set(cacheKey: string, state: Optional<RawState>) {
+  async #set2(cacheKey: string, state: Optional<RawState>) {
     if (state == null)
       return await this.delete(cacheKey)
 
@@ -180,6 +180,18 @@ export class IDBStorage implements Storage {
     return await this.#transact(await this.#database, async store => {
       return await this.#set(store, storageKey, storageValue)
     }, "readwrite")
+  }
+
+  #sets = Promise.resolve()
+
+  /**
+   * Background queued set
+   * @param cacheKey 
+   * @param state 
+   * @returns 
+   */
+  set(cacheKey: string, state: Optional<RawState>) {
+    this.#sets = this.#sets.then(() => this.#set2(cacheKey, state)).catch(console.warn)
   }
 
   #delete(store: IDBObjectStore, storageKey: string) {
