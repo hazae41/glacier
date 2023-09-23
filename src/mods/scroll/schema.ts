@@ -1,10 +1,12 @@
-import { Optional, Some } from "@hazae41/option";
-import { ScrollFetcherfulQuery, ScrollFetcherlessQuery, ScrollSkeletonQuery } from "index.js";
+import { Option, Optional, Some } from "@hazae41/option";
+import { Err, Ok, Result } from "@hazae41/result";
+import { CooldownError, FetchError, MissingFetcherError, Mutator, ScrollFetcherfulQuery, ScrollFetcherlessQuery, ScrollSkeletonQuery, State, core } from "index.js";
+import { Arrays } from "libs/arrays/arrays.js";
+import { Time } from "libs/time/time.js";
 import { Fetched } from "mods/result/fetched.js";
 import { NormalizerMore } from "mods/types/normalizer.js";
 import { ScrollFetcherfulQuerySettings, ScrollFetcherlessQuerySettings, ScrollQuerySettings } from "mods/types/settings.js";
 import { Scroll } from "./helper.js";
-import { ScrollFetcherfulQueryInstance, ScrollFetcherlessQueryInstance } from "./instance.js";
 
 export function createScrollQuerySchema<K, D, F>(
   settings: ScrollFetcherfulQuerySettings<K, D, F>,
@@ -75,18 +77,64 @@ export class ScrollFetcherfulQuerySchema<K, D, F> {
     this.cacheKey = Scroll.getCacheKey(settings.key, settings)
   }
 
-  async make() {
-    return await ScrollFetcherfulQueryInstance.make(this.cacheKey, this.settings)
+  async normalize(fetched: Optional<Fetched<D[], F>>, more: NormalizerMore) {
+    if (more.shallow)
+      return
+    await this.mutate(() => new Some(fetched))
   }
 
-  async normalize(fetched: Optional<Fetched<D[], F>>, more: NormalizerMore) {
-    const { shallow } = more
+  get state() {
+    return core.get(this.cacheKey, this.settings)
+  }
 
-    if (shallow)
-      return
+  get aborter(): Optional<AbortController> {
+    return core.getAborterSync(this.cacheKey)
+  }
 
-    const instance = await this.make()
-    await instance.mutate(() => new Some(fetched))
+  async peek() {
+    const { settings } = this
+    const state = await this.state
+
+    return Option.mapSync(state.real?.data?.inner, pages => settings.scroller(Arrays.last(pages)))
+  }
+
+  async mutate(mutator: Mutator<D[], F>) {
+    return await core.mutate(this.cacheKey, mutator, this.settings)
+  }
+
+  async delete() {
+    return await core.delete(this.cacheKey, this.settings)
+  }
+
+  async fetch(aborter = new AbortController()): Promise<Result<Result<State<D[], F>, FetchError>, CooldownError>> {
+    const { cacheKey, settings } = this
+    const state = await this.state
+
+    if (Time.isAfterNow(state.real?.current.cooldown))
+      return new Err(new CooldownError())
+
+    const result = await core.fetchOrJoin(cacheKey, aborter, async () =>
+      await Scroll.first(cacheKey, aborter, settings))
+
+    return new Ok(result)
+  }
+
+  async refetch(aborter = new AbortController()): Promise<Result<Result<State<D[], F>, FetchError>, never>> {
+    const { cacheKey, settings } = this
+
+    const result = await core.fetchOrReplace(cacheKey, aborter, async () =>
+      await Scroll.first(cacheKey, aborter, settings))
+
+    return new Ok(result)
+  }
+
+  async scroll(aborter = new AbortController()): Promise<Result<Result<State<D[], F>, FetchError>, never>> {
+    const { cacheKey, settings } = this
+
+    const result = await core.fetchOrReplace(cacheKey, aborter, async () =>
+      await Scroll.scroll(cacheKey, aborter, settings))
+
+    return new Ok(result)
   }
 
 }
@@ -100,18 +148,45 @@ export class ScrollFetcherlessQuerySchema<K, D, F> {
     this.cacheKey = Scroll.getCacheKey(settings.key, settings)
   }
 
-  async make() {
-    return await ScrollFetcherlessQueryInstance.make(this.cacheKey, this.settings)
+  async normalize(fetched: Optional<Fetched<D[], F>>, more: NormalizerMore) {
+    if (more.shallow)
+      return
+    await this.mutate(() => new Some(fetched))
   }
 
-  async normalize(fetched: Optional<Fetched<D[], F>>, more: NormalizerMore) {
-    const { shallow } = more
+  get state() {
+    return core.get(this.cacheKey, this.settings)
+  }
 
-    if (shallow)
-      return
+  get aborter(): Optional<AbortController> {
+    return core.getAborterSync(this.cacheKey)
+  }
 
-    const instance = await this.make()
-    await instance.mutate(() => new Some(fetched))
+  async peek() {
+    const { settings } = this
+    const state = await this.state
+
+    return Option.mapSync(state.real?.data?.inner, pages => settings.scroller(Arrays.last(pages)))
+  }
+
+  async mutate(mutator: Mutator<D[], F>) {
+    return await core.mutate(this.cacheKey, mutator, this.settings)
+  }
+
+  async delete() {
+    return await core.delete(this.cacheKey, this.settings)
+  }
+
+  async fetch(aborter = new AbortController()): Promise<Result<never, MissingFetcherError>> {
+    return new Err(new MissingFetcherError())
+  }
+
+  async refetch(aborter = new AbortController()): Promise<Result<never, MissingFetcherError>> {
+    return new Err(new MissingFetcherError())
+  }
+
+  async scroll(aborter = new AbortController()): Promise<Result<never, MissingFetcherError>> {
+    return new Err(new MissingFetcherError())
   }
 
 }
