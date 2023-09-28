@@ -6,27 +6,27 @@ import { Time } from "libs/time/time.js";
 import { CooldownError, MissingFetcherError, MissingKeyError, core } from "mods/core/core.js";
 import { FetcherfulQuery, FetcherlessQuery, SkeletonQuery } from "mods/react/types/query.js";
 import { Scroll } from "mods/scroll/helper.js";
-import { ScrollQuerySchema } from "mods/scroll/schema.js";
+import { ScrollSchema } from "mods/scroll/schema.js";
 import { Mutator } from "mods/types/mutator.js";
 import { ScrollFetcherfulQuerySettings, ScrollFetcherlessQuerySettings } from "mods/types/settings.js";
 import { State } from "mods/types/state.js";
 import { DependencyList, useCallback, useEffect, useMemo, useRef, useState } from "react";
 
-export function useScrollQuery<T extends ScrollQuerySchema.Infer<T>, L extends DependencyList>(
+export function useScrollQuery<T extends ScrollSchema.Infer<T>, L extends DependencyList>(
   factory: (...deps: L) => T,
   deps: L
-): ScrollQuerySchema.Queried<T> {
+): ScrollSchema.Queried<T> {
   const schema = useMemo(() => {
     return factory(...deps)
   }, deps)
 
   if (schema == null)
-    return useSkeletonScrollQuery() as ScrollQuerySchema.Queried<T>
+    return useSkeletonScrollQuery() as ScrollSchema.Queried<T>
 
   if (schema.settings.fetcher == null)
-    return useFetcherlessScrollQuery(schema.settings) as ScrollQuerySchema.Queried<T>
+    return useFetcherlessScrollQuery(schema.settings) as ScrollSchema.Queried<T>
 
-  return useFetcherfulScrollQuery(schema.settings) as ScrollQuerySchema.Queried<T>
+  return useFetcherfulScrollQuery(schema.settings) as ScrollSchema.Queried<T>
 }
 
 export interface ScrollSkeletonQuery<K, D, F> extends SkeletonQuery<K, D[], F> {

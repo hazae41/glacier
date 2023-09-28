@@ -5,28 +5,28 @@ import { Time } from "libs/time/time.js";
 import { CooldownError, MissingFetcherError, MissingKeyError, core } from "mods/core/core.js";
 import { FetcherfulQuery, FetcherlessQuery, SkeletonQuery } from "mods/react/types/query.js";
 import { Simple } from "mods/single/helper.js";
-import { SimpleQuerySchema } from "mods/single/schema.js";
+import { SimpleSchema } from "mods/single/schema.js";
 import { Mutator } from "mods/types/mutator.js";
 import { FetcherfulQuerySettings, FetcherlessQuerySettings } from "mods/types/settings.js";
 import { State } from "mods/types/state.js";
 import { Updater } from "mods/types/updater.js";
 import { DependencyList, useCallback, useEffect, useMemo, useRef, useState } from "react";
 
-export function useQuery<T extends SimpleQuerySchema.Infer<T>, L extends DependencyList>(
+export function useQuery<T extends SimpleSchema.Infer<T>, L extends DependencyList>(
   factory: (...deps: L) => T,
   deps: L
-): SimpleQuerySchema.Queried<T> {
+): SimpleSchema.Queried<T> {
   const schema = useMemo(() => {
     return factory(...deps)
   }, deps)
 
   if (schema == null)
-    return useSimpleSkeletonQuery() as SimpleQuerySchema.Queried<T>
+    return useSimpleSkeletonQuery() as SimpleSchema.Queried<T>
 
   if (schema.settings.fetcher == null)
-    return useSimpleFetcherlessQuery(schema.settings) as SimpleQuerySchema.Queried<T>
+    return useSimpleFetcherlessQuery(schema.settings) as SimpleSchema.Queried<T>
 
-  return useSimpleFetcherfulQuery(schema.settings) as SimpleQuerySchema.Queried<T>
+  return useSimpleFetcherfulQuery(schema.settings) as SimpleSchema.Queried<T>
 }
 
 /**

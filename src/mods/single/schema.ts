@@ -8,68 +8,68 @@ import { NormalizerMore } from "mods/types/normalizer.js";
 import { FetcherfulQuerySettings, FetcherlessQuerySettings, KeyedQuerySettings } from "mods/types/settings.js";
 import { Simple } from "./helper.js";
 
-export function createQuerySchema<K, D, F>(
+export function createSchema<K, D, F>(
   settings: FetcherlessQuerySettings<K, D, F>
-): SimpleFetcherlessQuerySchema<K, D, F>
+): SimpleFetcherlessSchema<K, D, F>
 
-export function createQuerySchema<K, D, F>(
+export function createSchema<K, D, F>(
   settings: FetcherfulQuerySettings<K, D, F>
-): SimpleFetcherfulQuerySchema<K, D, F>
+): SimpleFetcherfulSchema<K, D, F>
 
-export function createQuerySchema<K, D, F>(
+export function createSchema<K, D, F>(
   settings: KeyedQuerySettings<K, D, F>,
-): SimpleQuerySchema<K, D, F>
+): SimpleSchema<K, D, F>
 
-export function createQuerySchema<K, D, F>(
+export function createSchema<K, D, F>(
   settings: KeyedQuerySettings<K, D, F>,
 ) {
   if (settings.fetcher == null)
-    return new SimpleFetcherlessQuerySchema<K, D, F>(settings)
+    return new SimpleFetcherlessSchema<K, D, F>(settings)
 
-  return new SimpleFetcherfulQuerySchema<K, D, F>(settings)
+  return new SimpleFetcherfulSchema<K, D, F>(settings)
 }
 
-export type SimpleQuerySchema<K, D, F> =
-  | SimpleFetcherlessQuerySchema<K, D, F>
-  | SimpleFetcherfulQuerySchema<K, D, F>
+export type SimpleSchema<K, D, F> =
+  | SimpleFetcherlessSchema<K, D, F>
+  | SimpleFetcherfulSchema<K, D, F>
 
-export namespace SimpleQuerySchema {
+export namespace SimpleSchema {
   export type Infer<T> =
     | undefined
-    | SimpleFetcherlessQuerySchema.Infer<T>
-    | SimpleFetcherfulQuerySchema.Infer<T>
+    | SimpleFetcherlessSchema.Infer<T>
+    | SimpleFetcherfulSchema.Infer<T>
 
   export type Queried<T> =
-    | SimpleSkeletonQuerySchema.Queried<T>
-    | SimpleFetcherlessQuerySchema.Queried<T>
-    | SimpleFetcherfulQuerySchema.Queried<T>
+    | SimpleSkeletonSchema.Queried<T>
+    | SimpleFetcherlessSchema.Queried<T>
+    | SimpleFetcherfulSchema.Queried<T>
 }
 
-export namespace SimpleSkeletonQuerySchema {
+export namespace SimpleSkeletonSchema {
   export type Queried<T> = T extends undefined ? SimpleSkeletonQuery<any, any, any> : never
 }
 
-export namespace SimpleFetcherlessQuerySchema {
-  export type Infer<T> = SimpleFetcherlessQuerySchema<K<T>, D<T>, F<T>>
+export namespace SimpleFetcherlessSchema {
+  export type Infer<T> = SimpleFetcherlessSchema<K<T>, D<T>, F<T>>
 
-  export type Queried<T> = T extends SimpleFetcherlessQuerySchema<infer K, infer D, infer F> ? SimpleFetcherlessQuery<K, D, F> : never
+  export type Queried<T> = T extends SimpleFetcherlessSchema<infer K, infer D, infer F> ? SimpleFetcherlessQuery<K, D, F> : never
 
-  export type K<T> = T extends SimpleFetcherlessQuerySchema<infer K, infer _D, infer _F> ? K : never
-  export type D<T> = T extends SimpleFetcherlessQuerySchema<infer _K, infer D, infer _F> ? D : never
-  export type F<T> = T extends SimpleFetcherlessQuerySchema<infer _K, infer _D, infer F> ? F : never
+  export type K<T> = T extends SimpleFetcherlessSchema<infer K, infer _D, infer _F> ? K : never
+  export type D<T> = T extends SimpleFetcherlessSchema<infer _K, infer D, infer _F> ? D : never
+  export type F<T> = T extends SimpleFetcherlessSchema<infer _K, infer _D, infer F> ? F : never
 }
 
-export namespace SimpleFetcherfulQuerySchema {
-  export type Infer<T> = SimpleFetcherfulQuerySchema<K<T>, D<T>, F<T>>
+export namespace SimpleFetcherfulSchema {
+  export type Infer<T> = SimpleFetcherfulSchema<K<T>, D<T>, F<T>>
 
-  export type Queried<T> = T extends SimpleFetcherfulQuerySchema<infer K, infer D, infer F> ? SimpleFetcherfulQuery<K, D, F> : never
+  export type Queried<T> = T extends SimpleFetcherfulSchema<infer K, infer D, infer F> ? SimpleFetcherfulQuery<K, D, F> : never
 
-  export type K<T> = T extends SimpleFetcherfulQuerySchema<infer K, infer _D, infer _F> ? K : never
-  export type D<T> = T extends SimpleFetcherfulQuerySchema<infer _K, infer D, infer _F> ? D : never
-  export type F<T> = T extends SimpleFetcherfulQuerySchema<infer _K, infer _D, infer F> ? F : never
+  export type K<T> = T extends SimpleFetcherfulSchema<infer K, infer _D, infer _F> ? K : never
+  export type D<T> = T extends SimpleFetcherfulSchema<infer _K, infer D, infer _F> ? D : never
+  export type F<T> = T extends SimpleFetcherfulSchema<infer _K, infer _D, infer F> ? F : never
 }
 
-export class SimpleFetcherlessQuerySchema<K, D, F> {
+export class SimpleFetcherlessSchema<K, D, F> {
   readonly cacheKey: string
 
   readonly events = new CustomEventTarget<{
@@ -136,7 +136,7 @@ export class SimpleFetcherlessQuerySchema<K, D, F> {
 
 }
 
-export class SimpleFetcherfulQuerySchema<K, D, F> {
+export class SimpleFetcherfulSchema<K, D, F> {
   readonly cacheKey: string
 
   constructor(

@@ -9,67 +9,67 @@ import { NormalizerMore } from "mods/types/normalizer.js";
 import { ScrollFetcherfulQuerySettings, ScrollFetcherlessQuerySettings, ScrollQuerySettings } from "mods/types/settings.js";
 import { Scroll } from "./helper.js";
 
-export function createScrollQuerySchema<K, D, F>(
+export function createScrollSchema<K, D, F>(
   settings: ScrollFetcherfulQuerySettings<K, D, F>,
-): ScrollFetcherfulQuerySchema<K, D, F>
+): ScrollFetcherfulSchema<K, D, F>
 
-export function createScrollQuerySchema<K, D, F>(
+export function createScrollSchema<K, D, F>(
   settings: ScrollFetcherlessQuerySettings<K, D, F>,
-): ScrollFetcherlessQuerySchema<K, D, F>
+): ScrollFetcherlessSchema<K, D, F>
 
-export function createScrollQuerySchema<K, D, F>(
+export function createScrollSchema<K, D, F>(
   settings: ScrollQuerySettings<K, D, F>,
-): ScrollQuerySchema<K, D, F>
+): ScrollSchema<K, D, F>
 
-export function createScrollQuerySchema<K, D, F>(
+export function createScrollSchema<K, D, F>(
   settings: ScrollQuerySettings<K, D, F>,
 ) {
   if (settings.fetcher == null)
-    return new ScrollFetcherlessQuerySchema<K, D, F>(settings)
-  return new ScrollFetcherfulQuerySchema<K, D, F>(settings)
+    return new ScrollFetcherlessSchema<K, D, F>(settings)
+  return new ScrollFetcherfulSchema<K, D, F>(settings)
 }
 
-export type ScrollQuerySchema<K, D, F> =
-  | ScrollFetcherfulQuerySchema<K, D, F>
-  | ScrollFetcherlessQuerySchema<K, D, F>
+export type ScrollSchema<K, D, F> =
+  | ScrollFetcherfulSchema<K, D, F>
+  | ScrollFetcherlessSchema<K, D, F>
 
-export namespace ScrollQuerySchema {
+export namespace ScrollSchema {
   export type Infer<T> =
     | undefined
-    | ScrollFetcherlessQuerySchema.Infer<T>
-    | ScrollFetcherfulQuerySchema.Infer<T>
+    | ScrollFetcherlessSchema.Infer<T>
+    | ScrollFetcherfulSchema.Infer<T>
 
   export type Queried<T> =
-    | ScrollSkeletonQuerySchema.Queried<T>
-    | ScrollFetcherlessQuerySchema.Queried<T>
-    | ScrollFetcherfulQuerySchema.Queried<T>
+    | ScrollSkeletonSchema.Queried<T>
+    | ScrollFetcherlessSchema.Queried<T>
+    | ScrollFetcherfulSchema.Queried<T>
 }
 
-export namespace ScrollSkeletonQuerySchema {
+export namespace ScrollSkeletonSchema {
   export type Queried<T> = T extends undefined ? ScrollSkeletonQuery<any, any, any> : never
 }
 
-export namespace ScrollFetcherlessQuerySchema {
-  export type Infer<T> = ScrollFetcherlessQuerySchema<K<T>, D<T>, F<T>>
+export namespace ScrollFetcherlessSchema {
+  export type Infer<T> = ScrollFetcherlessSchema<K<T>, D<T>, F<T>>
 
-  export type Queried<T> = T extends ScrollFetcherlessQuerySchema<infer K, infer D, infer F> ? ScrollFetcherlessQuery<K, D, F> : never
+  export type Queried<T> = T extends ScrollFetcherlessSchema<infer K, infer D, infer F> ? ScrollFetcherlessQuery<K, D, F> : never
 
-  export type K<T> = T extends ScrollFetcherlessQuerySchema<infer K, infer _D, infer _F> ? K : never
-  export type D<T> = T extends ScrollFetcherlessQuerySchema<infer _K, infer D, infer _F> ? D : never
-  export type F<T> = T extends ScrollFetcherlessQuerySchema<infer _K, infer _D, infer F> ? F : never
+  export type K<T> = T extends ScrollFetcherlessSchema<infer K, infer _D, infer _F> ? K : never
+  export type D<T> = T extends ScrollFetcherlessSchema<infer _K, infer D, infer _F> ? D : never
+  export type F<T> = T extends ScrollFetcherlessSchema<infer _K, infer _D, infer F> ? F : never
 }
 
-export namespace ScrollFetcherfulQuerySchema {
-  export type Infer<T> = ScrollFetcherfulQuerySchema<K<T>, D<T>, F<T>>
+export namespace ScrollFetcherfulSchema {
+  export type Infer<T> = ScrollFetcherfulSchema<K<T>, D<T>, F<T>>
 
-  export type Queried<T> = T extends ScrollFetcherfulQuerySchema<infer K, infer D, infer F> ? ScrollFetcherfulQuery<K, D, F> : never
+  export type Queried<T> = T extends ScrollFetcherfulSchema<infer K, infer D, infer F> ? ScrollFetcherfulQuery<K, D, F> : never
 
-  export type K<T> = T extends ScrollFetcherfulQuerySchema<infer K, infer _D, infer _F> ? K : never
-  export type D<T> = T extends ScrollFetcherfulQuerySchema<infer _K, infer D, infer _F> ? D : never
-  export type F<T> = T extends ScrollFetcherfulQuerySchema<infer _K, infer _D, infer F> ? F : never
+  export type K<T> = T extends ScrollFetcherfulSchema<infer K, infer _D, infer _F> ? K : never
+  export type D<T> = T extends ScrollFetcherfulSchema<infer _K, infer D, infer _F> ? D : never
+  export type F<T> = T extends ScrollFetcherfulSchema<infer _K, infer _D, infer F> ? F : never
 }
 
-export class ScrollFetcherfulQuerySchema<K, D, F> {
+export class ScrollFetcherfulSchema<K, D, F> {
   readonly cacheKey: string
 
   readonly events = new CustomEventTarget<{
@@ -162,7 +162,7 @@ export class ScrollFetcherfulQuerySchema<K, D, F> {
 
 }
 
-export class ScrollFetcherlessQuerySchema<K, D, F> {
+export class ScrollFetcherlessSchema<K, D, F> {
   readonly cacheKey: string
 
   constructor(
