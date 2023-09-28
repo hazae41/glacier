@@ -1,25 +1,20 @@
 /**
  * Orthogonal state publisher
  */
-export class Ortho<T> extends EventTarget {
+export class CustomEventTarget<T>  {
 
-  constructor() {
-    super()
+  readonly #target = new EventTarget()
+
+  dispatchEvent(event: CustomEvent<T>) {
+    return this.#target.dispatchEvent(event)
   }
 
-  dispatch(key: string, detail: T) {
-    const event = new CustomEvent(key, { detail })
-    this.dispatchEvent(event)
+  addEventListener(type: string, callback: (event: CustomEvent<T>) => void, options?: AddEventListenerOptions) {
+    return this.#target.addEventListener(type, callback as any, options)
   }
 
-  addListener(key: string, listener: (event: CustomEvent<T>) => void) {
-    this.addEventListener(key, listener as any, { passive: true })
-    return () => this.removeEventListener(key, listener as any)
-  }
-
-  removeListener(key: string, listener: (event: CustomEvent<T>) => void) {
-    this.removeEventListener(key, listener as any)
-    return () => this.addEventListener(key, listener as any, { passive: true })
+  removeListener(type: string, callback: (event: CustomEvent<T>) => void) {
+    return this.#target.removeEventListener(type, callback as any)
   }
 
 }

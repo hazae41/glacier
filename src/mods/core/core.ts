@@ -1,7 +1,7 @@
 import { Mutex } from "@hazae41/mutex"
 import { Nullable, Option, Some } from "@hazae41/option"
 import { Result } from "@hazae41/result"
-import { Ortho } from "libs/ortho/ortho.js"
+import { CustomEventTarget } from "libs/ortho/ortho.js"
 import { Promiseable } from "libs/promises/promises.js"
 import { Time } from "libs/time/time.js"
 import { DEFAULT_EQUALS } from "mods/defaults.js"
@@ -75,8 +75,8 @@ export interface QueryMetadata<D, F> {
 
 export class Core {
 
-  readonly onState = new Ortho<State<any, any>>()
-  readonly onAborter = new Ortho<Nullable<AbortController>>()
+  readonly onState = new CustomEventTarget<State<any, any>>()
+  readonly onAborter = new CustomEventTarget<Nullable<AbortController>>()
 
   readonly #queries = new Map<string, Mutex<QueryMetadata<any, any>>>()
 
@@ -130,14 +130,14 @@ export class Core {
 
       metadata.inner.pending = promise
       metadata.inner.aborter = aborter
-      this.onAborter.dispatch(cacheKey, aborter)
+      this.onAborter.dispatchEvent(new CustomEvent(cacheKey, { detail: aborter }))
 
       return await promise
     } finally {
       if (metadata.inner.aborter === aborter) {
         metadata.inner.aborter = undefined
         metadata.inner.pending = undefined
-        this.onAborter.dispatch(cacheKey, undefined)
+        this.onAborter.dispatchEvent(new CustomEvent(cacheKey, { detail: undefined }))
       }
     }
   }
@@ -153,14 +153,14 @@ export class Core {
 
       metadata.inner.aborter = aborter
       metadata.inner.pending = promise
-      this.onAborter.dispatch(cacheKey, aborter)
+      this.onAborter.dispatchEvent(new CustomEvent(cacheKey, { detail: aborter }))
 
       return await promise
     } finally {
       if (metadata.inner.aborter === aborter) {
         metadata.inner.aborter = undefined
         metadata.inner.pending = undefined
-        this.onAborter.dispatch(cacheKey, undefined)
+        this.onAborter.dispatchEvent(new CustomEvent(cacheKey, { detail: undefined }))
       }
     }
   }
@@ -179,7 +179,7 @@ export class Core {
 
     this.raw.set(cacheKey, Option.wrap(stored))
 
-    this.onState.dispatch(cacheKey, state)
+    this.onState.dispatchEvent(new CustomEvent(cacheKey, { detail: state }))
 
     return state
   }
@@ -269,7 +269,7 @@ export class Core {
       metadata.inner.state = current
 
       this.raw.set(cacheKey, Option.wrap(stored))
-      this.onState.dispatch(cacheKey, current)
+      this.onState.dispatchEvent(new CustomEvent(cacheKey, { detail: current }))
 
       const set = settings.storage?.trySet?.(cacheKey, stored)
       await Promise.resolve(set).then(r => r?.inspectErrSync(console.warn))

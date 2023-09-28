@@ -161,19 +161,19 @@ export function useSimpleFetcherlessQuery<K, D, F>(
   }, [cacheKey])
 
   useEffect(() => {
-    if (cacheKey == null)
-      return
+    const onState = (e: CustomEvent<State<any, any>>) => setState(e.detail)
+    const onAborter = (e: CustomEvent<Nullable<AbortController>>) => setAborter(e.detail)
 
-    const offState = core.onState.addListener(cacheKey, e => setState(e.detail))
-    const offAborter = core.onAborter.addListener(cacheKey, e => setAborter(e.detail))
+    core.onState.addEventListener(cacheKey, onState, { passive: true })
+    core.onAborter.addEventListener(cacheKey, onAborter, { passive: true })
 
     core.increment(cacheKey, settingsRef.current)
 
     return () => {
       core.decrement(cacheKey, settingsRef.current)
 
-      offState()
-      offAborter()
+      core.onState.removeListener(cacheKey, onState)
+      core.onAborter.removeListener(cacheKey, onAborter)
     }
   }, [cacheKey])
 
@@ -273,19 +273,19 @@ export function useSimpleFetcherfulQuery<K, D, F>(
   }, [cacheKey])
 
   useEffect(() => {
-    if (cacheKey == null)
-      return
+    const onState = (e: CustomEvent<State<any, any>>) => setState(e.detail)
+    const onAborter = (e: CustomEvent<Nullable<AbortController>>) => setAborter(e.detail)
 
-    const offState = core.onState.addListener(cacheKey, e => setState(e.detail))
-    const offAborter = core.onAborter.addListener(cacheKey, e => setAborter(e.detail))
+    core.onState.addEventListener(cacheKey, onState, { passive: true })
+    core.onAborter.addEventListener(cacheKey, onAborter, { passive: true })
 
     core.increment(cacheKey, settingsRef.current)
 
     return () => {
       core.decrement(cacheKey, settingsRef.current)
 
-      offState()
-      offAborter()
+      core.onState.removeListener(cacheKey, onState)
+      core.onAborter.removeListener(cacheKey, onAborter)
     }
   }, [cacheKey])
 

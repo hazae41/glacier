@@ -1,12 +1,12 @@
 import { Nullable } from "@hazae41/option"
 import { Result } from "@hazae41/result"
-import { Ortho } from "libs/ortho/ortho.js"
+import { CustomEventTarget } from "libs/ortho/ortho.js"
 import { Promiseable } from "libs/promises/promises.js"
 import { RawState } from "mods/types/state.js"
 
 export interface Storage {
 
-  readonly onState?: Ortho<RawState>
+  readonly onState?: CustomEventTarget<RawState>
 
   /**
    * Get the data from the given key
