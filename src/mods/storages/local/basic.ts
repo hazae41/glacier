@@ -1,4 +1,4 @@
-import { Optional } from "@hazae41/option"
+import { Nullable } from "@hazae41/option"
 import { Err, Ok, Result } from "@hazae41/result"
 import { Bicoder, Encoder, SyncIdentity } from "mods/serializers/serializer.js"
 import { RawState } from "mods/types/state.js"
@@ -111,7 +111,7 @@ export class AsyncLocalStorage implements Storage {
     return state
   }
 
-  async set(cacheKey: string, state: Optional<RawState>) {
+  async set(cacheKey: string, state: Nullable<RawState>) {
     if (state == null)
       return await this.delete(cacheKey)
 

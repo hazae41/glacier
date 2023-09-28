@@ -1,4 +1,4 @@
-import { Option, Optional } from "@hazae41/option";
+import { Nullable, Option } from "@hazae41/option";
 import { Err, Ok, Result } from "@hazae41/result";
 import { Arrays } from "libs/arrays/arrays.js";
 import { useRenderRef } from "libs/react/ref.js";
@@ -7,7 +7,6 @@ import { CooldownError, MissingFetcherError, MissingKeyError, core } from "mods/
 import { FetcherfulQuery, FetcherlessQuery, SkeletonQuery } from "mods/react/types/query.js";
 import { Scroll } from "mods/scroll/helper.js";
 import { ScrollQuerySchema } from "mods/scroll/schema.js";
-import { FetchError } from "mods/types/fetcher.js";
 import { Mutator } from "mods/types/mutator.js";
 import { ScrollFetcherfulQuerySettings, ScrollFetcherlessQuerySettings } from "mods/types/settings.js";
 import { State } from "mods/types/state.js";
@@ -54,7 +53,7 @@ export interface ScrollFetcherlessQuery<K, D, F> extends FetcherlessQuery<K, D[]
   /**
    * The next key to be fetched
    */
-  peek(): Optional<K>
+  peek(): Nullable<K>
 }
 
 /**
@@ -64,12 +63,12 @@ export interface ScrollFetcherfulQuery<K, D, F> extends FetcherfulQuery<K, D[], 
   /**
    * Fetch the next page
    */
-  scroll(): Promise<Result<Result<Result<State<D[], F>, FetchError>, never>, never>>
+  scroll(): Promise<Result<Result<Result<State<D[], F>, Error>, never>, never>>
 
   /**
    * The next key to be fetched
    */
-  peek(): Optional<K>
+  peek(): Nullable<K>
 }
 
 export function useSkeletonScrollQuery<K, D, F>(): ScrollSkeletonQuery<K, D, F> {
@@ -153,8 +152,8 @@ export function useFetcherlessScrollQuery<K, D, F>(
 
   const [, setCounter] = useState(0)
 
-  const stateRef = useRef<Optional<State<D[], F>>>()
-  const aborterRef = useRef<Optional<AbortController>>()
+  const stateRef = useRef<Nullable<State<D[], F>>>()
+  const aborterRef = useRef<Nullable<AbortController>>()
 
   useMemo(() => {
     stateRef.current = core.getStateSync<D[], F>(cacheKey)
@@ -166,7 +165,7 @@ export function useFetcherlessScrollQuery<K, D, F>(
     setCounter(c => c + 1)
   }, [cacheKey])
 
-  const setAborter = useCallback((aborter: Optional<AbortController>) => {
+  const setAborter = useCallback((aborter: Nullable<AbortController>) => {
     aborterRef.current = aborter
     setCounter(c => c + 1)
   }, [cacheKey])
@@ -267,8 +266,8 @@ export function useFetcherfulScrollQuery<K, D, F>(
 
   const [, setCounter] = useState(0)
 
-  const stateRef = useRef<Optional<State<D[], F>>>()
-  const aborterRef = useRef<Optional<AbortController>>()
+  const stateRef = useRef<Nullable<State<D[], F>>>()
+  const aborterRef = useRef<Nullable<AbortController>>()
 
   useMemo(() => {
     stateRef.current = core.getStateSync<D[], F>(cacheKey)
@@ -280,7 +279,7 @@ export function useFetcherfulScrollQuery<K, D, F>(
     setCounter(c => c + 1)
   }, [cacheKey])
 
-  const setAborter = useCallback((aborter: Optional<AbortController>) => {
+  const setAborter = useCallback((aborter: Nullable<AbortController>) => {
     aborterRef.current = aborter
     setCounter(c => c + 1)
   }, [cacheKey])

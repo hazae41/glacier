@@ -1,5 +1,5 @@
 import { Mutex } from "@hazae41/mutex"
-import { Option, Optional, Some } from "@hazae41/option"
+import { Nullable, Option, Some } from "@hazae41/option"
 import { Result } from "@hazae41/result"
 import { Ortho } from "libs/ortho/ortho.js"
 import { Promiseable } from "libs/promises/promises.js"
@@ -9,7 +9,6 @@ import { Data } from "mods/result/data.js"
 import { Fail } from "mods/result/fail.js"
 import { Fetched } from "mods/result/fetched.js"
 import { Bicoder, SyncIdentity } from "mods/serializers/serializer.js"
-import { FetchError } from "mods/types/fetcher.js"
 import { Mutator, Setter } from "mods/types/mutator.js"
 import { QuerySettings } from "mods/types/settings.js"
 import { DataState, FailState, FakeState, RawState, RealState, State } from "mods/types/state.js"
@@ -70,14 +69,14 @@ export interface QueryMetadata<D, F> {
   state?: State<D, F>,
   timeout?: NodeJS.Timeout
   aborter?: AbortController
-  pending?: Promise<Result<State<D, F>, FetchError>>
+  pending?: Promise<Result<State<D, F>, Error>>
   optimizers: Map<string, Mutator<D, F>>
 }
 
 export class Core {
 
   readonly onState = new Ortho<State<any, any>>()
-  readonly onAborter = new Ortho<Optional<AbortController>>()
+  readonly onAborter = new Ortho<Nullable<AbortController>>()
 
   readonly #queries = new Map<string, Mutex<QueryMetadata<any, any>>>()
 
@@ -97,11 +96,11 @@ export class Core {
     this.#mounted = false
   }
 
-  getAborterSync(cacheKey: string): Optional<AbortController> {
+  getAborterSync(cacheKey: string): Nullable<AbortController> {
     return this.#queries.get(cacheKey)?.inner?.aborter
   }
 
-  getStateSync<D, F>(cacheKey: string): Optional<State<D, F>> {
+  getStateSync<D, F>(cacheKey: string): Nullable<State<D, F>> {
     return this.#queries.get(cacheKey)?.inner?.state
   }
 
@@ -120,7 +119,7 @@ export class Core {
     return metadata
   }
 
-  async fetchOrReplace<D, F>(cacheKey: string, aborter: AbortController, callback: () => Promise<Result<State<D, F>, FetchError>>): Promise<Result<State<D, F>, FetchError>> {
+  async fetchOrReplace<D, F>(cacheKey: string, aborter: AbortController, callback: () => Promise<Result<State<D, F>, Error>>): Promise<Result<State<D, F>, Error>> {
     const metadata = this.#getOrCreateMetadata(cacheKey)
 
     if (metadata.inner.aborter != null)
@@ -143,7 +142,7 @@ export class Core {
     }
   }
 
-  async fetchOrJoin<D, F>(cacheKey: string, aborter: AbortController, callback: () => Promise<Result<State<D, F>, FetchError>>): Promise<Result<State<D, F>, FetchError>> {
+  async fetchOrJoin<D, F>(cacheKey: string, aborter: AbortController, callback: () => Promise<Result<State<D, F>, Error>>): Promise<Result<State<D, F>, Error>> {
     const metadata = this.#getOrCreateMetadata<D, F>(cacheKey)
 
     if (metadata.inner.pending != null)
@@ -189,7 +188,7 @@ export class Core {
     return await metadata.lock(async () => await this.#get(cacheKey, settings))
   }
 
-  async store<K, D, F>(state: State<D, F>, settings: QuerySettings<K, D, F>): Promise<Optional<RawState>> {
+  async store<K, D, F>(state: State<D, F>, settings: QuerySettings<K, D, F>): Promise<Nullable<RawState>> {
     const {
       dataSerializer = SyncIdentity as Bicoder<D, unknown>,
       errorSerializer = SyncIdentity as Bicoder<F, unknown>
@@ -206,7 +205,7 @@ export class Core {
     return { version: 2, data, error, time, cooldown, expiration }
   }
 
-  async unstore<K, D, F>(stored: Optional<RawState>, settings: QuerySettings<K, D, F>): Promise<State<D, F>> {
+  async unstore<K, D, F>(stored: Nullable<RawState>, settings: QuerySettings<K, D, F>): Promise<State<D, F>> {
     const {
       dataSerializer = SyncIdentity as Bicoder<D, unknown>,
       errorSerializer = SyncIdentity as Bicoder<F, unknown>
@@ -279,7 +278,7 @@ export class Core {
     })
   }
 
-  #mergeRealStateWithFetched<D, F>(previous: State<D, F>, fetched: Optional<Fetched<D, F>>): RealState<D, F> {
+  #mergeRealStateWithFetched<D, F>(previous: State<D, F>, fetched: Nullable<Fetched<D, F>>): RealState<D, F> {
     if (fetched == null)
       return new RealState(undefined)
 
@@ -289,7 +288,7 @@ export class Core {
     return new RealState(new FailState(fetched, previous.real?.data))
   }
 
-  #mergeFakeStateWithFetched<D, F>(previous: State<D, F>, fetched: Optional<Fetched<D, F>>): FakeState<D, F> {
+  #mergeFakeStateWithFetched<D, F>(previous: State<D, F>, fetched: Nullable<Fetched<D, F>>): FakeState<D, F> {
     if (fetched == null)
       return new FakeState(undefined, previous.real)
 
@@ -443,7 +442,7 @@ export class Core {
    * @param settings 
    * @returns 
    */
-  async #normalize<K, D, F>(fetched: Optional<Fetched<D, F>>, settings: QuerySettings<K, D, F>) {
+  async #normalize<K, D, F>(fetched: Nullable<Fetched<D, F>>, settings: QuerySettings<K, D, F>) {
     if (settings.normalizer == null)
       return fetched
     return await settings.normalizer(fetched, { shallow: false })
@@ -455,7 +454,7 @@ export class Core {
    * @param settings 
    * @returns 
    */
-  async prenormalize<K, D, F>(fetched: Optional<Fetched<D, F>>, settings: QuerySettings<K, D, F>) {
+  async prenormalize<K, D, F>(fetched: Nullable<Fetched<D, F>>, settings: QuerySettings<K, D, F>) {
     if (settings.normalizer == null)
       return fetched
     return await settings.normalizer(fetched, { shallow: true })

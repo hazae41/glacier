@@ -5,9 +5,18 @@ import { core } from "mods/core/core.js";
 import { DEFAULT_EQUALS, DEFAULT_SERIALIZER } from "mods/defaults.js";
 import { Fetched } from "mods/result/fetched.js";
 import { TimesInit } from "mods/result/times.js";
-import { FetchError } from "mods/types/fetcher.js";
 import { QuerySettings, ScrollFetcherfulQuerySettings } from "mods/types/settings.js";
 import { State } from "mods/types/state.js";
+
+export class ScrollError extends Error {
+  readonly #class = ScrollError
+  readonly name = this.#class.name
+
+  constructor() {
+    super(`Could not scroll`)
+  }
+
+}
 
 export namespace Scroll {
 
@@ -34,7 +43,7 @@ export namespace Scroll {
     cacheKey: string,
     aborter: AbortController,
     settings: ScrollFetcherfulQuerySettings<K, D, F>
-  ): Promise<Result<State<D[], F>, FetchError>> {
+  ): Promise<Result<State<D[], F>, Error>> {
     const { dataEqualser = DEFAULT_EQUALS } = settings
 
     const aborted = await core.runWithTimeout(async (signal) => {
@@ -74,14 +83,14 @@ export namespace Scroll {
     cacheKey: string,
     aborter: AbortController,
     settings: ScrollFetcherfulQuerySettings<K, D, F>
-  ): Promise<Result<State<D[], F>, FetchError>> {
+  ): Promise<Result<State<D[], F>, Error>> {
     const previous = await core.get(cacheKey, settings)
     const previousPages = previous.real?.data?.inner ?? []
     const previousPage = Arrays.last(previousPages)
     const key = settings.scroller(previousPage)
 
     if (key == null)
-      return new Err(new FetchError(`Can't scroll`))
+      return new Err(new ScrollError())
 
     const aborted = await core.runWithTimeout(async (signal) => {
       return await settings.fetcher(key, { signal })

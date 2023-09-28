@@ -4,7 +4,6 @@ import { core } from "mods/core/core.js";
 import { DEFAULT_SERIALIZER } from "mods/defaults.js";
 import { Fetched } from "mods/result/fetched.js";
 import { TimesInit } from "mods/result/times.js";
-import { FetchError } from "mods/types/fetcher.js";
 import { FetcherfulQuerySettings, QuerySettings } from "mods/types/settings.js";
 import { State } from "mods/types/state.js";
 import { Updater } from "mods/types/updater.js";
@@ -24,7 +23,7 @@ export namespace Simple {
     cacheKey: string,
     aborter: AbortController,
     settings: FetcherfulQuerySettings<K, D, F>
-  ): Promise<Result<State<D, F>, FetchError>> {
+  ): Promise<Result<State<D, F>, Error>> {
     const aborted = await core.runWithTimeout(async signal => {
       return await settings.fetcher(settings.key, { signal })
     }, aborter, settings.timeout)
@@ -53,7 +52,7 @@ export namespace Simple {
     updater: Updater<K, D, F>,
     aborter: AbortController,
     settings: FetcherfulQuerySettings<K, D, F>
-  ): Promise<Result<State<D, F>, FetchError>> {
+  ): Promise<Result<State<D, F>, Error>> {
     const uuid = crypto.randomUUID()
 
     try {

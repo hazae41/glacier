@@ -1,6 +1,6 @@
-import { Option, Optional, Some } from "@hazae41/option";
+import { Nullable, Option, Some } from "@hazae41/option";
 import { Err, Ok, Result } from "@hazae41/result";
-import { CooldownError, FetchError, MissingFetcherError, Mutator, ScrollFetcherfulQuery, ScrollFetcherlessQuery, ScrollSkeletonQuery, State, core } from "index.js";
+import { CooldownError, MissingFetcherError, Mutator, ScrollFetcherfulQuery, ScrollFetcherlessQuery, ScrollSkeletonQuery, State, core } from "index.js";
 import { Arrays } from "libs/arrays/arrays.js";
 import { Time } from "libs/time/time.js";
 import { Fetched } from "mods/result/fetched.js";
@@ -77,7 +77,7 @@ export class ScrollFetcherfulQuerySchema<K, D, F> {
     this.cacheKey = Scroll.getCacheKey(settings.key, settings)
   }
 
-  async normalize(fetched: Optional<Fetched<D[], F>>, more: NormalizerMore) {
+  async normalize(fetched: Nullable<Fetched<D[], F>>, more: NormalizerMore) {
     if (more.shallow)
       return
     await this.mutate(() => new Some(fetched))
@@ -87,7 +87,7 @@ export class ScrollFetcherfulQuerySchema<K, D, F> {
     return core.get(this.cacheKey, this.settings)
   }
 
-  get aborter(): Optional<AbortController> {
+  get aborter(): Nullable<AbortController> {
     return core.getAborterSync(this.cacheKey)
   }
 
@@ -106,7 +106,7 @@ export class ScrollFetcherfulQuerySchema<K, D, F> {
     return await core.delete(this.cacheKey, this.settings)
   }
 
-  async fetch(aborter = new AbortController()): Promise<Result<Result<State<D[], F>, FetchError>, CooldownError>> {
+  async fetch(aborter = new AbortController()): Promise<Result<Result<State<D[], F>, Error>, CooldownError>> {
     const { cacheKey, settings } = this
     const state = await this.state
 
@@ -119,7 +119,7 @@ export class ScrollFetcherfulQuerySchema<K, D, F> {
     return new Ok(result)
   }
 
-  async refetch(aborter = new AbortController()): Promise<Result<Result<State<D[], F>, FetchError>, never>> {
+  async refetch(aborter = new AbortController()): Promise<Result<Result<State<D[], F>, Error>, never>> {
     const { cacheKey, settings } = this
 
     const result = await core.fetchOrReplace(cacheKey, aborter, async () =>
@@ -128,7 +128,7 @@ export class ScrollFetcherfulQuerySchema<K, D, F> {
     return new Ok(result)
   }
 
-  async scroll(aborter = new AbortController()): Promise<Result<Result<State<D[], F>, FetchError>, never>> {
+  async scroll(aborter = new AbortController()): Promise<Result<Result<State<D[], F>, Error>, never>> {
     const { cacheKey, settings } = this
 
     const result = await core.fetchOrReplace(cacheKey, aborter, async () =>
@@ -148,7 +148,7 @@ export class ScrollFetcherlessQuerySchema<K, D, F> {
     this.cacheKey = Scroll.getCacheKey(settings.key, settings)
   }
 
-  async normalize(fetched: Optional<Fetched<D[], F>>, more: NormalizerMore) {
+  async normalize(fetched: Nullable<Fetched<D[], F>>, more: NormalizerMore) {
     if (more.shallow)
       return
     await this.mutate(() => new Some(fetched))
@@ -158,7 +158,7 @@ export class ScrollFetcherlessQuerySchema<K, D, F> {
     return core.get(this.cacheKey, this.settings)
   }
 
-  get aborter(): Optional<AbortController> {
+  get aborter(): Nullable<AbortController> {
     return core.getAborterSync(this.cacheKey)
   }
 

@@ -1,6 +1,6 @@
-import { Optional, Some } from "@hazae41/option";
+import { Nullable, Some } from "@hazae41/option";
 import { Err, Ok, Result } from "@hazae41/result";
-import { CooldownError, FetchError, MissingFetcherError, Mutator, SimpleFetcherfulQuery, SimpleFetcherlessQuery, SimpleSkeletonQuery, State, Updater, core } from "index.js";
+import { CooldownError, MissingFetcherError, Mutator, SimpleFetcherfulQuery, SimpleFetcherlessQuery, SimpleSkeletonQuery, State, Updater, core } from "index.js";
 import { Time } from "libs/time/time.js";
 import { Fetched } from "mods/result/fetched.js";
 import { NormalizerMore } from "mods/types/normalizer.js";
@@ -77,7 +77,7 @@ export class SimpleFetcherlessQuerySchema<K, D, F>  {
     this.cacheKey = Simple.getCacheKey(settings.key, settings)
   }
 
-  async normalize(fetched: Optional<Fetched<D, F>>, more: NormalizerMore) {
+  async normalize(fetched: Nullable<Fetched<D, F>>, more: NormalizerMore) {
     if (more.shallow)
       return
     await this.mutate(() => new Some(fetched))
@@ -87,7 +87,7 @@ export class SimpleFetcherlessQuerySchema<K, D, F>  {
     return core.get(this.cacheKey, this.settings)
   }
 
-  get aborter(): Optional<AbortController> {
+  get aborter(): Nullable<AbortController> {
     return core.getAborterSync(this.cacheKey)
   }
 
@@ -122,7 +122,7 @@ export class SimpleFetcherfulQuerySchema<K, D, F> {
     this.cacheKey = Simple.getCacheKey(settings.key, settings)
   }
 
-  async normalize(fetched: Optional<Fetched<D, F>>, more: NormalizerMore) {
+  async normalize(fetched: Nullable<Fetched<D, F>>, more: NormalizerMore) {
     if (more.shallow)
       return
     await this.mutate(() => new Some(fetched))
@@ -132,7 +132,7 @@ export class SimpleFetcherfulQuerySchema<K, D, F> {
     return core.get(this.cacheKey, this.settings)
   }
 
-  get aborter(): Optional<AbortController> {
+  get aborter(): Nullable<AbortController> {
     return core.getAborterSync(this.cacheKey)
   }
 
@@ -144,7 +144,7 @@ export class SimpleFetcherfulQuerySchema<K, D, F> {
     return await core.delete(this.cacheKey, this.settings)
   }
 
-  async fetch(aborter = new AbortController()): Promise<Result<Result<State<D, F>, FetchError>, CooldownError>> {
+  async fetch(aborter = new AbortController()): Promise<Result<Result<State<D, F>, Error>, CooldownError>> {
     const { cacheKey, settings } = this
     const state = await this.state
 
@@ -157,7 +157,7 @@ export class SimpleFetcherfulQuerySchema<K, D, F> {
     return new Ok(result)
   }
 
-  async refetch(aborter = new AbortController()): Promise<Result<Result<State<D, F>, FetchError>, never>> {
+  async refetch(aborter = new AbortController()): Promise<Result<Result<State<D, F>, Error>, never>> {
     const { cacheKey, settings } = this
 
     const result = await core.fetchOrReplace(cacheKey, aborter, async () =>
@@ -166,7 +166,7 @@ export class SimpleFetcherfulQuerySchema<K, D, F> {
     return new Ok(result)
   }
 
-  async update(updater: Updater<K, D, F>, aborter = new AbortController()): Promise<Result<Result<State<D, F>, FetchError>, never>> {
+  async update(updater: Updater<K, D, F>, aborter = new AbortController()): Promise<Result<Result<State<D, F>, Error>, never>> {
     const { cacheKey, settings } = this
 
     const result = await Simple.update(cacheKey, updater, aborter, settings)

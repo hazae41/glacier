@@ -1,4 +1,4 @@
-import { Optional } from "@hazae41/option"
+import { Nullable } from "@hazae41/option"
 import { Err, Ok, Result } from "@hazae41/result"
 import { Bicoder, Encoder, SyncIdentity } from "mods/serializers/serializer.js"
 import { Storage } from "mods/storages/storage.js"
@@ -132,7 +132,7 @@ export class IDBStorage implements Storage {
   }
 
   #get<T>(store: IDBObjectStore, key: string) {
-    return new Promise<Optional<T>>((ok, err) => {
+    return new Promise<Nullable<T>>((ok, err) => {
       const req = store.get(key)
 
       req.onerror = () => err(req.error)
@@ -167,7 +167,7 @@ export class IDBStorage implements Storage {
     })
   }
 
-  async #set2(cacheKey: string, state: Optional<RawState>) {
+  async #set2(cacheKey: string, state: Nullable<RawState>) {
     if (state == null)
       return await this.delete(cacheKey)
 
@@ -190,7 +190,7 @@ export class IDBStorage implements Storage {
    * @param state 
    * @returns 
    */
-  set(cacheKey: string, state: Optional<RawState>) {
+  set(cacheKey: string, state: Nullable<RawState>) {
     this.#sets = this.#sets.then(() => this.#set2(cacheKey, state)).catch(console.warn)
   }
 

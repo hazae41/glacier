@@ -1,7 +1,7 @@
-import { Optional } from "@hazae41/option"
+import { Nullable } from "@hazae41/option"
 
 export type Equalser<T> =
-  (a: T, b: T) => Optional<boolean>
+  (a: T, b: T) => Nullable<boolean>
 
 export namespace Equals {
 

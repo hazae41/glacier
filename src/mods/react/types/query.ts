@@ -1,10 +1,9 @@
-import { Optional } from "@hazae41/option"
+import { Nullable } from "@hazae41/option"
 import { Result } from "@hazae41/result"
 import { CooldownError, MissingFetcherError, MissingKeyError } from "mods/core/core.js"
 import { Data } from "mods/result/data.js"
 import { Fail } from "mods/result/fail.js"
 import { Fetched } from "mods/result/fetched.js"
-import { FetchError } from "mods/types/fetcher.js"
 import { Mutator } from "mods/types/mutator.js"
 import { FetcherfulQuerySettings, FetcherlessQuerySettings, SkeletonQuerySettings } from "mods/types/settings.js"
 import { FetchedState, State } from "mods/types/state.js"
@@ -54,7 +53,7 @@ export interface SkeletonQuery<K, D, F> extends Omit<SkeletonQuerySettings<K, D,
   /**
    * Abort controller, can be used to abort and check for abortion, present when a fetch is ongoing (except those from update())
    */
-  readonly aborter?: Optional<never>,
+  readonly aborter?: Nullable<never>,
 
   /**
    * Use this to check if the state has been loaded from async storage and is ready to be used
@@ -137,7 +136,7 @@ export interface FetcherfulQuery<K, D, F> extends Omit<FetcherfulQuerySettings<K
   /**
    * Abort controller, can be used to abort and check for abortion, present when a fetch is ongoing (except those from update())
    */
-  readonly aborter?: Optional<AbortController>,
+  readonly aborter?: Nullable<AbortController>,
 
   /**
    * Use this to check if the state has been loaded from async storage and is ready to be used
@@ -164,19 +163,19 @@ export interface FetcherfulQuery<K, D, F> extends Omit<FetcherfulQuerySettings<K
    * Fetch with cooldown
    * @example You want to fetch and don't care if it's cooldowned
    */
-  fetch(aborter?: AbortController): Promise<Result<Result<Result<Result<State<D, F>, FetchError>, CooldownError>, never>, never>>
+  fetch(aborter?: AbortController): Promise<Result<Result<Result<Result<State<D, F>, Error>, CooldownError>, never>, never>>
 
   /**
    * Fetch without cooldown
    * @example User clicked on the refresh button
    * @example You just made a POST request and want to get some fresh data
    */
-  refetch(aborter?: AbortController): Promise<Result<Result<Result<State<D, F>, FetchError>, never>, never>>
+  refetch(aborter?: AbortController): Promise<Result<Result<Result<State<D, F>, Error>, never>, never>>
 
   /**
    * Suspend until the next state change, also launches an undeduped fetch
    */
-  suspend(): Promise<Result<Result<Result<State<D, F>, FetchError>, never>, never>>
+  suspend(): Promise<Result<Result<Result<State<D, F>, Error>, never>, never>>
 
 }
 
@@ -220,7 +219,7 @@ export interface FetcherlessQuery<K, D, F> extends Omit<FetcherlessQuerySettings
   /**
    * Abort controller, can be used to abort and check for abortion, present when a fetch is ongoing (except those from update())
    */
-  readonly aborter?: Optional<AbortController>,
+  readonly aborter?: Nullable<AbortController>,
 
   /**
    * Use this to check if the state has been loaded from async storage and is ready to be used

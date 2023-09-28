@@ -1,4 +1,4 @@
-import { Optional } from "@hazae41/option";
+import { Nullable } from "@hazae41/option";
 import { Err, Ok, Result } from "@hazae41/result";
 import { useRenderRef } from "libs/react/ref.js";
 import { Time } from "libs/time/time.js";
@@ -6,7 +6,6 @@ import { CooldownError, MissingFetcherError, MissingKeyError, core } from "mods/
 import { FetcherfulQuery, FetcherlessQuery, SkeletonQuery } from "mods/react/types/query.js";
 import { Simple } from "mods/single/helper.js";
 import { SimpleQuerySchema } from "mods/single/schema.js";
-import { FetchError } from "mods/types/fetcher.js";
 import { Mutator } from "mods/types/mutator.js";
 import { FetcherfulQuerySettings, FetcherlessQuerySettings } from "mods/types/settings.js";
 import { State } from "mods/types/state.js";
@@ -51,7 +50,7 @@ export interface SimpleFetcherfulQuery<K, D, F> extends FetcherfulQuery<K, D, F>
    * @param updater Mutation function
    * @param aborter Custom AbortController
    */
-  update(updater: Updater<K, D, F>, aborter?: AbortController): Promise<Result<Result<Result<State<D, F>, FetchError>, never>, never>>
+  update(updater: Updater<K, D, F>, aborter?: AbortController): Promise<Result<Result<Result<State<D, F>, Error>, never>, never>>
 }
 
 /**
@@ -136,8 +135,8 @@ export function useSimpleFetcherlessQuery<K, D, F>(
 
   const [, setCounter] = useState(0)
 
-  const stateRef = useRef<Optional<State<D, F>>>()
-  const aborterRef = useRef<Optional<AbortController>>()
+  const stateRef = useRef<Nullable<State<D, F>>>()
+  const aborterRef = useRef<Nullable<AbortController>>()
 
   useMemo(() => {
     stateRef.current = core.getStateSync(cacheKey)
@@ -149,7 +148,7 @@ export function useSimpleFetcherlessQuery<K, D, F>(
     setCounter(c => c + 1)
   }, [cacheKey])
 
-  const setAborter = useCallback((aborter: Optional<AbortController>) => {
+  const setAborter = useCallback((aborter: Nullable<AbortController>) => {
     aborterRef.current = aborter
     setCounter(c => c + 1)
   }, [cacheKey])
@@ -248,8 +247,8 @@ export function useSimpleFetcherfulQuery<K, D, F>(
 
   const [, setCounter] = useState(0)
 
-  const stateRef = useRef<Optional<State<D, F>>>()
-  const aborterRef = useRef<Optional<AbortController>>()
+  const stateRef = useRef<Nullable<State<D, F>>>()
+  const aborterRef = useRef<Nullable<AbortController>>()
 
   useMemo(() => {
     stateRef.current = core.getStateSync(cacheKey)
@@ -261,7 +260,7 @@ export function useSimpleFetcherfulQuery<K, D, F>(
     setCounter(c => c + 1)
   }, [cacheKey])
 
-  const setAborter = useCallback((aborter: Optional<AbortController>) => {
+  const setAborter = useCallback((aborter: Nullable<AbortController>) => {
     aborterRef.current = aborter
     setCounter(c => c + 1)
   }, [cacheKey])
