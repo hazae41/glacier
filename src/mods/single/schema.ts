@@ -25,8 +25,8 @@ export function createSchema<K, D, F>(
 ) {
   if (settings.fetcher == null)
     return new SimpleFetcherlessSchema<K, D, F>(settings)
-
-  return new SimpleFetcherfulSchema<K, D, F>(settings)
+  else
+    return new SimpleFetcherfulSchema<K, D, F>(settings)
 }
 
 export type SimpleSchema<K, D, F> =
