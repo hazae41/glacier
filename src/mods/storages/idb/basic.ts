@@ -172,7 +172,7 @@ export class IDBStorage implements Storage {
       const req = store.get(key)
 
       req.onerror = () => ok(new Err(IDBError.from(req.error)))
-      req.onsuccess = () => ok(req.result)
+      req.onsuccess = () => ok(new Ok(req.result))
     })
   }
 
