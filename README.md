@@ -3,14 +3,14 @@
 </div>
 
 ```bash
-npm i @hazae41/xswr
+npm i @hazae41/glacier
 ```
 
-[**Node Package 📦**](https://www.npmjs.com/package/@hazae41/xswr) • [**Read the docs 📚**](https://xswr.hazae41.me) • [**Next.js Example 🪣**](https://codesandbox.io/p/github/hazae41/xswr-example-next) • [**Expo Example 🪣**](https://snack.expo.dev/@git/github.com/hazae41/xswr-example-expo) • [**Comparison with other libs 🌐**](https://xswr.hazae41.me/faq/comparison)
+[**Node Package 📦**](https://www.npmjs.com/package/@hazae41/glacier) • [**Read the docs 📚**](https://xswr.hazae41.me) • [**Next.js Example 🪣**](https://codesandbox.io/p/github/hazae41/xswr-example-next) • [**Expo Example 🪣**](https://snack.expo.dev/@git/github.com/hazae41/xswr-example-expo) • [**Comparison with other libs 🌐**](https://xswr.hazae41.me/faq/comparison)
 
 ## Philosophy 🧠
 
-xswr uses two new approaches compared to other data fetching libraries like swr or react-query:
+Glacier uses two new approaches compared to other data fetching libraries like swr or react-query:
 1) Encapsulating key+fetcher+params in a single abstraction called schema.
 2) Composing features with very simple hooks instead of having bloated configuration and unexpected behaviors.
 
@@ -49,16 +49,16 @@ xswr uses two new approaches compared to other data fetching libraries like swr 
 
 # Installation 🔧
 
-Just install `@hazae41/xswr` using your favorite package manager.
+Just install `@hazae41/glacier` using your favorite package manager.
 
 ```bash
-npm i @hazae41/xswr
+npm i @hazae41/glacier
 ```
 
 Then, wrap your app in a `CoreProvider` component.
 
 ```tsx
-import { CoreProvider } from "@hazae41/xswr"
+import { CoreProvider } from "@hazae41/glacier"
 
 function MyWrapper() {
   return <CoreProvider>
@@ -69,7 +69,7 @@ function MyWrapper() {
 
 ## Your first mix 🧪
 
-When using xswr and its composition-based hooks, you create a mix and only include the ingredients you want.
+When using Glacier and its composition-based hooks, you create a mix and only include the ingredients you want.
 
 We'll do a request at `/api/data` using JSON, display it with a loading, and automatically refetch it.
 
@@ -117,7 +117,7 @@ function MyApp() {
 
 ## Advanced example 🗿
 
-Last example was good, but here is the best way to use XSWR.
+Last example was good, but here is the best way to use Glacier.
 
 ### Making our fetcher cancellable ⚡️
 
