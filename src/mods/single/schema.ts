@@ -1,103 +1,85 @@
 import { Nullable, Some } from "@hazae41/option";
 import { Err, Ok, Result } from "@hazae41/result";
-import { CooldownError, MissingFetcherError, Mutator, SimpleFetcherfulQuery, SimpleFetcherlessQuery, SimpleSkeletonQuery, State, Updater, core } from "index.js";
-import { CustomEventTarget } from "libs/ortho/ortho.js";
+import { CooldownError, MissingFetcherError, Mutator, SimpleFetcherfulReactQuery, SimpleFetcherlessReactQuery, SimpleSkeletonReactQuery, State, Updater, core } from "index.js";
 import { Time } from "libs/time/time.js";
 import { Fetched } from "mods/result/fetched.js";
 import { NormalizerMore } from "mods/types/normalizer.js";
 import { FetcherfulQuerySettings, FetcherlessQuerySettings, KeyedQuerySettings } from "mods/types/settings.js";
 import { Simple } from "./helper.js";
 
-export function createSchema<K, D, F>(
+export function createQuery<K, D, F>(
   settings: FetcherlessQuerySettings<K, D, F>
-): SimpleFetcherlessSchema<K, D, F>
+): SimpleFetcherlessQuery<K, D, F>
 
-export function createSchema<K, D, F>(
+export function createQuery<K, D, F>(
   settings: FetcherfulQuerySettings<K, D, F>
-): SimpleFetcherfulSchema<K, D, F>
+): SimpleFetcherfulQuery<K, D, F>
 
-export function createSchema<K, D, F>(
+export function createQuery<K, D, F>(
   settings: KeyedQuerySettings<K, D, F>,
-): SimpleSchema<K, D, F>
+): SimpleQuery<K, D, F>
 
-export function createSchema<K, D, F>(
+export function createQuery<K, D, F>(
   settings: KeyedQuerySettings<K, D, F>,
 ) {
   if (settings.fetcher == null)
-    return new SimpleFetcherlessSchema<K, D, F>(settings)
+    return new SimpleFetcherlessQuery<K, D, F>(settings)
   else
-    return new SimpleFetcherfulSchema<K, D, F>(settings)
+    return new SimpleFetcherfulQuery<K, D, F>(settings)
 }
 
-export type SimpleSchema<K, D, F> =
-  | SimpleFetcherlessSchema<K, D, F>
-  | SimpleFetcherfulSchema<K, D, F>
+export type SimpleQuery<K, D, F> =
+  | SimpleFetcherlessQuery<K, D, F>
+  | SimpleFetcherfulQuery<K, D, F>
 
-export namespace SimpleSchema {
+export namespace SimpleQuery {
   export type Infer<T> =
     | undefined
-    | SimpleFetcherlessSchema.Infer<T>
-    | SimpleFetcherfulSchema.Infer<T>
+    | SimpleFetcherlessQuery.Infer<T>
+    | SimpleFetcherfulQuery.Infer<T>
 
-  export type Queried<T> =
-    | SimpleSkeletonSchema.Queried<T>
-    | SimpleFetcherlessSchema.Queried<T>
-    | SimpleFetcherfulSchema.Queried<T>
+  export type Reactify<T> =
+    | SimpleSkeletonQuery.Reactify<T>
+    | SimpleFetcherlessQuery.Reactify<T>
+    | SimpleFetcherfulQuery.Reactify<T>
 }
 
-export namespace SimpleSkeletonSchema {
-  export type Queried<T> = T extends undefined ? SimpleSkeletonQuery<any, any, any> : never
+export namespace SimpleSkeletonQuery {
+  export type Reactify<T> = T extends undefined ? SimpleSkeletonReactQuery<any, any, any> : never
 }
 
-export namespace SimpleFetcherlessSchema {
-  export type Infer<T> = SimpleFetcherlessSchema<K<T>, D<T>, F<T>>
+export namespace SimpleFetcherlessQuery {
+  export type Infer<T> = SimpleFetcherlessQuery<K<T>, D<T>, F<T>>
 
-  export type Queried<T> = T extends SimpleFetcherlessSchema<infer K, infer D, infer F> ? SimpleFetcherlessQuery<K, D, F> : never
+  export type Reactify<T> = T extends SimpleFetcherlessQuery<infer K, infer D, infer F> ? SimpleFetcherlessReactQuery<K, D, F> : never
 
-  export type K<T> = T extends SimpleFetcherlessSchema<infer K, infer _D, infer _F> ? K : never
-  export type D<T> = T extends SimpleFetcherlessSchema<infer _K, infer D, infer _F> ? D : never
-  export type F<T> = T extends SimpleFetcherlessSchema<infer _K, infer _D, infer F> ? F : never
+  export type K<T> = T extends SimpleFetcherlessQuery<infer K, infer _D, infer _F> ? K : never
+  export type D<T> = T extends SimpleFetcherlessQuery<infer _K, infer D, infer _F> ? D : never
+  export type F<T> = T extends SimpleFetcherlessQuery<infer _K, infer _D, infer F> ? F : never
 }
 
-export namespace SimpleFetcherfulSchema {
-  export type Infer<T> = SimpleFetcherfulSchema<K<T>, D<T>, F<T>>
+export namespace SimpleFetcherfulQuery {
+  export type Infer<T> = SimpleFetcherfulQuery<K<T>, D<T>, F<T>>
 
-  export type Queried<T> = T extends SimpleFetcherfulSchema<infer K, infer D, infer F> ? SimpleFetcherfulQuery<K, D, F> : never
+  export type Reactify<T> = T extends SimpleFetcherfulQuery<infer K, infer D, infer F> ? SimpleFetcherfulReactQuery<K, D, F> : never
 
-  export type K<T> = T extends SimpleFetcherfulSchema<infer K, infer _D, infer _F> ? K : never
-  export type D<T> = T extends SimpleFetcherfulSchema<infer _K, infer D, infer _F> ? D : never
-  export type F<T> = T extends SimpleFetcherfulSchema<infer _K, infer _D, infer F> ? F : never
+  export type K<T> = T extends SimpleFetcherfulQuery<infer K, infer _D, infer _F> ? K : never
+  export type D<T> = T extends SimpleFetcherfulQuery<infer _K, infer D, infer _F> ? D : never
+  export type F<T> = T extends SimpleFetcherfulQuery<infer _K, infer _D, infer F> ? F : never
 }
 
-export class SimpleFetcherlessSchema<K, D, F> {
+export class SimpleFetcherlessQuery<K, D, F> {
   readonly cacheKey: string
-
-  readonly events = new CustomEventTarget<{
-    state: State<D, F>
-  }>()
-
-  readonly dispose: () => void
 
   constructor(
     readonly settings: FetcherlessQuerySettings<K, D, F>
   ) {
     this.cacheKey = Simple.getCacheKey(settings.key, settings)
-
-    const onState = (event: CustomEvent<State<any, any>>) => {
-      const { detail } = event
-      const subevent = new CustomEvent("state", { detail })
-      return this.events.dispatchEvent(subevent)
-    }
-
-    core.onState.addEventListener(this.cacheKey, onState, { passive: true })
-
-    this.dispose = () => {
-      core.onState.removeListener(this.cacheKey, onState)
-    }
   }
 
-  [Symbol.dispose]() {
-    this.dispose()
+  onState(callback: (state: CustomEvent<State<D, F>>) => void) {
+    core.onState.addEventListener(this.cacheKey, callback, { passive: true })
+    return () => core.onState.removeListener(this.cacheKey, callback)
   }
 
   async normalize(fetched: Nullable<Fetched<D, F>>, more: NormalizerMore) {
@@ -136,13 +118,18 @@ export class SimpleFetcherlessSchema<K, D, F> {
 
 }
 
-export class SimpleFetcherfulSchema<K, D, F> {
+export class SimpleFetcherfulQuery<K, D, F> {
   readonly cacheKey: string
 
   constructor(
     readonly settings: FetcherfulQuerySettings<K, D, F>
   ) {
     this.cacheKey = Simple.getCacheKey(settings.key, settings)
+  }
+
+  onState(callback: (state: CustomEvent<State<D, F>>) => void) {
+    core.onState.addEventListener(this.cacheKey, callback, { passive: true })
+    return () => core.onState.removeListener(this.cacheKey, callback)
   }
 
   async normalize(fetched: Nullable<Fetched<D, F>>, more: NormalizerMore) {

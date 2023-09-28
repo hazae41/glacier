@@ -1,4 +1,4 @@
-import { Query } from "mods/react/types/query.js"
+import { ReactQuery } from "mods/react/types/query.js"
 import { useEffect } from "react"
 
 /**
@@ -7,7 +7,7 @@ import { useEffect } from "react"
  * @param query 
  * @example You want to get some data once and share it in multiple components
  */
-export function useOnce<K, D, F>(query: Query<K, D, F>) {
+export function useOnce<K, D, F>(query: ReactQuery<K, D, F>) {
   const { data, fetch } = query
 
   useEffect(() => {

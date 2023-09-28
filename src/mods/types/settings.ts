@@ -90,14 +90,14 @@ export interface FetcherlessQuerySettings<K, D, F> {
   readonly storage?: Storage
 }
 
-export type ScrollQuerySettings<K, D, F> =
-  | ScrollFetcherlessQuerySettings<K, D, F>
-  | ScrollFetcherfulQuerySettings<K, D, F>
+export type ScrollableQuerySettings<K, D, F> =
+  | ScrollableFetcherlessQuerySettings<K, D, F>
+  | ScrollableFetcherfulQuerySettings<K, D, F>
 
-export interface ScrollFetcherlessQuerySettings<K, D, F> extends FetcherlessQuerySettings<K, D[], F> {
+export interface ScrollableFetcherlessQuerySettings<K, D, F> extends FetcherlessQuerySettings<K, D[], F> {
   readonly scroller: Scroller<K, D, F>
 }
 
-export interface ScrollFetcherfulQuerySettings<K, D, F> extends FetcherfulQuerySettings<K, D[], F> {
+export interface ScrollableFetcherfulQuerySettings<K, D, F> extends FetcherfulQuerySettings<K, D[], F> {
   readonly scroller: Scroller<K, D, F>
 }

@@ -5,7 +5,7 @@ import { core } from "mods/core/core.js";
 import { DEFAULT_EQUALS, DEFAULT_SERIALIZER } from "mods/defaults.js";
 import { Fetched } from "mods/result/fetched.js";
 import { TimesInit } from "mods/result/times.js";
-import { QuerySettings, ScrollFetcherfulQuerySettings } from "mods/types/settings.js";
+import { QuerySettings, ScrollableFetcherfulQuerySettings } from "mods/types/settings.js";
 import { State } from "mods/types/state.js";
 
 export class ScrollError extends Error {
@@ -18,7 +18,7 @@ export class ScrollError extends Error {
 
 }
 
-export namespace Scroll {
+export namespace Scrollable {
 
   export function getCacheKey<K, D, F>(key: K, settings: QuerySettings<K, D, F>) {
     if (typeof key === "string")
@@ -42,7 +42,7 @@ export namespace Scroll {
   export async function first<K, D, F>(
     cacheKey: string,
     aborter: AbortController,
-    settings: ScrollFetcherfulQuerySettings<K, D, F>
+    settings: ScrollableFetcherfulQuerySettings<K, D, F>
   ): Promise<Result<State<D[], F>, Error>> {
     const { dataEqualser = DEFAULT_EQUALS } = settings
 
@@ -82,7 +82,7 @@ export namespace Scroll {
   export async function scroll<K, D, F>(
     cacheKey: string,
     aborter: AbortController,
-    settings: ScrollFetcherfulQuerySettings<K, D, F>
+    settings: ScrollableFetcherfulQuerySettings<K, D, F>
   ): Promise<Result<State<D[], F>, Error>> {
     const previous = await core.get(cacheKey, settings)
     const previousPages = previous.real?.data?.inner ?? []

@@ -1,4 +1,4 @@
-import { Query } from "mods/react/types/query.js"
+import { ReactQuery } from "mods/react/types/query.js"
 import { Fetched } from "mods/result/fetched.js"
 
 /**
@@ -8,7 +8,7 @@ import { Fetched } from "mods/result/fetched.js"
  * @param query 
  * @param fallback 
  */
-export function useFallback<K, D, F>(query: Query<K, D, F>, factory?: () => Fetched<D, F>) {
+export function useFallback<K, D, F>(query: ReactQuery<K, D, F>, factory?: () => Fetched<D, F>) {
   if (factory == null)
     return
   if (query.data != null)

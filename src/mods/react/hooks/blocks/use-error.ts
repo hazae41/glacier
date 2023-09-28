@@ -1,4 +1,4 @@
-import { Query } from "mods/react/types/query.js"
+import { ReactQuery } from "mods/react/types/query.js"
 import { useEffect } from "react"
 
 /**
@@ -6,7 +6,7 @@ import { useEffect } from "react"
  * @param query 
  * @param callback 
  */
-export function useError<K, D, F>(query: Query<K, D, F>, callback: (error: F) => void) {
+export function useError<K, D, F>(query: ReactQuery<K, D, F>, callback: (error: F) => void) {
   const { error } = query
 
   useEffect(() => {

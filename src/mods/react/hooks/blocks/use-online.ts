@@ -1,11 +1,11 @@
-import { Query } from "mods/react/types/query.js"
+import { ReactQuery } from "mods/react/types/query.js"
 import { useEffect } from "react"
 
 /**
  * Do a request when the browser is online
  * @param query 
  */
-export function useOnline<K, D, F>(query: Query<K, D, F>) {
+export function useOnline<K, D, F>(query: ReactQuery<K, D, F>) {
   const { ready, fetch } = query
 
   useEffect(() => {

@@ -1,4 +1,4 @@
-import { Query } from "mods/react/types/query.js"
+import { ReactQuery } from "mods/react/types/query.js"
 import { useEffect, useMemo, useRef } from "react"
 
 export interface RetrySettings {
@@ -18,7 +18,7 @@ export interface RetrySettings {
  * @see https://en.wikipedia.org/wiki/Exponential_backoff
  * @see https://en.wikipedia.org/wiki/Geometric_progression
  */
-export function useRetry<K, D, F>(query: Query<K, D, F>, settings: RetrySettings = {}) {
+export function useRetry<K, D, F>(query: ReactQuery<K, D, F>, settings: RetrySettings = {}) {
   const { ready, cacheKey, refetch, error } = query
   const { init = 1000, base = 2, max = 3 } = settings
 

@@ -1,38 +1,38 @@
 import { Nullable } from "@hazae41/option";
 import { Err, Ok, Result } from "@hazae41/result";
+import { SimpleQuery } from "index.js";
 import { useRenderRef } from "libs/react/ref.js";
 import { Time } from "libs/time/time.js";
 import { CooldownError, MissingFetcherError, MissingKeyError, core } from "mods/core/core.js";
-import { FetcherfulQuery, FetcherlessQuery, SkeletonQuery } from "mods/react/types/query.js";
+import { FetcherfulReactQuery, FetcherlessReactQuery, SkeletonReactQuery } from "mods/react/types/query.js";
 import { Simple } from "mods/single/helper.js";
-import { SimpleSchema } from "mods/single/schema.js";
 import { Mutator } from "mods/types/mutator.js";
 import { FetcherfulQuerySettings, FetcherlessQuerySettings } from "mods/types/settings.js";
 import { State } from "mods/types/state.js";
 import { Updater } from "mods/types/updater.js";
 import { DependencyList, useCallback, useEffect, useMemo, useRef, useState } from "react";
 
-export function useQuery<T extends SimpleSchema.Infer<T>, L extends DependencyList>(
+export function useQuery<T extends SimpleQuery.Infer<T>, L extends DependencyList>(
   factory: (...deps: L) => T,
   deps: L
-): SimpleSchema.Queried<T> {
-  const schema = useMemo(() => {
+): SimpleQuery.Reactify<T> {
+  const query = useMemo(() => {
     return factory(...deps)
   }, deps)
 
-  if (schema == null)
-    return useSimpleSkeletonQuery() as SimpleSchema.Queried<T>
+  if (query == null)
+    return useSimpleSkeletonQuery() as SimpleQuery.Reactify<T>
 
-  if (schema.settings.fetcher == null)
-    return useSimpleFetcherlessQuery(schema.settings) as SimpleSchema.Queried<T>
+  if (query.settings.fetcher == null)
+    return useSimpleFetcherlessQuery(query.settings) as SimpleQuery.Reactify<T>
 
-  return useSimpleFetcherfulQuery(schema.settings) as SimpleSchema.Queried<T>
+  return useSimpleFetcherfulQuery(query.settings) as SimpleQuery.Reactify<T>
 }
 
 /**
  * Query for a single resource
  */
-export interface SimpleSkeletonQuery<K, D, F> extends SkeletonQuery<K, D, F> {
+export interface SimpleSkeletonReactQuery<K, D, F> extends SkeletonReactQuery<K, D, F> {
   /**
    * Optimistic update
    * @param updater Mutation function
@@ -44,7 +44,7 @@ export interface SimpleSkeletonQuery<K, D, F> extends SkeletonQuery<K, D, F> {
 /**
  * Query for a single resource
  */
-export interface SimpleFetcherfulQuery<K, D, F> extends FetcherfulQuery<K, D, F> {
+export interface SimpleFetcherfulReactQuery<K, D, F> extends FetcherfulReactQuery<K, D, F> {
   /**
    * Optimistic update
    * @param updater Mutation function
@@ -56,7 +56,7 @@ export interface SimpleFetcherfulQuery<K, D, F> extends FetcherfulQuery<K, D, F>
 /**
  * Query for a single resource
  */
-export interface SimpleFetcherlessQuery<K, D, F> extends FetcherlessQuery<K, D, F> {
+export interface SimpleFetcherlessReactQuery<K, D, F> extends FetcherlessReactQuery<K, D, F> {
   /**
    * Optimistic update
    * @param updater Mutation function
@@ -65,7 +65,7 @@ export interface SimpleFetcherlessQuery<K, D, F> extends FetcherlessQuery<K, D, 
   update(updater: Updater<K, D, F>, aborter?: AbortController): Promise<Result<Result<never, MissingFetcherError>, never>>
 }
 
-export function useSimpleSkeletonQuery<K, D, F>(): SimpleSkeletonQuery<K, D, F> {
+export function useSimpleSkeletonQuery<K, D, F>(): SimpleSkeletonReactQuery<K, D, F> {
   useRenderRef(undefined)
 
   const cacheKey = useMemo(() => {
@@ -126,7 +126,7 @@ export function useSimpleSkeletonQuery<K, D, F>(): SimpleSkeletonQuery<K, D, F> 
 
 export function useSimpleFetcherlessQuery<K, D, F>(
   settings: FetcherlessQuerySettings<K, D, F>,
-): SimpleFetcherlessQuery<K, D, F> {
+): SimpleFetcherlessReactQuery<K, D, F> {
   const settingsRef = useRenderRef(settings)
 
   const cacheKey = useMemo(() => {
@@ -238,7 +238,7 @@ export function useSimpleFetcherlessQuery<K, D, F>(
 
 export function useSimpleFetcherfulQuery<K, D, F>(
   settings: FetcherfulQuerySettings<K, D, F>,
-): SimpleFetcherfulQuery<K, D, F> {
+): SimpleFetcherfulReactQuery<K, D, F> {
   const settingsRef = useRenderRef(settings)
 
   const cacheKey = useMemo(() => {

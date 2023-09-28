@@ -1,103 +1,85 @@
 import { Nullable, Option, Some } from "@hazae41/option";
 import { Err, Ok, Result } from "@hazae41/result";
-import { CooldownError, MissingFetcherError, Mutator, ScrollFetcherfulQuery, ScrollFetcherlessQuery, ScrollSkeletonQuery, State, core } from "index.js";
+import { CooldownError, MissingFetcherError, Mutator, ScrollableFetcherfulReactQuery, ScrollableFetcherlessReactQuery, ScrollableSkeletonReactQuery, State, core } from "index.js";
 import { Arrays } from "libs/arrays/arrays.js";
-import { CustomEventTarget } from "libs/ortho/ortho.js";
 import { Time } from "libs/time/time.js";
 import { Fetched } from "mods/result/fetched.js";
 import { NormalizerMore } from "mods/types/normalizer.js";
-import { ScrollFetcherfulQuerySettings, ScrollFetcherlessQuerySettings, ScrollQuerySettings } from "mods/types/settings.js";
-import { Scroll } from "./helper.js";
+import { ScrollableFetcherfulQuerySettings, ScrollableFetcherlessQuerySettings, ScrollableQuerySettings } from "mods/types/settings.js";
+import { Scrollable } from "./helper.js";
 
-export function createScrollSchema<K, D, F>(
-  settings: ScrollFetcherfulQuerySettings<K, D, F>,
-): ScrollFetcherfulSchema<K, D, F>
+export function createScrollableQuery<K, D, F>(
+  settings: ScrollableFetcherfulQuerySettings<K, D, F>,
+): ScrollableFetcherfulQuery<K, D, F>
 
-export function createScrollSchema<K, D, F>(
-  settings: ScrollFetcherlessQuerySettings<K, D, F>,
-): ScrollFetcherlessSchema<K, D, F>
+export function createScrollableQuery<K, D, F>(
+  settings: ScrollableFetcherlessQuerySettings<K, D, F>,
+): ScrollableFetcherlessQuery<K, D, F>
 
-export function createScrollSchema<K, D, F>(
-  settings: ScrollQuerySettings<K, D, F>,
-): ScrollSchema<K, D, F>
+export function createScrollableQuery<K, D, F>(
+  settings: ScrollableQuerySettings<K, D, F>,
+): ScrollableQuery<K, D, F>
 
-export function createScrollSchema<K, D, F>(
-  settings: ScrollQuerySettings<K, D, F>,
+export function createScrollableQuery<K, D, F>(
+  settings: ScrollableQuerySettings<K, D, F>,
 ) {
   if (settings.fetcher == null)
-    return new ScrollFetcherlessSchema<K, D, F>(settings)
-  return new ScrollFetcherfulSchema<K, D, F>(settings)
+    return new ScrollableFetcherlessQuery<K, D, F>(settings)
+  return new ScrollableFetcherfulQuery<K, D, F>(settings)
 }
 
-export type ScrollSchema<K, D, F> =
-  | ScrollFetcherfulSchema<K, D, F>
-  | ScrollFetcherlessSchema<K, D, F>
+export type ScrollableQuery<K, D, F> =
+  | ScrollableFetcherfulQuery<K, D, F>
+  | ScrollableFetcherlessQuery<K, D, F>
 
-export namespace ScrollSchema {
+export namespace ScrollableQuery {
   export type Infer<T> =
     | undefined
-    | ScrollFetcherlessSchema.Infer<T>
-    | ScrollFetcherfulSchema.Infer<T>
+    | ScrollableFetcherlessQuery.Infer<T>
+    | ScrollableFetcherfulQuery.Infer<T>
 
-  export type Queried<T> =
-    | ScrollSkeletonSchema.Queried<T>
-    | ScrollFetcherlessSchema.Queried<T>
-    | ScrollFetcherfulSchema.Queried<T>
+  export type Reactify<T> =
+    | ScrollableSkeletonQuery.Reactify<T>
+    | ScrollableFetcherlessQuery.Reactify<T>
+    | ScrollableFetcherfulQuery.Reactify<T>
 }
 
-export namespace ScrollSkeletonSchema {
-  export type Queried<T> = T extends undefined ? ScrollSkeletonQuery<any, any, any> : never
+export namespace ScrollableSkeletonQuery {
+  export type Reactify<T> = T extends undefined ? ScrollableSkeletonReactQuery<any, any, any> : never
 }
 
-export namespace ScrollFetcherlessSchema {
-  export type Infer<T> = ScrollFetcherlessSchema<K<T>, D<T>, F<T>>
+export namespace ScrollableFetcherlessQuery {
+  export type Infer<T> = ScrollableFetcherlessQuery<K<T>, D<T>, F<T>>
 
-  export type Queried<T> = T extends ScrollFetcherlessSchema<infer K, infer D, infer F> ? ScrollFetcherlessQuery<K, D, F> : never
+  export type Reactify<T> = T extends ScrollableFetcherlessQuery<infer K, infer D, infer F> ? ScrollableFetcherlessReactQuery<K, D, F> : never
 
-  export type K<T> = T extends ScrollFetcherlessSchema<infer K, infer _D, infer _F> ? K : never
-  export type D<T> = T extends ScrollFetcherlessSchema<infer _K, infer D, infer _F> ? D : never
-  export type F<T> = T extends ScrollFetcherlessSchema<infer _K, infer _D, infer F> ? F : never
+  export type K<T> = T extends ScrollableFetcherlessQuery<infer K, infer _D, infer _F> ? K : never
+  export type D<T> = T extends ScrollableFetcherlessQuery<infer _K, infer D, infer _F> ? D : never
+  export type F<T> = T extends ScrollableFetcherlessQuery<infer _K, infer _D, infer F> ? F : never
 }
 
-export namespace ScrollFetcherfulSchema {
-  export type Infer<T> = ScrollFetcherfulSchema<K<T>, D<T>, F<T>>
+export namespace ScrollableFetcherfulQuery {
+  export type Infer<T> = ScrollableFetcherfulQuery<K<T>, D<T>, F<T>>
 
-  export type Queried<T> = T extends ScrollFetcherfulSchema<infer K, infer D, infer F> ? ScrollFetcherfulQuery<K, D, F> : never
+  export type Reactify<T> = T extends ScrollableFetcherfulQuery<infer K, infer D, infer F> ? ScrollableFetcherfulReactQuery<K, D, F> : never
 
-  export type K<T> = T extends ScrollFetcherfulSchema<infer K, infer _D, infer _F> ? K : never
-  export type D<T> = T extends ScrollFetcherfulSchema<infer _K, infer D, infer _F> ? D : never
-  export type F<T> = T extends ScrollFetcherfulSchema<infer _K, infer _D, infer F> ? F : never
+  export type K<T> = T extends ScrollableFetcherfulQuery<infer K, infer _D, infer _F> ? K : never
+  export type D<T> = T extends ScrollableFetcherfulQuery<infer _K, infer D, infer _F> ? D : never
+  export type F<T> = T extends ScrollableFetcherfulQuery<infer _K, infer _D, infer F> ? F : never
 }
 
-export class ScrollFetcherfulSchema<K, D, F> {
+export class ScrollableFetcherfulQuery<K, D, F> {
   readonly cacheKey: string
 
-  readonly events = new CustomEventTarget<{
-    state: State<D, F>
-  }>()
-
-  readonly dispose: () => void
-
   constructor(
-    readonly settings: ScrollFetcherfulQuerySettings<K, D, F>
+    readonly settings: ScrollableFetcherfulQuerySettings<K, D, F>
   ) {
-    this.cacheKey = Scroll.getCacheKey(settings.key, settings)
-
-    const onState = (event: CustomEvent<State<any, any>>) => {
-      const { detail } = event
-      const subevent = new CustomEvent("state", { detail })
-      return this.events.dispatchEvent(subevent)
-    }
-
-    core.onState.addEventListener(this.cacheKey, onState, { passive: true })
-
-    this.dispose = () => {
-      core.onState.removeListener(this.cacheKey, onState)
-    }
+    this.cacheKey = Scrollable.getCacheKey(settings.key, settings)
   }
 
-  [Symbol.dispose]() {
-    this.dispose()
+  onState(callback: (state: CustomEvent<State<D, F>>) => void) {
+    core.onState.addEventListener(this.cacheKey, callback, { passive: true })
+    return () => core.onState.removeListener(this.cacheKey, callback)
   }
 
   async normalize(fetched: Nullable<Fetched<D[], F>>, more: NormalizerMore) {
@@ -137,7 +119,7 @@ export class ScrollFetcherfulSchema<K, D, F> {
       return new Err(new CooldownError())
 
     const result = await core.fetchOrJoin(cacheKey, aborter, async () =>
-      await Scroll.first(cacheKey, aborter, settings))
+      await Scrollable.first(cacheKey, aborter, settings))
 
     return new Ok(result)
   }
@@ -146,7 +128,7 @@ export class ScrollFetcherfulSchema<K, D, F> {
     const { cacheKey, settings } = this
 
     const result = await core.fetchOrReplace(cacheKey, aborter, async () =>
-      await Scroll.first(cacheKey, aborter, settings))
+      await Scrollable.first(cacheKey, aborter, settings))
 
     return new Ok(result)
   }
@@ -155,20 +137,25 @@ export class ScrollFetcherfulSchema<K, D, F> {
     const { cacheKey, settings } = this
 
     const result = await core.fetchOrReplace(cacheKey, aborter, async () =>
-      await Scroll.scroll(cacheKey, aborter, settings))
+      await Scrollable.scroll(cacheKey, aborter, settings))
 
     return new Ok(result)
   }
 
 }
 
-export class ScrollFetcherlessSchema<K, D, F> {
+export class ScrollableFetcherlessQuery<K, D, F> {
   readonly cacheKey: string
 
   constructor(
-    readonly settings: ScrollFetcherlessQuerySettings<K, D, F>
+    readonly settings: ScrollableFetcherlessQuerySettings<K, D, F>
   ) {
-    this.cacheKey = Scroll.getCacheKey(settings.key, settings)
+    this.cacheKey = Scrollable.getCacheKey(settings.key, settings)
+  }
+
+  onState(callback: (state: CustomEvent<State<D, F>>) => void) {
+    core.onState.addEventListener(this.cacheKey, callback, { passive: true })
+    return () => core.onState.removeListener(this.cacheKey, callback)
   }
 
   async normalize(fetched: Nullable<Fetched<D[], F>>, more: NormalizerMore) {

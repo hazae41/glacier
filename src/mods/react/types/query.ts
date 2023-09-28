@@ -8,12 +8,12 @@ import { Mutator } from "mods/types/mutator.js"
 import { FetcherfulQuerySettings, FetcherlessQuerySettings, SkeletonQuerySettings } from "mods/types/settings.js"
 import { FetchedState, State } from "mods/types/state.js"
 
-export type Query<K, D, F> =
-  | SkeletonQuery<K, D, F>
-  | FetcherfulQuery<K, D, F>
-  | FetcherlessQuery<K, D, F>
+export type ReactQuery<K, D, F> =
+  | SkeletonReactQuery<K, D, F>
+  | FetcherfulReactQuery<K, D, F>
+  | FetcherlessReactQuery<K, D, F>
 
-export interface SkeletonQuery<K, D, F> extends Omit<SkeletonQuerySettings<K, D, F>, "time" | "cooldown" | "expiration"> {
+export interface SkeletonReactQuery<K, D, F> extends Omit<SkeletonQuerySettings<K, D, F>, "time" | "cooldown" | "expiration"> {
 
   /**
    * Cache key, the serialized version of key
@@ -96,7 +96,7 @@ export interface SkeletonQuery<K, D, F> extends Omit<SkeletonQuerySettings<K, D,
 
 }
 
-export interface FetcherfulQuery<K, D, F> extends Omit<FetcherfulQuerySettings<K, D, F>, "time" | "cooldown" | "expiration"> {
+export interface FetcherfulReactQuery<K, D, F> extends Omit<FetcherfulQuerySettings<K, D, F>, "time" | "cooldown" | "expiration"> {
 
   /**
    * Cache key, the serialized version of key
@@ -179,7 +179,7 @@ export interface FetcherfulQuery<K, D, F> extends Omit<FetcherfulQuerySettings<K
 
 }
 
-export interface FetcherlessQuery<K, D, F> extends Omit<FetcherlessQuerySettings<K, D, F>, "time" | "cooldown" | "expiration"> {
+export interface FetcherlessReactQuery<K, D, F> extends Omit<FetcherlessQuerySettings<K, D, F>, "time" | "cooldown" | "expiration"> {
 
   /**
    * Cache key, the serialized version of key

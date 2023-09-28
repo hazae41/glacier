@@ -1,4 +1,4 @@
-import { Query } from "mods/react/types/query.js"
+import { ReactQuery } from "mods/react/types/query.js"
 import { useEffect } from "react"
 
 /**
@@ -7,7 +7,7 @@ import { useEffect } from "react"
  * @see useOnce for doing a request only if there is no data yet
  * @param query 
  */
-export function useMount<K, D, F>(query: Query<K, D, F>) {
+export function useMount<K, D, F>(query: ReactQuery<K, D, F>) {
   const { fetch } = query
 
   useEffect(() => {

@@ -1,35 +1,35 @@
 import { Nullable, Option } from "@hazae41/option";
 import { Err, Ok, Result } from "@hazae41/result";
+import { ScrollableQuery } from "index.js";
 import { Arrays } from "libs/arrays/arrays.js";
 import { useRenderRef } from "libs/react/ref.js";
 import { Time } from "libs/time/time.js";
 import { CooldownError, MissingFetcherError, MissingKeyError, core } from "mods/core/core.js";
-import { FetcherfulQuery, FetcherlessQuery, SkeletonQuery } from "mods/react/types/query.js";
-import { Scroll } from "mods/scroll/helper.js";
-import { ScrollSchema } from "mods/scroll/schema.js";
+import { FetcherfulReactQuery, FetcherlessReactQuery, SkeletonReactQuery } from "mods/react/types/query.js";
+import { Scrollable } from "mods/scroll/helper.js";
 import { Mutator } from "mods/types/mutator.js";
-import { ScrollFetcherfulQuerySettings, ScrollFetcherlessQuerySettings } from "mods/types/settings.js";
+import { ScrollableFetcherfulQuerySettings, ScrollableFetcherlessQuerySettings } from "mods/types/settings.js";
 import { State } from "mods/types/state.js";
 import { DependencyList, useCallback, useEffect, useMemo, useRef, useState } from "react";
 
-export function useScrollQuery<T extends ScrollSchema.Infer<T>, L extends DependencyList>(
+export function useScrollableQuery<T extends ScrollableQuery.Infer<T>, L extends DependencyList>(
   factory: (...deps: L) => T,
   deps: L
-): ScrollSchema.Queried<T> {
-  const schema = useMemo(() => {
+): ScrollableQuery.Reactify<T> {
+  const query = useMemo(() => {
     return factory(...deps)
   }, deps)
 
-  if (schema == null)
-    return useSkeletonScrollQuery() as ScrollSchema.Queried<T>
+  if (query == null)
+    return useSkeletonScrollableQuery() as ScrollableQuery.Reactify<T>
 
-  if (schema.settings.fetcher == null)
-    return useFetcherlessScrollQuery(schema.settings) as ScrollSchema.Queried<T>
+  if (query.settings.fetcher == null)
+    return useFetcherlessScrollableQuery(query.settings) as ScrollableQuery.Reactify<T>
 
-  return useFetcherfulScrollQuery(schema.settings) as ScrollSchema.Queried<T>
+  return useFetcherfulScrollableQuery(query.settings) as ScrollableQuery.Reactify<T>
 }
 
-export interface ScrollSkeletonQuery<K, D, F> extends SkeletonQuery<K, D[], F> {
+export interface ScrollableSkeletonReactQuery<K, D, F> extends SkeletonReactQuery<K, D[], F> {
   /**
    * Fetch the next page
    */
@@ -44,7 +44,7 @@ export interface ScrollSkeletonQuery<K, D, F> extends SkeletonQuery<K, D[], F> {
 /**
  * Query for a scrolling resource
  */
-export interface ScrollFetcherlessQuery<K, D, F> extends FetcherlessQuery<K, D[], F> {
+export interface ScrollableFetcherlessReactQuery<K, D, F> extends FetcherlessReactQuery<K, D[], F> {
   /**
    * Fetch the next page
    */
@@ -59,7 +59,7 @@ export interface ScrollFetcherlessQuery<K, D, F> extends FetcherlessQuery<K, D[]
 /**
  * Query for a scrolling resource
  */
-export interface ScrollFetcherfulQuery<K, D, F> extends FetcherfulQuery<K, D[], F> {
+export interface ScrollableFetcherfulReactQuery<K, D, F> extends FetcherfulReactQuery<K, D[], F> {
   /**
    * Fetch the next page
    */
@@ -71,7 +71,7 @@ export interface ScrollFetcherfulQuery<K, D, F> extends FetcherfulQuery<K, D[], 
   peek(): Nullable<K>
 }
 
-export function useSkeletonScrollQuery<K, D, F>(): ScrollSkeletonQuery<K, D, F> {
+export function useSkeletonScrollableQuery<K, D, F>(): ScrollableSkeletonReactQuery<K, D, F> {
   useRenderRef(undefined)
 
   const cacheKey = useMemo(() => {
@@ -141,13 +141,13 @@ export function useSkeletonScrollQuery<K, D, F>(): ScrollSkeletonQuery<K, D, F> 
  * @param settings 
  * @returns 
  */
-export function useFetcherlessScrollQuery<K, D, F>(
-  settings: ScrollFetcherlessQuerySettings<K, D, F>,
-): ScrollFetcherlessQuery<K, D, F> {
+export function useFetcherlessScrollableQuery<K, D, F>(
+  settings: ScrollableFetcherlessQuerySettings<K, D, F>,
+): ScrollableFetcherlessReactQuery<K, D, F> {
   const settingsRef = useRenderRef(settings)
 
   const cacheKey = useMemo(() => {
-    return Scroll.getCacheKey(settings.key, settingsRef.current)
+    return Scrollable.getCacheKey(settings.key, settingsRef.current)
   }, [settings.key])
 
   const [, setCounter] = useState(0)
@@ -258,13 +258,13 @@ export function useFetcherlessScrollQuery<K, D, F>(
   }
 }
 
-export function useFetcherfulScrollQuery<K, D, F>(
-  settings: ScrollFetcherfulQuerySettings<K, D, F>,
-): ScrollFetcherfulQuery<K, D, F> {
+export function useFetcherfulScrollableQuery<K, D, F>(
+  settings: ScrollableFetcherfulQuerySettings<K, D, F>,
+): ScrollableFetcherfulReactQuery<K, D, F> {
   const settingsRef = useRenderRef(settings)
 
   const cacheKey = useMemo(() => {
-    return Scroll.getCacheKey(settings.key, settingsRef.current)
+    return Scrollable.getCacheKey(settings.key, settingsRef.current)
   }, [settings.key])
 
   const [, setCounter] = useState(0)
@@ -326,7 +326,7 @@ export function useFetcherfulScrollQuery<K, D, F>(
       return new Ok(new Ok(new Err(new CooldownError())))
 
     const result = await core.fetchOrJoin(cacheKey, aborter, async () =>
-      await Scroll.first(cacheKey, aborter, settings))
+      await Scrollable.first(cacheKey, aborter, settings))
 
     return new Ok(new Ok(new Ok(result)))
   }, [cacheKey])
@@ -335,7 +335,7 @@ export function useFetcherfulScrollQuery<K, D, F>(
     const settings = settingsRef.current
 
     const result = await core.fetchOrReplace(cacheKey, aborter, async () =>
-      await Scroll.first(cacheKey, aborter, settings))
+      await Scrollable.first(cacheKey, aborter, settings))
 
     return new Ok(new Ok(result))
   }, [cacheKey])
@@ -344,7 +344,7 @@ export function useFetcherfulScrollQuery<K, D, F>(
     const settings = settingsRef.current
 
     const result = await core.fetchOrReplace(cacheKey, aborter, async () =>
-      await Scroll.scroll(cacheKey, aborter, settings))
+      await Scrollable.scroll(cacheKey, aborter, settings))
 
     return new Ok(new Ok(result))
   }, [cacheKey])
@@ -353,7 +353,7 @@ export function useFetcherfulScrollQuery<K, D, F>(
     const settings = settingsRef.current
 
     const result = await core.fetchOrJoin(cacheKey, aborter, async () =>
-      await Scroll.first(cacheKey, aborter, settings))
+      await Scrollable.first(cacheKey, aborter, settings))
 
     return new Ok(new Ok(result))
   }, [cacheKey])
