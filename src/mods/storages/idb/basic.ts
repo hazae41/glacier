@@ -15,7 +15,7 @@ export function useIDBStorage(params?: IDBStorageParams) {
   useEffect(() => () => {
     if (!storage.current?.isOk())
       return
-    storage.current?.inner.unmount().catch(console.error)
+    storage.current?.inner[Symbol.asyncDispose]().catch(console.error)
   }, [])
 
   return storage.current
@@ -27,12 +27,26 @@ export interface IDBStorageParams {
   valueSerializer?: Bicoder<RawState, string>
 }
 
+export class IDBError extends Error {
+  readonly #class = IDBError
+  readonly name = this.#class.name
+
+  constructor(options: ErrorOptions) {
+    super(`Could not use IndexedDB`, options)
+  }
+
+  static from(cause: unknown) {
+    return new IDBError({ cause })
+  }
+
+}
+
 export class IDBStorage implements Storage {
   readonly async = true as const
 
-  readonly #database: Promise<IDBDatabase>
+  readonly database: Promise<Result<IDBDatabase, IDBError>>
 
-  readonly #onunload: () => void
+  readonly beforeunload: () => void
 
   #storageKeys = new Map<string, number>()
 
@@ -41,10 +55,30 @@ export class IDBStorage implements Storage {
     readonly keySerializer = SyncIdentity as Encoder<string, string>,
     readonly valueSerializer = SyncIdentity as Bicoder<RawState, unknown>
   ) {
-    this.#database = this.#load()
+    this.database = new Promise<Result<IDBDatabase, IDBError>>(ok => {
+      const req = indexedDB.open(this.name, 1)
 
-    this.#onunload = () => this.#unload()
-    addEventListener("beforeunload", this.#onunload)
+      req.onupgradeneeded = () =>
+        req.result.createObjectStore("keyval", {})
+
+      req.onblocked = () => ok(new Err(IDBError.from("blocked")))
+      req.onerror = () => ok(new Err(IDBError.from(req.error)))
+      req.onsuccess = () => ok(new Ok(req.result))
+    })
+
+    this.tryLoadKeys().then(r => r.ignore())
+
+    this.beforeunload = () => {
+      this.trySaveKeys().then(r => r.ignore())
+    }
+
+    addEventListener("beforeunload", this.beforeunload)
+  }
+
+  async [Symbol.asyncDispose]() {
+    removeEventListener("beforeunload", this.beforeunload)
+    await this.tryCollect().then(r => r.ignore())
+    await this.trySaveKeys().then(r => r.ignore())
   }
 
   static tryCreate(params: IDBStorageParams = {}): Result<IDBStorage, StorageCreationError> {
@@ -57,73 +91,75 @@ export class IDBStorage implements Storage {
   }
 
   /**
-   * Load the database and the garbage collector keys
+   * Load the keys and garbage collect them
    * @returns 
    */
-  async #load() {
-    const database = await new Promise<IDBDatabase>((ok, err) => {
-      const req = indexedDB.open(this.name, 1)
+  async tryLoadKeys() {
+    return await this.#tryTransact(async store => {
+      return await Result.unthrow<Result<void, IDBError>>(async t => {
+        const keys = await this.#tryGet<[string, number][]>(store, "__keys").then(r => r.throw(t))
 
-      req.onupgradeneeded = () =>
-        req.result.createObjectStore("keyval", {})
+        if (keys == null)
+          return Ok.void()
 
-      req.onblocked = () => err("blocked")
-      req.onsuccess = () => ok(req.result)
-      req.onerror = () => err(req.error)
-    })
+        this.#storageKeys = new Map(keys)
 
-    await this.#transact(database, async store => {
-      const keys = await this.#get<[string, number][]>(store, "__keys")
+        await this.#tryDelete(store, "__keys").then(r => r.throw(t))
+        await this.#tryCollect(store).then(r => r.throw(t))
 
-      if (keys == null)
-        return
-
-      this.#storageKeys = new Map(keys)
-
-      await this.#delete(store, "__keys").catch(console.error)
-      await this.#collect(store).catch(console.error)
-    }, "readwrite")
-
-    return database
-  }
-
-  async unmount() {
-    removeEventListener("beforeunload", this.#onunload)
-
-    await this.collect()
+        return Ok.void()
+      })
+    }, "readwrite").then(r => r.ignore())
   }
 
   /**
-   * Save the garbage collector keys
+   * Save the keys to be garbage collected on load
    */
-  async #unload() {
-    await this.#transact(await this.#database, async store => {
-      await this.#set(store, "__keys", [...this.#storageKeys])
+  async trySaveKeys() {
+    return await this.#tryTransact(async store => {
+      return await this.#trySet(store, "__keys", [...this.#storageKeys])
     }, "readwrite")
   }
 
-  async #collect(store: IDBObjectStore) {
+  async #tryCollect(store: IDBObjectStore) {
     for (const [key, expiration] of this.#storageKeys) {
       if (expiration > Date.now())
         continue
+
+      const result = await this.#tryDelete(store, key)
+
+      if (result.isErr())
+        continue
       this.#storageKeys.delete(key)
-      await this.#delete(store, key)
     }
+
+    return Ok.void()
   }
 
-  async collect() {
-    await this.#transact(await this.#database, async store => {
-      return await this.#collect(store)
+  async tryCollect() {
+    return await this.#tryTransact(async store => {
+      return await this.#tryCollect(store)
     }, "readwrite")
   }
 
-  async #transact<T>(database: IDBDatabase, callback: (store: IDBObjectStore) => Promise<T>, mode: IDBTransactionMode) {
-    const transaction = database.transaction("keyval", mode)
+  async #tryTransact<T, E>(callback: (store: IDBObjectStore) => Promise<Result<T, E>>, mode: IDBTransactionMode) {
+    const database = await this.database
+
+    if (database.isErr())
+      return database
+
+    const transaction = database.get().transaction("keyval", mode)
     const store = transaction.objectStore("keyval")
 
     try {
       const result = await callback(store)
-      transaction.commit()
+
+      if (result.isOk())
+        transaction.commit()
+
+      if (result.isErr())
+        transaction.abort()
+
       return result
     } catch (e: unknown) {
       transaction.abort()
@@ -131,45 +167,47 @@ export class IDBStorage implements Storage {
     }
   }
 
-  #get<T>(store: IDBObjectStore, key: string) {
-    return new Promise<Nullable<T>>((ok, err) => {
+  #tryGet<T>(store: IDBObjectStore, key: string) {
+    return new Promise<Result<Nullable<T>, IDBError>>(ok => {
       const req = store.get(key)
 
-      req.onerror = () => err(req.error)
+      req.onerror = () => ok(new Err(IDBError.from(req.error)))
       req.onsuccess = () => ok(req.result)
     })
   }
 
-  async get(cacheKey: string) {
-    const key = await this.keySerializer.stringify(cacheKey)
+  async tryGet(cacheKey: string): Promise<Result<Nullable<RawState>, IDBError>> {
+    return await Result.unthrow(async t => {
+      const key = await this.keySerializer.stringify(cacheKey)
 
-    const value = await this.#transact(await this.#database, async store => {
-      return await this.#get(store, key)
-    }, "readonly")
+      const value = await this.#tryTransact(async store => {
+        return await this.#tryGet<unknown>(store, key)
+      }, "readonly").then(r => r.throw(t))
 
-    if (value == null)
-      return undefined
+      if (value == null)
+        return new Ok(undefined)
 
-    const state = await this.valueSerializer.parse(value)
+      const state = await this.valueSerializer.parse(value)
 
-    if (state.expiration != null)
-      this.#storageKeys.set(key, state.expiration)
+      if (state.expiration != null)
+        this.#storageKeys.set(key, state.expiration)
 
-    return state
-  }
-
-  #set<T>(store: IDBObjectStore, key: string, value: T) {
-    return new Promise<void>((ok, err) => {
-      const req = store.put(value, key)
-
-      req.onerror = () => err(req.error)
-      req.onsuccess = () => ok()
+      return new Ok(state)
     })
   }
 
-  async #set2(cacheKey: string, state: Nullable<RawState>) {
+  #trySet<T>(store: IDBObjectStore, key: string, value: T) {
+    return new Promise<Result<void, IDBError>>(ok => {
+      const req = store.put(value, key)
+
+      req.onerror = () => ok(new Err(IDBError.from(req.error)))
+      req.onsuccess = () => ok(Ok.void())
+    })
+  }
+
+  async trySetAndWait(cacheKey: string, state: Nullable<RawState>) {
     if (state == null)
-      return await this.delete(cacheKey)
+      return await this.tryDelete(cacheKey)
 
     const storageKey = await this.keySerializer.stringify(cacheKey)
     const storageValue = await this.valueSerializer.stringify(state)
@@ -177,8 +215,8 @@ export class IDBStorage implements Storage {
     if (state.expiration != null)
       this.#storageKeys.set(storageKey, state.expiration)
 
-    return await this.#transact(await this.#database, async store => {
-      return await this.#set(store, storageKey, storageValue)
+    return await this.#tryTransact(async store => {
+      return await this.#trySet(store, storageKey, storageValue)
     }, "readwrite")
   }
 
@@ -190,26 +228,30 @@ export class IDBStorage implements Storage {
    * @param state 
    * @returns 
    */
-  set(cacheKey: string, state: Nullable<RawState>) {
-    this.#sets = this.#sets.then(() => this.#set2(cacheKey, state)).catch(console.warn)
+  trySet(cacheKey: string, state: Nullable<RawState>) {
+    this.#sets = this.#sets.then(async () => {
+      return await this.trySetAndWait(cacheKey, state).then(r => r.unwrap())
+    }).catch(console.error)
+
+    return Ok.void()
   }
 
-  #delete(store: IDBObjectStore, storageKey: string) {
-    return new Promise<void>((ok, err) => {
+  #tryDelete(store: IDBObjectStore, storageKey: string) {
+    return new Promise<Result<void, IDBError>>(ok => {
       const req = store.delete(storageKey)
 
-      req.onerror = () => err(req.error)
-      req.onsuccess = () => ok()
+      req.onerror = () => ok(new Err(IDBError.from(req.error)))
+      req.onsuccess = () => ok(Ok.void())
     })
   }
 
-  async delete(cacheKey: string) {
+  async tryDelete(cacheKey: string) {
     const storageKey = await this.keySerializer.stringify(cacheKey)
 
     this.#storageKeys.delete(storageKey)
 
-    await this.#transact(await this.#database, async store => {
-      await this.#delete(store, storageKey)
+    return await this.#tryTransact(async store => {
+      return await this.#tryDelete(store, storageKey)
     }, "readwrite")
   }
 

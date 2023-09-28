@@ -171,7 +171,8 @@ export class Core {
     if (metadata.inner.state != null)
       return metadata.inner.state
 
-    const stored = await settings.storage?.get?.(cacheKey)
+    const get = await settings.storage?.tryGet?.(cacheKey)
+    const stored = get?.ok().inner
     const state = await this.unstore(stored, settings)
 
     metadata.inner.state = state
@@ -270,8 +271,8 @@ export class Core {
       this.raw.set(cacheKey, Option.wrap(stored))
       this.onState.dispatch(cacheKey, current)
 
-      if (settings.storage)
-        await settings.storage.set?.(cacheKey, stored)
+      const set = await settings.storage?.trySet?.(cacheKey, stored)
+      set?.inspectErrSync(console.warn)
 
       await settings.indexer?.({ current, previous })
       return current

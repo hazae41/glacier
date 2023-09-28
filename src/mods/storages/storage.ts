@@ -1,4 +1,5 @@
 import { Nullable } from "@hazae41/option"
+import { Result } from "@hazae41/result"
 import { Ortho } from "libs/ortho/ortho.js"
 import { Promiseable } from "libs/promises/promises.js"
 import { RawState } from "mods/types/state.js"
@@ -13,7 +14,7 @@ export interface Storage {
    * @param shallow true = won't add this key to the garbage collector
    * @returns 
    */
-  get?(cacheKey: string): Promiseable<Nullable<RawState>>
+  tryGet?(cacheKey: string): Promiseable<Result<Nullable<RawState>, Error>>
 
   /**
    * Set the given data to the given key
@@ -22,6 +23,6 @@ export interface Storage {
    * @param shallow true = won't add this key to the garbage collector
    * @returns 
    */
-  set?(cacheKey: string, value: Nullable<RawState>): Promiseable<void>
+  trySet?(cacheKey: string, value: Nullable<RawState>): Promiseable<Result<void, Error>>
 
 }
