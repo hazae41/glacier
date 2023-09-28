@@ -147,7 +147,7 @@ export function useFetcherlessScrollableQuery<K, D, F>(
   const settingsRef = useRenderRef(settings)
 
   const cacheKey = useMemo(() => {
-    return Scrollable.getCacheKey(settings.key, settingsRef.current)
+    return Scrollable.getCacheKey(settings.key)
   }, [settings.key])
 
   const [, setCounter] = useState(0)
@@ -173,8 +173,7 @@ export function useFetcherlessScrollableQuery<K, D, F>(
   useEffect(() => {
     if (stateRef.current != null)
       return
-
-    core.get(cacheKey, settingsRef.current).then(setState)
+    core.tryGet(cacheKey, settingsRef.current).then(r => r.inspectSync(setState))
   }, [cacheKey])
 
   useEffect(() => {
@@ -195,11 +194,11 @@ export function useFetcherlessScrollableQuery<K, D, F>(
   }, [cacheKey])
 
   const mutate = useCallback(async (mutator: Mutator<D[], F>) => {
-    return new Ok(await core.mutate(cacheKey, mutator, settingsRef.current))
+    return await core.tryMutate(cacheKey, mutator, settingsRef.current)
   }, [cacheKey])
 
   const clear = useCallback(async () => {
-    return new Ok(await core.delete(cacheKey, settingsRef.current))
+    return await core.tryDelete(cacheKey, settingsRef.current)
   }, [cacheKey])
 
   const fetch = useCallback(async (aborter = new AbortController()) => {
@@ -264,7 +263,7 @@ export function useFetcherfulScrollableQuery<K, D, F>(
   const settingsRef = useRenderRef(settings)
 
   const cacheKey = useMemo(() => {
-    return Scrollable.getCacheKey(settings.key, settingsRef.current)
+    return Scrollable.getCacheKey(settings.key)
   }, [settings.key])
 
   const [, setCounter] = useState(0)
@@ -290,8 +289,7 @@ export function useFetcherfulScrollableQuery<K, D, F>(
   useEffect(() => {
     if (stateRef.current != null)
       return
-
-    core.get(cacheKey, settingsRef.current).then(setState)
+    core.tryGet(cacheKey, settingsRef.current).then(r => r.inspectSync(setState))
   }, [cacheKey])
 
   useEffect(() => {
@@ -312,11 +310,11 @@ export function useFetcherfulScrollableQuery<K, D, F>(
   }, [cacheKey])
 
   const mutate = useCallback(async (mutator: Mutator<D[], F>) => {
-    return new Ok(await core.mutate(cacheKey, mutator, settingsRef.current))
+    return await core.tryMutate(cacheKey, mutator, settingsRef.current)
   }, [cacheKey])
 
   const clear = useCallback(async () => {
-    return new Ok(await core.delete(cacheKey, settingsRef.current))
+    return await core.tryDelete(cacheKey, settingsRef.current)
   }, [cacheKey])
 
   const fetch = useCallback(async (aborter = new AbortController()) => {
@@ -326,7 +324,7 @@ export function useFetcherfulScrollableQuery<K, D, F>(
       return new Ok(new Ok(new Err(new CooldownError())))
 
     const result = await core.fetchOrJoin(cacheKey, aborter, async () =>
-      await Scrollable.first(cacheKey, aborter, settings))
+      await Scrollable.tryFetch(cacheKey, aborter, settings))
 
     return new Ok(new Ok(new Ok(result)))
   }, [cacheKey])
@@ -335,7 +333,7 @@ export function useFetcherfulScrollableQuery<K, D, F>(
     const settings = settingsRef.current
 
     const result = await core.fetchOrReplace(cacheKey, aborter, async () =>
-      await Scrollable.first(cacheKey, aborter, settings))
+      await Scrollable.tryFetch(cacheKey, aborter, settings))
 
     return new Ok(new Ok(result))
   }, [cacheKey])
@@ -344,7 +342,7 @@ export function useFetcherfulScrollableQuery<K, D, F>(
     const settings = settingsRef.current
 
     const result = await core.fetchOrReplace(cacheKey, aborter, async () =>
-      await Scrollable.scroll(cacheKey, aborter, settings))
+      await Scrollable.tryScroll(cacheKey, aborter, settings))
 
     return new Ok(new Ok(result))
   }, [cacheKey])
@@ -353,7 +351,7 @@ export function useFetcherfulScrollableQuery<K, D, F>(
     const settings = settingsRef.current
 
     const result = await core.fetchOrJoin(cacheKey, aborter, async () =>
-      await Scrollable.first(cacheKey, aborter, settings))
+      await Scrollable.tryFetch(cacheKey, aborter, settings))
 
     return new Ok(new Ok(result))
   }, [cacheKey])

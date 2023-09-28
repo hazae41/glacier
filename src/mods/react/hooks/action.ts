@@ -27,7 +27,7 @@ export function useAnonymousAction<K, D, F, P extends []>(
   const settingsRef = useRenderRef(settings)
 
   const cacheKey = useMemo(() => {
-    return Simple.getCacheKey(key, settingsRef.current)
+    return Simple.getCacheKey(key)
   }, [key])
 
   return useCallback(async () => {

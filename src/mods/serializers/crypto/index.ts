@@ -1,3 +1,3 @@
 export * from "./aes/index.js";
+export * from "./error/error.js";
 export * from "./hmac/hmac.js";
-export * from "./pbkdf2/pbkdf2.js";

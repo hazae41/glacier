@@ -1,6 +1,6 @@
 import { Nullable } from "@hazae41/option"
 import { Err, Ok, Result } from "@hazae41/result"
-import { Bicoder, Encoder, SyncIdentity } from "mods/serializers/serializer.js"
+import { Bicoder, Encoder, SyncIdentity } from "mods/serializers/coder.js"
 import { Storage } from "mods/storages/storage.js"
 import { RawState } from "mods/types/state.js"
 import { useEffect, useRef } from "react"
@@ -15,7 +15,7 @@ export function useIDBStorage(params?: IDBStorageParams) {
   useEffect(() => () => {
     if (!storage.current?.isOk())
       return
-    storage.current?.inner[Symbol.asyncDispose]().catch(console.error)
+    storage.current.inner[Symbol.asyncDispose]()
   }, [])
 
   return storage.current
@@ -176,21 +176,25 @@ export class IDBStorage implements Storage {
     })
   }
 
-  async tryGet(cacheKey: string): Promise<Result<Nullable<RawState>, IDBError>> {
+  async tryGet(cacheKey: string): Promise<Result<Nullable<RawState>, Error>> {
     return await Result.unthrow(async t => {
-      const key = await this.keySerializer.stringify(cacheKey)
+      const storageKey = await Promise
+        .resolve(this.keySerializer.tryEncode(cacheKey))
+        .then(r => r.throw(t))
 
-      const value = await this.#tryTransact(async store => {
-        return await this.#tryGet<unknown>(store, key)
+      const storageValue = await this.#tryTransact(async store => {
+        return await this.#tryGet<unknown>(store, storageKey)
       }, "readonly").then(r => r.throw(t))
 
-      if (value == null)
+      if (storageValue == null)
         return new Ok(undefined)
 
-      const state = await this.valueSerializer.parse(value)
+      const state = await Promise
+        .resolve(this.valueSerializer.tryDecode(storageValue))
+        .then(r => r.throw(t))
 
       if (state.expiration != null)
-        this.#storageKeys.set(key, state.expiration)
+        this.#storageKeys.set(storageKey, state.expiration)
 
       return new Ok(state)
     })
@@ -205,19 +209,26 @@ export class IDBStorage implements Storage {
     })
   }
 
-  async trySetAndWait(cacheKey: string, state: Nullable<RawState>) {
-    if (state == null)
-      return await this.tryDelete(cacheKey)
+  async trySetAndWait(cacheKey: string, state: Nullable<RawState>): Promise<Result<void, Error>> {
+    return await Result.unthrow(async t => {
+      if (state == null)
+        return await this.tryDelete(cacheKey)
 
-    const storageKey = await this.keySerializer.stringify(cacheKey)
-    const storageValue = await this.valueSerializer.stringify(state)
+      const storageKey = await Promise
+        .resolve(this.keySerializer.tryEncode(cacheKey))
+        .then(r => r.throw(t))
 
-    if (state.expiration != null)
-      this.#storageKeys.set(storageKey, state.expiration)
+      const storageValue = await Promise
+        .resolve(this.valueSerializer.tryEncode(state))
+        .then(r => r.throw(t))
 
-    return await this.#tryTransact(async store => {
-      return await this.#trySet(store, storageKey, storageValue)
-    }, "readwrite")
+      if (state.expiration != null)
+        this.#storageKeys.set(storageKey, state.expiration)
+
+      return await this.#tryTransact(async store => {
+        return await this.#trySet(store, storageKey, storageValue)
+      }, "readwrite")
+    })
   }
 
   #sets = Promise.resolve()
@@ -229,9 +240,10 @@ export class IDBStorage implements Storage {
    * @returns 
    */
   trySet(cacheKey: string, state: Nullable<RawState>) {
-    this.#sets = this.#sets.then(async () => {
-      return await this.trySetAndWait(cacheKey, state).then(r => r.unwrap())
-    }).catch(console.error)
+    this.#sets = this.#sets
+      .then(() => this.trySetAndWait(cacheKey, state))
+      .then(r => r.inspectErrSync(console.warn))
+      .then(() => { })
 
     return Ok.void()
   }
@@ -245,14 +257,18 @@ export class IDBStorage implements Storage {
     })
   }
 
-  async tryDelete(cacheKey: string) {
-    const storageKey = await this.keySerializer.stringify(cacheKey)
+  async tryDelete(cacheKey: string): Promise<Result<void, Error>> {
+    return await Result.unthrow(async t => {
+      const storageKey = await Promise
+        .resolve(this.keySerializer.tryEncode(cacheKey))
+        .then(r => r.throw(t))
 
-    this.#storageKeys.delete(storageKey)
+      this.#storageKeys.delete(storageKey)
 
-    return await this.#tryTransact(async store => {
-      return await this.#tryDelete(store, storageKey)
-    }, "readwrite")
+      return await this.#tryTransact(async store => {
+        return await this.#tryDelete(store, storageKey)
+      }, "readwrite")
+    })
   }
 
 }

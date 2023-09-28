@@ -1,6 +1,6 @@
 import { Mutex } from "@hazae41/mutex"
 import { Nullable, Option, Some } from "@hazae41/option"
-import { Result } from "@hazae41/result"
+import { Ok, Result } from "@hazae41/result"
 import { CustomEventTarget } from "libs/ortho/ortho.js"
 import { Promiseable } from "libs/promises/promises.js"
 import { Time } from "libs/time/time.js"
@@ -8,7 +8,7 @@ import { DEFAULT_EQUALS } from "mods/defaults.js"
 import { Data } from "mods/result/data.js"
 import { Fail } from "mods/result/fail.js"
 import { Fetched } from "mods/result/fetched.js"
-import { Bicoder, SyncIdentity } from "mods/serializers/serializer.js"
+import { Bicoder, SyncIdentity } from "mods/serializers/coder.js"
 import { Mutator, Setter } from "mods/types/mutator.js"
 import { QuerySettings } from "mods/types/settings.js"
 import { DataState, FailState, FakeState, RawState, RealState, State } from "mods/types/state.js"
@@ -170,86 +170,94 @@ export class Core {
     }
   }
 
-  async #get<K, D, F>(cacheKey: string, settings: QuerySettings<K, D, F>): Promise<State<D, F>> {
+  async #tryGet<K, D, F>(cacheKey: string, settings: QuerySettings<K, D, F>): Promise<Result<State<D, F>, Error>> {
+    return await Result.unthrow(async t => {
+      const metadata = this.#getOrCreateMetadata<D, F>(cacheKey)
+
+      if (metadata.inner.state != null)
+        return new Ok(metadata.inner.state)
+
+      const stored = await Promise
+        .resolve(settings.storage?.tryGet?.(cacheKey))
+        .then(r => r?.ok().inner)
+
+      const state = await this.tryUnstore(stored, settings).then(r => r.throw(t))
+
+      metadata.inner.state = state
+
+      this.raw.set(cacheKey, Option.wrap(stored))
+
+      this.onState.dispatchEvent(new CustomEvent(cacheKey, { detail: state }))
+
+      return new Ok(state)
+    })
+  }
+
+  async tryGet<K, D, F>(cacheKey: string, settings: QuerySettings<K, D, F>): Promise<Result<State<D, F>, Error>> {
     const metadata = this.#getOrCreateMetadata<D, F>(cacheKey)
-
-    if (metadata.inner.state != null)
-      return metadata.inner.state
-
-    const get = settings.storage?.tryGet?.(cacheKey)
-    const stored = await Promise.resolve(get).then(r => r?.ok().inner)
-    const state = await this.unstore(stored, settings)
-
-    metadata.inner.state = state
-
-    this.raw.set(cacheKey, Option.wrap(stored))
-
-    this.onState.dispatchEvent(new CustomEvent(cacheKey, { detail: state }))
-
-    return state
+    return await metadata.lock(async () => await this.#tryGet(cacheKey, settings))
   }
 
-  async get<K, D, F>(cacheKey: string, settings: QuerySettings<K, D, F>): Promise<State<D, F>> {
-    const metadata = this.#getOrCreateMetadata<D, F>(cacheKey)
-    return await metadata.lock(async () => await this.#get(cacheKey, settings))
+  async tryStore<K, D, F>(state: State<D, F>, settings: QuerySettings<K, D, F>): Promise<Result<Nullable<RawState>, Error>> {
+    return await Result.unthrow(async t => {
+      const {
+        dataSerializer = SyncIdentity as Bicoder<D, unknown>,
+        errorSerializer = SyncIdentity as Bicoder<F, unknown>
+      } = settings
+
+      if (state.real == null)
+        return new Ok(undefined)
+
+      const { time, cooldown, expiration } = state.real.current
+
+      const data = await Option.map(state.real.data, d => d.map(async x => await Promise.resolve(dataSerializer.tryEncode(x)).then(r => r.throw(t))))
+      const error = await Option.map(state.real.error, d => d.mapErr(async x => await Promise.resolve(errorSerializer.tryEncode(x)).then(r => r.throw(t))))
+
+      return new Ok({ version: 2, data, error, time, cooldown, expiration })
+    })
   }
 
-  async store<K, D, F>(state: State<D, F>, settings: QuerySettings<K, D, F>): Promise<Nullable<RawState>> {
-    const {
-      dataSerializer = SyncIdentity as Bicoder<D, unknown>,
-      errorSerializer = SyncIdentity as Bicoder<F, unknown>
-    } = settings
+  async tryUnstore<K, D, F>(stored: Nullable<RawState>, settings: QuerySettings<K, D, F>): Promise<Result<State<D, F>, Error>> {
+    return await Result.unthrow(async t => {
+      const {
+        dataSerializer = SyncIdentity as Bicoder<D, unknown>,
+        errorSerializer = SyncIdentity as Bicoder<F, unknown>
+      } = settings
 
-    if (state.real == null)
-      return undefined
+      if (stored == null)
+        return new Ok(new RealState<D, F>(undefined))
 
-    const { time, cooldown, expiration } = state.real.current
+      if (stored.version == null) {
+        const { time, cooldown, expiration } = stored
+        const times = { time, cooldown, expiration }
 
-    const data = await Option.map(state.real.data, d => d.map(dataSerializer.stringify))
-    const error = await Option.map(state.real.error, d => d.mapErr(errorSerializer.stringify))
+        const data = await Option.wrap(stored.data).map(async x => new Data(await Promise.resolve(dataSerializer.tryDecode(x)).then(r => r.throw(t)), times))
+        const error = await Option.wrap(stored.error).map(async x => new Fail(await Promise.resolve(errorSerializer.tryDecode(x)).then(r => r.throw(t)), times))
 
-    return { version: 2, data, error, time, cooldown, expiration }
-  }
+        if (error.isSome())
+          return new Ok(new RealState(new FailState<D, F>(error.get(), data.get())))
 
-  async unstore<K, D, F>(stored: Nullable<RawState>, settings: QuerySettings<K, D, F>): Promise<State<D, F>> {
-    const {
-      dataSerializer = SyncIdentity as Bicoder<D, unknown>,
-      errorSerializer = SyncIdentity as Bicoder<F, unknown>
-    } = settings
+        if (data.isSome())
+          return new Ok(new RealState(new DataState<D, F>(data.get())))
 
-    if (stored == null)
-      return new RealState<D, F>(undefined)
+        return new Ok(new RealState<D, F>(undefined))
+      }
 
-    if (stored.version == null) {
-      const { time, cooldown, expiration } = stored
-      const times = { time, cooldown, expiration }
+      if (stored.version === 2) {
+        const data = await Option.wrap(stored.data).map(x => Data.from(x).map(async x => await Promise.resolve(dataSerializer.tryDecode(x)).then(r => r.throw(t))))
+        const error = await Option.wrap(stored.error).map(x => Fail.from(x).mapErr(async x => await Promise.resolve(errorSerializer.tryDecode(x)).then(r => r.throw(t))))
 
-      const data = Option.wrap(stored.data).mapSync(x => new Data(dataSerializer.parse(x) as D, times))
-      const error = Option.wrap(stored.error).mapSync(x => new Fail(errorSerializer.parse(x) as F, times))
+        if (error.isSome())
+          return new Ok(new RealState(new FailState<D, F>(error.get(), data.get())))
 
-      if (error.isSome())
-        return new RealState(new FailState<D, F>(error.get(), data.get()))
+        if (data.isSome())
+          return new Ok(new RealState(new DataState<D, F>(data.get())))
 
-      if (data.isSome())
-        return new RealState(new DataState<D, F>(data.get()))
+        return new Ok(new RealState<D, F>(undefined))
+      }
 
-      return new RealState<D, F>(undefined)
-    }
-
-    if (stored.version === 2) {
-      const data = await Option.wrap(stored.data).map(x => Data.from(x).map(dataSerializer.parse))
-      const error = await Option.wrap(stored.error).map(x => Fail.from(x).mapErr(errorSerializer.parse))
-
-      if (error.isSome())
-        return new RealState(new FailState<D, F>(error.get(), data.get()))
-
-      if (data.isSome())
-        return new RealState(new DataState<D, F>(data.get()))
-
-      return new RealState<D, F>(undefined)
-    }
-
-    return new RealState<D, F>(undefined)
+      return new Ok(new RealState<D, F>(undefined))
+    })
   }
 
   /**
@@ -259,28 +267,31 @@ export class Core {
    * @param settings 
    * @returns 
    */
-  async set<K, D, F>(cacheKey: string, setter: Setter<D, F>, settings: QuerySettings<K, D, F>) {
-    const metadata = this.#getOrCreateMetadata<D, F>(cacheKey)
+  async trySet<K, D, F>(cacheKey: string, setter: Setter<D, F>, settings: QuerySettings<K, D, F>): Promise<Result<State<D, F>, Error>> {
+    return await Result.unthrow(async t => {
+      const metadata = this.#getOrCreateMetadata<D, F>(cacheKey)
 
-    return await metadata.lock(async () => {
-      const previous = await this.#get(cacheKey, settings)
-      const current = await setter(previous)
+      return await metadata.lock(async () => {
+        const previous = await this.#tryGet(cacheKey, settings).then(r => r.throw(t))
+        const current = await setter(previous)
 
-      if (current === previous)
-        return previous
+        if (current === previous)
+          return new Ok(previous)
 
-      const stored = await this.store(current, settings)
+        const stored = await this.tryStore(current, settings).then(r => r.throw(t))
 
-      metadata.inner.state = current
+        metadata.inner.state = current
 
-      this.raw.set(cacheKey, Option.wrap(stored))
-      this.onState.dispatchEvent(new CustomEvent(cacheKey, { detail: current }))
+        this.raw.set(cacheKey, Option.wrap(stored))
+        this.onState.dispatchEvent(new CustomEvent(cacheKey, { detail: current }))
 
-      const set = settings.storage?.trySet?.(cacheKey, stored)
-      await Promise.resolve(set).then(r => r?.inspectErrSync(console.warn))
+        await Promise
+          .resolve(settings.storage?.trySet?.(cacheKey, stored))
+          .then(r => r?.throw(t))
 
-      await settings.indexer?.({ current, previous })
-      return current
+        await settings.indexer?.({ current, previous })
+        return new Ok(current)
+      })
     })
   }
 
@@ -311,12 +322,12 @@ export class Core {
    * @param settings 
    * @returns 
    */
-  async update<K, D, F>(cacheKey: string, setter: Setter<D, F>, settings: QuerySettings<K, D, F>) {
+  async tryUpdate<K, D, F>(cacheKey: string, setter: Setter<D, F>, settings: QuerySettings<K, D, F>) {
     const { dataEqualser = DEFAULT_EQUALS, errorEqualser = DEFAULT_EQUALS } = settings
 
     const metadata = this.#getOrCreateMetadata<D, F>(cacheKey)
 
-    return await this.set(cacheKey, async (previous) => {
+    return await this.trySet(cacheKey, async (previous) => {
       const updated = await setter(previous)
 
       if (updated === previous)
@@ -347,8 +358,8 @@ export class Core {
    * @param settings 
    * @returns 
    */
-  async mutate<K, D, F>(cacheKey: string, mutator: Mutator<D, F>, settings: QuerySettings<K, D, F>) {
-    return await this.update(cacheKey, async (previous) => {
+  async tryMutate<K, D, F>(cacheKey: string, mutator: Mutator<D, F>, settings: QuerySettings<K, D, F>) {
+    return await this.tryUpdate(cacheKey, async (previous) => {
       const mutate = await mutator(previous)
 
       if (mutate.isNone())
@@ -365,8 +376,8 @@ export class Core {
    * @param settings 
    * @returns 
    */
-  async delete<K, D, F>(cacheKey: string, settings: QuerySettings<K, D, F>) {
-    return await this.mutate(cacheKey, () => new Some(undefined), settings)
+  async tryDelete<K, D, F>(cacheKey: string, settings: QuerySettings<K, D, F>) {
+    return await this.tryMutate(cacheKey, () => new Some(undefined), settings)
   }
 
   /**
@@ -394,7 +405,7 @@ export class Core {
   async reoptimize<K, D, F>(cacheKey: string, settings: QuerySettings<K, D, F>) {
     const metadata = this.#getOrCreateMetadata<D, F>(cacheKey)
 
-    return await this.set(cacheKey, async (previous) => {
+    return await this.trySet(cacheKey, async (previous) => {
       return await this.#reoptimize(metadata.inner, previous)
     }, settings)
   }
@@ -402,7 +413,7 @@ export class Core {
   async optimize<K, D, F>(cacheKey: string, uuid: string, optimizer: Mutator<D, F>, settings: QuerySettings<K, D, F>) {
     const metadata = this.#getOrCreateMetadata<D, F>(cacheKey)
 
-    return await this.set(cacheKey, async (previous) => {
+    return await this.trySet(cacheKey, async (previous) => {
 
       if (metadata.inner.optimizers.has(uuid)) {
         metadata.inner.optimizers.delete(uuid)
@@ -471,9 +482,12 @@ export class Core {
    * @param cacheKey 
    * @param settings 
    */
-  async reindex<K, D, F>(cacheKey: string, settings: QuerySettings<K, D, F>) {
-    const current = await this.get(cacheKey, settings)
-    await settings.indexer?.({ current })
+  async tryReindex<K, D, F>(cacheKey: string, settings: QuerySettings<K, D, F>): Promise<Result<void, Error>> {
+    return await Result.unthrow(async t => {
+      const current = await this.tryGet(cacheKey, settings).then(r => r.throw(t))
+      await settings.indexer?.({ current })
+      return Ok.void()
+    })
   }
 
   async increment<K, D, F>(cacheKey: string, settings: QuerySettings<K, D, F>) {
@@ -493,7 +507,7 @@ export class Core {
 
       if (metadata.inner.counter > 0)
         return
-      await this.delete(cacheKey, settings)
+      await this.tryDelete(cacheKey, settings)
     }
 
     metadata.inner.counter--
@@ -507,7 +521,7 @@ export class Core {
       return
 
     if (Date.now() > expiration) {
-      await this.delete(cacheKey, settings)
+      await this.tryDelete(cacheKey, settings)
       return
     }
 

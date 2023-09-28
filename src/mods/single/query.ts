@@ -74,7 +74,7 @@ export class SimpleFetcherlessQuery<K, D, F> {
   constructor(
     readonly settings: FetcherlessQuerySettings<K, D, F>
   ) {
-    this.cacheKey = Simple.getCacheKey(settings.key, settings)
+    this.cacheKey = Simple.getCacheKey(settings.key)
   }
 
   onState(callback: (state: CustomEvent<State<D, F>>) => void) {
@@ -82,37 +82,37 @@ export class SimpleFetcherlessQuery<K, D, F> {
     return () => core.onState.removeListener(this.cacheKey, callback)
   }
 
-  async normalize(fetched: Nullable<Fetched<D, F>>, more: NormalizerMore) {
-    if (more.shallow)
-      return
-    await this.mutate(() => new Some(fetched))
-  }
-
   get state() {
-    return core.get(this.cacheKey, this.settings)
+    return core.tryGet(this.cacheKey, this.settings)
   }
 
   get aborter(): Nullable<AbortController> {
     return core.getAborterSync(this.cacheKey)
   }
 
-  async mutate(mutator: Mutator<D, F>) {
-    return await core.mutate(this.cacheKey, mutator, this.settings)
+  async tryMutate(mutator: Mutator<D, F>) {
+    return await core.tryMutate(this.cacheKey, mutator, this.settings)
   }
 
-  async delete() {
-    return await core.delete(this.cacheKey, this.settings)
+  async tryDelete() {
+    return await core.tryDelete(this.cacheKey, this.settings)
   }
 
-  async fetch(aborter = new AbortController()): Promise<Result<never, MissingFetcherError>> {
+  async tryNormalize(fetched: Nullable<Fetched<D, F>>, more: NormalizerMore) {
+    if (more.shallow)
+      return
+    await this.tryMutate(() => new Some(fetched))
+  }
+
+  async tryFetch(aborter = new AbortController()): Promise<Result<never, MissingFetcherError>> {
     return new Err(new MissingFetcherError())
   }
 
-  async refetch(aborter = new AbortController()): Promise<Result<never, MissingFetcherError>> {
+  async tryRefetch(aborter = new AbortController()): Promise<Result<never, MissingFetcherError>> {
     return new Err(new MissingFetcherError())
   }
 
-  async update(updater: Updater<K, D, F>, aborter = new AbortController()): Promise<Result<never, MissingFetcherError>> {
+  async tryUpdate(updater: Updater<K, D, F>, aborter = new AbortController()): Promise<Result<never, MissingFetcherError>> {
     return new Err(new MissingFetcherError())
   }
 
@@ -124,7 +124,7 @@ export class SimpleFetcherfulQuery<K, D, F> {
   constructor(
     readonly settings: FetcherfulQuerySettings<K, D, F>
   ) {
-    this.cacheKey = Simple.getCacheKey(settings.key, settings)
+    this.cacheKey = Simple.getCacheKey(settings.key)
   }
 
   onState(callback: (state: CustomEvent<State<D, F>>) => void) {
@@ -132,54 +132,56 @@ export class SimpleFetcherfulQuery<K, D, F> {
     return () => core.onState.removeListener(this.cacheKey, callback)
   }
 
-  async normalize(fetched: Nullable<Fetched<D, F>>, more: NormalizerMore) {
-    if (more.shallow)
-      return
-    await this.mutate(() => new Some(fetched))
-  }
-
   get state() {
-    return core.get(this.cacheKey, this.settings)
+    return core.tryGet(this.cacheKey, this.settings)
   }
 
   get aborter(): Nullable<AbortController> {
     return core.getAborterSync(this.cacheKey)
   }
 
-  async mutate(mutator: Mutator<D, F>) {
-    return await core.mutate(this.cacheKey, mutator, this.settings)
+  async tryMutate(mutator: Mutator<D, F>) {
+    return await core.tryMutate(this.cacheKey, mutator, this.settings)
   }
 
-  async delete() {
-    return await core.delete(this.cacheKey, this.settings)
+  async tryDelete() {
+    return await core.tryDelete(this.cacheKey, this.settings)
   }
 
-  async fetch(aborter = new AbortController()): Promise<Result<Result<State<D, F>, Error>, CooldownError>> {
-    const { cacheKey, settings } = this
-    const state = await this.state
-
-    if (Time.isAfterNow(state.real?.current.cooldown))
-      return new Err(new CooldownError())
-
-    const result = await core.fetchOrJoin(cacheKey, aborter, async () =>
-      await Simple.fetch(cacheKey, aborter, settings))
-
-    return new Ok(result)
+  async tryNormalize(fetched: Nullable<Fetched<D, F>>, more: NormalizerMore) {
+    if (more.shallow)
+      return
+    await this.tryMutate(() => new Some(fetched))
   }
 
-  async refetch(aborter = new AbortController()): Promise<Result<Result<State<D, F>, Error>, never>> {
+  async tryFetch(aborter = new AbortController()): Promise<Result<Result<State<D, F>, Error>, Error>> {
+    return await Result.unthrow(async t => {
+      const { cacheKey, settings } = this
+      const state = await this.state.then(r => r.throw(t))
+
+      if (Time.isAfterNow(state.real?.current.cooldown))
+        return new Err(new CooldownError())
+
+      const result = await core.fetchOrJoin(cacheKey, aborter, async () =>
+        await Simple.tryFetch(cacheKey, aborter, settings))
+
+      return new Ok(result)
+    })
+  }
+
+  async tryRefetch(aborter = new AbortController()): Promise<Result<Result<State<D, F>, Error>, never>> {
     const { cacheKey, settings } = this
 
     const result = await core.fetchOrReplace(cacheKey, aborter, async () =>
-      await Simple.fetch(cacheKey, aborter, settings))
+      await Simple.tryFetch(cacheKey, aborter, settings))
 
     return new Ok(result)
   }
 
-  async update(updater: Updater<K, D, F>, aborter = new AbortController()): Promise<Result<Result<State<D, F>, Error>, never>> {
+  async tryUpdate(updater: Updater<K, D, F>, aborter = new AbortController()): Promise<Result<Result<State<D, F>, Error>, never>> {
     const { cacheKey, settings } = this
 
-    const result = await Simple.update(cacheKey, updater, aborter, settings)
+    const result = await Simple.tryUpdate(cacheKey, updater, aborter, settings)
 
     return new Ok(result)
   }

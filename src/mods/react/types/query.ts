@@ -152,12 +152,12 @@ export interface FetcherfulReactQuery<K, D, F> extends Omit<FetcherfulQuerySetti
    * Mutate the cache
    * @param res 
    */
-  mutate(mutator: Mutator<D, F>): Promise<Result<State<D, F>, never>>
+  mutate(mutator: Mutator<D, F>): Promise<Result<State<D, F>, Error>>
 
   /**
    * Clear the cache
    */
-  clear(): Promise<Result<State<D, F>, never>>
+  clear(): Promise<Result<State<D, F>, Error>>
 
   /**
    * Fetch with cooldown
@@ -235,12 +235,12 @@ export interface FetcherlessReactQuery<K, D, F> extends Omit<FetcherlessQuerySet
    * Mutate the cache
    * @param res 
    */
-  mutate(mutator: Mutator<D, F>): Promise<Result<State<D, F>, never>>
+  mutate(mutator: Mutator<D, F>): Promise<Result<State<D, F>, Error>>
 
   /**
    * Clear the cache
    */
-  clear(): Promise<Result<State<D, F>, never>>
+  clear(): Promise<Result<State<D, F>, Error>>
 
   /**
    * Fetch with cooldown

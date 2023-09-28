@@ -1,5 +1,5 @@
 import { Equalser } from "mods/equals/equals.js"
-import { Bicoder, SyncEncoder } from "mods/serializers/serializer.js"
+import { Bicoder, SyncEncoder } from "mods/serializers/coder.js"
 import { Storage } from "mods/storages/storage.js"
 import { Normalizer } from "mods/types/normalizer.js"
 import { Fetcher } from "./fetcher.js"
@@ -24,8 +24,6 @@ export interface SkeletonQuerySettings<K, D, F> {
   readonly timeout?: number,
   readonly cooldown?: number,
   readonly expiration?: number
-
-  readonly keySerializer?: SyncEncoder<K, string>,
 
   readonly dataSerializer?: Bicoder<D, unknown>
   readonly errorSerializer?: Bicoder<F, unknown>

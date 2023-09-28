@@ -1,4 +1,4 @@
-import { Nullable, Option, Some } from "@hazae41/option";
+import { Nullable, Some } from "@hazae41/option";
 import { Err, Ok, Result } from "@hazae41/result";
 import { CooldownError, MissingFetcherError, Mutator, ScrollableFetcherfulReactQuery, ScrollableFetcherlessReactQuery, ScrollableSkeletonReactQuery, State, core } from "index.js";
 import { Arrays } from "libs/arrays/arrays.js";
@@ -74,7 +74,7 @@ export class ScrollableFetcherfulQuery<K, D, F> {
   constructor(
     readonly settings: ScrollableFetcherfulQuerySettings<K, D, F>
   ) {
-    this.cacheKey = Scrollable.getCacheKey(settings.key, settings)
+    this.cacheKey = Scrollable.getCacheKey(settings.key)
   }
 
   onState(callback: (state: CustomEvent<State<D, F>>) => void) {
@@ -82,62 +82,70 @@ export class ScrollableFetcherfulQuery<K, D, F> {
     return () => core.onState.removeListener(this.cacheKey, callback)
   }
 
-  async normalize(fetched: Nullable<Fetched<D[], F>>, more: NormalizerMore) {
-    if (more.shallow)
-      return
-    await this.mutate(() => new Some(fetched))
-  }
-
   get state() {
-    return core.get(this.cacheKey, this.settings)
+    return core.tryGet(this.cacheKey, this.settings)
   }
 
   get aborter(): Nullable<AbortController> {
     return core.getAborterSync(this.cacheKey)
   }
 
-  async peek() {
-    const { settings } = this
-    const state = await this.state
+  async tryPeek(): Promise<Result<Nullable<K>, Error>> {
+    return await Result.unthrow(async t => {
+      const { settings } = this
+      const state = await this.state.then(r => r.throw(t))
+      const pages = state.real?.data?.inner
 
-    return Option.mapSync(state.real?.data?.inner, pages => settings.scroller(Arrays.last(pages)))
+      if (pages == null)
+        return new Ok(undefined)
+
+      return new Ok(settings.scroller(Arrays.last(pages)))
+    })
   }
 
-  async mutate(mutator: Mutator<D[], F>) {
-    return await core.mutate(this.cacheKey, mutator, this.settings)
+  async tryMutate(mutator: Mutator<D[], F>) {
+    return await core.tryMutate(this.cacheKey, mutator, this.settings)
   }
 
-  async delete() {
-    return await core.delete(this.cacheKey, this.settings)
+  async tryDelete() {
+    return await core.tryDelete(this.cacheKey, this.settings)
   }
 
-  async fetch(aborter = new AbortController()): Promise<Result<Result<State<D[], F>, Error>, CooldownError>> {
+  async tryNormalize(fetched: Nullable<Fetched<D[], F>>, more: NormalizerMore) {
+    if (more.shallow)
+      return
+    await this.tryMutate(() => new Some(fetched))
+  }
+
+  async tryFetch(aborter = new AbortController()): Promise<Result<Result<State<D[], F>, Error>, Error>> {
+    return await Result.unthrow(async t => {
+      const { cacheKey, settings } = this
+      const state = await this.state.then(r => r.throw(t))
+
+      if (Time.isAfterNow(state.real?.current.cooldown))
+        return new Err(new CooldownError())
+
+      const result = await core.fetchOrJoin(cacheKey, aborter, async () =>
+        await Scrollable.tryFetch(cacheKey, aborter, settings))
+
+      return new Ok(result)
+    })
+  }
+
+  async tryRefetch(aborter = new AbortController()): Promise<Result<Result<State<D[], F>, Error>, never>> {
     const { cacheKey, settings } = this
-    const state = await this.state
 
-    if (Time.isAfterNow(state.real?.current.cooldown))
-      return new Err(new CooldownError())
-
-    const result = await core.fetchOrJoin(cacheKey, aborter, async () =>
-      await Scrollable.first(cacheKey, aborter, settings))
+    const result = await core.fetchOrReplace(cacheKey, aborter, async () =>
+      await Scrollable.tryFetch(cacheKey, aborter, settings))
 
     return new Ok(result)
   }
 
-  async refetch(aborter = new AbortController()): Promise<Result<Result<State<D[], F>, Error>, never>> {
+  async tryScroll(aborter = new AbortController()): Promise<Result<Result<State<D[], F>, Error>, never>> {
     const { cacheKey, settings } = this
 
     const result = await core.fetchOrReplace(cacheKey, aborter, async () =>
-      await Scrollable.first(cacheKey, aborter, settings))
-
-    return new Ok(result)
-  }
-
-  async scroll(aborter = new AbortController()): Promise<Result<Result<State<D[], F>, Error>, never>> {
-    const { cacheKey, settings } = this
-
-    const result = await core.fetchOrReplace(cacheKey, aborter, async () =>
-      await Scrollable.scroll(cacheKey, aborter, settings))
+      await Scrollable.tryScroll(cacheKey, aborter, settings))
 
     return new Ok(result)
   }
@@ -150,7 +158,7 @@ export class ScrollableFetcherlessQuery<K, D, F> {
   constructor(
     readonly settings: ScrollableFetcherlessQuerySettings<K, D, F>
   ) {
-    this.cacheKey = Scrollable.getCacheKey(settings.key, settings)
+    this.cacheKey = Scrollable.getCacheKey(settings.key)
   }
 
   onState(callback: (state: CustomEvent<State<D, F>>) => void) {
@@ -158,44 +166,50 @@ export class ScrollableFetcherlessQuery<K, D, F> {
     return () => core.onState.removeListener(this.cacheKey, callback)
   }
 
-  async normalize(fetched: Nullable<Fetched<D[], F>>, more: NormalizerMore) {
-    if (more.shallow)
-      return
-    await this.mutate(() => new Some(fetched))
-  }
-
   get state() {
-    return core.get(this.cacheKey, this.settings)
+    return core.tryGet(this.cacheKey, this.settings)
   }
 
   get aborter(): Nullable<AbortController> {
     return core.getAborterSync(this.cacheKey)
   }
 
-  async peek() {
-    const { settings } = this
-    const state = await this.state
+  async tryPeek(): Promise<Result<Nullable<K>, Error>> {
+    return await Result.unthrow(async t => {
+      const { settings } = this
+      const state = await this.state.then(r => r.throw(t))
+      const pages = state.real?.data?.inner
 
-    return Option.mapSync(state.real?.data?.inner, pages => settings.scroller(Arrays.last(pages)))
+      if (pages == null)
+        return new Ok(undefined)
+
+      return new Ok(settings.scroller(Arrays.last(pages)))
+    })
   }
 
-  async mutate(mutator: Mutator<D[], F>) {
-    return await core.mutate(this.cacheKey, mutator, this.settings)
+  async tryMutate(mutator: Mutator<D[], F>) {
+    return await core.tryMutate(this.cacheKey, mutator, this.settings)
   }
 
-  async delete() {
-    return await core.delete(this.cacheKey, this.settings)
+  async tryDelete() {
+    return await core.tryDelete(this.cacheKey, this.settings)
   }
 
-  async fetch(aborter = new AbortController()): Promise<Result<never, MissingFetcherError>> {
+  async tryNormalize(fetched: Nullable<Fetched<D[], F>>, more: NormalizerMore) {
+    if (more.shallow)
+      return
+    await this.tryMutate(() => new Some(fetched))
+  }
+
+  async tryFetch(aborter = new AbortController()): Promise<Result<never, MissingFetcherError>> {
     return new Err(new MissingFetcherError())
   }
 
-  async refetch(aborter = new AbortController()): Promise<Result<never, MissingFetcherError>> {
+  async tryRefetch(aborter = new AbortController()): Promise<Result<never, MissingFetcherError>> {
     return new Err(new MissingFetcherError())
   }
 
-  async scroll(aborter = new AbortController()): Promise<Result<never, MissingFetcherError>> {
+  async tryScroll(aborter = new AbortController()): Promise<Result<never, MissingFetcherError>> {
     return new Err(new MissingFetcherError())
   }
 

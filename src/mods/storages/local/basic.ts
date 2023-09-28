@@ -1,6 +1,6 @@
 import { Nullable } from "@hazae41/option"
 import { Err, Ok, Result } from "@hazae41/result"
-import { Bicoder, Encoder, SyncIdentity } from "mods/serializers/serializer.js"
+import { Bicoder, Encoder, SyncIdentity, SyncJson } from "mods/serializers/coder.js"
 import { RawState } from "mods/types/state.js"
 import { useEffect, useRef } from "react"
 import { StorageCreationError } from "../errors.js"
@@ -63,7 +63,7 @@ export class AsyncLocalStorage implements Storage {
   private constructor(
     readonly prefix = "xswr:",
     readonly keySerializer = SyncIdentity as Encoder<string, string>,
-    readonly valueSerializer = JSON as Bicoder<RawState, string>
+    readonly valueSerializer = SyncJson as Bicoder<RawState, string>
   ) {
     this.beforeunload = () => this.collect()
     addEventListener("beforeunload", this.beforeunload)
@@ -91,33 +91,47 @@ export class AsyncLocalStorage implements Storage {
     }
   }
 
-  async tryGet(cacheKey: string) {
-    const key = await this.keySerializer.stringify(cacheKey)
-    const item = localStorage.getItem(this.prefix + key)
+  async tryGet(cacheKey: string): Promise<Result<Nullable<RawState>, Error>> {
+    return await Result.unthrow(async t => {
+      const key = await Promise
+        .resolve(this.keySerializer.tryEncode(cacheKey))
+        .then(r => r.throw(t))
 
-    if (item == null)
-      return new Ok(undefined)
+      const item = localStorage.getItem(this.prefix + key)
 
-    const state = await this.valueSerializer.parse(item)
+      if (item == null)
+        return new Ok(undefined)
 
-    if (state.expiration != null)
-      this.#storageKeys.set(key, state.expiration)
+      const state = await Promise
+        .resolve(this.valueSerializer.tryDecode(item))
+        .then(r => r.throw(t))
 
-    return new Ok(state)
+      if (state.expiration != null)
+        this.#storageKeys.set(key, state.expiration)
+
+      return new Ok(state)
+    })
   }
 
-  async trySet(cacheKey: string, state: Nullable<RawState>) {
-    if (state == null)
-      return await this.tryDelete(cacheKey)
+  async trySet(cacheKey: string, state: Nullable<RawState>): Promise<Result<void, Error>> {
+    return await Result.unthrow(async t => {
+      if (state == null)
+        return await this.tryDelete(cacheKey)
 
-    const storageKey = await this.keySerializer.stringify(cacheKey)
-    const storageItem = await this.valueSerializer.stringify(state)
+      const storageKey = await Promise
+        .resolve(this.keySerializer.tryEncode(cacheKey))
+        .then(r => r.throw(t))
 
-    if (state.expiration != null)
-      this.#storageKeys.set(storageKey, state.expiration)
+      const storageItem = await Promise
+        .resolve(this.valueSerializer.tryEncode(state))
+        .then(r => r.throw(t))
 
-    localStorage.setItem(this.prefix + storageKey, storageItem)
-    return Ok.void()
+      if (state.expiration != null)
+        this.#storageKeys.set(storageKey, state.expiration)
+
+      localStorage.setItem(this.prefix + storageKey, storageItem)
+      return Ok.void()
+    })
   }
 
   #delete(storageKey: string) {
@@ -125,10 +139,15 @@ export class AsyncLocalStorage implements Storage {
     localStorage.removeItem(this.prefix + storageKey)
   }
 
-  async tryDelete(cacheKey: string) {
-    const key = await this.keySerializer.stringify(cacheKey)
-    this.#delete(key)
-    return Ok.void()
+  async tryDelete(cacheKey: string): Promise<Result<void, Error>> {
+    return await Result.unthrow(async t => {
+      const key = await Promise
+        .resolve(this.keySerializer.tryEncode(cacheKey))
+        .then(r => r.throw(t))
+
+      this.#delete(key)
+      return Ok.void()
+    })
   }
 
 }

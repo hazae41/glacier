@@ -130,7 +130,7 @@ export function useSimpleFetcherlessQuery<K, D, F>(
   const settingsRef = useRenderRef(settings)
 
   const cacheKey = useMemo(() => {
-    return Simple.getCacheKey(settings.key, settingsRef.current)
+    return Simple.getCacheKey(settings.key)
   }, [settings.key])
 
   const [, setCounter] = useState(0)
@@ -156,8 +156,7 @@ export function useSimpleFetcherlessQuery<K, D, F>(
   useEffect(() => {
     if (stateRef.current != null)
       return
-
-    core.get(cacheKey, settingsRef.current).then(setState)
+    core.tryGet(cacheKey, settingsRef.current).then(r => r.inspectSync(setState))
   }, [cacheKey])
 
   useEffect(() => {
@@ -178,11 +177,11 @@ export function useSimpleFetcherlessQuery<K, D, F>(
   }, [cacheKey])
 
   const mutate = useCallback(async (mutator: Mutator<D, F>) => {
-    return new Ok(await core.mutate(cacheKey, mutator, settingsRef.current))
+    return await core.tryMutate(cacheKey, mutator, settingsRef.current)
   }, [cacheKey])
 
   const clear = useCallback(async () => {
-    return new Ok(await core.delete(cacheKey, settingsRef.current))
+    return await core.tryDelete(cacheKey, settingsRef.current)
   }, [cacheKey])
 
   const fetch = useCallback(async (aborter = new AbortController()) => {
@@ -242,7 +241,7 @@ export function useSimpleFetcherfulQuery<K, D, F>(
   const settingsRef = useRenderRef(settings)
 
   const cacheKey = useMemo(() => {
-    return Simple.getCacheKey(settings.key, settingsRef.current)
+    return Simple.getCacheKey(settings.key)
   }, [settings.key])
 
   const [, setCounter] = useState(0)
@@ -268,8 +267,7 @@ export function useSimpleFetcherfulQuery<K, D, F>(
   useEffect(() => {
     if (stateRef.current != null)
       return
-
-    core.get(cacheKey, settingsRef.current).then(setState)
+    core.tryGet(cacheKey, settingsRef.current).then(r => r.inspectSync(setState))
   }, [cacheKey])
 
   useEffect(() => {
@@ -290,11 +288,11 @@ export function useSimpleFetcherfulQuery<K, D, F>(
   }, [cacheKey])
 
   const mutate = useCallback(async (mutator: Mutator<D, F>) => {
-    return new Ok(await core.mutate(cacheKey, mutator, settingsRef.current))
+    return await core.tryMutate(cacheKey, mutator, settingsRef.current)
   }, [cacheKey])
 
   const clear = useCallback(async () => {
-    return new Ok(await core.delete(cacheKey, settingsRef.current))
+    return await core.tryDelete(cacheKey, settingsRef.current)
   }, [cacheKey])
 
   const fetch = useCallback(async (aborter = new AbortController()) => {
@@ -304,7 +302,7 @@ export function useSimpleFetcherfulQuery<K, D, F>(
       return new Ok(new Ok(new Err(new CooldownError())))
 
     const result = await core.fetchOrJoin(cacheKey, aborter, async () =>
-      await Simple.fetch(cacheKey, aborter, settings))
+      await Simple.tryFetch(cacheKey, aborter, settings))
 
     return new Ok(new Ok(new Ok(result)))
   }, [cacheKey])
@@ -313,7 +311,7 @@ export function useSimpleFetcherfulQuery<K, D, F>(
     const settings = settingsRef.current
 
     const result = await core.fetchOrReplace(cacheKey, aborter, async () =>
-      await Simple.fetch(cacheKey, aborter, settings))
+      await Simple.tryFetch(cacheKey, aborter, settings))
 
     return new Ok(new Ok(result))
   }, [cacheKey])
@@ -321,7 +319,7 @@ export function useSimpleFetcherfulQuery<K, D, F>(
   const update = useCallback(async (updater: Updater<K, D, F>, aborter = new AbortController()) => {
     const settings = settingsRef.current
 
-    const result = await Simple.update(cacheKey, updater, aborter, settings)
+    const result = await Simple.tryUpdate(cacheKey, updater, aborter, settings)
 
     return new Ok(new Ok(result))
   }, [cacheKey])
@@ -330,7 +328,7 @@ export function useSimpleFetcherfulQuery<K, D, F>(
     const settings = settingsRef.current
 
     const result = await core.fetchOrJoin(cacheKey, aborter, async () =>
-      await Simple.fetch(cacheKey, aborter, settings))
+      await Simple.tryFetch(cacheKey, aborter, settings))
 
     return new Ok(new Ok(result))
   }, [core, cacheKey])

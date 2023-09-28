@@ -1,6 +1,8 @@
 import { Base64 } from "@hazae41/base64";
 import { Bytes } from "@hazae41/bytes";
-import { AsyncBicoder } from "mods/serializers/serializer.js";
+import { Ok, Result } from "@hazae41/result";
+import { AsyncBicoder } from "mods/serializers/coder.js";
+import { CryptoError } from "../error/error.js";
 
 export class AesGcmCoder implements AsyncBicoder<string, string> {
 
@@ -8,53 +10,43 @@ export class AesGcmCoder implements AsyncBicoder<string, string> {
     readonly key: CryptoKey
   ) { }
 
-  /**
-   * @deprecated
-   * @param pbkdf2 
-   * @param salt 
-   * @param iterations 
-   * @returns 
-   */
-  static async fromPBKDF2(pbkdf2: CryptoKey, salt: Uint8Array, iterations: number) {
-    const key = await crypto.subtle.deriveKey({
-      name: "PBKDF2",
-      salt: salt,
-      iterations: iterations,
-      hash: "SHA-256"
-    }, pbkdf2, { name: "AES-GCM", length: 256 }, false, ["encrypt", "decrypt"])
-
-    return new AesGcmCoder(key)
+  async tryEncrypt(plain: Uint8Array, iv: Uint8Array): Promise<Result<Uint8Array, CryptoError>> {
+    return await Result.runAndWrap(async () => {
+      return new Uint8Array(await crypto.subtle.encrypt({ name: "AES-GCM", iv }, this.key, plain))
+    }).then(r => r.mapErrSync(CryptoError.from))
   }
 
-  async encrypt(plain: Uint8Array, iv: Uint8Array) {
-    return new Uint8Array(await crypto.subtle.encrypt({ name: "AES-GCM", iv }, this.key, plain))
+  async tryEncode(input: string): Promise<Result<string, Error>> {
+    return await Result.unthrow(async t => {
+      const iv = Bytes.tryRandom(12).throw(t)
+      const ivtext = Base64.get().tryEncodePadded(iv).throw(t)
+
+      const plain = Bytes.fromUtf8(input)
+
+      const cipher = await this.tryEncrypt(plain, iv).then(r => r.throw(t))
+      const ciphertext = Base64.get().tryEncodePadded(cipher).throw(t)
+
+      return new Ok(ivtext + "." + ciphertext)
+    })
   }
 
-  async stringify(input: string) {
-    const iv = Bytes.random(12)
-    const ivtext = Base64.get().tryEncodePadded(iv).unwrap()
-
-    const plain = Bytes.fromUtf8(input)
-
-    const cipher = await this.encrypt(plain, iv)
-    const ciphertext = Base64.get().tryEncodePadded(cipher).unwrap()
-
-    return ivtext + "." + ciphertext
+  async tryDecrypt(cipher: Uint8Array, iv: Uint8Array): Promise<Result<Uint8Array, CryptoError>> {
+    return await Result.runAndWrap(async () => {
+      return new Uint8Array(await crypto.subtle.decrypt({ name: "AES-GCM", iv }, this.key, cipher))
+    }).then(r => r.mapErrSync(CryptoError.from))
   }
 
-  async decrypt(cipher: Uint8Array, iv: Uint8Array) {
-    return new Uint8Array(await crypto.subtle.decrypt({ name: "AES-GCM", iv }, this.key, cipher))
-  }
+  async tryDecode(output: string): Promise<Result<string, Error>> {
+    return await Result.unthrow(async t => {
+      const [ivtext, ciphertext] = output.split(".")
 
-  async parse(output: string) {
-    const [ivtext, ciphertext] = output.split(".")
+      const iv = Base64.get().tryDecodePadded(ivtext).throw(t).copyAndDispose()
+      const cipher = Base64.get().tryDecodePadded(ciphertext).throw(t).copyAndDispose()
 
-    const iv = Base64.get().tryDecodePadded(ivtext).unwrap().copyAndDispose()
-    const cipher = Base64.get().tryDecodePadded(ciphertext).unwrap().copyAndDispose()
+      const plain = await this.tryDecrypt(cipher, iv).then(r => r.throw(t))
+      const input = Bytes.toUtf8(plain)
 
-    const plain = await this.decrypt(cipher, iv)
-    const input = Bytes.toUtf8(plain)
-
-    return input
+      return new Ok(input)
+    })
   }
 }
