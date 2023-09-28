@@ -46,15 +46,15 @@ export namespace Scroll {
   ): Promise<Result<State<D[], F>, Error>> {
     const { dataEqualser = DEFAULT_EQUALS } = settings
 
-    const aborted = await core.runWithTimeout(async (signal) => {
+    const result = await core.runWithTimeout(async (signal) => {
       return await settings.fetcher(settings.key, { signal })
     }, aborter, settings.timeout)
 
-    if (aborted.isErr())
-      return aborted
+    if (result.isErr())
+      return result
 
-    const times = TimesInit.merge(aborted.get(), settings)
-    const timed = Fetched.from(aborted.get()).setTimes(times)
+    const times = TimesInit.merge(result.get(), settings)
+    const timed = Fetched.from(result.get()).setTimes(times)
 
     return new Ok(await core.mutate(cacheKey, async (previous) => {
       if (timed.isErr())
@@ -92,15 +92,15 @@ export namespace Scroll {
     if (key == null)
       return new Err(new ScrollError())
 
-    const aborted = await core.runWithTimeout(async (signal) => {
+    const result = await core.runWithTimeout(async (signal) => {
       return await settings.fetcher(key, { signal })
     }, aborter, settings.timeout)
 
-    if (aborted.isErr())
-      return aborted
+    if (result.isErr())
+      return result
 
-    const times = TimesInit.merge(aborted.get(), settings)
-    const timed = Fetched.from(aborted.get()).setTimes(times)
+    const times = TimesInit.merge(result.get(), settings)
+    const timed = Fetched.from(result.get()).setTimes(times)
 
     return new Ok(await core.mutate(cacheKey, (previous) => {
       const previousPages = previous.real?.data?.inner ?? []

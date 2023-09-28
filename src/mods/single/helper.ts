@@ -24,15 +24,15 @@ export namespace Simple {
     aborter: AbortController,
     settings: FetcherfulQuerySettings<K, D, F>
   ): Promise<Result<State<D, F>, Error>> {
-    const aborted = await core.runWithTimeout(async signal => {
+    const result = await core.runWithTimeout(async signal => {
       return await settings.fetcher(settings.key, { signal })
     }, aborter, settings.timeout)
 
-    if (aborted.isErr())
-      return aborted
+    if (result.isErr())
+      return result
 
-    const times = TimesInit.merge(aborted.get(), settings)
-    const timed = Fetched.from(aborted.get()).setTimes(times)
+    const times = TimesInit.merge(result.get(), settings)
+    const timed = Fetched.from(result.get()).setTimes(times)
 
     return new Ok(await core.mutate(cacheKey, () => new Some(timed), settings))
   }
@@ -58,27 +58,27 @@ export namespace Simple {
     try {
       const generator = updater()
 
-      let result = await generator.next()
+      let next = await generator.next()
 
-      for (; !result.done; result = await generator.next())
-        await core.optimize(cacheKey, uuid, result.value, settings)
+      for (; !next.done; next = await generator.next())
+        await core.optimize(cacheKey, uuid, next.value, settings)
 
-      const fetcher = result.value ?? settings.fetcher
+      const fetcher = next.value ?? settings.fetcher
 
-      const aborted = await core.runWithTimeout(async (signal) => {
+      const result = await core.runWithTimeout(async (signal) => {
         return await fetcher(settings.key, { signal, cache: "reload" })
       }, aborter, settings.timeout)
 
-      if (aborted.isErr()) {
+      if (result.isErr()) {
         core.deoptimize(cacheKey, uuid)
         core.reoptimize(cacheKey, settings)
-        return aborted
+        return result
       }
 
       core.deoptimize(cacheKey, uuid)
 
-      const times = TimesInit.merge(aborted.get(), settings)
-      const timed = Fetched.from(aborted.get()).setTimes(times)
+      const times = TimesInit.merge(result.get(), settings)
+      const timed = Fetched.from(result.get()).setTimes(times)
 
       return new Ok(await core.mutate(cacheKey, () => new Some(timed), settings))
     } catch (e: unknown) {
