@@ -1,6 +1,7 @@
 import { Nullable, Some } from "@hazae41/option";
 import { Err, Ok, Result } from "@hazae41/result";
 import { CooldownError, MissingFetcherError, Mutator, SimpleFetcherfulQuery, SimpleFetcherlessQuery, SimpleSkeletonQuery, State, Updater, core } from "index.js";
+import { CustomEventTarget } from "libs/ortho/ortho.js";
 import { Time } from "libs/time/time.js";
 import { Fetched } from "mods/result/fetched.js";
 import { NormalizerMore } from "mods/types/normalizer.js";
@@ -68,13 +69,35 @@ export namespace SimpleFetcherfulQuerySchema {
   export type F<T> = T extends SimpleFetcherfulQuerySchema<infer _K, infer _D, infer F> ? F : never
 }
 
-export class SimpleFetcherlessQuerySchema<K, D, F>  {
+export class SimpleFetcherlessQuerySchema<K, D, F> {
   readonly cacheKey: string
+
+  readonly events = new CustomEventTarget<{
+    state: State<D, F>
+  }>()
+
+  readonly dispose: () => void
 
   constructor(
     readonly settings: FetcherlessQuerySettings<K, D, F>
   ) {
     this.cacheKey = Simple.getCacheKey(settings.key, settings)
+
+    const onState = (event: CustomEvent<State<any, any>>) => {
+      const { detail } = event
+      const subevent = new CustomEvent("state", { detail })
+      return this.events.dispatchEvent(subevent)
+    }
+
+    core.onState.addEventListener(this.cacheKey, onState, { passive: true })
+
+    this.dispose = () => {
+      core.onState.removeListener(this.cacheKey, onState)
+    }
+  }
+
+  [Symbol.dispose]() {
+    this.dispose()
   }
 
   async normalize(fetched: Nullable<Fetched<D, F>>, more: NormalizerMore) {

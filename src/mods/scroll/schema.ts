@@ -2,6 +2,7 @@ import { Nullable, Option, Some } from "@hazae41/option";
 import { Err, Ok, Result } from "@hazae41/result";
 import { CooldownError, MissingFetcherError, Mutator, ScrollFetcherfulQuery, ScrollFetcherlessQuery, ScrollSkeletonQuery, State, core } from "index.js";
 import { Arrays } from "libs/arrays/arrays.js";
+import { CustomEventTarget } from "libs/ortho/ortho.js";
 import { Time } from "libs/time/time.js";
 import { Fetched } from "mods/result/fetched.js";
 import { NormalizerMore } from "mods/types/normalizer.js";
@@ -71,10 +72,32 @@ export namespace ScrollFetcherfulQuerySchema {
 export class ScrollFetcherfulQuerySchema<K, D, F> {
   readonly cacheKey: string
 
+  readonly events = new CustomEventTarget<{
+    state: State<D, F>
+  }>()
+
+  readonly dispose: () => void
+
   constructor(
     readonly settings: ScrollFetcherfulQuerySettings<K, D, F>
   ) {
     this.cacheKey = Scroll.getCacheKey(settings.key, settings)
+
+    const onState = (event: CustomEvent<State<any, any>>) => {
+      const { detail } = event
+      const subevent = new CustomEvent("state", { detail })
+      return this.events.dispatchEvent(subevent)
+    }
+
+    core.onState.addEventListener(this.cacheKey, onState, { passive: true })
+
+    this.dispose = () => {
+      core.onState.removeListener(this.cacheKey, onState)
+    }
+  }
+
+  [Symbol.dispose]() {
+    this.dispose()
   }
 
   async normalize(fetched: Nullable<Fetched<D[], F>>, more: NormalizerMore) {

@@ -1,20 +1,21 @@
 /**
  * Orthogonal state publisher
  */
-export class CustomEventTarget<T>  {
+export class CustomEventTarget<M extends Record<string, any>>  {
 
   readonly #target = new EventTarget()
 
-  dispatchEvent(event: CustomEvent<T>) {
+  dispatchEvent(event: CustomEvent<M[string]>) {
     return this.#target.dispatchEvent(event)
   }
 
-  addEventListener(type: string, callback: (event: CustomEvent<T>) => void, options?: AddEventListenerOptions) {
-    return this.#target.addEventListener(type, callback as any, options)
+  addEventListener<K extends keyof M>(type: K, callback: (event: CustomEvent<M[K]>) => void, options?: AddEventListenerOptions) {
+    return this.#target.addEventListener(type as any, callback as any, options)
   }
 
-  removeListener(type: string, callback: (event: CustomEvent<T>) => void) {
-    return this.#target.removeEventListener(type, callback as any)
+  removeListener<K extends keyof M>(type: K, callback: (event: CustomEvent<M[K]>) => void) {
+    return this.#target.removeEventListener(type as any, callback as any)
   }
 
 }
+

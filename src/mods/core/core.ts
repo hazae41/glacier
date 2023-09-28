@@ -75,8 +75,13 @@ export interface QueryMetadata<D, F> {
 
 export class Core {
 
-  readonly onState = new CustomEventTarget<State<any, any>>()
-  readonly onAborter = new CustomEventTarget<Nullable<AbortController>>()
+  readonly onState = new CustomEventTarget<{
+    [cacheKey: string]: State<any, any>
+  }>()
+
+  readonly onAborter = new CustomEventTarget<{
+    [cacheKey: string]: Nullable<AbortController>
+  }>()
 
   readonly #queries = new Map<string, Mutex<QueryMetadata<any, any>>>()
 
