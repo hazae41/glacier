@@ -50,6 +50,19 @@ export namespace SyncJson {
 
 }
 
+
+export namespace AsyncJson {
+
+  export async function tryEncode<T>(value: T): Promise<Result<string, Error>> {
+    return Result.runAndDoubleWrapSync(() => JSON.stringify(value))
+  }
+
+  export async function tryDecode<T>(value: string): Promise<Result<T, Error>> {
+    return Result.runAndDoubleWrapSync(() => JSON.parse(value) as T)
+  }
+
+}
+
 export class AsyncPipeBicoder<I, X, O> implements AsyncBicoder<I, O> {
 
   constructor(
