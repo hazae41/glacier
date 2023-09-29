@@ -1,5 +1,5 @@
 import { Some } from "@hazae41/option";
-import { Err, Result } from "@hazae41/result";
+import { Err, Ok, Result } from "@hazae41/result";
 import { Arrays } from "libs/arrays/arrays.js";
 import { core } from "mods/core/core.js";
 import { DEFAULT_EQUALS } from "mods/defaults.js";
@@ -54,15 +54,17 @@ export namespace Scrollable {
     const timed = Fetched.from(result.get()).setTimes(times)
 
     return await core.tryMutate(cacheKey, async (previous) => {
-      if (timed.isErr())
-        return new Some(timed)
+      return await Result.unthrow(async t => {
+        if (timed.isErr())
+          return new Ok(new Some(timed))
 
-      const prenormalized = await core.prenormalize(timed, settings)
+        const prenormalized = await core.tryPrenormalize(timed, settings).then(r => r.throw(t))
 
-      if (prenormalized?.isData() && previous.real?.data && dataEqualser(prenormalized.inner, previous.real.data.inner))
-        return new Some(previous.real.data)
+        if (prenormalized?.isData() && previous.real?.data && dataEqualser(prenormalized.inner, previous.real.data.inner))
+          return new Ok(new Some(previous.real.data))
 
-      return new Some(timed)
+        return new Ok(new Some(timed))
+      })
     }, settings)
   }
 
@@ -100,11 +102,11 @@ export namespace Scrollable {
       const times = TimesInit.merge(result.get(), settings)
       const timed = Fetched.from(result.get()).setTimes(times)
 
-      return await core.tryMutate(cacheKey, (previous) => {
+      return await core.tryMutate(cacheKey, async (previous) => {
         const previousPages = previous.real?.data?.inner ?? []
         const paginated = timed.mapSync(data => [...previousPages, ...data])
 
-        return new Some(paginated)
+        return new Ok(new Some(paginated))
       }, settings)
     })
   }

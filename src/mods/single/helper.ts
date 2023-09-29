@@ -1,5 +1,5 @@
 import { Some } from "@hazae41/option";
-import { Result } from "@hazae41/result";
+import { Ok, Result } from "@hazae41/result";
 import { core } from "mods/core/core.js";
 import { Fetched } from "mods/result/fetched.js";
 import { TimesInit } from "mods/result/times.js";
@@ -30,7 +30,7 @@ export namespace Simple {
     const times = TimesInit.merge(result.get(), settings)
     const timed = Fetched.from(result.get()).setTimes(times)
 
-    return await core.tryMutate(cacheKey, () => new Some(timed), settings)
+    return await core.tryMutate(cacheKey, () => new Ok(new Some(timed)), settings)
   }
 
   /**
@@ -57,7 +57,7 @@ export namespace Simple {
       let next = await generator.next()
 
       for (; !next.done; next = await generator.next())
-        await core.optimize(cacheKey, uuid, next.value, settings)
+        await core.tryOptimize(cacheKey, uuid, next.value, settings)
 
       const fetcher = next.value ?? settings.fetcher
 
@@ -67,7 +67,7 @@ export namespace Simple {
 
       if (result.isErr()) {
         core.deoptimize(cacheKey, uuid)
-        core.reoptimize(cacheKey, settings)
+        core.tryReoptimize(cacheKey, settings)
         return result
       }
 
@@ -76,10 +76,10 @@ export namespace Simple {
       const times = TimesInit.merge(result.get(), settings)
       const timed = Fetched.from(result.get()).setTimes(times)
 
-      return await core.tryMutate(cacheKey, () => new Some(timed), settings)
+      return await core.tryMutate(cacheKey, () => new Ok(new Some(timed)), settings)
     } catch (e: unknown) {
       core.deoptimize(cacheKey, uuid)
-      core.reoptimize(cacheKey, settings)
+      core.tryReoptimize(cacheKey, settings)
       throw e
     }
   }

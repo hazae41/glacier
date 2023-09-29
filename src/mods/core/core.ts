@@ -272,8 +272,13 @@ export class Core {
       const metadata = this.#getOrCreateMetadata<D, F>(cacheKey)
 
       return await metadata.lock(async () => {
-        const previous = await this.#tryGet(cacheKey, settings).then(r => r.throw(t))
-        const current = await setter(previous)
+        const previous = await this
+          .#tryGet(cacheKey, settings)
+          .then(r => r.throw(t))
+
+        const current = await Promise
+          .resolve(setter(previous))
+          .then(r => r.throw(t))
 
         if (current === previous)
           return new Ok(previous)
@@ -328,25 +333,30 @@ export class Core {
     const metadata = this.#getOrCreateMetadata<D, F>(cacheKey)
 
     return await this.trySet(cacheKey, async (previous) => {
-      const updated = await setter(previous)
+      return await Result.unthrow<Result<State<D, F>, Error>>(async t => {
+        const updated = await Promise
+          .resolve(setter(previous))
+          .then(r => r.throw(t))
 
-      if (updated === previous)
-        return previous
+        if (updated === previous)
+          return new Ok(previous)
 
-      let next = new RealState(updated.real)
+        let next = new RealState(updated.real)
 
-      if (next.real && previous.real && Time.isBefore(next.real?.current.time, previous.real.current.time))
-        return previous
+        if (next.real && previous.real && Time.isBefore(next.real?.current.time, previous.real.current.time))
+          return new Ok(previous)
 
-      next = this.#mergeRealStateWithFetched(next, await this.#normalize(next.real?.current, settings))
+        const normalized = await this.#tryNormalize(next.real?.current, settings).then(r => r.throw(t))
+        next = this.#mergeRealStateWithFetched(next, normalized)
 
-      if (next.real?.current.isData() && previous.real?.current.isData() && dataEqualser(next.real.current.inner, previous.real.current.inner))
-        next = new RealState(new DataState(new Data(previous.real.current.inner, next.real.current)))
+        if (next.real?.current.isData() && previous.real?.current.isData() && dataEqualser(next.real.current.inner, previous.real.current.inner))
+          next = new RealState(new DataState(new Data(previous.real.current.inner, next.real.current)))
 
-      if (next.real?.current.isFail() && previous.real?.current.isFail() && errorEqualser(next.real.current.inner, previous.real.current.inner))
-        next = new RealState(new FailState(new Fail(previous.real.current.inner, next.real.current), previous.real.data))
+        if (next.real?.current.isFail() && previous.real?.current.isFail() && errorEqualser(next.real.current.inner, previous.real.current.inner))
+          next = new RealState(new FailState(new Fail(previous.real.current.inner, next.real.current), previous.real.data))
 
-      return await this.#reoptimize(metadata.inner, next)
+        return await this.#tryReoptimize(metadata.inner, next)
+      })
     }, settings)
   }
 
@@ -360,13 +370,19 @@ export class Core {
    */
   async tryMutate<K, D, F>(cacheKey: string, mutator: Mutator<D, F>, settings: QuerySettings<K, D, F>) {
     return await this.tryUpdate(cacheKey, async (previous) => {
-      const mutate = await mutator(previous)
+      return await Result.unthrow(async t => {
+        const mutate = await Promise
+          .resolve(mutator(previous))
+          .then(r => r.throw(t))
 
-      if (mutate.isNone())
-        return previous
+        if (mutate.isNone())
+          return new Ok(previous)
 
-      const fetched = Option.mapSync(mutate.get(), Fetched.from)
-      return this.#mergeRealStateWithFetched(previous, fetched)
+        const fetched = Option.mapSync(mutate.get(), Fetched.from)
+        const merged = this.#mergeRealStateWithFetched(previous, fetched)
+
+        return new Ok(merged)
+      })
     }, settings)
   }
 
@@ -377,7 +393,7 @@ export class Core {
    * @returns 
    */
   async tryDelete<K, D, F>(cacheKey: string, settings: QuerySettings<K, D, F>) {
-    return await this.tryMutate(cacheKey, () => new Some(undefined), settings)
+    return await this.tryMutate(cacheKey, () => new Ok(new Some(undefined)), settings)
   }
 
   /**
@@ -386,50 +402,58 @@ export class Core {
    * @param optimizers 
    * @returns 
    */
-  async #reoptimize<D, F>(metadata: QueryMetadata<D, F>, state: State<D, F>): Promise<State<D, F>> {
-    let reoptimized: State<D, F> = new RealState(state.real)
+  async #tryReoptimize<D, F>(metadata: QueryMetadata<D, F>, state: State<D, F>): Promise<Result<State<D, F>, Error>> {
+    return await Result.unthrow(async t => {
+      let reoptimized: State<D, F> = new RealState(state.real)
 
-    for (const optimizer of metadata.optimizers.values()) {
-      const optimized = await optimizer(reoptimized)
+      for (const optimizer of metadata.optimizers.values()) {
+        const optimize = await optimizer(reoptimized)
+        const optimized = optimize.throw(t)
 
-      if (optimized.isNone())
-        continue
+        if (optimized.isNone())
+          continue
 
-      const fetched = Option.mapSync(optimized.get(), Fetched.from)
-      reoptimized = this.#mergeFakeStateWithFetched(reoptimized, fetched)
-    }
+        const fetched = Option.mapSync(optimized.get(), Fetched.from)
+        reoptimized = this.#mergeFakeStateWithFetched(reoptimized, fetched)
+      }
 
-    return reoptimized
+      return new Ok(reoptimized)
+    })
   }
 
-  async reoptimize<K, D, F>(cacheKey: string, settings: QuerySettings<K, D, F>) {
+  async tryReoptimize<K, D, F>(cacheKey: string, settings: QuerySettings<K, D, F>) {
     const metadata = this.#getOrCreateMetadata<D, F>(cacheKey)
 
     return await this.trySet(cacheKey, async (previous) => {
-      return await this.#reoptimize(metadata.inner, previous)
+      return await this.#tryReoptimize(metadata.inner, previous)
     }, settings)
   }
 
-  async optimize<K, D, F>(cacheKey: string, uuid: string, optimizer: Mutator<D, F>, settings: QuerySettings<K, D, F>) {
+  async tryOptimize<K, D, F>(cacheKey: string, uuid: string, optimizer: Mutator<D, F>, settings: QuerySettings<K, D, F>) {
     const metadata = this.#getOrCreateMetadata<D, F>(cacheKey)
 
     return await this.trySet(cacheKey, async (previous) => {
+      return await Result.unthrow(async t => {
+        if (metadata.inner.optimizers.has(uuid)) {
+          metadata.inner.optimizers.delete(uuid)
 
-      if (metadata.inner.optimizers.has(uuid)) {
-        metadata.inner.optimizers.delete(uuid)
+          previous = await this.#tryReoptimize(metadata.inner, previous).then(r => r.throw(t))
+        }
 
-        previous = await this.#reoptimize(metadata.inner, previous)
-      }
+        metadata.inner.optimizers.set(uuid, optimizer)
 
-      metadata.inner.optimizers.set(uuid, optimizer)
+        const optimized = await Promise
+          .resolve(optimizer(previous))
+          .then(r => r.throw(t))
 
-      const optimized = await optimizer(previous)
+        if (optimized.isNone())
+          return new Ok(previous)
 
-      if (optimized.isNone())
-        return previous
+        const fetched = Option.mapSync(optimized.get(), Fetched.from)
+        const merged = this.#mergeFakeStateWithFetched(previous, fetched)
 
-      const fetched = Option.mapSync(optimized.get(), Fetched.from)
-      return this.#mergeFakeStateWithFetched(previous, fetched)
+        return new Ok(merged)
+      })
     }, settings)
   }
 
@@ -459,9 +483,9 @@ export class Core {
    * @param settings 
    * @returns 
    */
-  async #normalize<K, D, F>(fetched: Nullable<Fetched<D, F>>, settings: QuerySettings<K, D, F>) {
+  async #tryNormalize<K, D, F>(fetched: Nullable<Fetched<D, F>>, settings: QuerySettings<K, D, F>) {
     if (settings.normalizer == null)
-      return fetched
+      return new Ok(fetched)
     return await settings.normalizer(fetched, { shallow: false })
   }
 
@@ -471,9 +495,9 @@ export class Core {
    * @param settings 
    * @returns 
    */
-  async prenormalize<K, D, F>(fetched: Nullable<Fetched<D, F>>, settings: QuerySettings<K, D, F>) {
+  async tryPrenormalize<K, D, F>(fetched: Nullable<Fetched<D, F>>, settings: QuerySettings<K, D, F>) {
     if (settings.normalizer == null)
-      return fetched
+      return new Ok(fetched)
     return await settings.normalizer(fetched, { shallow: true })
   }
 

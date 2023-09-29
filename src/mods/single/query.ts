@@ -101,7 +101,7 @@ export class SimpleFetcherlessQuery<K, D, F> {
   async tryNormalize(fetched: Nullable<Fetched<D, F>>, more: NormalizerMore) {
     if (more.shallow)
       return
-    await this.tryMutate(() => new Some(fetched))
+    await this.tryMutate(() => new Ok(new Some(fetched)))
   }
 
   async tryFetch(aborter = new AbortController()): Promise<Result<never, MissingFetcherError>> {
@@ -151,7 +151,7 @@ export class SimpleFetcherfulQuery<K, D, F> {
   async tryNormalize(fetched: Nullable<Fetched<D, F>>, more: NormalizerMore) {
     if (more.shallow)
       return
-    await this.tryMutate(() => new Some(fetched))
+    await this.tryMutate(() => new Ok(new Some(fetched)))
   }
 
   async tryFetch(aborter = new AbortController()): Promise<Result<Result<State<D, F>, Error>, Error>> {
