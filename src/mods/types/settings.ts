@@ -17,7 +17,7 @@ export type KeyedQuerySettings<K, D, F> =
 
 export interface SkeletonQuerySettings<K, D, F> {
   /**
-   * Arbitrary key, must be serializable
+   * Arbitrary key, must be JSON-serializable
    */
   readonly key?: K
 
@@ -40,7 +40,7 @@ export interface SkeletonQuerySettings<K, D, F> {
 
 export interface FetcherfulQuerySettings<K, D, F> {
   /**
-   * Arbitrary key, must be serializable
+   * Arbitrary key, must be JSON-serializable
    */
   readonly key: K
 
@@ -65,7 +65,7 @@ export interface FetcherfulQuerySettings<K, D, F> {
 
 export interface FetcherlessQuerySettings<K, D, F> {
   /**
-   * Arbitrary key, must be serializable
+   * Arbitrary key, must be JSON-serializable
    */
   readonly key: K
 
