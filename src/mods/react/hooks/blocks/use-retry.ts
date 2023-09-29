@@ -45,7 +45,7 @@ export function useRetry<K, D, F>(query: ReactQuery<K, D, F>, settings: RetrySet
     function f() {
       count.current++
       // TODO use suspend or wait cooldown
-      refetch().then(r => r.ignore())
+      refetch().then(r => r.inspectErrSync(console.warn))
     }
 
     const t = setTimeout(f, init * ratio)

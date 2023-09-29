@@ -66,10 +66,10 @@ export class IDBStorage implements Storage {
       req.onsuccess = () => ok(new Ok(req.result))
     })
 
-    this.tryLoadKeys().then(r => r.ignore())
+    this.tryLoadKeys().then(r => r.inspectErrSync(console.warn))
 
     this.beforeunload = () => {
-      this.trySaveKeys().then(r => r.ignore())
+      this.trySaveKeys().then(r => r.inspectErrSync(console.warn))
     }
 
     addEventListener("beforeunload", this.beforeunload)
@@ -77,8 +77,8 @@ export class IDBStorage implements Storage {
 
   async [Symbol.asyncDispose]() {
     removeEventListener("beforeunload", this.beforeunload)
-    await this.tryCollect().then(r => r.ignore())
-    await this.trySaveKeys().then(r => r.ignore())
+    await this.tryCollect().then(r => r.inspectErrSync(console.warn))
+    await this.trySaveKeys().then(r => r.inspectErrSync(console.warn))
   }
 
   static tryCreate(params: IDBStorageParams = {}): Result<IDBStorage, StorageCreationError> {
@@ -109,7 +109,7 @@ export class IDBStorage implements Storage {
 
         return Ok.void()
       })
-    }, "readwrite").then(r => r.ignore())
+    }, "readwrite")
   }
 
   /**

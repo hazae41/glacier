@@ -13,6 +13,6 @@ export function useOnce<K, D, F>(query: ReactQuery<K, D, F>) {
   useEffect(() => {
     if (data != null)
       return
-    fetch().then(r => r.ignore())
+    fetch().then(r => r.inspectErrSync(console.warn))
   }, [data, fetch])
 }

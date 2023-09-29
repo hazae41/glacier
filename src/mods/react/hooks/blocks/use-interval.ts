@@ -16,7 +16,7 @@ export function useInterval<K, D, F>(query: ReactQuery<K, D, F>, interval: numbe
     if (!interval)
       return
 
-    const f = () => fetch().then(r => r.ignore())
+    const f = () => fetch().then(r => r.inspectErrSync(console.warn))
     const i = setInterval(f, interval)
     return () => clearInterval(i)
   }, [ready, fetch, interval])

@@ -531,7 +531,7 @@ export class Core {
 
       if (metadata.inner.counter > 0)
         return
-      await this.tryDelete(cacheKey, settings)
+      await this.tryDelete(cacheKey, settings).then(r => r.inspectErrSync(console.warn))
     }
 
     metadata.inner.counter--
@@ -545,7 +545,7 @@ export class Core {
       return
 
     if (Date.now() > expiration) {
-      await this.tryDelete(cacheKey, settings)
+      await this.tryDelete(cacheKey, settings).then(r => r.inspectErrSync(console.warn))
       return
     }
 

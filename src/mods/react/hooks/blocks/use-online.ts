@@ -12,7 +12,7 @@ export function useOnline<K, D, F>(query: ReactQuery<K, D, F>) {
     if (!ready)
       return
 
-    const f = () => fetch().then(r => r.ignore())
+    const f = () => fetch().then(r => r.inspectErrSync(console.warn))
 
     addEventListener("online", f)
     return () => removeEventListener("online", f)
