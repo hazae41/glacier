@@ -55,18 +55,6 @@ Just install `@hazae41/glacier` using your favorite package manager.
 npm i @hazae41/glacier
 ```
 
-Then, wrap your app in a `CoreProvider` component.
-
-```tsx
-import { CoreProvider } from "@hazae41/glacier"
-
-function MyWrapper() {
-  return <CoreProvider>
-    <MyAwesomeApp />
-  </CoreProvider>
-}
-```
-
 ## Your first mix 🧪
 
 When using Glacier and its composition-based hooks, you create a mix and only include the ingredients you want.
