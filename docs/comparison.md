@@ -2,15 +2,15 @@
 
 ## Configuration
 
-### Glacier
+#### Glacier
 
 None :)
 
-### SWR
+#### SWR
 
 Not required
 
-### React-Query
+#### React-Query
 
 ```tsx
 const queryClient = new QueryClient()
@@ -26,19 +26,19 @@ export default function App() {
 
 ## Prefetching
 
-### Glacier
+#### Glacier
 
 ```tsx
 user.tryFetch()
 ```
 
-### SWR
+#### SWR
 
 ```tsx
 mutate('/api/user', fetch('/api/user').then(res => res.json()))
 ```
 
-### React-Query
+#### React-Query
 
 ```tsx
 await queryClient.prefetchQuery(['user'], fetchUser)
@@ -46,7 +46,7 @@ await queryClient.prefetchQuery(['user'], fetchUser)
 
 ## Optimistic updates
 
-### Glacier
+#### Glacier
 
 Can use yield to represent fine-grained steps
 
@@ -79,7 +79,7 @@ function onContentChange(content: string) {
 }
 ```
 
-### SWR
+#### SWR
 
 Only support one optimistic state
 
@@ -87,7 +87,7 @@ Only support one optimistic state
 mutate('/api/todos', updateFn(user), { optimisticData: user, rollbackOnError: true })
 ```
 
-### React-Query
+#### React-Query
 
 Manual
 
@@ -110,17 +110,17 @@ useMutation(updateTodo, {
 
 ## Cancellation
 
-### Glacier
+#### Glacier
 
 ```tsx
 user.aborter.abort()
 ```
 
-### SWR
+#### SWR
 
 Unsupported
 
-### React-Query
+#### React-Query
 
 ```tsx
 queryClient.cancelQueries(['todos'])
@@ -128,52 +128,52 @@ queryClient.cancelQueries(['todos'])
 
 ## Garbage collection
 
-### Glacier
+#### Glacier
 
 Global, per-query, and per-fetch expiration time. You can use response headers like `Cache-Control` to set an expiration time
 
-### SWR
+#### SWR
 
 Unsupported
 
-### React-Query
+#### React-Query
 
 Global and per-query expiration time. You can only define an expiration time at global scope or query scope
 
 ## Persistent storage
 
-### Glacier
+#### Glacier
 
 Per-query persistent storage; you can set a query as persistent in its schema
 - Out of the box support for IndexedDB and localStorage
 - Out of the box encryption using strong parameters
 - Automatic garbage collection
 
-### SWR
+#### SWR
 
 No real support; you have to create your own storage or install third party ones
 
-### React-Query
+#### React-Query
 
 Global persistent storage; you persist your whole app and define excluded queries using `shouldDehydrateQuery`
 
 ## Store normalization
 
-### Glacier
+#### Glacier
 
 Out of the box, very simple to use
 
-### SWR
+#### SWR
 
 Unsupported
 
-### React-Query
+#### React-Query
 
 Unsupported
 
 ## React Suspense
 
-### Glacier
+#### Glacier
 
 Super natural and easy. Doesn't enforce any pattern and doesn't require any configuration. Partially compatible with SSR.
 
@@ -191,10 +191,10 @@ function Component() {
 }
 ```
 
-### SWR
+#### SWR
 
 Forces you to use an ErrorBoundary. No control over when to throw and when to suspend. Not compatible with SSR.
 
-### React-Query
+#### React-Query
 
 Seems simple at first but you have to use a configuration for it to work like you want. Error cleaning requires even more code.
