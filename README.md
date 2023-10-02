@@ -56,5 +56,6 @@ function MyApp() {
 - React Suspense support
 - React Native support
 - Works in a Service Worker too
+- Works in a serverless function too
 
 
