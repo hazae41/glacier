@@ -45,9 +45,7 @@ function MyApp() {
 - 100% TypeScript and ESM
 - No external dependency
 - Composition-based hooks
-- Very easy learning curve
-- Not over-engineered
-- No unexpected behavior 
+- Rust-like patterns
 - Transport agnostic (REST, GraphQL, WebSocket)
 - Storage agnostic (IndexedDB, localStorage)
 - Works in a Service Worker too
