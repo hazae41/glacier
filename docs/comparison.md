@@ -48,7 +48,7 @@ await queryClient.prefetchQuery(['user'], fetchUser)
 
 #### Glacier
 
-Can use yield to represent fine-grained steps
+- Can use yield to represent fine-grained steps
 
 ```tsx
 document.update(async function* () {
@@ -59,7 +59,7 @@ document.update(async function* () {
 })
 ```
 
-Can run multiple optimistic updates at the same time, in parallel
+- Can run multiple optimistic updates at the same time, in parallel
 
 ```tsx
 function onTitleChange(title: string) {
@@ -89,7 +89,7 @@ mutate('/api/todos', updateFn(user), { optimisticData: user, rollbackOnError: tr
 
 #### React-Query
 
-Speaks for itself
+Manual, only supports one optimistic state
 
 ```tsx
 useMutation(updateTodo, {
