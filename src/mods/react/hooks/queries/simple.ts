@@ -4,8 +4,8 @@ import { SimpleQuery } from "index.js";
 import { useRenderRef } from "libs/react/ref.js";
 import { Time } from "libs/time/time.js";
 import { CooldownError, MissingFetcherError, MissingKeyError, core } from "mods/core/core.js";
+import { Simple } from "mods/queries/simple/helper.js";
 import { FetcherfulReactQuery, FetcherlessReactQuery, SkeletonReactQuery } from "mods/react/types/query.js";
-import { Simple } from "mods/single/helper.js";
 import { Mutator } from "mods/types/mutator.js";
 import { FetcherfulQuerySettings, FetcherlessQuerySettings } from "mods/types/settings.js";
 import { State } from "mods/types/state.js";
@@ -30,7 +30,7 @@ export function useQuery<T extends SimpleQuery.Infer<T>, L extends DependencyLis
 }
 
 /**
- * Query for a single resource
+ * Query for a simple resource
  */
 export interface SimpleSkeletonReactQuery<K, D, F> extends SkeletonReactQuery<K, D, F> {
   /**
@@ -42,7 +42,7 @@ export interface SimpleSkeletonReactQuery<K, D, F> extends SkeletonReactQuery<K,
 }
 
 /**
- * Query for a single resource
+ * Query for a simple resource
  */
 export interface SimpleFetcherfulReactQuery<K, D, F> extends FetcherfulReactQuery<K, D, F> {
   /**
@@ -54,7 +54,7 @@ export interface SimpleFetcherfulReactQuery<K, D, F> extends FetcherfulReactQuer
 }
 
 /**
- * Query for a single resource
+ * Query for a simple resource
  */
 export interface SimpleFetcherlessReactQuery<K, D, F> extends FetcherlessReactQuery<K, D, F> {
   /**

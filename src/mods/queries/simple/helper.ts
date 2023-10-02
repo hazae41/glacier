@@ -1,8 +1,8 @@
 import { Some } from "@hazae41/option";
 import { Ok, Result } from "@hazae41/result";
 import { core } from "mods/core/core.js";
-import { Fetched } from "mods/result/fetched.js";
-import { TimesInit } from "mods/result/times.js";
+import { Fetched } from "mods/fetched/fetched.js";
+import { TimesInit } from "mods/fetched/times.js";
 import { FetcherfulQuerySettings } from "mods/types/settings.js";
 import { State } from "mods/types/state.js";
 import { Updater } from "mods/types/updater.js";

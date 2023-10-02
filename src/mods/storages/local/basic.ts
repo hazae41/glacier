@@ -1,6 +1,6 @@
 import { Nullable } from "@hazae41/option"
 import { Err, Ok, Result } from "@hazae41/result"
-import { Bicoder, Encoder, SyncIdentity, SyncJson } from "mods/serializers/coder.js"
+import { Bicoder, Encoder, SyncIdentity, SyncJson } from "mods/coders/coder.js"
 import { RawState } from "mods/types/state.js"
 import { useEffect, useRef } from "react"
 import { StorageCreationError } from "../errors.js"

@@ -3,8 +3,8 @@ import { Err, Ok, Result } from "@hazae41/result";
 import { Arrays } from "libs/arrays/arrays.js";
 import { core } from "mods/core/core.js";
 import { DEFAULT_EQUALS } from "mods/defaults.js";
-import { Fetched } from "mods/result/fetched.js";
-import { TimesInit } from "mods/result/times.js";
+import { Fetched } from "mods/fetched/fetched.js";
+import { TimesInit } from "mods/fetched/times.js";
 import { ScrollableFetcherfulQuerySettings } from "mods/types/settings.js";
 import { State } from "mods/types/state.js";
 

@@ -1,11 +1,14 @@
 import { Nullable, Some } from "@hazae41/option";
 import { Err, Ok, Result } from "@hazae41/result";
-import { CooldownError, MissingFetcherError, Mutator, ScrollableFetcherfulReactQuery, ScrollableFetcherlessReactQuery, ScrollableSkeletonReactQuery, State, core } from "index.js";
 import { Arrays } from "libs/arrays/arrays.js";
 import { Time } from "libs/time/time.js";
-import { Fetched } from "mods/result/fetched.js";
+import { CooldownError, MissingFetcherError, core } from "mods/core/core.js";
+import { Fetched } from "mods/fetched/fetched.js";
+import { ScrollableFetcherfulReactQuery, ScrollableFetcherlessReactQuery, ScrollableSkeletonReactQuery } from "mods/react/hooks/queries/scroll.js";
+import { Mutator } from "mods/types/mutator.js";
 import { NormalizerMore } from "mods/types/normalizer.js";
 import { ScrollableFetcherfulQuerySettings, ScrollableFetcherlessQuerySettings, ScrollableQuerySettings } from "mods/types/settings.js";
+import { State } from "mods/types/state.js";
 import { Scrollable } from "./helper.js";
 
 export function createScrollableQuery<K, D, F>(

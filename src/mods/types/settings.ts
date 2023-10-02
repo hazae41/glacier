@@ -1,5 +1,5 @@
+import { Bicoder, SyncEncoder } from "mods/coders/coder.js"
 import { Equalser } from "mods/equals/equals.js"
-import { Bicoder, SyncEncoder } from "mods/serializers/coder.js"
 import { Storage } from "mods/storages/storage.js"
 import { Normalizer } from "mods/types/normalizer.js"
 import { Fetcher } from "./fetcher.js"

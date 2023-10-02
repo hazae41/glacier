@@ -1,5 +1,5 @@
-import { Data, DataInit } from "mods/result/data.js"
-import { Fail, FailInit } from "mods/result/fail.js"
+import { Data, DataInit } from "mods/fetched/data.js"
+import { Fail, FailInit } from "mods/fetched/fail.js"
 
 export type RawState<D = unknown, E = unknown> =
   | RawState1<D, E>

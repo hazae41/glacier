@@ -1,10 +1,14 @@
 import { Nullable, Some } from "@hazae41/option";
 import { Err, Ok, Result } from "@hazae41/result";
-import { CooldownError, MissingFetcherError, Mutator, SimpleFetcherfulReactQuery, SimpleFetcherlessReactQuery, SimpleSkeletonReactQuery, State, Updater, core } from "index.js";
 import { Time } from "libs/time/time.js";
-import { Fetched } from "mods/result/fetched.js";
+import { CooldownError, MissingFetcherError, core } from "mods/core/core.js";
+import { Fetched } from "mods/fetched/fetched.js";
+import { SimpleFetcherfulReactQuery, SimpleFetcherlessReactQuery, SimpleSkeletonReactQuery } from "mods/react/hooks/queries/simple.js";
+import { Mutator } from "mods/types/mutator.js";
 import { NormalizerMore } from "mods/types/normalizer.js";
 import { FetcherfulQuerySettings, FetcherlessQuerySettings, KeyedQuerySettings } from "mods/types/settings.js";
+import { State } from "mods/types/state.js";
+import { Updater } from "mods/types/updater.js";
 import { Simple } from "./helper.js";
 
 export function createQuery<K, D, F>(

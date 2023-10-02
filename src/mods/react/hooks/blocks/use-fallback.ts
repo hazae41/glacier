@@ -1,5 +1,5 @@
+import { Fetched } from "mods/fetched/fetched.js"
 import { ReactQuery } from "mods/react/types/query.js"
-import { Fetched } from "mods/result/fetched.js"
 
 /**
  * Fallback to given data/error if there is no data/error

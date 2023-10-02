@@ -1,6 +1,6 @@
 import { Result } from "@hazae41/result";
 import { useRenderRef } from "libs/react/ref.js";
-import { Simple } from "mods/single/helper.js";
+import { Simple } from "mods/queries/simple/helper.js";
 import { QuerySettings } from "mods/types/settings.js";
 import { DependencyList, useCallback, useMemo } from "react";
 

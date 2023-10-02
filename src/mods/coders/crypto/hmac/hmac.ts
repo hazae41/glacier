@@ -1,7 +1,7 @@
 import { Base64 } from "@hazae41/base64"
 import { Bytes } from "@hazae41/bytes"
 import { Ok, Result } from "@hazae41/result"
-import { AsyncEncoder } from "mods/serializers/coder.js"
+import { AsyncEncoder } from "mods/coders/coder.js"
 import { CryptoError } from "../error/error.js"
 
 export class HmacEncoder implements AsyncEncoder<string, string> {
