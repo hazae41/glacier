@@ -38,12 +38,10 @@ export interface Hello {
 }
 
 export function createHelloQuery() {
-  /**
-   * string = the key
-   * HelloData = the data
-   * Error = the error
-   **/
-  return createQuery<string, Hello, Error>("/api/hello", tryFetchAsJson)
+  return createQuery({
+    key: "/api/hello",
+    fetcher: tryFetchAsJson
+  })
 }
 ```
 
@@ -77,9 +75,9 @@ function useHelloAutoFetchQuery() {
 function MyApp() {
   const { data, error } = useHelloAutoFetchQuery()
 
-  if (error)
+  if (error != null)
     return <MyError error={error} />
-  if (!data)
+  if (data == null)
     return <MyLoading />
   return <MyPage data={data} />
 }
