@@ -58,7 +58,7 @@ function MyApp() {
 - Request deduplication, cooldown, timeout, cancellation, expiration, and retrying
 - Automatic refetching based on various signals
 - Page-based and cursor-based pagination
-- Super natural React Suspense
+- React Suspense support
 - React Native support
 
 ### [Upcoming features](https://github.com/sponsors/hazae41)
