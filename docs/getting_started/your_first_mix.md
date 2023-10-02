@@ -62,7 +62,7 @@ function useAutoFetchMixture(query: Query) {
 Once you got a schema and a mixture, you just have to mix it.
 
 ```tsx
-function useHelloAutoFetchQuery() {
+function useHelloWithAutoFetch() {
   const query = useQuery(createHelloQuery, [])
   useAutoFetchMixture(query)
   return query
@@ -73,7 +73,7 @@ function useHelloAutoFetchQuery() {
 
 ```tsx
 function MyApp() {
-  const { data, error } = useHelloAutoFetchQuery()
+  const { data, error } = useHelloWithAutoFetch()
 
   if (error != null)
     return <MyError error={error} />

@@ -21,10 +21,20 @@ function useAutoFetchMixture(query: Query) {
   useOnline(query) // Fetch when the browser is online
 }
 
-function useHelloAutoFetchQuery() {
+function useHelloWithAutoFetch() {
   const query = useQuery(createHelloQuery, [])
   useAutoFetchMixture(query)
   return query
+}
+
+function MyApp() {
+  const { data, error } = useHelloWithAutoFetch()
+
+  if (error != null)
+    return <MyError error={error} />
+  if (data == null)
+    return <MyLoading />
+  return <MyPage data={data} />
 }
 ```
 
