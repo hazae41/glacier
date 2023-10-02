@@ -68,7 +68,7 @@ function MyApp() {
 
 ### [Upcoming features](https://github.com/sponsors/hazae41)
 
-- Transport agnostic streaming (ethers.js, WebSockets, Socket.io)
+- Transport agnostic streaming
 - Bidirectional scrolling
 
 
