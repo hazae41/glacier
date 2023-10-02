@@ -55,7 +55,7 @@ function MyApp() {
 - SSR & ISR support
 - React Suspense support
 - React Native support
-- Works in a Service Worker too
-- Works in a serverless function too
+- Works in a Service Worker
+- Works in a serverless function
 
 
