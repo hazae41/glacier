@@ -1,8 +1,16 @@
-# Your first mix 🧪
+# Getting started 🧪
 
 When using Glacier and its composition-based hooks, you create a mix and only include the ingredients you want.
 
 We'll do a request at `/api/data` using JSON, display it with a loading, and automatically refetch it.
+
+## Installation 🔧
+
+Just install `@hazae41/glacier` using your favorite package manager.
+
+```bash
+npm i @hazae41/glacier
+```
 
 ## Create a fetcher ⚡️
 
