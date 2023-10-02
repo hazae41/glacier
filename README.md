@@ -46,6 +46,7 @@ function MyApp() {
 - Rust-like patterns
 - Transport agnostic (REST, GraphQL, WebSocket)
 - Storage agnostic (IndexedDB, localStorage)
+- Works in a Service Worker or in a serverless function
 - Per-query, encrypted, garbage-collected, persistent storage
 - Store normalization and indexes
 - Concurrent and multi-step optimistic states
@@ -55,7 +56,5 @@ function MyApp() {
 - SSR & ISR support
 - React Suspense support
 - React Native support
-- Works in a Service Worker
-- Works in a serverless function
 
 
