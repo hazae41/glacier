@@ -14,6 +14,20 @@ Glacier uses two new approaches compared to other data fetching libraries like s
 1) Encapsulating key+fetcher+params in a single abstraction called schema.
 2) Composing features with very simple hooks instead of having bloated configuration and unexpected behaviors.
 
+```tsx
+function useAutoFetchMixture(query: Query) {
+  useFetch(query) // Fetch on mount and url change
+  useVisible(query) // Fetch when the page is focused
+  useOnline(query) // Fetch when the browser is online
+}
+
+function useHelloAutoFetchQuery() {
+  const query = useQuery(createHelloQuery, [])
+  useAutoFetchMixture(query)
+  return query
+}
+```
+
 ## Features 🔥
 
 ### Current features
