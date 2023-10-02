@@ -43,32 +43,29 @@ function MyApp() {
 ### Current features
 
 - 100% TypeScript and ESM
+- No external dependency
 - Composition-based hooks
 - Very easy learning curve
-- No dependency except React
-- Not over-engineered (hello react-query)
-- No unexpected behaviour (hello swr)
-- Backend agnostic fetching (REST, GraphQL, WebSocket)
-- Storage agnostic caching (new Map(), LocalStorage, IndexedDB)
-- Automatic refetching
-- Dependent and conditional queries
-- Request deduplication, cooldown, timeout, and expiration
-- Page-based and cursor-based pagination
-- Exponential backoff retry
-- SSR & ISR support
-- Optimistic mutations
-- Cancellable requests
-- Automatic cancellation
-- Automatic garbage collection
+- Not over-engineered
+- No unexpected behavior 
+- Transport agnostic (REST, GraphQL, WebSocket)
+- Storage agnostic (IndexedDB, localStorage)
+- Works in a Service Worker too
 - Per-query persistent storage
-- Out of the box IndexedDB and LocalStorage
-- Out of the box store normalization
+- Encrypted and hashed storage
+- Gargage collected storage
+- Store normalization and indexes
+- Easy SSR & ISR support
+- Concurrent and multi-step optimistic states
+- Request deduplication, cooldown, timeout, cancellation, expiration, and retrying
+- Automatic refetching based on various signals
+- Page-based and cursor-based pagination
 - Super natural React Suspense
 - React Native support
 
 ### [Upcoming features](https://github.com/sponsors/hazae41)
 
+- 
 - Transport agnostic streaming
-- Bidirectional scrolling
 
 
