@@ -157,7 +157,7 @@ No real support; you have to create your own storage or install third party ones
 
 Global persistent storage; you persist your whole app and define excluded queries using `shouldDehydrateQuery`
 
-## Store normalization
+## Store normalization and indexation
 
 #### Glacier
 
