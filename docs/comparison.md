@@ -81,7 +81,7 @@ function onContentChange(content: string) {
 
 #### SWR
 
-Only support one optimistic state
+Only supports one optimistic state
 
 ```tsx
 mutate('/api/todos', updateFn(user), { optimisticData: user, rollbackOnError: true })
@@ -89,7 +89,7 @@ mutate('/api/todos', updateFn(user), { optimisticData: user, rollbackOnError: tr
 
 #### React-Query
 
-Manual
+Speaks for itself
 
 ```tsx
 useMutation(updateTodo, {
