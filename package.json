@@ -22,8 +22,8 @@
     "prepare": "npm run build"
   },
   "dependencies": {
-    "@hazae41/base64": "^1.0.8",
-    "@hazae41/box": "^1.0.8",
+    "@hazae41/base64": "^1.0.9",
+    "@hazae41/box": "^1.0.11",
     "@hazae41/bytes": "^1.2.3",
     "@hazae41/mutex": "^1.2.11",
     "@hazae41/option": "^1.0.26",

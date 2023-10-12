@@ -1,5 +1,4 @@
 import { Base64 } from "@hazae41/base64";
-import { Box, Copied } from "@hazae41/box";
 import { Bytes } from "@hazae41/bytes";
 import { Ok, Result } from "@hazae41/result";
 import { AsyncBicoder } from "mods/coders/coder.js";
@@ -20,12 +19,12 @@ export class AesGcmCoder implements AsyncBicoder<string, string> {
   async tryEncode(input: string): Promise<Result<string, Error>> {
     return await Result.unthrow(async t => {
       const iv = Bytes.tryRandom(12).throw(t)
-      const ivtext = Base64.get().tryEncodePadded(new Box(new Copied(iv))).throw(t)
+      const ivtext = Base64.get().tryEncodePadded(iv).throw(t)
 
       const plain = Bytes.fromUtf8(input)
 
       const cipher = await this.tryEncrypt(plain, iv).then(r => r.throw(t))
-      const ciphertext = Base64.get().tryEncodePadded(new Box(new Copied(cipher))).throw(t)
+      const ciphertext = Base64.get().tryEncodePadded(cipher).throw(t)
 
       return new Ok(ivtext + "." + ciphertext)
     })
@@ -41,8 +40,8 @@ export class AesGcmCoder implements AsyncBicoder<string, string> {
     return await Result.unthrow(async t => {
       const [ivtext, ciphertext] = output.split(".")
 
-      const iv = Base64.get().tryDecodePadded(ivtext).throw(t).copyAndDispose().bytes
-      const cipher = Base64.get().tryDecodePadded(ciphertext).throw(t).copyAndDispose().bytes
+      const iv = Base64.get().tryDecodePadded(ivtext).throw(t).copyAndDispose()
+      const cipher = Base64.get().tryDecodePadded(ciphertext).throw(t).copyAndDispose()
 
       const plain = await this.tryDecrypt(cipher, iv).then(r => r.throw(t))
       const input = Bytes.toUtf8(plain)
