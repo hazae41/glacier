@@ -66,11 +66,11 @@ export class MissingFetcherError extends Error {
 export class Core {
 
   readonly onState = new CustomEventTarget<{
-    [cacheKey: string]: State<any, any>
+    [cacheKey: string]: void
   }>()
 
   readonly onAborter = new CustomEventTarget<{
-    [cacheKey: string]: Nullable<AbortController>
+    [cacheKey: string]: void
   }>()
 
   readonly mutexes = new Map<string, Mutex<void>>()
@@ -127,7 +127,7 @@ export class Core {
 
       this.promises.set(cacheKey, promise)
       this.aborters.set(cacheKey, aborter)
-      this.onAborter.dispatchEvent(new CustomEvent(cacheKey, { detail: aborter }))
+      this.onAborter.dispatchEvent(new CustomEvent(cacheKey))
 
       return await promise
     } finally {
@@ -137,7 +137,7 @@ export class Core {
       if (this.aborters.get(cacheKey) === aborter) {
         this.aborters.delete(cacheKey)
         this.promises.delete(cacheKey)
-        this.onAborter.dispatchEvent(new CustomEvent(cacheKey, { detail: undefined }))
+        this.onAborter.dispatchEvent(new CustomEvent(cacheKey))
       }
     }
   }
@@ -151,7 +151,7 @@ export class Core {
 
       this.promises.set(cacheKey, promise)
       this.aborters.set(cacheKey, aborter)
-      this.onAborter.dispatchEvent(new CustomEvent(cacheKey, { detail: aborter }))
+      this.onAborter.dispatchEvent(new CustomEvent(cacheKey))
 
       return await promise
     } finally {
@@ -161,7 +161,7 @@ export class Core {
       if (this.aborters.get(cacheKey) === aborter) {
         this.aborters.delete(cacheKey)
         this.promises.delete(cacheKey)
-        this.onAborter.dispatchEvent(new CustomEvent(cacheKey, { detail: undefined }))
+        this.onAborter.dispatchEvent(new CustomEvent(cacheKey))
       }
     }
   }
@@ -177,9 +177,6 @@ export class Core {
 
         this.unstoreds.set(cacheKey, unstored)
 
-        const event = new CustomEvent(cacheKey, { detail: unstored })
-        this.onState.dispatchEvent(event)
-
         return new Ok(unstored)
       }
 
@@ -188,9 +185,7 @@ export class Core {
 
       this.unstoreds.set(cacheKey, unstored)
       this.storeds.set(cacheKey, stored)
-
-      const event = new CustomEvent(cacheKey, { detail: unstored })
-      this.onState.dispatchEvent(event)
+      this.onState.dispatchEvent(new CustomEvent(cacheKey))
 
       return new Ok(unstored)
     })
@@ -282,9 +277,7 @@ export class Core {
 
         this.unstoreds.set(cacheKey, current)
         this.storeds.set(cacheKey, stored)
-
-        const event = new CustomEvent(cacheKey, { detail: current })
-        this.onState.dispatchEvent(event)
+        this.onState.dispatchEvent(new CustomEvent(cacheKey))
 
         await Promise.resolve(settings.storage?.trySet?.(cacheKey, stored)).then(r => r?.throw(t))
 

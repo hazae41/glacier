@@ -80,11 +80,6 @@ export class ScrollableFetcherfulQuery<K, D, F> {
     this.cacheKey = Scrollable.getCacheKey(settings.key)
   }
 
-  onState(callback: (state: CustomEvent<State<D, F>>) => void) {
-    core.onState.addEventListener(this.cacheKey, callback, { passive: true })
-    return () => core.onState.removeListener(this.cacheKey, callback)
-  }
-
   get state() {
     return core.tryGet(this.cacheKey, this.settings)
   }
@@ -162,11 +157,6 @@ export class ScrollableFetcherlessQuery<K, D, F> {
     readonly settings: ScrollableFetcherlessQuerySettings<K, D, F>
   ) {
     this.cacheKey = Scrollable.getCacheKey(settings.key)
-  }
-
-  onState(callback: (state: CustomEvent<State<D, F>>) => void) {
-    core.onState.addEventListener(this.cacheKey, callback, { passive: true })
-    return () => core.onState.removeListener(this.cacheKey, callback)
   }
 
   get state() {

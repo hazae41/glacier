@@ -177,8 +177,8 @@ export function useFetcherlessScrollableQuery<K, D, F>(
   }, [cacheKey])
 
   useEffect(() => {
-    const onState = (e: CustomEvent<State<any, any>>) => setState(e.detail)
-    const onAborter = (e: CustomEvent<Nullable<AbortController>>) => setAborter(e.detail)
+    const onState = () => core.tryGet(cacheKey, settingsRef.current).then(r => r.inspectSync(setState))
+    const onAborter = () => setAborter(core.getAborterSync(cacheKey))
 
     core.onState.addEventListener(cacheKey, onState, { passive: true })
     core.onAborter.addEventListener(cacheKey, onAborter, { passive: true })
@@ -293,8 +293,8 @@ export function useFetcherfulScrollableQuery<K, D, F>(
   }, [cacheKey])
 
   useEffect(() => {
-    const onState = (e: CustomEvent<State<any, any>>) => setState(e.detail)
-    const onAborter = (e: CustomEvent<Nullable<AbortController>>) => setAborter(e.detail)
+    const onState = () => core.tryGet(cacheKey, settingsRef.current).then(r => r.inspectSync(setState))
+    const onAborter = () => setAborter(core.getAborterSync(cacheKey))
 
     core.onState.addEventListener(cacheKey, onState, { passive: true })
     core.onAborter.addEventListener(cacheKey, onAborter, { passive: true })
