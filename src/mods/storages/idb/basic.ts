@@ -176,7 +176,7 @@ export class IDBStorage implements Storage {
     })
   }
 
-  async tryGet(cacheKey: string): Promise<Result<Nullable<RawState>, Error>> {
+  async tryGet(cacheKey: string): Promise<Result<RawState, Error>> {
     return await Result.unthrow(async t => {
       const storageKey = await Promise
         .resolve(this.keySerializer.tryEncode(cacheKey))
@@ -193,7 +193,7 @@ export class IDBStorage implements Storage {
         .resolve(this.valueSerializer.tryDecode(storageValue))
         .then(r => r.throw(t))
 
-      if (state.expiration != null)
+      if (state?.expiration != null)
         this.#storageKeys.set(storageKey, state.expiration)
 
       return new Ok(state)
@@ -209,7 +209,7 @@ export class IDBStorage implements Storage {
     })
   }
 
-  async trySetAndWait(cacheKey: string, state: Nullable<RawState>): Promise<Result<void, Error>> {
+  async trySetAndWait(cacheKey: string, state: RawState): Promise<Result<void, Error>> {
     return await Result.unthrow(async t => {
       if (state == null)
         return await this.tryDelete(cacheKey)
@@ -239,7 +239,7 @@ export class IDBStorage implements Storage {
    * @param state 
    * @returns 
    */
-  trySet(cacheKey: string, state: Nullable<RawState>) {
+  trySet(cacheKey: string, state: RawState) {
     this.#sets = this.#sets
       .then(() => this.trySetAndWait(cacheKey, state))
       .then(r => r.inspectErrSync(console.warn))

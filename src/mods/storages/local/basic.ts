@@ -1,4 +1,3 @@
-import { Nullable } from "@hazae41/option"
 import { Err, Ok, Result } from "@hazae41/result"
 import { Bicoder, Encoder, SyncIdentity, SyncJson } from "mods/coders/coder.js"
 import { RawState } from "mods/types/state.js"
@@ -91,7 +90,7 @@ export class AsyncLocalStorage implements Storage {
     }
   }
 
-  async tryGet(cacheKey: string): Promise<Result<Nullable<RawState>, Error>> {
+  async tryGet(cacheKey: string): Promise<Result<RawState, Error>> {
     return await Result.unthrow(async t => {
       const key = await Promise
         .resolve(this.keySerializer.tryEncode(cacheKey))
@@ -102,18 +101,16 @@ export class AsyncLocalStorage implements Storage {
       if (item == null)
         return new Ok(undefined)
 
-      const state = await Promise
-        .resolve(this.valueSerializer.tryDecode(item))
-        .then(r => r.throw(t))
+      const state = await Promise.resolve(this.valueSerializer.tryDecode(item)).then(r => r.throw(t))
 
-      if (state.expiration != null)
+      if (state?.expiration != null)
         this.#storageKeys.set(key, state.expiration)
 
       return new Ok(state)
     })
   }
 
-  async trySet(cacheKey: string, state: Nullable<RawState>): Promise<Result<void, Error>> {
+  async trySet(cacheKey: string, state: RawState): Promise<Result<void, Error>> {
     return await Result.unthrow(async t => {
       if (state == null)
         return await this.tryDelete(cacheKey)

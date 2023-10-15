@@ -8,7 +8,7 @@ import { Bicoder, SyncIdentity } from "mods/coders/coder.js"
 import { DEFAULT_EQUALS } from "mods/defaults.js"
 import { Data } from "mods/fetched/data.js"
 import { Fail } from "mods/fetched/fail.js"
-import { Fetched } from "mods/fetched/fetched.js"
+import { Fetched, FetchedInit } from "mods/fetched/fetched.js"
 import { Mutator, Setter } from "mods/types/mutator.js"
 import { QuerySettings } from "mods/types/settings.js"
 import { DataState, FailState, FakeState, RawState, RealState, State } from "mods/types/state.js"
@@ -63,16 +63,6 @@ export class MissingFetcherError extends Error {
 
 }
 
-export interface QueryMetadata<D, F> {
-  cacheKey: string,
-  counter: number,
-  state?: State<D, F>,
-  timeout?: NodeJS.Timeout
-  aborter?: AbortController
-  pending?: Promise<Result<State<D, F>, Error>>
-  optimizers: Map<string, Mutator<D, F>>
-}
-
 export class Core {
 
   readonly onState = new CustomEventTarget<{
@@ -83,9 +73,17 @@ export class Core {
     [cacheKey: string]: Nullable<AbortController>
   }>()
 
-  readonly #queries = new Map<string, Mutex<QueryMetadata<any, any>>>()
+  readonly mutexes = new Map<string, Mutex<void>>()
 
-  readonly raw = new Map<string, Option<RawState>>()
+  readonly unstoreds = new Map<string, State<any, any>>()
+  readonly storeds = new Map<string, RawState<any, any>>()
+
+  readonly promises = new Map<string, Promise<Result<State<any, any>, Error>>>()
+  readonly aborters = new Map<string, AbortController>()
+  readonly timeouts = new Map<string, NodeJS.Timeout>()
+  readonly counters = new Map<string, number>()
+
+  readonly optimizers = new Map<string, Map<string, Mutator<any, any>>>()
 
   #mounted = true
 
@@ -96,75 +94,73 @@ export class Core {
   }
 
   clean() {
-    for (const metadata of this.#queries.values())
-      clearTimeout(metadata.inner.timeout)
+    for (const timeout of this.timeouts.values())
+      clearTimeout(timeout)
     this.#mounted = false
   }
 
   getAborterSync(cacheKey: string): Nullable<AbortController> {
-    return this.#queries.get(cacheKey)?.inner?.aborter
+    return this.aborters.get(cacheKey)
   }
 
   getStateSync<D, F>(cacheKey: string): Nullable<State<D, F>> {
-    return this.#queries.get(cacheKey)?.inner?.state
+    return this.unstoreds.get(cacheKey)
   }
 
-  #getOrCreateMetadata<D, F>(cacheKey: string): Mutex<QueryMetadata<D, F>> {
-    let metadata = this.#queries.get(cacheKey)
+  #getOrCreateMutex(cacheKey: string) {
+    let mutex = this.mutexes.get(cacheKey)
 
-    if (metadata != null)
-      return metadata
+    if (mutex != null)
+      return mutex
 
-    const counter = 0
-    const optimizers = new Map()
-
-    metadata = new Mutex({ cacheKey, counter, optimizers })
-
-    this.#queries.set(cacheKey, metadata)
-    return metadata
+    mutex = new Mutex(undefined)
+    this.mutexes.set(cacheKey, mutex)
+    return mutex
   }
 
   async fetchOrReplace<D, F>(cacheKey: string, aborter: AbortController, callback: () => Promise<Result<State<D, F>, Error>>): Promise<Result<State<D, F>, Error>> {
-    const metadata = this.#getOrCreateMetadata(cacheKey)
-
-    if (metadata.inner.aborter != null)
-      metadata.inner.aborter.abort()
+    if (this.aborters.has(cacheKey))
+      this.aborters.get(cacheKey)!.abort()
 
     try {
       const promise = callback()
 
-      metadata.inner.pending = promise
-      metadata.inner.aborter = aborter
+      this.promises.set(cacheKey, promise)
+      this.aborters.set(cacheKey, aborter)
       this.onAborter.dispatchEvent(new CustomEvent(cacheKey, { detail: aborter }))
 
       return await promise
     } finally {
-      if (metadata.inner.aborter === aborter) {
-        metadata.inner.aborter = undefined
-        metadata.inner.pending = undefined
+      /**
+       * Avoid cleaning if it has been replaced
+       */
+      if (this.aborters.get(cacheKey) === aborter) {
+        this.aborters.delete(cacheKey)
+        this.promises.delete(cacheKey)
         this.onAborter.dispatchEvent(new CustomEvent(cacheKey, { detail: undefined }))
       }
     }
   }
 
   async fetchOrJoin<D, F>(cacheKey: string, aborter: AbortController, callback: () => Promise<Result<State<D, F>, Error>>): Promise<Result<State<D, F>, Error>> {
-    const metadata = this.#getOrCreateMetadata<D, F>(cacheKey)
-
-    if (metadata.inner.pending != null)
-      return await metadata.inner.pending
+    if (this.promises.has(cacheKey))
+      return await this.promises.get(cacheKey)!
 
     try {
       const promise = callback()
 
-      metadata.inner.aborter = aborter
-      metadata.inner.pending = promise
+      this.promises.set(cacheKey, promise)
+      this.aborters.set(cacheKey, aborter)
       this.onAborter.dispatchEvent(new CustomEvent(cacheKey, { detail: aborter }))
 
       return await promise
     } finally {
-      if (metadata.inner.aborter === aborter) {
-        metadata.inner.aborter = undefined
-        metadata.inner.pending = undefined
+      /**
+       * Avoid cleaning if it has been replaced
+       */
+      if (this.aborters.get(cacheKey) === aborter) {
+        this.aborters.delete(cacheKey)
+        this.promises.delete(cacheKey)
         this.onAborter.dispatchEvent(new CustomEvent(cacheKey, { detail: undefined }))
       }
     }
@@ -172,33 +168,39 @@ export class Core {
 
   async #tryGet<K, D, F>(cacheKey: string, settings: QuerySettings<K, D, F>): Promise<Result<State<D, F>, Error>> {
     return await Result.unthrow(async t => {
-      const metadata = this.#getOrCreateMetadata<D, F>(cacheKey)
+      if (this.unstoreds.has(cacheKey))
+        return new Ok(this.unstoreds.get(cacheKey)!)
 
-      if (metadata.inner.state != null)
-        return new Ok(metadata.inner.state)
+      if (this.storeds.has(cacheKey)) {
+        const stored = this.storeds.get(cacheKey)
+        const unstored = await this.tryUnstore(stored, settings).then(r => r.throw(t))
 
-      const stored = await Promise
-        .resolve(settings.storage?.tryGet?.(cacheKey))
-        .then(r => r?.ok().inner)
+        this.unstoreds.set(cacheKey, unstored)
 
-      const state = await this.tryUnstore(stored, settings).then(r => r.throw(t))
+        const event = new CustomEvent(cacheKey, { detail: unstored })
+        this.onState.dispatchEvent(event)
 
-      metadata.inner.state = state
+        return new Ok(unstored)
+      }
 
-      this.raw.set(cacheKey, Option.wrap(stored))
+      const stored = await Promise.resolve(settings.storage?.tryGet?.(cacheKey)).then(r => r?.ok().inner)
+      const unstored = await this.tryUnstore(stored, settings).then(r => r.throw(t))
 
-      this.onState.dispatchEvent(new CustomEvent(cacheKey, { detail: state }))
+      this.unstoreds.set(cacheKey, unstored)
+      this.storeds.set(cacheKey, stored)
 
-      return new Ok(state)
+      const event = new CustomEvent(cacheKey, { detail: unstored })
+      this.onState.dispatchEvent(event)
+
+      return new Ok(unstored)
     })
   }
 
   async tryGet<K, D, F>(cacheKey: string, settings: QuerySettings<K, D, F>): Promise<Result<State<D, F>, Error>> {
-    const metadata = this.#getOrCreateMetadata<D, F>(cacheKey)
-    return await metadata.lock(async () => await this.#tryGet(cacheKey, settings))
+    return await this.#getOrCreateMutex(cacheKey).lock(async () => await this.#tryGet(cacheKey, settings))
   }
 
-  async tryStore<K, D, F>(state: State<D, F>, settings: QuerySettings<K, D, F>): Promise<Result<Nullable<RawState>, Error>> {
+  async tryStore<K, D, F>(state: State<D, F>, settings: QuerySettings<K, D, F>): Promise<Result<RawState, Error>> {
     return await Result.unthrow(async t => {
       const {
         dataSerializer = SyncIdentity as Bicoder<D, unknown>,
@@ -217,7 +219,7 @@ export class Core {
     })
   }
 
-  async tryUnstore<K, D, F>(stored: Nullable<RawState>, settings: QuerySettings<K, D, F>): Promise<Result<State<D, F>, Error>> {
+  async tryUnstore<K, D, F>(stored: RawState, settings: QuerySettings<K, D, F>): Promise<Result<State<D, F>, Error>> {
     return await Result.unthrow(async t => {
       const {
         dataSerializer = SyncIdentity as Bicoder<D, unknown>,
@@ -269,30 +271,22 @@ export class Core {
    */
   async trySet<K, D, F>(cacheKey: string, setter: Setter<D, F>, settings: QuerySettings<K, D, F>): Promise<Result<State<D, F>, Error>> {
     return await Result.unthrow(async t => {
-      const metadata = this.#getOrCreateMetadata<D, F>(cacheKey)
-
-      return await metadata.lock(async () => {
-        const previous = await this
-          .#tryGet(cacheKey, settings)
-          .then(r => r.throw(t))
-
-        const current = await Promise
-          .resolve(setter(previous))
-          .then(r => r.throw(t))
+      return await this.#getOrCreateMutex(cacheKey).lock(async () => {
+        const previous = await this.#tryGet(cacheKey, settings).then(r => r.throw(t))
+        const current = await Promise.resolve(setter(previous)).then(r => r.throw(t))
 
         if (current === previous)
           return new Ok(previous)
 
         const stored = await this.tryStore(current, settings).then(r => r.throw(t))
 
-        metadata.inner.state = current
+        this.unstoreds.set(cacheKey, current)
+        this.storeds.set(cacheKey, stored)
 
-        this.raw.set(cacheKey, Option.wrap(stored))
-        this.onState.dispatchEvent(new CustomEvent(cacheKey, { detail: current }))
+        const event = new CustomEvent(cacheKey, { detail: current })
+        this.onState.dispatchEvent(event)
 
-        await Promise
-          .resolve(settings.storage?.trySet?.(cacheKey, stored))
-          .then(r => r?.throw(t))
+        await Promise.resolve(settings.storage?.trySet?.(cacheKey, stored)).then(r => r?.throw(t))
 
         await settings.indexer?.({ current, previous })
         return new Ok(current)
@@ -330,8 +324,6 @@ export class Core {
   async tryUpdate<K, D, F>(cacheKey: string, setter: Setter<D, F>, settings: QuerySettings<K, D, F>) {
     const { dataEqualser = DEFAULT_EQUALS, errorEqualser = DEFAULT_EQUALS } = settings
 
-    const metadata = this.#getOrCreateMetadata<D, F>(cacheKey)
-
     return await this.trySet(cacheKey, async (previous) => {
       return await Result.unthrow<Result<State<D, F>, Error>>(async t => {
         const updated = await Promise
@@ -355,13 +347,13 @@ export class Core {
         if (next.real?.current.isFail() && previous.real?.current.isFail() && errorEqualser(next.real.current.inner, previous.real.current.inner))
           next = new RealState(new FailState(new Fail(previous.real.current.inner, next.real.current), previous.real.data))
 
-        return await this.#tryReoptimize(metadata.inner, next)
+        return await this.#tryReoptimize(cacheKey, next)
       })
     }, settings)
   }
 
   /**
-   * Apply fetched result to previous state, and update it
+   * Merge real state with returned Some(fetched), if None do nothing
    * @param cacheKey 
    * @param previous 
    * @param fetched 
@@ -371,9 +363,7 @@ export class Core {
   async tryMutate<K, D, F>(cacheKey: string, mutator: Mutator<D, F>, settings: QuerySettings<K, D, F>) {
     return await this.tryUpdate(cacheKey, async (previous) => {
       return await Result.unthrow(async t => {
-        const mutate = await Promise
-          .resolve(mutator(previous))
-          .then(r => r.throw(t))
+        const mutate = await Promise.resolve(mutator(previous)).then(r => r.throw(t))
 
         if (mutate.isNone())
           return new Ok(previous)
@@ -387,13 +377,24 @@ export class Core {
   }
 
   /**
-   * Mutate real state to undefined (keep fake state)
+   * Merge real state with given fetched
+   * @param cacheKey 
+   * @param fetched 
+   * @param settings 
+   * @returns 
+   */
+  async tryReplace<K, D, F>(cacheKey: string, fetched: Nullable<FetchedInit<D, F>>, settings: QuerySettings<K, D, F>) {
+    return await this.tryMutate(cacheKey, () => new Ok(new Some(fetched)), settings)
+  }
+
+  /**
+   * Set real state to undefined
    * @param cacheKey 
    * @param settings 
    * @returns 
    */
   async tryDelete<K, D, F>(cacheKey: string, settings: QuerySettings<K, D, F>) {
-    return await this.tryMutate(cacheKey, () => new Ok(new Some(undefined)), settings)
+    return await this.tryReplace(cacheKey, undefined, settings)
   }
 
   /**
@@ -402,11 +403,16 @@ export class Core {
    * @param optimizers 
    * @returns 
    */
-  async #tryReoptimize<D, F>(metadata: QueryMetadata<D, F>, state: State<D, F>): Promise<Result<State<D, F>, Error>> {
+  async #tryReoptimize<D, F>(cacheKey: string, state: State<D, F>): Promise<Result<State<D, F>, Error>> {
     return await Result.unthrow(async t => {
       let reoptimized: State<D, F> = new RealState(state.real)
 
-      for (const optimizer of metadata.optimizers.values()) {
+      const optimizers = this.optimizers.get(cacheKey)
+
+      if (optimizers == null)
+        return new Ok(reoptimized)
+
+      for (const optimizer of optimizers.values()) {
         const optimize = await optimizer(reoptimized)
         const optimized = optimize.throw(t)
 
@@ -422,29 +428,29 @@ export class Core {
   }
 
   async tryReoptimize<K, D, F>(cacheKey: string, settings: QuerySettings<K, D, F>) {
-    const metadata = this.#getOrCreateMetadata<D, F>(cacheKey)
-
     return await this.trySet(cacheKey, async (previous) => {
-      return await this.#tryReoptimize(metadata.inner, previous)
+      return await this.#tryReoptimize(cacheKey, previous)
     }, settings)
   }
 
   async tryOptimize<K, D, F>(cacheKey: string, uuid: string, optimizer: Mutator<D, F>, settings: QuerySettings<K, D, F>) {
-    const metadata = this.#getOrCreateMetadata<D, F>(cacheKey)
-
     return await this.trySet(cacheKey, async (previous) => {
       return await Result.unthrow(async t => {
-        if (metadata.inner.optimizers.has(uuid)) {
-          metadata.inner.optimizers.delete(uuid)
+        let optimizers = this.optimizers.get(cacheKey)
 
-          previous = await this.#tryReoptimize(metadata.inner, previous).then(r => r.throw(t))
+        if (optimizers == null) {
+          optimizers = new Map()
+          this.optimizers.set(cacheKey, optimizers)
         }
 
-        metadata.inner.optimizers.set(uuid, optimizer)
+        if (optimizers.has(uuid)) {
+          optimizers.delete(uuid)
+          previous = await this.#tryReoptimize(cacheKey, previous).then(r => r.throw(t))
+        }
 
-        const optimized = await Promise
-          .resolve(optimizer(previous))
-          .then(r => r.throw(t))
+        optimizers.set(uuid, optimizer)
+
+        const optimized = await Promise.resolve(optimizer(previous)).then(r => r.throw(t))
 
         if (optimized.isNone())
           return new Ok(previous)
@@ -458,7 +464,11 @@ export class Core {
   }
 
   async deoptimize(cacheKey: string, uuid: string) {
-    return this.#getOrCreateMetadata(cacheKey).inner.optimizers.delete(uuid)
+    const optimizers = this.optimizers.get(cacheKey)
+
+    if (optimizers == null)
+      return
+    optimizers.delete(uuid)
   }
 
   async runWithTimeout<T>(
@@ -515,31 +525,45 @@ export class Core {
   }
 
   async increment<K, D, F>(cacheKey: string, settings: QuerySettings<K, D, F>) {
-    const metadata = this.#getOrCreateMetadata(cacheKey)
+    const counter = this.counters.get(cacheKey)
+    const timeout = this.timeouts.get(cacheKey)
 
-    metadata.inner.counter++
-    clearTimeout(metadata.inner.timeout)
-    metadata.inner.timeout = undefined
+    this.counters.set(cacheKey, (counter || 0) + 1)
+
+    if (timeout != null) {
+      clearTimeout(timeout)
+      this.timeouts.delete(cacheKey)
+    }
   }
 
   async decrement<K, D, F>(cacheKey: string, settings: QuerySettings<K, D, F>) {
-    const metadata = this.#getOrCreateMetadata(cacheKey)
+    const counter = this.counters.get(cacheKey)
 
-    const eraseAfterTimeout = async () => {
-      if (!this.#mounted)
-        return
-
-      if (metadata.inner.counter > 0)
-        return
-      await this.tryDelete(cacheKey, settings).then(r => r.inspectErrSync(console.warn))
-    }
-
-    metadata.inner.counter--
-
-    if (metadata.inner.counter > 0)
+    /**
+     * Already deleted
+     */
+    if (counter == null)
       return
 
-    const expiration = metadata.inner.state?.real?.current.expiration
+    /**
+     * Not deletable
+     */
+    if (counter > 1) {
+      this.counters.set(cacheKey, counter - 1)
+      return
+    }
+
+    /**
+     * Counter can't go under 1
+     */
+    this.counters.delete(cacheKey)
+
+    const state = this.unstoreds.get(cacheKey)
+
+    if (state == null)
+      return
+
+    const expiration = state.real?.current.expiration
 
     if (expiration == null)
       return
@@ -549,8 +573,27 @@ export class Core {
       return
     }
 
+    const onTimeout = async () => {
+      /**
+       * This should not happen but check anyway
+       */
+      if (!this.#mounted)
+        return
+
+      const counter = this.counters.get(cacheKey)
+
+      /**
+       * No longer deletable
+       */
+      if (counter != null)
+        return
+
+      await this.tryDelete(cacheKey, settings).then(r => r.inspectErrSync(console.warn))
+    }
+
     const delay = expiration - Date.now()
-    metadata.inner.timeout = setTimeout(eraseAfterTimeout, delay)
+    const timeout = setTimeout(onTimeout, delay)
+    this.timeouts.set(cacheKey, timeout)
   }
 }
 

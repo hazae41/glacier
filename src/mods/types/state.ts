@@ -4,6 +4,8 @@ import { Fail, FailInit } from "mods/fetched/fail.js"
 export type RawState<D = unknown, E = unknown> =
   | RawState1<D, E>
   | RawState2<D, E>
+  | null
+  | undefined
 
 export interface RawState1<D = unknown, F = unknown> {
   version?: undefined,
