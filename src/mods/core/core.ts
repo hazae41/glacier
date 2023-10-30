@@ -107,7 +107,7 @@ export class Core {
     return this.unstoreds.get(cacheKey)
   }
 
-  #getOrCreateMutex(cacheKey: string) {
+  getOrCreateMutex(cacheKey: string) {
     let mutex = this.mutexes.get(cacheKey)
 
     if (mutex != null)
@@ -192,7 +192,7 @@ export class Core {
   }
 
   async tryGet<K, D, F>(cacheKey: string, settings: QuerySettings<K, D, F>): Promise<Result<State<D, F>, Error>> {
-    return await this.#getOrCreateMutex(cacheKey).lock(async () => await this.#tryGet(cacheKey, settings))
+    return await this.getOrCreateMutex(cacheKey).lock(async () => await this.#tryGet(cacheKey, settings))
   }
 
   async tryStore<K, D, F>(state: State<D, F>, settings: QuerySettings<K, D, F>): Promise<Result<RawState, Error>> {
@@ -266,7 +266,7 @@ export class Core {
    */
   async trySet<K, D, F>(cacheKey: string, setter: Setter<D, F>, settings: QuerySettings<K, D, F>): Promise<Result<State<D, F>, Error>> {
     return await Result.unthrow(async t => {
-      return await this.#getOrCreateMutex(cacheKey).lock(async () => {
+      return await this.getOrCreateMutex(cacheKey).lock(async () => {
         const previous = await this.#tryGet(cacheKey, settings).then(r => r.throw(t))
         const current = await Promise.resolve(setter(previous)).then(r => r.throw(t))
 
