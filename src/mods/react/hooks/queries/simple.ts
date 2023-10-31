@@ -161,7 +161,7 @@ export function useSimpleFetcherlessQuery<K, D, F>(
 
   useEffect(() => {
     const onState = () => {
-      setState(core.getStateSync(cacheKey))
+      core.tryGet(cacheKey, settingsRef.current).then(r => r.inspectSync(setState))
       return new None()
     }
 
@@ -279,7 +279,7 @@ export function useSimpleFetcherfulQuery<K, D, F>(
 
   useEffect(() => {
     const onState = () => {
-      setState(core.getStateSync(cacheKey))
+      core.tryGet(cacheKey, settingsRef.current).then(r => r.inspectSync(setState))
       return new None()
     }
 

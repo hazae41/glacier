@@ -178,7 +178,7 @@ export function useFetcherlessScrollableQuery<K, D, F>(
 
   useEffect(() => {
     const onState = () => {
-      setState(core.getStateSync(cacheKey))
+      core.tryGet(cacheKey, settingsRef.current).then(r => r.inspectSync(setState))
       return new None()
     }
 
@@ -301,7 +301,7 @@ export function useFetcherfulScrollableQuery<K, D, F>(
 
   useEffect(() => {
     const onState = () => {
-      setState(core.getStateSync(cacheKey))
+      core.tryGet(cacheKey, settingsRef.current).then(r => r.inspectSync(setState))
       return new None()
     }
 

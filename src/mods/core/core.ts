@@ -176,6 +176,7 @@ export class Core {
         const unstored = await this.tryUnstore(stored, settings).then(r => r.throw(t))
 
         this.unstoreds.set(cacheKey, unstored)
+        await this.onState.emit(cacheKey, [])
 
         return new Ok(unstored)
       }
@@ -183,8 +184,8 @@ export class Core {
       const stored = await Promise.resolve(settings.storage?.tryGet?.(cacheKey)).then(r => r?.ok().inner)
       const unstored = await this.tryUnstore(stored, settings).then(r => r.throw(t))
 
-      this.unstoreds.set(cacheKey, unstored)
       this.storeds.set(cacheKey, stored)
+      this.unstoreds.set(cacheKey, unstored)
       await this.onState.emit(cacheKey, [])
 
       return new Ok(unstored)
@@ -275,8 +276,8 @@ export class Core {
 
         const stored = await this.tryStore(current, settings).then(r => r.throw(t))
 
-        this.unstoreds.set(cacheKey, current)
         this.storeds.set(cacheKey, stored)
+        this.unstoreds.set(cacheKey, current)
         await this.onState.emit(cacheKey, [])
 
         await Promise.resolve(settings.storage?.trySet?.(cacheKey, stored)).then(r => r?.throw(t))
