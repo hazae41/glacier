@@ -27,6 +27,7 @@
     "@hazae41/bytes": "^1.2.3",
     "@hazae41/mutex": "^1.2.11",
     "@hazae41/option": "^1.0.26",
+    "@hazae41/plume": "^2.1.8",
     "@hazae41/result": "^1.1.8"
   },
   "peerDependencies": {

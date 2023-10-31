@@ -1,7 +1,7 @@
 import { Mutex } from "@hazae41/mutex"
 import { Nullable, Option, Some } from "@hazae41/option"
+import { SuperEventTarget } from "@hazae41/plume"
 import { Ok, Result } from "@hazae41/result"
-import { CustomEventTarget } from "libs/ortho/ortho.js"
 import { Promiseable } from "libs/promises/promises.js"
 import { Time } from "libs/time/time.js"
 import { Bicoder, SyncIdentity } from "mods/coders/coder.js"
@@ -65,12 +65,12 @@ export class MissingFetcherError extends Error {
 
 export class Core {
 
-  readonly onState = new CustomEventTarget<{
-    [cacheKey: string]: void
+  readonly onState = new SuperEventTarget<{
+    [cacheKey: string]: () => void
   }>()
 
-  readonly onAborter = new CustomEventTarget<{
-    [cacheKey: string]: void
+  readonly onAborter = new SuperEventTarget<{
+    [cacheKey: string]: () => void
   }>()
 
   readonly mutexes = new Map<string, Mutex<void>>()
@@ -127,7 +127,7 @@ export class Core {
 
       this.promises.set(cacheKey, promise)
       this.aborters.set(cacheKey, aborter)
-      this.onAborter.dispatchEvent(new CustomEvent(cacheKey))
+      await this.onAborter.emit(cacheKey, [])
 
       return await promise
     } finally {
@@ -137,7 +137,7 @@ export class Core {
       if (this.aborters.get(cacheKey) === aborter) {
         this.aborters.delete(cacheKey)
         this.promises.delete(cacheKey)
-        this.onAborter.dispatchEvent(new CustomEvent(cacheKey))
+        await this.onAborter.emit(cacheKey, [])
       }
     }
   }
@@ -151,7 +151,7 @@ export class Core {
 
       this.promises.set(cacheKey, promise)
       this.aborters.set(cacheKey, aborter)
-      this.onAborter.dispatchEvent(new CustomEvent(cacheKey))
+      await this.onAborter.emit(cacheKey, [])
 
       return await promise
     } finally {
@@ -161,7 +161,7 @@ export class Core {
       if (this.aborters.get(cacheKey) === aborter) {
         this.aborters.delete(cacheKey)
         this.promises.delete(cacheKey)
-        this.onAborter.dispatchEvent(new CustomEvent(cacheKey))
+        await this.onAborter.emit(cacheKey, [])
       }
     }
   }
@@ -185,7 +185,7 @@ export class Core {
 
       this.unstoreds.set(cacheKey, unstored)
       this.storeds.set(cacheKey, stored)
-      this.onState.dispatchEvent(new CustomEvent(cacheKey))
+      await this.onState.emit(cacheKey, [])
 
       return new Ok(unstored)
     })
@@ -277,7 +277,7 @@ export class Core {
 
         this.unstoreds.set(cacheKey, current)
         this.storeds.set(cacheKey, stored)
-        this.onState.dispatchEvent(new CustomEvent(cacheKey))
+        await this.onState.emit(cacheKey, [])
 
         await Promise.resolve(settings.storage?.trySet?.(cacheKey, stored)).then(r => r?.throw(t))
 

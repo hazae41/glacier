@@ -1,4 +1,4 @@
-import { Nullable } from "@hazae41/option";
+import { None, Nullable } from "@hazae41/option";
 import { Err, Ok, Result } from "@hazae41/result";
 import { SimpleQuery } from "index.js";
 import { useRenderRef } from "libs/react/ref.js";
@@ -143,7 +143,7 @@ export function useSimpleFetcherlessQuery<K, D, F>(
     aborterRef.current = core.getAborterSync(cacheKey)
   }, [cacheKey])
 
-  const setState = useCallback((state: State<D, F>) => {
+  const setState = useCallback((state: Nullable<State<D, F>>) => {
     stateRef.current = state
     setCounter(c => c + 1)
   }, [cacheKey])
@@ -160,19 +160,26 @@ export function useSimpleFetcherlessQuery<K, D, F>(
   }, [cacheKey])
 
   useEffect(() => {
-    const onState = () => core.tryGet(cacheKey, settingsRef.current).then(r => r.inspectSync(setState))
-    const onAborter = () => setAborter(core.getAborterSync(cacheKey))
+    const onState = () => {
+      setState(core.getStateSync(cacheKey))
+      return new None()
+    }
 
-    core.onState.addEventListener(cacheKey, onState, { passive: true })
-    core.onAborter.addEventListener(cacheKey, onAborter, { passive: true })
+    const onAborter = () => {
+      setAborter(core.getAborterSync(cacheKey))
+      return new None()
+    }
+
+    core.onState.on(cacheKey, onState, { passive: true })
+    core.onAborter.on(cacheKey, onAborter, { passive: true })
 
     core.increment(cacheKey, settingsRef.current)
 
     return () => {
       core.decrement(cacheKey, settingsRef.current)
 
-      core.onState.removeListener(cacheKey, onState)
-      core.onAborter.removeListener(cacheKey, onAborter)
+      core.onState.off(cacheKey, onState)
+      core.onAborter.off(cacheKey, onAborter)
     }
   }, [cacheKey])
 
@@ -254,7 +261,7 @@ export function useSimpleFetcherfulQuery<K, D, F>(
     aborterRef.current = core.getAborterSync(cacheKey)
   }, [cacheKey])
 
-  const setState = useCallback((state: State<D, F>) => {
+  const setState = useCallback((state: Nullable<State<D, F>>) => {
     stateRef.current = state
     setCounter(c => c + 1)
   }, [cacheKey])
@@ -271,19 +278,26 @@ export function useSimpleFetcherfulQuery<K, D, F>(
   }, [cacheKey])
 
   useEffect(() => {
-    const onState = () => core.tryGet(cacheKey, settingsRef.current).then(r => r.inspectSync(setState))
-    const onAborter = () => setAborter(core.getAborterSync(cacheKey))
+    const onState = () => {
+      setState(core.getStateSync(cacheKey))
+      return new None()
+    }
 
-    core.onState.addEventListener(cacheKey, onState, { passive: true })
-    core.onAborter.addEventListener(cacheKey, onAborter, { passive: true })
+    const onAborter = () => {
+      setAborter(core.getAborterSync(cacheKey))
+      return new None()
+    }
+
+    core.onState.on(cacheKey, onState, { passive: true })
+    core.onAborter.on(cacheKey, onAborter, { passive: true })
 
     core.increment(cacheKey, settingsRef.current)
 
     return () => {
       core.decrement(cacheKey, settingsRef.current)
 
-      core.onState.removeListener(cacheKey, onState)
-      core.onAborter.removeListener(cacheKey, onAborter)
+      core.onState.off(cacheKey, onState)
+      core.onAborter.off(cacheKey, onAborter)
     }
   }, [cacheKey])
 
