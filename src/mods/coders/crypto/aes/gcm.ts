@@ -18,7 +18,7 @@ export class AesGcmCoder implements AsyncBicoder<string, string> {
 
   async tryEncode(input: string): Promise<Result<string, Error>> {
     return await Result.unthrow(async t => {
-      const iv = Bytes.tryRandom(12).throw(t)
+      const iv = Bytes.random(12)
       const ivtext = Base64.get().tryEncodePadded(iv).throw(t)
 
       const plain = Bytes.fromUtf8(input)

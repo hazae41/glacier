@@ -22,13 +22,13 @@
     "prepare": "npm run build"
   },
   "dependencies": {
-    "@hazae41/base64": "^1.0.9",
-    "@hazae41/box": "^1.0.11",
-    "@hazae41/bytes": "^1.2.3",
-    "@hazae41/mutex": "^1.2.11",
-    "@hazae41/option": "^1.0.26",
-    "@hazae41/plume": "^2.1.8",
-    "@hazae41/result": "^1.1.8"
+    "@hazae41/base64": "^1.0.10",
+    "@hazae41/box": "^1.0.14",
+    "@hazae41/bytes": "^1.2.9",
+    "@hazae41/mutex": "^1.2.12",
+    "@hazae41/option": "^1.0.27",
+    "@hazae41/plume": "^2.2.0",
+    "@hazae41/result": "^1.1.12"
   },
   "peerDependencies": {
     "react": ">=17"
@@ -36,13 +36,13 @@
   "devDependencies": {
     "@hazae41/phobos": "^1.0.10",
     "@rollup/plugin-typescript": "^11.1.5",
-    "@types/node": "^20.8.4",
-    "@types/react": "^18.2.28",
+    "@types/node": "^20.10.1",
+    "@types/react": "^18.2.39",
     "rimraf": "^5.0.5",
-    "rollup": "^4.0.2",
+    "rollup": "^4.6.1",
     "rollup-plugin-dts": "^6.1.0",
     "rollup-plugin-node-externals": "^6.1.2",
-    "typescript": "^5.2.2"
+    "typescript": "^5.3.2"
   },
   "exports": {
     ".": {
