@@ -334,7 +334,7 @@ export function useSimpleFetcherfulQuery<K, D, F>(
     const settings = settingsRef.current
 
     return await core.fetchOrJoin(cacheKey, aborter, () => Simple.fetchOrThrow(cacheKey, aborter, settings))
-  }, [core, cacheKey])
+  }, [cacheKey])
 
   const state = stateRef.current
   const aborter = aborterRef.current
