@@ -52,9 +52,9 @@ await queryClient.prefetchQuery(['user'], fetchUser)
 
 ```tsx
 document.update(async function* () {
-  yield () => ({ data: "My optimistic document" })
+  yield pipeData(() => ({ data: "My optimistic document" }))
   await new Promise(ok => setTimeout(ok, 1000))
-  yield () => ({ data: "My optimistic document 2" })
+  yield pipeData(() => ({ data: "My optimistic document 2" }))
   return await postAsJson("/api/edit", "My real document")
 })
 ```
