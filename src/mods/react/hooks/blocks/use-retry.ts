@@ -19,7 +19,7 @@ export interface RetrySettings {
  * @see https://en.wikipedia.org/wiki/Geometric_progression
  */
 export function useRetry<K, D, F>(query: ReactQuery<K, D, F>, settings: RetrySettings = {}) {
-  const { ready, cacheKey, refetch, error } = query
+  const { fetcher, ready, cacheKey, refetch, error } = query
   const { init = 1000, base = 2, max = 3 } = settings
 
   const count = useRef(0)
@@ -30,6 +30,8 @@ export function useRetry<K, D, F>(query: ReactQuery<K, D, F>, settings: RetrySet
 
   useEffect(() => {
     if (!ready)
+      return
+    if (fetcher == null)
       return
 
     if (error == null) {

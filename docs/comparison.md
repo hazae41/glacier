@@ -29,7 +29,7 @@ export default function App() {
 #### Glacier
 
 ```tsx
-user.tryFetch()
+user.fetch()
 ```
 
 #### SWR

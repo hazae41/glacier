@@ -8,9 +8,13 @@ import { useEffect } from "react"
  * @param query 
  */
 export function useMount<K, D, F>(query: ReactQuery<K, D, F>) {
-  const { fetch } = query
+  const { fetcher, ready, fetch } = query
 
   useEffect(() => {
+    if (!ready)
+      return
+    if (fetcher == null)
+      return
     fetch().catch(console.warn)
-  }, [])
+  }, [ready])
 }

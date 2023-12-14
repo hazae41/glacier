@@ -6,10 +6,12 @@ import { useEffect } from "react"
  * @param query 
  */
 export function useOnline<K, D, F>(query: ReactQuery<K, D, F>) {
-  const { ready, fetch } = query
+  const { fetcher, ready, fetch } = query
 
   useEffect(() => {
     if (!ready)
+      return
+    if (fetcher == null)
       return
 
     const f = () => fetch().catch(console.warn)
