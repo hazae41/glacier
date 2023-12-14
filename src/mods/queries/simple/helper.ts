@@ -30,7 +30,7 @@ export namespace Simple {
     const times = TimesInit.merge(result.get(), settings)
     const timed = Fetched.from(result.get()).setTimes(times)
 
-    return await core.tryMutate(cacheKey, () => new Ok(new Some(timed)), settings)
+    return await core.mutateOrThrow(cacheKey, () => new Ok(new Some(timed)), settings)
   }
 
   /**
@@ -57,7 +57,7 @@ export namespace Simple {
       let next = await generator.next()
 
       for (; !next.done; next = await generator.next())
-        await core.tryOptimize(cacheKey, uuid, next.value, settings)
+        await core.optimizeOrThrow(cacheKey, uuid, next.value, settings)
 
       const fetcher = next.value ?? settings.fetcher
 
@@ -76,7 +76,7 @@ export namespace Simple {
       const times = TimesInit.merge(result.get(), settings)
       const timed = Fetched.from(result.get()).setTimes(times)
 
-      return await core.tryMutate(cacheKey, () => new Ok(new Some(timed)), settings)
+      return await core.mutateOrThrow(cacheKey, () => new Ok(new Some(timed)), settings)
     } catch (e: unknown) {
       core.deoptimize(cacheKey, uuid)
       core.tryReoptimize(cacheKey, settings)

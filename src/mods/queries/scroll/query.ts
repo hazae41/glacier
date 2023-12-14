@@ -81,7 +81,7 @@ export class ScrollableFetcherfulQuery<K, D, F> {
   }
 
   get state() {
-    return core.tryGet(this.cacheKey, this.settings)
+    return core.getOrThrow(this.cacheKey, this.settings)
   }
 
   get aborter(): Nullable<AbortController> {
@@ -102,11 +102,11 @@ export class ScrollableFetcherfulQuery<K, D, F> {
   }
 
   async tryMutate(mutator: Mutator<D[], F>) {
-    return await core.tryMutate(this.cacheKey, mutator, this.settings)
+    return await core.mutateOrThrow(this.cacheKey, mutator, this.settings)
   }
 
   async tryDelete() {
-    return await core.tryDelete(this.cacheKey, this.settings)
+    return await core.deleteOrThrow(this.cacheKey, this.settings)
   }
 
   async tryNormalize(fetched: Nullable<Fetched<D[], F>>, more: NormalizerMore) {
@@ -160,7 +160,7 @@ export class ScrollableFetcherlessQuery<K, D, F> {
   }
 
   get state() {
-    return core.tryGet(this.cacheKey, this.settings)
+    return core.getOrThrow(this.cacheKey, this.settings)
   }
 
   get aborter(): Nullable<AbortController> {
@@ -181,11 +181,11 @@ export class ScrollableFetcherlessQuery<K, D, F> {
   }
 
   async tryMutate(mutator: Mutator<D[], F>) {
-    return await core.tryMutate(this.cacheKey, mutator, this.settings)
+    return await core.mutateOrThrow(this.cacheKey, mutator, this.settings)
   }
 
   async tryDelete() {
-    return await core.tryDelete(this.cacheKey, this.settings)
+    return await core.deleteOrThrow(this.cacheKey, this.settings)
   }
 
   async tryNormalize(fetched: Nullable<Fetched<D[], F>>, more: NormalizerMore) {

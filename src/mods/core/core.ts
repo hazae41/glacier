@@ -1,7 +1,7 @@
 import { Mutex } from "@hazae41/mutex"
 import { Nullable, Option, Some } from "@hazae41/option"
 import { SuperEventTarget } from "@hazae41/plume"
-import { Ok, Result } from "@hazae41/result"
+import { Result } from "@hazae41/result"
 import { Promiseable } from "libs/promises/promises.js"
 import { Time } from "libs/time/time.js"
 import { Bicoder, SyncIdentity } from "mods/coders/coder.js"
@@ -166,96 +166,97 @@ export class Core {
     }
   }
 
-  async #tryGet<K, D, F>(cacheKey: string, settings: QuerySettings<K, D, F>): Promise<Result<State<D, F>, Error>> {
-    return await Result.unthrow(async t => {
-      if (this.unstoreds.has(cacheKey))
-        return new Ok(this.unstoreds.get(cacheKey)!)
+  async #getOrThrow<K, D, F>(cacheKey: string, settings: QuerySettings<K, D, F>): Promise<State<D, F>> {
+    if (this.unstoreds.has(cacheKey))
+      return this.unstoreds.get(cacheKey)!
 
-      if (this.storeds.has(cacheKey)) {
-        const stored = this.storeds.get(cacheKey)
-        const unstored = await this.tryUnstore(stored, settings).then(r => r.throw(t))
+    if (this.storeds.has(cacheKey)) {
+      const stored = this.storeds.get(cacheKey)
+      const unstored = await this.unstoreOrThrow(stored, settings)
 
-        this.unstoreds.set(cacheKey, unstored)
-        await this.onState.emit(cacheKey, [])
-
-        return new Ok(unstored)
-      }
-
-      const stored = await Promise.resolve(settings.storage?.getOrThrow?.(cacheKey)).then(r => r?.ok().inner)
-      const unstored = await this.tryUnstore(stored, settings).then(r => r.throw(t))
-
-      this.storeds.set(cacheKey, stored)
       this.unstoreds.set(cacheKey, unstored)
       await this.onState.emit(cacheKey, [])
 
-      return new Ok(unstored)
-    })
+      return unstored
+    }
+
+    const stored = await Result.runAndWrap(async () => {
+      return settings.storage?.getOrThrow?.(cacheKey)
+    }).then(r => r?.ok().inner)
+
+    const unstored = await this.unstoreOrThrow(stored, settings)
+
+    this.storeds.set(cacheKey, stored)
+    this.unstoreds.set(cacheKey, unstored)
+    await this.onState.emit(cacheKey, [])
+
+    return unstored
+  }
+
+  async getOrThrow<K, D, F>(cacheKey: string, settings: QuerySettings<K, D, F>): Promise<State<D, F>> {
+    return await this.getOrCreateMutex(cacheKey).lock(() => this.#getOrThrow(cacheKey, settings))
   }
 
   async tryGet<K, D, F>(cacheKey: string, settings: QuerySettings<K, D, F>): Promise<Result<State<D, F>, Error>> {
-    return await this.getOrCreateMutex(cacheKey).lock(async () => await this.#tryGet(cacheKey, settings))
+    return await Result.runAndDoubleWrap(() => this.getOrThrow(cacheKey, settings))
   }
 
-  async tryStore<K, D, F>(state: State<D, F>, settings: QuerySettings<K, D, F>): Promise<Result<RawState, Error>> {
-    return await Result.unthrow(async t => {
-      const {
-        dataSerializer = SyncIdentity as Bicoder<D, unknown>,
-        errorSerializer = SyncIdentity as Bicoder<F, unknown>
-      } = settings
+  async storeOrThrow<K, D, F>(state: State<D, F>, settings: QuerySettings<K, D, F>): Promise<RawState> {
+    const {
+      dataSerializer = SyncIdentity as Bicoder<D, unknown>,
+      errorSerializer = SyncIdentity as Bicoder<F, unknown>
+    } = settings
 
-      if (state.real == null)
-        return new Ok(undefined)
+    if (state.real == null)
+      return undefined
 
-      const { time, cooldown, expiration } = state.real.current
+    const { time, cooldown, expiration } = state.real.current
 
-      const data = await Option.map(state.real.data, d => d.map(async x => await Promise.resolve(dataSerializer.encodeOrThrow(x)).then(r => r.throw(t))))
-      const error = await Option.map(state.real.error, d => d.mapErr(async x => await Promise.resolve(errorSerializer.encodeOrThrow(x)).then(r => r.throw(t))))
+    const data = await Option.map(state.real.data, d => d.map(async x => await Promise.resolve(dataSerializer.encodeOrThrow(x))))
+    const error = await Option.map(state.real.error, d => d.mapErr(async x => await Promise.resolve(errorSerializer.encodeOrThrow(x))))
 
-      return new Ok({ version: 2, data, error, time, cooldown, expiration })
-    })
+    return { version: 2, data, error, time, cooldown, expiration }
   }
 
-  async tryUnstore<K, D, F>(stored: RawState, settings: QuerySettings<K, D, F>): Promise<Result<State<D, F>, Error>> {
-    return await Result.unthrow(async t => {
-      const {
-        dataSerializer = SyncIdentity as Bicoder<D, unknown>,
-        errorSerializer = SyncIdentity as Bicoder<F, unknown>
-      } = settings
+  async unstoreOrThrow<K, D, F>(stored: RawState, settings: QuerySettings<K, D, F>): Promise<State<D, F>> {
+    const {
+      dataSerializer = SyncIdentity as Bicoder<D, unknown>,
+      errorSerializer = SyncIdentity as Bicoder<F, unknown>
+    } = settings
 
-      if (stored == null)
-        return new Ok(new RealState<D, F>(undefined))
+    if (stored == null)
+      return new RealState<D, F>(undefined)
 
-      if (stored.version == null) {
-        const { time, cooldown, expiration } = stored
-        const times = { time, cooldown, expiration }
+    if (stored.version == null) {
+      const { time, cooldown, expiration } = stored
+      const times = { time, cooldown, expiration }
 
-        const data = await Option.wrap(stored.data).map(async x => new Data(await Promise.resolve(dataSerializer.decodeOrThrow(x)).then(r => r.throw(t)), times))
-        const error = await Option.wrap(stored.error).map(async x => new Fail(await Promise.resolve(errorSerializer.decodeOrThrow(x)).then(r => r.throw(t)), times))
+      const data = await Option.wrap(stored.data).map(async x => new Data(await Promise.resolve(dataSerializer.decodeOrThrow(x)), times))
+      const error = await Option.wrap(stored.error).map(async x => new Fail(await Promise.resolve(errorSerializer.decodeOrThrow(x)), times))
 
-        if (error.isSome())
-          return new Ok(new RealState(new FailState<D, F>(error.get(), data.get())))
+      if (error.isSome())
+        return new RealState(new FailState<D, F>(error.get(), data.get()))
 
-        if (data.isSome())
-          return new Ok(new RealState(new DataState<D, F>(data.get())))
+      if (data.isSome())
+        return new RealState(new DataState<D, F>(data.get()))
 
-        return new Ok(new RealState<D, F>(undefined))
-      }
+      return new RealState<D, F>(undefined)
+    }
 
-      if (stored.version === 2) {
-        const data = await Option.wrap(stored.data).map(x => Data.from(x).map(async x => await Promise.resolve(dataSerializer.decodeOrThrow(x)).then(r => r.throw(t))))
-        const error = await Option.wrap(stored.error).map(x => Fail.from(x).mapErr(async x => await Promise.resolve(errorSerializer.decodeOrThrow(x)).then(r => r.throw(t))))
+    if (stored.version === 2) {
+      const data = await Option.wrap(stored.data).map(x => Data.from(x).map(async x => await Promise.resolve(dataSerializer.decodeOrThrow(x))))
+      const error = await Option.wrap(stored.error).map(x => Fail.from(x).mapErr(async x => await Promise.resolve(errorSerializer.decodeOrThrow(x))))
 
-        if (error.isSome())
-          return new Ok(new RealState(new FailState<D, F>(error.get(), data.get())))
+      if (error.isSome())
+        return new RealState(new FailState<D, F>(error.get(), data.get()))
 
-        if (data.isSome())
-          return new Ok(new RealState(new DataState<D, F>(data.get())))
+      if (data.isSome())
+        return new RealState(new DataState<D, F>(data.get()))
 
-        return new Ok(new RealState<D, F>(undefined))
-      }
+      return new RealState<D, F>(undefined)
+    }
 
-      return new Ok(new RealState<D, F>(undefined))
-    })
+    return new RealState<D, F>(undefined)
   }
 
   /**
@@ -265,27 +266,30 @@ export class Core {
    * @param settings 
    * @returns 
    */
-  async trySet<K, D, F>(cacheKey: string, setter: Setter<D, F>, settings: QuerySettings<K, D, F>): Promise<Result<State<D, F>, Error>> {
-    return await Result.unthrow(async t => {
-      return await this.getOrCreateMutex(cacheKey).lock(async () => {
-        const previous = await this.#tryGet(cacheKey, settings).then(r => r.throw(t))
-        const current = await Promise.resolve(setter(previous)).then(r => r.throw(t))
+  async setOrThrow<K, D, F>(cacheKey: string, setter: Setter<D, F>, settings: QuerySettings<K, D, F>): Promise<State<D, F>> {
+    return await this.getOrCreateMutex(cacheKey).lock(async () => {
+      const previous = await this.#getOrThrow(cacheKey, settings)
+      const current = await Promise.resolve(setter(previous))
 
-        if (current === previous)
-          return new Ok(previous)
+      if (current === previous)
+        return previous
 
-        const stored = await this.tryStore(current, settings).then(r => r.throw(t))
+      const stored = await this.storeOrThrow(current, settings)
 
-        this.storeds.set(cacheKey, stored)
-        this.unstoreds.set(cacheKey, current)
-        await this.onState.emit(cacheKey, [])
+      this.storeds.set(cacheKey, stored)
+      this.unstoreds.set(cacheKey, current)
+      await this.onState.emit(cacheKey, [])
 
-        await Promise.resolve(settings.storage?.setOrThrow?.(cacheKey, stored)).then(r => r?.throw(t))
+      await Promise.resolve(settings.storage?.setOrThrow?.(cacheKey, stored))
 
-        await settings.indexer?.({ current, previous })
-        return new Ok(current)
-      })
+      await settings.indexer?.({ current, previous })
+
+      return current
     })
+  }
+
+  async trySet<K, D, F>(cacheKey: string, setter: Setter<D, F>, settings: QuerySettings<K, D, F>): Promise<Result<State<D, F>, Error>> {
+    return await Result.runAndDoubleWrap(() => this.setOrThrow(cacheKey, setter, settings))
   }
 
   #mergeRealStateWithFetched<D, F>(previous: State<D, F>, fetched: Nullable<Fetched<D, F>>): RealState<D, F> {
@@ -315,34 +319,30 @@ export class Core {
    * @param settings 
    * @returns 
    */
-  async tryUpdate<K, D, F>(cacheKey: string, setter: Setter<D, F>, settings: QuerySettings<K, D, F>) {
+  async updateOrThrow<K, D, F>(cacheKey: string, setter: Setter<D, F>, settings: QuerySettings<K, D, F>): Promise<State<D, F>> {
     const { dataEqualser = DEFAULT_EQUALS, errorEqualser = DEFAULT_EQUALS } = settings
 
-    return await this.trySet(cacheKey, async (previous) => {
-      return await Result.unthrow<Result<State<D, F>, Error>>(async t => {
-        const updated = await Promise
-          .resolve(setter(previous))
-          .then(r => r.throw(t))
+    return await this.setOrThrow(cacheKey, async (previous) => {
+      const updated = await Promise.resolve(setter(previous))
 
-        if (updated === previous)
-          return new Ok(previous)
+      if (updated === previous)
+        return previous
 
-        let next = new RealState(updated.real)
+      let next = new RealState(updated.real)
 
-        if (next.real && previous.real && Time.isBefore(next.real?.current.time, previous.real.current.time))
-          return new Ok(previous)
+      if (next.real && previous.real && Time.isBefore(next.real?.current.time, previous.real.current.time))
+        return previous
 
-        const normalized = await this.#tryNormalize(next.real?.current, settings).then(r => r.throw(t))
-        next = this.#mergeRealStateWithFetched(next, normalized)
+      const normalized = await this.#normalizeOrThrow(next.real?.current, settings)
+      next = this.#mergeRealStateWithFetched(next, normalized)
 
-        if (next.real?.current.isData() && previous.real?.current.isData() && dataEqualser(next.real.current.inner, previous.real.current.inner))
-          next = new RealState(new DataState(new Data(previous.real.current.inner, next.real.current)))
+      if (next.real?.current.isData() && previous.real?.current.isData() && dataEqualser(next.real.current.inner, previous.real.current.inner))
+        next = new RealState(new DataState(new Data(previous.real.current.inner, next.real.current)))
 
-        if (next.real?.current.isFail() && previous.real?.current.isFail() && errorEqualser(next.real.current.inner, previous.real.current.inner))
-          next = new RealState(new FailState(new Fail(previous.real.current.inner, next.real.current), previous.real.data))
+      if (next.real?.current.isFail() && previous.real?.current.isFail() && errorEqualser(next.real.current.inner, previous.real.current.inner))
+        next = new RealState(new FailState(new Fail(previous.real.current.inner, next.real.current), previous.real.data))
 
-        return await this.#tryReoptimize(cacheKey, next)
-      })
+      return await this.#reoptimizeOrThrow(cacheKey, next)
     }, settings)
   }
 
@@ -354,19 +354,15 @@ export class Core {
    * @param settings 
    * @returns 
    */
-  async tryMutate<K, D, F>(cacheKey: string, mutator: Mutator<D, F>, settings: QuerySettings<K, D, F>) {
-    return await this.tryUpdate(cacheKey, async (previous) => {
-      return await Result.unthrow(async t => {
-        const mutate = await Promise.resolve(mutator(previous)).then(r => r.throw(t))
+  async mutateOrThrow<K, D, F>(cacheKey: string, mutator: Mutator<D, F>, settings: QuerySettings<K, D, F>) {
+    return await this.updateOrThrow(cacheKey, async (previous) => {
+      const mutate = await Promise.resolve(mutator(previous))
 
-        if (mutate.isNone())
-          return new Ok(previous)
+      if (mutate.isNone())
+        return previous
 
-        const fetched = Option.mapSync(mutate.get(), Fetched.from)
-        const merged = this.#mergeRealStateWithFetched(previous, fetched)
-
-        return new Ok(merged)
-      })
+      const fetched = Option.mapSync(mutate.get(), Fetched.from)
+      return this.#mergeRealStateWithFetched(previous, fetched)
     }, settings)
   }
 
@@ -377,8 +373,8 @@ export class Core {
    * @param settings 
    * @returns 
    */
-  async tryReplace<K, D, F>(cacheKey: string, fetched: Nullable<FetchedInit<D, F>>, settings: QuerySettings<K, D, F>) {
-    return await this.tryMutate(cacheKey, () => new Ok(new Some(fetched)), settings)
+  async replaceOrThrow<K, D, F>(cacheKey: string, fetched: Nullable<FetchedInit<D, F>>, settings: QuerySettings<K, D, F>) {
+    return await this.mutateOrThrow(cacheKey, () => new Some(fetched), settings)
   }
 
   /**
@@ -387,8 +383,8 @@ export class Core {
    * @param settings 
    * @returns 
    */
-  async tryDelete<K, D, F>(cacheKey: string, settings: QuerySettings<K, D, F>) {
-    return await this.tryReplace(cacheKey, undefined, settings)
+  async deleteOrThrow<K, D, F>(cacheKey: string, settings: QuerySettings<K, D, F>) {
+    return await this.replaceOrThrow(cacheKey, undefined, settings)
   }
 
   /**
@@ -397,63 +393,56 @@ export class Core {
    * @param optimizers 
    * @returns 
    */
-  async #tryReoptimize<D, F>(cacheKey: string, state: State<D, F>): Promise<Result<State<D, F>, Error>> {
-    return await Result.unthrow(async t => {
-      let reoptimized: State<D, F> = new RealState(state.real)
+  async #reoptimizeOrThrow<D, F>(cacheKey: string, state: State<D, F>): Promise<State<D, F>> {
+    let reoptimized: State<D, F> = new RealState(state.real)
 
-      const optimizers = this.optimizers.get(cacheKey)
+    const optimizers = this.optimizers.get(cacheKey)
 
-      if (optimizers == null)
-        return new Ok(reoptimized)
+    if (optimizers == null)
+      return reoptimized
 
-      for (const optimizer of optimizers.values()) {
-        const optimize = await optimizer(reoptimized)
-        const optimized = optimize.throw(t)
+    for (const optimizer of optimizers.values()) {
+      const optimized = await optimizer(reoptimized)
 
-        if (optimized.isNone())
-          continue
+      if (optimized.isNone())
+        continue
 
-        const fetched = Option.mapSync(optimized.get(), Fetched.from)
-        reoptimized = this.#mergeFakeStateWithFetched(reoptimized, fetched)
-      }
+      const fetched = Option.mapSync(optimized.get(), Fetched.from)
+      reoptimized = this.#mergeFakeStateWithFetched(reoptimized, fetched)
+    }
 
-      return new Ok(reoptimized)
-    })
+    return reoptimized
   }
 
   async tryReoptimize<K, D, F>(cacheKey: string, settings: QuerySettings<K, D, F>) {
-    return await this.trySet(cacheKey, async (previous) => {
-      return await this.#tryReoptimize(cacheKey, previous)
+    return await this.setOrThrow(cacheKey, async (previous) => {
+      return await this.#reoptimizeOrThrow(cacheKey, previous)
     }, settings)
   }
 
-  async tryOptimize<K, D, F>(cacheKey: string, uuid: string, optimizer: Mutator<D, F>, settings: QuerySettings<K, D, F>) {
-    return await this.trySet(cacheKey, async (previous) => {
-      return await Result.unthrow(async t => {
-        let optimizers = this.optimizers.get(cacheKey)
+  async optimizeOrThrow<K, D, F>(cacheKey: string, uuid: string, optimizer: Mutator<D, F>, settings: QuerySettings<K, D, F>) {
+    return await this.setOrThrow(cacheKey, async (previous) => {
+      let optimizers = this.optimizers.get(cacheKey)
 
-        if (optimizers == null) {
-          optimizers = new Map()
-          this.optimizers.set(cacheKey, optimizers)
-        }
+      if (optimizers == null) {
+        optimizers = new Map()
+        this.optimizers.set(cacheKey, optimizers)
+      }
 
-        if (optimizers.has(uuid)) {
-          optimizers.delete(uuid)
-          previous = await this.#tryReoptimize(cacheKey, previous).then(r => r.throw(t))
-        }
+      if (optimizers.has(uuid)) {
+        optimizers.delete(uuid)
+        previous = await this.#reoptimizeOrThrow(cacheKey, previous)
+      }
 
-        optimizers.set(uuid, optimizer)
+      optimizers.set(uuid, optimizer)
 
-        const optimized = await Promise.resolve(optimizer(previous)).then(r => r.throw(t))
+      const optimized = await Promise.resolve(optimizer(previous))
 
-        if (optimized.isNone())
-          return new Ok(previous)
+      if (optimized.isNone())
+        return previous
 
-        const fetched = Option.mapSync(optimized.get(), Fetched.from)
-        const merged = this.#mergeFakeStateWithFetched(previous, fetched)
-
-        return new Ok(merged)
-      })
+      const fetched = Option.mapSync(optimized.get(), Fetched.from)
+      return this.#mergeFakeStateWithFetched(previous, fetched)
     }, settings)
   }
 
@@ -487,9 +476,9 @@ export class Core {
    * @param settings 
    * @returns 
    */
-  async #tryNormalize<K, D, F>(fetched: Nullable<Fetched<D, F>>, settings: QuerySettings<K, D, F>) {
+  async #normalizeOrThrow<K, D, F>(fetched: Nullable<Fetched<D, F>>, settings: QuerySettings<K, D, F>): Promise<Nullable<Fetched<D, F>>> {
     if (settings.normalizer == null)
-      return new Ok(fetched)
+      return fetched
     return await settings.normalizer(fetched, { shallow: false })
   }
 
@@ -499,9 +488,9 @@ export class Core {
    * @param settings 
    * @returns 
    */
-  async tryPrenormalize<K, D, F>(fetched: Nullable<Fetched<D, F>>, settings: QuerySettings<K, D, F>) {
+  async prenormalizeOrThrow<K, D, F>(fetched: Nullable<Fetched<D, F>>, settings: QuerySettings<K, D, F>): Promise<Nullable<Fetched<D, F>>> {
     if (settings.normalizer == null)
-      return new Ok(fetched)
+      return fetched
     return await settings.normalizer(fetched, { shallow: true })
   }
 
@@ -510,15 +499,12 @@ export class Core {
    * @param cacheKey 
    * @param settings 
    */
-  async tryReindex<K, D, F>(cacheKey: string, settings: QuerySettings<K, D, F>): Promise<Result<void, Error>> {
-    return await Result.unthrow(async t => {
-      const current = await this.tryGet(cacheKey, settings).then(r => r.throw(t))
-      await settings.indexer?.({ current })
-      return Ok.void()
-    })
+  async reindexOrThrow<K, D, F>(cacheKey: string, settings: QuerySettings<K, D, F>): Promise<void> {
+    const current = await this.getOrThrow(cacheKey, settings)
+    await settings.indexer?.({ current })
   }
 
-  async increment<K, D, F>(cacheKey: string, settings: QuerySettings<K, D, F>) {
+  async increment<K, D, F>(cacheKey: string, settings: QuerySettings<K, D, F>): Promise<void> {
     const counter = this.counters.get(cacheKey)
     const timeout = this.timeouts.get(cacheKey)
 
@@ -530,7 +516,7 @@ export class Core {
     }
   }
 
-  async decrement<K, D, F>(cacheKey: string, settings: QuerySettings<K, D, F>) {
+  async decrementOrThrow<K, D, F>(cacheKey: string, settings: QuerySettings<K, D, F>) {
     const counter = this.counters.get(cacheKey)
 
     /**
@@ -563,11 +549,11 @@ export class Core {
       return
 
     if (Date.now() > expiration) {
-      await this.tryDelete(cacheKey, settings).then(r => r.inspectErrSync(console.warn))
+      await this.deleteOrThrow(cacheKey, settings)
       return
     }
 
-    const onTimeout = async () => {
+    const deleteOrThrow = async () => {
       /**
        * This should not happen but check anyway
        */
@@ -582,7 +568,11 @@ export class Core {
       if (counter != null)
         return
 
-      await this.tryDelete(cacheKey, settings).then(r => r.inspectErrSync(console.warn))
+      await this.deleteOrThrow(cacheKey, settings)
+    }
+
+    const onTimeout = () => {
+      deleteOrThrow().catch(console.warn)
     }
 
     const delay = expiration - Date.now()

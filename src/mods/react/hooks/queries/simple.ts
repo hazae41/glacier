@@ -156,12 +156,12 @@ export function useSimpleFetcherlessQuery<K, D, F>(
   useEffect(() => {
     if (stateRef.current != null)
       return
-    core.tryGet(cacheKey, settingsRef.current).then(r => r.inspectSync(setState))
+    core.getOrThrow(cacheKey, settingsRef.current).then(r => r.inspectSync(setState))
   }, [cacheKey])
 
   useEffect(() => {
     const onState = () => {
-      core.tryGet(cacheKey, settingsRef.current).then(r => r.inspectSync(setState))
+      core.getOrThrow(cacheKey, settingsRef.current).then(r => r.inspectSync(setState))
       return new None()
     }
 
@@ -176,7 +176,7 @@ export function useSimpleFetcherlessQuery<K, D, F>(
     core.increment(cacheKey, settingsRef.current)
 
     return () => {
-      core.decrement(cacheKey, settingsRef.current)
+      core.decrementOrThrow(cacheKey, settingsRef.current)
 
       core.onState.off(cacheKey, onState)
       core.onAborter.off(cacheKey, onAborter)
@@ -184,11 +184,11 @@ export function useSimpleFetcherlessQuery<K, D, F>(
   }, [cacheKey])
 
   const mutate = useCallback(async (mutator: Mutator<D, F>) => {
-    return await core.tryMutate(cacheKey, mutator, settingsRef.current)
+    return await core.mutateOrThrow(cacheKey, mutator, settingsRef.current)
   }, [cacheKey])
 
   const clear = useCallback(async () => {
-    return await core.tryDelete(cacheKey, settingsRef.current)
+    return await core.deleteOrThrow(cacheKey, settingsRef.current)
   }, [cacheKey])
 
   const fetch = useCallback(async (aborter = new AbortController()) => {
@@ -274,12 +274,12 @@ export function useSimpleFetcherfulQuery<K, D, F>(
   useEffect(() => {
     if (stateRef.current != null)
       return
-    core.tryGet(cacheKey, settingsRef.current).then(r => r.inspectSync(setState))
+    core.getOrThrow(cacheKey, settingsRef.current).then(r => r.inspectSync(setState))
   }, [cacheKey])
 
   useEffect(() => {
     const onState = () => {
-      core.tryGet(cacheKey, settingsRef.current).then(r => r.inspectSync(setState))
+      core.getOrThrow(cacheKey, settingsRef.current).then(r => r.inspectSync(setState))
       return new None()
     }
 
@@ -294,7 +294,7 @@ export function useSimpleFetcherfulQuery<K, D, F>(
     core.increment(cacheKey, settingsRef.current)
 
     return () => {
-      core.decrement(cacheKey, settingsRef.current)
+      core.decrementOrThrow(cacheKey, settingsRef.current)
 
       core.onState.off(cacheKey, onState)
       core.onAborter.off(cacheKey, onAborter)
@@ -302,11 +302,11 @@ export function useSimpleFetcherfulQuery<K, D, F>(
   }, [cacheKey])
 
   const mutate = useCallback(async (mutator: Mutator<D, F>) => {
-    return await core.tryMutate(cacheKey, mutator, settingsRef.current)
+    return await core.mutateOrThrow(cacheKey, mutator, settingsRef.current)
   }, [cacheKey])
 
   const clear = useCallback(async () => {
-    return await core.tryDelete(cacheKey, settingsRef.current)
+    return await core.deleteOrThrow(cacheKey, settingsRef.current)
   }, [cacheKey])
 
   const fetch = useCallback(async (aborter = new AbortController()) => {

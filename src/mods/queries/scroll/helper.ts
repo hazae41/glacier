@@ -53,12 +53,12 @@ export namespace Scrollable {
     const times = TimesInit.merge(result.get(), settings)
     const timed = Fetched.from(result.get()).setTimes(times)
 
-    return await core.tryMutate(cacheKey, async (previous) => {
+    return await core.mutateOrThrow(cacheKey, async (previous) => {
       return await Result.unthrow(async t => {
         if (timed.isErr())
           return new Ok(new Some(timed))
 
-        const prenormalized = await core.tryPrenormalize(timed, settings).then(r => r.throw(t))
+        const prenormalized = await core.prenormalizeOrThrow(timed, settings).then(r => r.throw(t))
 
         if (prenormalized?.isData() && previous.real?.data && dataEqualser(prenormalized.inner, previous.real.data.inner))
           return new Ok(new Some(previous.real.data))
@@ -84,7 +84,7 @@ export namespace Scrollable {
     settings: ScrollableFetcherfulQuerySettings<K, D, F>
   ): Promise<Result<State<D[], F>, Error>> {
     return await Result.unthrow(async t => {
-      const previous = await core.tryGet(cacheKey, settings).then(r => r.throw(t))
+      const previous = await core.getOrThrow(cacheKey, settings).then(r => r.throw(t))
       const previousPages = previous.real?.data?.inner ?? []
       const previousPage = Arrays.last(previousPages)
       const key = settings.scroller(previousPage)
@@ -102,7 +102,7 @@ export namespace Scrollable {
       const times = TimesInit.merge(result.get(), settings)
       const timed = Fetched.from(result.get()).setTimes(times)
 
-      return await core.tryMutate(cacheKey, async (previous) => {
+      return await core.mutateOrThrow(cacheKey, async (previous) => {
         const previousPages = previous.real?.data?.inner ?? []
         const paginated = timed.mapSync(data => [...previousPages, ...data])
 
