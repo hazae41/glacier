@@ -1,5 +1,4 @@
 import { Some } from "@hazae41/option";
-import { Err, Ok, Result } from "@hazae41/result";
 import { Arrays } from "libs/arrays/arrays.js";
 import { core } from "mods/core/core.js";
 import { DEFAULT_EQUALS } from "mods/defaults.js";
@@ -36,35 +35,30 @@ export namespace Scrollable {
    * @param settings 
    * @returns 
    */
-  export async function tryFetch<K, D, F>(
+  export async function fetchOrThrow<K, D, F>(
     cacheKey: string,
     aborter: AbortController,
     settings: ScrollableFetcherfulQuerySettings<K, D, F>
-  ): Promise<Result<State<D[], F>, Error>> {
+  ): Promise<State<D[], F>> {
     const { dataEqualser = DEFAULT_EQUALS } = settings
 
-    const result = await core.runWithTimeout(async (signal) => {
+    const fetched = await core.runWithTimeout(async (signal) => {
       return await settings.fetcher(settings.key, { signal })
     }, aborter, settings.timeout)
 
-    if (result.isErr())
-      return result
-
-    const times = TimesInit.merge(result.get(), settings)
-    const timed = Fetched.from(result.get()).setTimes(times)
+    const times = TimesInit.merge(fetched, settings)
+    const timed = Fetched.from(fetched).setTimes(times)
 
     return await core.mutateOrThrow(cacheKey, async (previous) => {
-      return await Result.unthrow(async t => {
-        if (timed.isErr())
-          return new Ok(new Some(timed))
+      if (timed.isErr())
+        return new Some(timed)
 
-        const prenormalized = await core.prenormalizeOrThrow(timed, settings).then(r => r.throw(t))
+      const prenormalized = await core.prenormalizeOrThrow(timed, settings)
 
-        if (prenormalized?.isData() && previous.real?.data && dataEqualser(prenormalized.inner, previous.real.data.inner))
-          return new Ok(new Some(previous.real.data))
+      if (prenormalized?.isData() && previous.real?.data && dataEqualser(prenormalized.inner, previous.real.data.inner))
+        return new Some(previous.real.data)
 
-        return new Ok(new Some(timed))
-      })
+      return new Some(timed)
     }, settings)
   }
 
@@ -78,36 +72,31 @@ export namespace Scrollable {
    * @param settings 
    * @returns 
    */
-  export async function tryScroll<K, D, F>(
+  export async function scrollOrThrow<K, D, F>(
     cacheKey: string,
     aborter: AbortController,
     settings: ScrollableFetcherfulQuerySettings<K, D, F>
-  ): Promise<Result<State<D[], F>, Error>> {
-    return await Result.unthrow(async t => {
-      const previous = await core.getOrThrow(cacheKey, settings).then(r => r.throw(t))
+  ): Promise<State<D[], F>> {
+    const previous = await core.getOrThrow(cacheKey, settings)
+    const previousPages = previous.real?.data?.inner ?? []
+    const previousPage = Arrays.last(previousPages)
+    const key = settings.scroller(previousPage)
+
+    if (key == null)
+      throw new ScrollError()
+
+    const fetched = await core.runWithTimeout(async (signal) => {
+      return await settings.fetcher(key, { signal })
+    }, aborter, settings.timeout)
+
+    const times = TimesInit.merge(fetched, settings)
+    const timed = Fetched.from(fetched).setTimes(times)
+
+    return await core.mutateOrThrow(cacheKey, async (previous) => {
       const previousPages = previous.real?.data?.inner ?? []
-      const previousPage = Arrays.last(previousPages)
-      const key = settings.scroller(previousPage)
+      const paginated = timed.mapSync(data => [...previousPages, ...data])
 
-      if (key == null)
-        return new Err(new ScrollError())
-
-      const result = await core.runWithTimeout(async (signal) => {
-        return await settings.fetcher(key, { signal })
-      }, aborter, settings.timeout)
-
-      if (result.isErr())
-        return result
-
-      const times = TimesInit.merge(result.get(), settings)
-      const timed = Fetched.from(result.get()).setTimes(times)
-
-      return await core.mutateOrThrow(cacheKey, async (previous) => {
-        const previousPages = previous.real?.data?.inner ?? []
-        const paginated = timed.mapSync(data => [...previousPages, ...data])
-
-        return new Ok(new Some(paginated))
-      }, settings)
-    })
+      return new Some(paginated)
+    }, settings)
   }
 }

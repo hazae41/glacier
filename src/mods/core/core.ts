@@ -78,7 +78,7 @@ export class Core {
   readonly unstoreds = new Map<string, State<any, any>>()
   readonly storeds = new Map<string, RawState<any, any>>()
 
-  readonly promises = new Map<string, Promise<Result<State<any, any>, Error>>>()
+  readonly promises = new Map<string, Promise<State<any, any>>>()
   readonly aborters = new Map<string, AbortController>()
   readonly timeouts = new Map<string, NodeJS.Timeout>()
   readonly counters = new Map<string, number>()
@@ -118,7 +118,7 @@ export class Core {
     return mutex
   }
 
-  async fetchOrReplace<D, F>(cacheKey: string, aborter: AbortController, callback: () => Promise<Result<State<D, F>, Error>>): Promise<Result<State<D, F>, Error>> {
+  async fetchOrReplace<D, F>(cacheKey: string, aborter: AbortController, callback: () => Promise<State<D, F>>): Promise<State<D, F>> {
     if (this.aborters.has(cacheKey))
       this.aborters.get(cacheKey)!.abort()
 
@@ -142,7 +142,7 @@ export class Core {
     }
   }
 
-  async fetchOrJoin<D, F>(cacheKey: string, aborter: AbortController, callback: () => Promise<Result<State<D, F>, Error>>): Promise<Result<State<D, F>, Error>> {
+  async fetchOrJoin<D, F>(cacheKey: string, aborter: AbortController, callback: () => Promise<State<D, F>>): Promise<State<D, F>> {
     if (this.promises.has(cacheKey))
       return await this.promises.get(cacheKey)!
 
@@ -414,7 +414,7 @@ export class Core {
     return reoptimized
   }
 
-  async tryReoptimize<K, D, F>(cacheKey: string, settings: QuerySettings<K, D, F>) {
+  async reoptimizeOrThrow<K, D, F>(cacheKey: string, settings: QuerySettings<K, D, F>) {
     return await this.setOrThrow(cacheKey, async (previous) => {
       return await this.#reoptimizeOrThrow(cacheKey, previous)
     }, settings)

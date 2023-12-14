@@ -1,5 +1,3 @@
-import { Some } from "@hazae41/option";
-import { Ok, Result } from "@hazae41/result";
 import { core } from "mods/core/core.js";
 import { Fetched } from "mods/fetched/fetched.js";
 import { TimesInit } from "mods/fetched/times.js";
@@ -15,22 +13,19 @@ export namespace Simple {
     return JSON.stringify(key)
   }
 
-  export async function tryFetch<K, D, F>(
+  export async function fetchOrThrow<K, D, F>(
     cacheKey: string,
     aborter: AbortController,
     settings: FetcherfulQuerySettings<K, D, F>
-  ): Promise<Result<State<D, F>, Error>> {
-    const result = await core.runWithTimeout(async signal => {
+  ): Promise<State<D, F>> {
+    const fetched = await core.runWithTimeout(async signal => {
       return await settings.fetcher(settings.key, { signal })
     }, aborter, settings.timeout)
 
-    if (result.isErr())
-      return result
+    const times = TimesInit.merge(fetched, settings)
+    const timed = Fetched.from(fetched).setTimes(times)
 
-    const times = TimesInit.merge(result.get(), settings)
-    const timed = Fetched.from(result.get()).setTimes(times)
-
-    return await core.mutateOrThrow(cacheKey, () => new Ok(new Some(timed)), settings)
+    return await core.replaceOrThrow(cacheKey, timed, settings)
   }
 
   /**
@@ -43,12 +38,12 @@ export namespace Simple {
    * @param settings 
    * @returns 
    */
-  export async function tryUpdate<K, D, F>(
+  export async function updateOrThrow<K, D, F>(
     cacheKey: string,
     updater: Updater<K, D, F>,
     aborter: AbortController,
     settings: FetcherfulQuerySettings<K, D, F>
-  ): Promise<Result<State<D, F>, Error>> {
+  ): Promise<State<D, F>> {
     const uuid = crypto.randomUUID()
 
     try {
@@ -61,25 +56,19 @@ export namespace Simple {
 
       const fetcher = next.value ?? settings.fetcher
 
-      const result = await core.runWithTimeout(async (signal) => {
+      const fetched = await core.runWithTimeout(async (signal) => {
         return await fetcher(settings.key, { signal, cache: "reload" })
       }, aborter, settings.timeout)
 
-      if (result.isErr()) {
-        core.deoptimize(cacheKey, uuid)
-        core.tryReoptimize(cacheKey, settings)
-        return result
-      }
-
       core.deoptimize(cacheKey, uuid)
 
-      const times = TimesInit.merge(result.get(), settings)
-      const timed = Fetched.from(result.get()).setTimes(times)
+      const times = TimesInit.merge(fetched, settings)
+      const timed = Fetched.from(fetched).setTimes(times)
 
-      return await core.mutateOrThrow(cacheKey, () => new Ok(new Some(timed)), settings)
+      return await core.replaceOrThrow(cacheKey, timed, settings)
     } catch (e: unknown) {
       core.deoptimize(cacheKey, uuid)
-      core.tryReoptimize(cacheKey, settings)
+      core.reoptimizeOrThrow(cacheKey, settings)
       throw e
     }
   }

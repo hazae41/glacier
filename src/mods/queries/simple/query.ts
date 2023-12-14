@@ -157,7 +157,7 @@ export class SimpleFetcherfulQuery<K, D, F> {
         return new Err(new CooldownError())
 
       const result = await core.fetchOrJoin(cacheKey, aborter, async () =>
-        await Simple.tryFetch(cacheKey, aborter, settings))
+        await Simple.fetchOrThrow(cacheKey, aborter, settings))
 
       return new Ok(result)
     })
@@ -167,7 +167,7 @@ export class SimpleFetcherfulQuery<K, D, F> {
     const { cacheKey, settings } = this
 
     const result = await core.fetchOrReplace(cacheKey, aborter, async () =>
-      await Simple.tryFetch(cacheKey, aborter, settings))
+      await Simple.fetchOrThrow(cacheKey, aborter, settings))
 
     return new Ok(result)
   }
@@ -175,7 +175,7 @@ export class SimpleFetcherfulQuery<K, D, F> {
   async tryUpdate(updater: Updater<K, D, F>, aborter = new AbortController()): Promise<Result<Result<State<D, F>, Error>, never>> {
     const { cacheKey, settings } = this
 
-    const result = await Simple.tryUpdate(cacheKey, updater, aborter, settings)
+    const result = await Simple.updateOrThrow(cacheKey, updater, aborter, settings)
 
     return new Ok(result)
   }

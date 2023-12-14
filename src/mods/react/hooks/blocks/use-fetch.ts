@@ -11,6 +11,6 @@ export function useFetch<K, D, F>(query: ReactQuery<K, D, F>) {
   const { fetch } = query
 
   useEffect(() => {
-    fetch().then(r => r.inspectErrSync(console.warn))
+    fetch().catch(console.warn)
   }, [fetch])
 }

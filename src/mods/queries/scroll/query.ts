@@ -124,7 +124,7 @@ export class ScrollableFetcherfulQuery<K, D, F> {
         return new Err(new CooldownError())
 
       const result = await core.fetchOrJoin(cacheKey, aborter, async () =>
-        await Scrollable.tryFetch(cacheKey, aborter, settings))
+        await Scrollable.fetchOrThrow(cacheKey, aborter, settings))
 
       return new Ok(result)
     })
@@ -134,7 +134,7 @@ export class ScrollableFetcherfulQuery<K, D, F> {
     const { cacheKey, settings } = this
 
     const result = await core.fetchOrReplace(cacheKey, aborter, async () =>
-      await Scrollable.tryFetch(cacheKey, aborter, settings))
+      await Scrollable.fetchOrThrow(cacheKey, aborter, settings))
 
     return new Ok(result)
   }
@@ -143,7 +143,7 @@ export class ScrollableFetcherfulQuery<K, D, F> {
     const { cacheKey, settings } = this
 
     const result = await core.fetchOrReplace(cacheKey, aborter, async () =>
-      await Scrollable.tryScroll(cacheKey, aborter, settings))
+      await Scrollable.scrollOrThrow(cacheKey, aborter, settings))
 
     return new Ok(result)
   }
