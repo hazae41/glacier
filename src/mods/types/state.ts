@@ -8,26 +8,26 @@ export type RawState<D = unknown, E = unknown> =
   | undefined
 
 export interface RawState1<D = unknown, F = unknown> {
-  version?: undefined,
-  data?: D
-  error?: F
-  time: number,
-  cooldown?: number
-  expiration?: number
+  readonly version?: undefined,
+  readonly data?: D
+  readonly error?: F
+  readonly time: number,
+  readonly cooldown?: number
+  readonly expiration?: number
 }
 
 export interface RawState2<D = unknown, F = unknown> {
-  version: 2,
-  data?: DataInit<D>
-  error?: FailInit<F>
-  time: number,
-  cooldown?: number
-  expiration?: number
+  readonly version: 2,
+  readonly data?: DataInit<D>
+  readonly error?: FailInit<F>
+  readonly time: number,
+  readonly cooldown?: number
+  readonly expiration?: number
 }
 
 export interface StateAndAborter<D, F> {
-  state: State<D, F>
-  aborter?: AbortController
+  readonly state: State<D, F>
+  readonly aborter?: AbortController
 }
 
 export type State<D, F> =

@@ -2,9 +2,9 @@ import { ReactQuery } from "mods/react/types/query.js"
 import { useEffect, useMemo, useRef } from "react"
 
 export interface RetrySettings {
-  init?: number
-  base?: number
-  max?: number
+  readonly init?: number
+  readonly base?: number
+  readonly max?: number
 }
 
 /**

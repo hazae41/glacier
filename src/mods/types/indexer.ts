@@ -1,10 +1,9 @@
-import { Result } from "@hazae41/result";
 import { State } from "./state.js";
 
 export type Indexer<D, F> =
-  (states: States<D, F>) => Promise<Result<void, Error>>
+  (states: States<D, F>) => Promise<void>
 
 export interface States<D, F> {
-  current: State<D, F>
-  previous?: State<D, F>
+  readonly current: State<D, F>
+  readonly previous?: State<D, F>
 }
