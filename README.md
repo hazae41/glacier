@@ -6,7 +6,7 @@
 npm i @hazae41/glacier
 ```
 
-[**Node Package 📦**](https://www.npmjs.com/package/@hazae41/glacier) • [**Read the docs 📚**](https://github.com/hazae41/glacier/blob/master/docs) • [**Next.js Example 🪣**](https://codesandbox.io/p/github/hazae41/xswr-example-next) • [**Expo Example 🪣**](https://snack.expo.dev/@git/github.com/hazae41/xswr-example-expo) • [**Comparison with other libs 🌐**](https://github.com/hazae41/glacier/blob/master/docs/comparison.md)
+[**Node Package 📦**](https://www.npmjs.com/package/@hazae41/glacier) • [**Read the docs 📚**](https://github.com/hazae41/glacier/blob/master/docs) • [**Next.js Example 🪣**](https://codesandbox.io/p/github/hazae41/glacier-example-next) • [**Expo Example 🪣**](https://snack.expo.dev/@git/github.com/hazae41/xswr-example-expo) • [**Comparison with other libs 🌐**](https://github.com/hazae41/glacier/blob/master/docs/comparison.md)
 
 ## Philosophy 🧠
 
