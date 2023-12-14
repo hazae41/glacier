@@ -17,20 +17,17 @@ npm i @hazae41/glacier
 It will just take an url, fetch it with the given signal, and return the data or error
 
 ```tsx
-import { Result } from "@hazae41/result"
 import { Data, Fail } from "@hazae41/glacier"
 
-export async function tryFetchAsJson<T>(url: string, init: RequestInit) {
-  return await Result.runAndDoubleWrap(async () => {
-    const { signal } = init
+export async function fetchAsJson<T>(url: string, init: RequestInit) {
+  const { signal } = init
 
-    const res = await fetch(url, { signal })
+  const res = await fetch(url, { signal })
 
-    if (!res.ok) 
-      return new Fail(new Error(await res.text()))
+  if (!res.ok) 
+    return new Fail(new Error(await res.text()))
 
-    return new Data(await res.json() as T)
-  })
+  return new Data(await res.json() as T)
 }
 ```
 
@@ -42,13 +39,13 @@ Using schemas may seems boilerplate, but it will save you a lot of time later.
 import { createQuery } from "@hazae41/glacier"
 
 export interface Hello {
-  hello: string
+  readonly hello: string
 }
 
 export function createHelloQuery() {
-  return createQuery({
+  return createQuery<string, Hello, Error>({
     key: "/api/hello",
-    fetcher: tryFetchAsJson
+    fetcher: fetchAsJson
   })
 }
 ```
