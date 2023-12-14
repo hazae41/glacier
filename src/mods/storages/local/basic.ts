@@ -2,7 +2,6 @@ import { Result } from "@hazae41/result"
 import { Bicoder, Encoder, SyncIdentity, SyncJson } from "mods/coders/coder.js"
 import { RawState } from "mods/types/state.js"
 import { useEffect, useRef } from "react"
-import { StorageCreationError } from "../errors.js"
 import { Storage } from "../storage.js"
 
 /**
@@ -19,10 +18,10 @@ import { Storage } from "../storage.js"
  * @see useFallback
  */
 export function useAsyncLocalStorage(params?: AsyncLocalStorageParams) {
-  const storage = useRef<Result<AsyncLocalStorage, StorageCreationError>>()
+  const storage = useRef<Result<AsyncLocalStorage, Error>>()
 
   if (storage.current == null)
-    storage.current = AsyncLocalStorage.tryCreate(params).ignore()
+    storage.current = Result.runAndDoubleWrapSync(() => AsyncLocalStorage.createOrThrow(params)).ignore()
 
   useEffect(() => () => {
     if (!storage.current?.isOk())
@@ -75,12 +74,6 @@ export class AsyncLocalStorage implements Storage {
       throw new Error(`localStorage is undefined`)
 
     return new AsyncLocalStorage(prefix, keySerializer, valueSerializer)
-  }
-
-  static tryCreate(params: AsyncLocalStorageParams = {}) {
-    return Result.runAndDoubleWrapSync(() => {
-      return AsyncLocalStorage.createOrThrow(params)
-    }).mapErrSync(StorageCreationError.from)
   }
 
   [Symbol.dispose]() {

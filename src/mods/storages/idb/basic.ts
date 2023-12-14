@@ -1,16 +1,15 @@
 import { Nullable } from "@hazae41/option"
-import { Err, Ok, Result } from "@hazae41/result"
+import { Result } from "@hazae41/result"
 import { Bicoder, Encoder, SyncIdentity } from "mods/coders/coder.js"
 import { Storage } from "mods/storages/storage.js"
 import { RawState } from "mods/types/state.js"
 import { useEffect, useRef } from "react"
-import { StorageCreationError } from "../errors.js"
 
 export function useIDBStorage(params?: IDBStorageParams) {
-  const storage = useRef<Result<IDBStorage, StorageCreationError>>()
+  const storage = useRef<Result<IDBStorage, Error>>()
 
   if (storage.current == null)
-    storage.current = IDBStorage.tryCreate(params).ignore()
+    storage.current = Result.runAndDoubleWrapSync(() => IDBStorage.createOrThrow(params)).ignore()
 
   useEffect(() => () => {
     if (!storage.current?.isOk())
@@ -91,13 +90,13 @@ export class IDBStorage implements Storage {
     await this.collectOrThrow()
   }
 
-  static tryCreate(params: IDBStorageParams = {}): Result<IDBStorage, StorageCreationError> {
+  static createOrThrow(params: IDBStorageParams = {}): IDBStorage {
     const { name, keySerializer, valueSerializer } = params
 
     if (typeof indexedDB === "undefined")
-      return new Err(new StorageCreationError())
+      throw new Error(`indexedDB is undefined`)
 
-    return new Ok(new IDBStorage(name, keySerializer, valueSerializer))
+    return new IDBStorage(name, keySerializer, valueSerializer)
   }
 
   /**
