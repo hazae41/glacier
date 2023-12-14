@@ -1,8 +1,6 @@
 import { Base64 } from "@hazae41/base64"
 import { Bytes } from "@hazae41/bytes"
-import { Ok, Result } from "@hazae41/result"
 import { AsyncEncoder } from "mods/coders/coder.js"
-import { CryptoError } from "../error/error.js"
 
 export class HmacEncoder implements AsyncEncoder<string, string> {
 
@@ -10,19 +8,12 @@ export class HmacEncoder implements AsyncEncoder<string, string> {
     readonly key: CryptoKey
   ) { }
 
-  async tryHash(preimage: Uint8Array): Promise<Result<Uint8Array, CryptoError>> {
-    return await Result.runAndWrap(async () => {
-      return new Uint8Array(await crypto.subtle.sign({ name: "HMAC" }, this.key, preimage))
-    }).then(r => r.mapErrSync(CryptoError.from))
+  async hashOrThrow(preimage: Uint8Array): Promise<Uint8Array> {
+    return new Uint8Array(await crypto.subtle.sign({ name: "HMAC" }, this.key, preimage))
   }
 
-  async tryEncode(value: string): Promise<Result<string, Error>> {
-    return await Result.unthrow(async t => {
-      const hash = await this.tryHash(Bytes.fromUtf8(value)).then(r => r.throw(t))
-      const base64 = Base64.get().tryEncodePadded(hash).throw(t)
-
-      return new Ok(base64)
-    })
+  async encodeOrThrow(value: string): Promise<string> {
+    return Base64.get().encodePaddedOrThrow(await this.hashOrThrow(Bytes.fromUtf8(value)))
   }
 
 }

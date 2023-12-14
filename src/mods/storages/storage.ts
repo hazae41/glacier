@@ -1,4 +1,3 @@
-import { Result } from "@hazae41/result"
 import { Promiseable } from "libs/promises/promises.js"
 import { RawState } from "mods/types/state.js"
 
@@ -10,7 +9,7 @@ export interface Storage {
    * @param shallow true = won't add this key to the garbage collector
    * @returns 
    */
-  tryGet?(cacheKey: string): Promiseable<Result<RawState, Error>>
+  getOrThrow?(cacheKey: string): Promiseable<RawState>
 
   /**
    * Set the given data to the given key
@@ -19,6 +18,6 @@ export interface Storage {
    * @param shallow true = won't add this key to the garbage collector
    * @returns 
    */
-  trySet?(cacheKey: string, value: RawState): Promiseable<Result<void, Error>>
+  setOrThrow?(cacheKey: string, value: RawState): Promiseable<void>
 
 }

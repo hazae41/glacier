@@ -1,15 +1,14 @@
-import { Ok, Result } from "@hazae41/result"
 
 export type Encoder<I, O> =
   | SyncEncoder<I, O>
   | AsyncEncoder<I, O>
 
 export interface SyncEncoder<I, O> {
-  tryEncode(input: I): Result<O, Error>
+  encodeOrThrow(input: I): O
 }
 
 export interface AsyncEncoder<I, O> {
-  tryEncode(input: I): Promise<Result<O, Error>>
+  encodeOrThrow(input: I): Promise<O>
 }
 
 export type Bicoder<I, O> =
@@ -17,35 +16,35 @@ export type Bicoder<I, O> =
   | AsyncBicoder<I, O>
 
 export interface SyncBicoder<I, O> {
-  tryEncode(input: I): Result<O, Error>
-  tryDecode(output: O): Result<I, Error>
+  encodeOrThrow(input: I): O
+  decodeOrThrow(output: O): I
 }
 
 export interface AsyncBicoder<I, O> {
-  tryEncode(input: I): Promise<Result<O, Error>>
-  tryDecode(output: O): Promise<Result<I, Error>>
+  encodeOrThrow(input: I): Promise<O>
+  decodeOrThrow(output: O): Promise<I>
 }
 
 export namespace SyncIdentity {
 
-  export function tryEncode<T>(value: T): Result<T, never> {
-    return new Ok(value)
+  export function encodeOrThrow<T>(value: T): T {
+    return value
   }
 
-  export function tryDecode<T>(value: T): Result<T, never> {
-    return new Ok(value)
+  export function decodeOrThrow<T>(value: T): T {
+    return value
   }
 
 }
 
 export namespace SyncJson {
 
-  export function tryEncode<T>(value: T): Result<string, Error> {
-    return Result.runAndDoubleWrapSync(() => JSON.stringify(value))
+  export function encodeOrThrow<T>(value: T): string {
+    return JSON.stringify(value)
   }
 
-  export function tryDecode<T>(value: string): Result<T, Error> {
-    return Result.runAndDoubleWrapSync(() => JSON.parse(value) as T)
+  export function decodeOrThrow<T>(value: string): T {
+    return JSON.parse(value) as T
   }
 
 }
@@ -53,12 +52,12 @@ export namespace SyncJson {
 
 export namespace AsyncJson {
 
-  export async function tryEncode<T>(value: T): Promise<Result<string, Error>> {
-    return Result.runAndDoubleWrapSync(() => JSON.stringify(value))
+  export async function encodeOrThrow<T>(value: T): Promise<string> {
+    return JSON.stringify(value)
   }
 
-  export async function tryDecode<T>(value: string): Promise<Result<T, Error>> {
-    return Result.runAndDoubleWrapSync(() => JSON.parse(value) as T)
+  export async function decodeOrThrow<T>(value: string): Promise<T> {
+    return JSON.parse(value) as T
   }
 
 }
@@ -70,22 +69,12 @@ export class AsyncPipeBicoder<I, X, O> implements AsyncBicoder<I, O> {
     readonly inner: AsyncBicoder<X, O>
   ) { }
 
-  async tryEncode(input: I): Promise<Result<O, Error>> {
-    const outer = await this.outer.tryEncode(input)
-
-    if (outer.isErr())
-      return outer
-
-    return await this.inner.tryEncode(outer.get())
+  async encodeOrThrow(input: I): Promise<O> {
+    return await this.inner.encodeOrThrow(await this.outer.encodeOrThrow(input))
   }
 
-  async tryDecode(output: O): Promise<Result<I, Error>> {
-    const inner = await this.inner.tryDecode(output)
-
-    if (inner.isErr())
-      return inner
-
-    return await this.outer.tryDecode(inner.get())
+  async decodeOrThrow(output: O): Promise<I> {
+    return await this.outer.decodeOrThrow(await this.inner.decodeOrThrow(output))
   }
 
 }
@@ -97,13 +86,8 @@ export class AsyncPipeEncoder<I, X, O> implements AsyncEncoder<I, O>{
     readonly inner: AsyncEncoder<X, O>
   ) { }
 
-  async tryEncode(input: I): Promise<Result<O, Error>> {
-    const outer = await this.outer.tryEncode(input)
-
-    if (outer.isErr())
-      return outer
-
-    return await this.inner.tryEncode(outer.get())
+  async encodeOrThrow(input: I): Promise<O> {
+    return await this.inner.encodeOrThrow(await this.outer.encodeOrThrow(input))
   }
 
 }
@@ -115,22 +99,12 @@ export class SyncPipeBicoder<I, X, O> implements SyncBicoder<I, O> {
     readonly inner: SyncBicoder<X, O>
   ) { }
 
-  tryEncode(input: I): Result<O, Error> {
-    const outer = this.outer.tryEncode(input)
-
-    if (outer.isErr())
-      return outer
-
-    return this.inner.tryEncode(outer.get())
+  encodeOrThrow(input: I): O {
+    return this.inner.encodeOrThrow(this.outer.encodeOrThrow(input))
   }
 
-  tryDecode(output: O): Result<I, Error> {
-    const inner = this.inner.tryDecode(output)
-
-    if (inner.isErr())
-      return inner
-
-    return this.outer.tryDecode(inner.get())
+  decodeOrThrow(output: O): I {
+    return this.outer.decodeOrThrow(this.inner.decodeOrThrow(output))
   }
 
 }
@@ -142,13 +116,8 @@ export class SyncPipeEncoder<I, X, O> implements SyncEncoder<I, O>{
     readonly inner: SyncEncoder<X, O>
   ) { }
 
-  tryEncode(input: I): Result<O, Error> {
-    const outer = this.outer.tryEncode(input)
-
-    if (outer.isErr())
-      return outer
-
-    return this.inner.tryEncode(outer.get())
+  encodeOrThrow(input: I): O {
+    return this.inner.encodeOrThrow(this.outer.encodeOrThrow(input))
   }
 
 }

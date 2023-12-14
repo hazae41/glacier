@@ -181,7 +181,7 @@ export class Core {
         return new Ok(unstored)
       }
 
-      const stored = await Promise.resolve(settings.storage?.tryGet?.(cacheKey)).then(r => r?.ok().inner)
+      const stored = await Promise.resolve(settings.storage?.getOrThrow?.(cacheKey)).then(r => r?.ok().inner)
       const unstored = await this.tryUnstore(stored, settings).then(r => r.throw(t))
 
       this.storeds.set(cacheKey, stored)
@@ -208,8 +208,8 @@ export class Core {
 
       const { time, cooldown, expiration } = state.real.current
 
-      const data = await Option.map(state.real.data, d => d.map(async x => await Promise.resolve(dataSerializer.tryEncode(x)).then(r => r.throw(t))))
-      const error = await Option.map(state.real.error, d => d.mapErr(async x => await Promise.resolve(errorSerializer.tryEncode(x)).then(r => r.throw(t))))
+      const data = await Option.map(state.real.data, d => d.map(async x => await Promise.resolve(dataSerializer.encodeOrThrow(x)).then(r => r.throw(t))))
+      const error = await Option.map(state.real.error, d => d.mapErr(async x => await Promise.resolve(errorSerializer.encodeOrThrow(x)).then(r => r.throw(t))))
 
       return new Ok({ version: 2, data, error, time, cooldown, expiration })
     })
@@ -229,8 +229,8 @@ export class Core {
         const { time, cooldown, expiration } = stored
         const times = { time, cooldown, expiration }
 
-        const data = await Option.wrap(stored.data).map(async x => new Data(await Promise.resolve(dataSerializer.tryDecode(x)).then(r => r.throw(t)), times))
-        const error = await Option.wrap(stored.error).map(async x => new Fail(await Promise.resolve(errorSerializer.tryDecode(x)).then(r => r.throw(t)), times))
+        const data = await Option.wrap(stored.data).map(async x => new Data(await Promise.resolve(dataSerializer.decodeOrThrow(x)).then(r => r.throw(t)), times))
+        const error = await Option.wrap(stored.error).map(async x => new Fail(await Promise.resolve(errorSerializer.decodeOrThrow(x)).then(r => r.throw(t)), times))
 
         if (error.isSome())
           return new Ok(new RealState(new FailState<D, F>(error.get(), data.get())))
@@ -242,8 +242,8 @@ export class Core {
       }
 
       if (stored.version === 2) {
-        const data = await Option.wrap(stored.data).map(x => Data.from(x).map(async x => await Promise.resolve(dataSerializer.tryDecode(x)).then(r => r.throw(t))))
-        const error = await Option.wrap(stored.error).map(x => Fail.from(x).mapErr(async x => await Promise.resolve(errorSerializer.tryDecode(x)).then(r => r.throw(t))))
+        const data = await Option.wrap(stored.data).map(x => Data.from(x).map(async x => await Promise.resolve(dataSerializer.decodeOrThrow(x)).then(r => r.throw(t))))
+        const error = await Option.wrap(stored.error).map(x => Fail.from(x).mapErr(async x => await Promise.resolve(errorSerializer.decodeOrThrow(x)).then(r => r.throw(t))))
 
         if (error.isSome())
           return new Ok(new RealState(new FailState<D, F>(error.get(), data.get())))
@@ -280,7 +280,7 @@ export class Core {
         this.unstoreds.set(cacheKey, current)
         await this.onState.emit(cacheKey, [])
 
-        await Promise.resolve(settings.storage?.trySet?.(cacheKey, stored)).then(r => r?.throw(t))
+        await Promise.resolve(settings.storage?.setOrThrow?.(cacheKey, stored)).then(r => r?.throw(t))
 
         await settings.indexer?.({ current, previous })
         return new Ok(current)

@@ -1,4 +1,4 @@
-import { Err, Ok, Result } from "@hazae41/result"
+import { Result } from "@hazae41/result"
 import { Bicoder, Encoder, SyncIdentity, SyncJson } from "mods/coders/coder.js"
 import { RawState } from "mods/types/state.js"
 import { useEffect, useRef } from "react"
@@ -34,9 +34,9 @@ export function useAsyncLocalStorage(params?: AsyncLocalStorageParams) {
 }
 
 export interface AsyncLocalStorageParams {
-  prefix?: string,
-  keySerializer?: Encoder<string, string>,
-  valueSerializer?: Bicoder<RawState, string>
+  readonly prefix?: string,
+  readonly keySerializer?: Encoder<string, string>,
+  readonly valueSerializer?: Bicoder<RawState, string>
 }
 
 /**
@@ -68,13 +68,19 @@ export class AsyncLocalStorage implements Storage {
     addEventListener("beforeunload", this.beforeunload)
   }
 
-  static tryCreate(params: AsyncLocalStorageParams = {}): Result<AsyncLocalStorage, StorageCreationError> {
+  static createOrThrow(params: AsyncLocalStorageParams = {}): AsyncLocalStorage {
     const { prefix, keySerializer, valueSerializer } = params
 
     if (typeof localStorage === "undefined")
-      return new Err(new StorageCreationError())
+      throw new Error(`localStorage is undefined`)
 
-    return new Ok(new AsyncLocalStorage(prefix, keySerializer, valueSerializer))
+    return new AsyncLocalStorage(prefix, keySerializer, valueSerializer)
+  }
+
+  static tryCreate(params: AsyncLocalStorageParams = {}) {
+    return Result.runAndDoubleWrapSync(() => {
+      return AsyncLocalStorage.createOrThrow(params)
+    }).mapErrSync(StorageCreationError.from)
   }
 
   [Symbol.dispose]() {
@@ -90,45 +96,33 @@ export class AsyncLocalStorage implements Storage {
     }
   }
 
-  async tryGet(cacheKey: string): Promise<Result<RawState, Error>> {
-    return await Result.unthrow(async t => {
-      const key = await Promise
-        .resolve(this.keySerializer.tryEncode(cacheKey))
-        .then(r => r.throw(t))
+  async getOrThrow(cacheKey: string): Promise<RawState> {
+    const key = await Promise.resolve(this.keySerializer.encodeOrThrow(cacheKey))
 
-      const item = localStorage.getItem(this.prefix + key)
+    const item = localStorage.getItem(this.prefix + key)
 
-      if (item == null)
-        return new Ok(undefined)
+    if (item == null)
+      return undefined
 
-      const state = await Promise.resolve(this.valueSerializer.tryDecode(item)).then(r => r.throw(t))
+    const state = await Promise.resolve(this.valueSerializer.decodeOrThrow(item))
 
-      if (state?.expiration != null)
-        this.#storageKeys.set(key, state.expiration)
+    if (state?.expiration != null)
+      this.#storageKeys.set(key, state.expiration)
 
-      return new Ok(state)
-    })
+    return state
   }
 
-  async trySet(cacheKey: string, state: RawState): Promise<Result<void, Error>> {
-    return await Result.unthrow(async t => {
-      if (state == null)
-        return await this.tryDelete(cacheKey)
+  async setOrThrow(cacheKey: string, state: RawState): Promise<void> {
+    if (state == null)
+      return await this.deleteOrThrow(cacheKey)
 
-      const storageKey = await Promise
-        .resolve(this.keySerializer.tryEncode(cacheKey))
-        .then(r => r.throw(t))
+    const storageKey = await Promise.resolve(this.keySerializer.encodeOrThrow(cacheKey))
+    const storageItem = await Promise.resolve(this.valueSerializer.encodeOrThrow(state))
 
-      const storageItem = await Promise
-        .resolve(this.valueSerializer.tryEncode(state))
-        .then(r => r.throw(t))
+    if (state.expiration != null)
+      this.#storageKeys.set(storageKey, state.expiration)
 
-      if (state.expiration != null)
-        this.#storageKeys.set(storageKey, state.expiration)
-
-      localStorage.setItem(this.prefix + storageKey, storageItem)
-      return Ok.void()
-    })
+    localStorage.setItem(this.prefix + storageKey, storageItem)
   }
 
   #delete(storageKey: string) {
@@ -136,15 +130,10 @@ export class AsyncLocalStorage implements Storage {
     localStorage.removeItem(this.prefix + storageKey)
   }
 
-  async tryDelete(cacheKey: string): Promise<Result<void, Error>> {
-    return await Result.unthrow(async t => {
-      const key = await Promise
-        .resolve(this.keySerializer.tryEncode(cacheKey))
-        .then(r => r.throw(t))
+  async deleteOrThrow(cacheKey: string): Promise<void> {
+    const storageKey = await Promise.resolve(this.keySerializer.encodeOrThrow(cacheKey))
 
-      this.#delete(key)
-      return Ok.void()
-    })
+    this.#delete(storageKey)
   }
 
 }
