@@ -316,13 +316,13 @@ export function useSimpleFetcherfulQuery<K, D, F>(
     if (Time.isAfterNow(state?.real?.current.cooldown))
       return new Err(state!)
 
-    return new Ok(await core.fetchOrJoin(cacheKey, aborter, () => Simple.fetchOrThrow(cacheKey, aborter, settings)))
+    return new Ok(await core.runOrJoin(cacheKey, aborter, () => Simple.fetchOrThrow(cacheKey, aborter, settings)))
   }, [cacheKey])
 
   const refetch = useCallback(async (aborter = new AbortController()) => {
     const settings = settingsRef.current
 
-    return await core.fetchOrReplace(cacheKey, aborter, () => Simple.fetchOrThrow(cacheKey, aborter, settings))
+    return await core.runOrReplace(cacheKey, aborter, () => Simple.fetchOrThrow(cacheKey, aborter, settings))
   }, [cacheKey])
 
   const update = useCallback(async (updater: Updater<K, D, F>, aborter = new AbortController()) => {
@@ -334,7 +334,7 @@ export function useSimpleFetcherfulQuery<K, D, F>(
   const suspend = useCallback(async (aborter = new AbortController()) => {
     const settings = settingsRef.current
 
-    return await core.fetchOrJoin(cacheKey, aborter, () => Simple.fetchOrThrow(cacheKey, aborter, settings))
+    return await core.runOrJoin(cacheKey, aborter, () => Simple.fetchOrThrow(cacheKey, aborter, settings))
   }, [cacheKey])
 
   const state = stateRef.current

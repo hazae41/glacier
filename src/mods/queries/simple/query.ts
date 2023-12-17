@@ -156,13 +156,13 @@ export class SimpleFetcherfulQuery<K, D, F> {
     if (Time.isAfterNow(state.real?.current.cooldown))
       return new Err(state)
 
-    return new Ok(await core.fetchOrJoin(cacheKey, aborter, () => Simple.fetchOrThrow(cacheKey, aborter, settings)))
+    return new Ok(await core.runOrJoin(cacheKey, aborter, () => Simple.fetchOrThrow(cacheKey, aborter, settings)))
   }
 
   async refetch(aborter = new AbortController()): Promise<State<D, F>> {
     const { cacheKey, settings } = this
 
-    return await core.fetchOrReplace(cacheKey, aborter, () => Simple.fetchOrThrow(cacheKey, aborter, settings))
+    return await core.runOrReplace(cacheKey, aborter, () => Simple.fetchOrThrow(cacheKey, aborter, settings))
   }
 
   async update(updater: Updater<K, D, F>, aborter = new AbortController()): Promise<State<D, F>> {

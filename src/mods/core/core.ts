@@ -78,7 +78,7 @@ export class Core {
   readonly unstoreds = new Map<string, State<any, any>>()
   readonly storeds = new Map<string, RawState<any, any>>()
 
-  readonly promises = new Map<string, Promise<State<any, any>>>()
+  readonly promises = new Map<string, Promise<unknown>>()
   readonly aborters = new Map<string, AbortController>()
   readonly timeouts = new Map<string, NodeJS.Timeout>()
   readonly counters = new Map<string, number>()
@@ -118,8 +118,10 @@ export class Core {
     return mutex
   }
 
-  async fetchOrReplace<D, F>(cacheKey: string, aborter: AbortController, callback: () => Promise<State<D, F>>): Promise<State<D, F>> {
-    if (this.aborters.has(cacheKey))
+  async runOrReplace<T>(cacheKey: string, aborter: AbortController, callback: () => Promise<T>): Promise<T> {
+    const previous = this.promises.get(cacheKey)
+
+    if (previous != null)
       this.aborters.get(cacheKey)!.abort()
 
     try {
@@ -142,9 +144,11 @@ export class Core {
     }
   }
 
-  async fetchOrJoin<D, F>(cacheKey: string, aborter: AbortController, callback: () => Promise<State<D, F>>): Promise<State<D, F>> {
-    if (this.promises.has(cacheKey))
-      return await this.promises.get(cacheKey)!
+  async runOrJoin<T>(cacheKey: string, aborter: AbortController, callback: () => Promise<T>): Promise<T> {
+    const previous = this.promises.get(cacheKey)
+
+    if (previous != null)
+      return await previous as T
 
     try {
       const promise = callback()

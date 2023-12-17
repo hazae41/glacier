@@ -338,25 +338,25 @@ export function useFetcherfulScrollableQuery<K, D, F>(
     if (Time.isAfterNow(state?.real?.current.cooldown))
       return new Err(state!)
 
-    return new Ok(await core.fetchOrJoin(cacheKey, aborter, () => Scrollable.fetchOrThrow(cacheKey, aborter, settings)))
+    return new Ok(await core.runOrJoin(cacheKey, aborter, () => Scrollable.fetchOrThrow(cacheKey, aborter, settings)))
   }, [cacheKey])
 
   const refetch = useCallback(async (aborter = new AbortController()) => {
     const settings = settingsRef.current
 
-    return await core.fetchOrReplace(cacheKey, aborter, () => Scrollable.fetchOrThrow(cacheKey, aborter, settings))
+    return await core.runOrReplace(cacheKey, aborter, () => Scrollable.fetchOrThrow(cacheKey, aborter, settings))
   }, [cacheKey])
 
   const scroll = useCallback(async (aborter = new AbortController()) => {
     const settings = settingsRef.current
 
-    return await core.fetchOrReplace(cacheKey, aborter, () => Scrollable.scrollOrThrow(cacheKey, aborter, settings))
+    return await core.runOrReplace(cacheKey, aborter, () => Scrollable.scrollOrThrow(cacheKey, aborter, settings))
   }, [cacheKey])
 
   const suspend = useCallback(async (aborter = new AbortController()) => {
     const settings = settingsRef.current
 
-    return await core.fetchOrJoin(cacheKey, aborter, () => Scrollable.fetchOrThrow(cacheKey, aborter, settings))
+    return await core.runOrJoin(cacheKey, aborter, () => Scrollable.fetchOrThrow(cacheKey, aborter, settings))
   }, [cacheKey])
 
   const state = stateRef.current

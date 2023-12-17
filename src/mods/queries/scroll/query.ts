@@ -121,19 +121,19 @@ export class ScrollableFetcherfulQuery<K, D, F> {
     if (Time.isAfterNow(state.real?.current.cooldown))
       return new Err(state)
 
-    return new Ok(await core.fetchOrJoin(cacheKey, aborter, () => Scrollable.fetchOrThrow(cacheKey, aborter, settings)))
+    return new Ok(await core.runOrJoin(cacheKey, aborter, () => Scrollable.fetchOrThrow(cacheKey, aborter, settings)))
   }
 
   async refetch(aborter = new AbortController()): Promise<State<D[], F>> {
     const { cacheKey, settings } = this
 
-    return await core.fetchOrReplace(cacheKey, aborter, () => Scrollable.fetchOrThrow(cacheKey, aborter, settings))
+    return await core.runOrReplace(cacheKey, aborter, () => Scrollable.fetchOrThrow(cacheKey, aborter, settings))
   }
 
   async scroll(aborter = new AbortController()): Promise<State<D[], F>> {
     const { cacheKey, settings } = this
 
-    return await core.fetchOrReplace(cacheKey, aborter, () => Scrollable.scrollOrThrow(cacheKey, aborter, settings))
+    return await core.runOrReplace(cacheKey, aborter, () => Scrollable.scrollOrThrow(cacheKey, aborter, settings))
   }
 
 }
