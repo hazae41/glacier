@@ -1,5 +1,5 @@
 import { Ok } from "@hazae41/result"
-import { Promiseable } from "libs/promises/promises.js"
+import { Awaitable } from "libs/promises/promises.js"
 import { Times, TimesInit } from "./times.js"
 
 export interface DataInit<T> extends TimesInit {
@@ -67,7 +67,7 @@ export class Data<T> extends Ok<T> implements DataInit<T>, Times {
     return new Data(this.inner, times)
   }
 
-  async map<U>(mapper: (data: T) => Promiseable<U>): Promise<Data<U>> {
+  async map<U>(mapper: (data: T) => Awaitable<U>): Promise<Data<U>> {
     return new Data<U>(await mapper(this.get()), this)
   }
 

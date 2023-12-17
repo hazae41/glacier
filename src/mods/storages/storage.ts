@@ -1,4 +1,4 @@
-import { Promiseable } from "libs/promises/promises.js"
+import { Awaitable } from "libs/promises/promises.js"
 import { RawState } from "mods/types/state.js"
 
 export interface Storage {
@@ -9,7 +9,7 @@ export interface Storage {
    * @param shallow true = won't add this key to the garbage collector
    * @returns 
    */
-  getOrThrow?(cacheKey: string): Promiseable<RawState>
+  getOrThrow?(cacheKey: string): Awaitable<RawState>
 
   /**
    * Set the given data to the given key
@@ -18,6 +18,6 @@ export interface Storage {
    * @param shallow true = won't add this key to the garbage collector
    * @returns 
    */
-  setOrThrow?(cacheKey: string, value: RawState): Promiseable<void>
+  setOrThrow?(cacheKey: string, value: RawState): Awaitable<void>
 
 }

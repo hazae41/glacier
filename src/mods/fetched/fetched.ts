@@ -1,4 +1,5 @@
-import { Err, Ok, Result } from "@hazae41/result"
+import { Catched, Err, Ok, Result } from "@hazae41/result"
+import { Awaitable } from "libs/promises/promises.js"
 import { Data, DataInit } from "./data.js"
 import { Fail, FailInit } from "./fail.js"
 import { Times, TimesInit } from "./times.js"
@@ -47,6 +48,110 @@ export namespace Fetched {
       return new Fail(result.get(), result.times ?? times)
     else
       return new Data(result.get(), result.times ?? times)
+  }
+
+  /**
+   * Run a callback and wrap any returned value in Ok<T> and any thrown error in Err<unknown>
+   * @param callback
+   * @returns
+   */
+  export async function runAndWrap<T>(callback: () => Awaitable<T>, times: TimesInit = {}): Promise<Fetched<T, unknown>> {
+    try {
+      return new Data(await callback(), times)
+    } catch (e: unknown) {
+      return new Fail(e, times)
+    }
+  }
+
+  /**
+   * Run a callback and wrap any returned value in Ok<T> and any thrown error in Err<unknown>
+   * @param callback
+   * @returns
+   */
+  export function runAndWrapSync<T>(callback: () => T, times: TimesInit = {}): Fetched<T, unknown> {
+    try {
+      return new Data(callback(), times)
+    } catch (e: unknown) {
+      return new Fail(e, times)
+    }
+  }
+
+  /**
+   * Run a callback and wrap any returned value in Ok<T> and any thrown error in Err<Catched>
+   * @param callback
+   * @returns
+   */
+  export async function runAndDoubleWrap<T>(callback: () => Awaitable<T>, times: TimesInit = {}): Promise<Fetched<T, Catched>> {
+    try {
+      return new Data(await callback(), times)
+    } catch (e: unknown) {
+      return new Fail(Catched.from(e), times)
+    }
+  }
+
+  /**
+   * Run a callback and wrap any returned value in Ok<T> and any thrown error in Err<Catched>
+   * @param callback
+   * @returns
+   */
+  export function runAndDoubleWrapSync<T>(callback: () => T, times: TimesInit = {}): Fetched<T, Catched> {
+    try {
+      return new Data(callback(), times)
+    } catch (e: unknown) {
+      return new Fail(Catched.from(e), times)
+    }
+  }
+
+  /**
+   * Run a callback and wrap any thrown error in Err<unknown>
+   * @param callback
+   * @returns
+   */
+  export async function runOrWrap<F extends Fetched.Infer<F>>(callback: () => Awaitable<F>, times: TimesInit = {}): Promise<F | Fail<unknown>> {
+    try {
+      return await callback()
+    } catch (e: unknown) {
+      return new Fail(e, times)
+    }
+  }
+
+  /**
+   * Run a callback and wrap any thrown error in Err<unknown>
+   * @param callback
+   * @returns
+   */
+  export function runOrWrapSync<F extends Fetched.Infer<F>>(callback: () => F, times: TimesInit = {}): F | Fail<unknown> {
+    try {
+      return callback()
+    } catch (e: unknown) {
+      return new Fail(e, times)
+    }
+  }
+
+  /**
+   * Run a callback and wrap any thrown error in Err<unknown>
+   * @param callback
+   * @returns
+   */
+  export async function runOrDoubleWrap<F extends Fetched.Infer<F>>(callback: () => Awaitable<F>, times: TimesInit = {}): Promise<F | Fail<Catched>> {
+    try {
+      return await callback()
+    } catch (e: unknown) {
+      return new Fail(Catched.from(e), times)
+    }
+  }
+
+  /**
+   * Run a callback and wrap any thrown error in Err<unknown>
+   * @param callback
+   * @returns
+   */
+  export function runOrDoubleWrapSync<F extends Result.Infer<F>>(callback: () => F, times: TimesInit = {}): F | Fail<Catched> {
+    try {
+      return callback()
+    } catch (e: unknown) {
+      return new Fail(Catched.from(e), times)
+    }
   }
 
 }

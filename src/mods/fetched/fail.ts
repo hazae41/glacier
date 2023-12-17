@@ -1,5 +1,5 @@
 import { Err } from "@hazae41/result"
-import { Promiseable } from "libs/promises/promises.js"
+import { Awaitable } from "libs/promises/promises.js"
 import { Times, TimesInit } from "./times.js"
 
 export interface FailInit<T> extends TimesInit {
@@ -67,7 +67,7 @@ export class Fail<T> extends Err<T> implements FailInit<T>, Times {
     return new Fail(this.inner, times)
   }
 
-  async mapErr<U>(mapper: (data: T) => Promiseable<U>): Promise<Fail<U>> {
+  async mapErr<U>(mapper: (data: T) => Awaitable<U>): Promise<Fail<U>> {
     return new Fail<U>(await mapper(this.get()), this)
   }
 
