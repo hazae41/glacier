@@ -1,5 +1,5 @@
-import { None, Nullable, Some } from "@hazae41/option";
-import { Result } from "@hazae41/result";
+import { None, Nullable } from "@hazae41/option";
+import { Err, Ok, Result } from "@hazae41/result";
 import { SimpleQuery } from "index.js";
 import { useRenderRef } from "libs/react/ref.js";
 import { Time } from "libs/time/time.js";
@@ -310,12 +310,13 @@ export function useSimpleFetcherfulQuery<K, D, F>(
   }, [cacheKey])
 
   const fetch = useCallback(async (aborter = new AbortController()) => {
+    const state = stateRef.current
     const settings = settingsRef.current
 
-    if (Time.isAfterNow(stateRef.current?.real?.current.cooldown))
-      return new None()
+    if (Time.isAfterNow(state?.real?.current.cooldown))
+      return new Err(state!)
 
-    return new Some(await core.fetchOrJoin(cacheKey, aborter, () => Simple.fetchOrThrow(cacheKey, aborter, settings)))
+    return new Ok(await core.fetchOrJoin(cacheKey, aborter, () => Simple.fetchOrThrow(cacheKey, aborter, settings)))
   }, [cacheKey])
 
   const refetch = useCallback(async (aborter = new AbortController()) => {

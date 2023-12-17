@@ -1,4 +1,6 @@
-import { None, Nullable, Option, Some } from "@hazae41/option";
+import { Nullable, Some } from "@hazae41/option";
+import { Err, Ok } from "@hazae41/result";
+import { Fallback } from "index.js";
 import { Arrays } from "libs/arrays/arrays.js";
 import { Time } from "libs/time/time.js";
 import { MissingFetcherError, core } from "mods/core/core.js";
@@ -112,14 +114,14 @@ export class ScrollableFetcherfulQuery<K, D, F> {
     await this.mutate(() => new Some(fetched))
   }
 
-  async fetch(aborter = new AbortController()): Promise<Option<State<D[], F>>> {
+  async fetch(aborter = new AbortController()): Promise<Fallback<State<D[], F>>> {
     const { cacheKey, settings } = this
     const state = await this.state
 
     if (Time.isAfterNow(state.real?.current.cooldown))
-      return new None()
+      return new Err(state)
 
-    return new Some(await core.fetchOrJoin(cacheKey, aborter, () => Scrollable.fetchOrThrow(cacheKey, aborter, settings)))
+    return new Ok(await core.fetchOrJoin(cacheKey, aborter, () => Scrollable.fetchOrThrow(cacheKey, aborter, settings)))
   }
 
   async refetch(aborter = new AbortController()): Promise<State<D[], F>> {

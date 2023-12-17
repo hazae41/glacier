@@ -1,4 +1,5 @@
-import { Nullable, Option } from "@hazae41/option"
+import { Nullable } from "@hazae41/option"
+import { Fallback } from "index.js"
 import { Data } from "mods/fetched/data.js"
 import { Fail } from "mods/fetched/fail.js"
 import { Fetched } from "mods/fetched/fetched.js"
@@ -161,7 +162,7 @@ export interface FetcherfulReactQuery<K, D, F> extends Omit<FetcherfulQuerySetti
    * Fetch with cooldown
    * @example You want to fetch and don't care if it's cooldowned
    */
-  fetch(aborter?: AbortController): Promise<Option<State<D, F>>>
+  fetch(aborter?: AbortController): Promise<Fallback<State<D, F>>>
 
   /**
    * Fetch without cooldown

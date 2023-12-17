@@ -1,4 +1,5 @@
-import { None, Nullable, Option, Some } from "@hazae41/option";
+import { None, Nullable, Option } from "@hazae41/option";
+import { Err, Ok } from "@hazae41/result";
 import { ScrollableQuery } from "index.js";
 import { Arrays } from "libs/arrays/arrays.js";
 import { useRenderRef } from "libs/react/ref.js";
@@ -331,12 +332,13 @@ export function useFetcherfulScrollableQuery<K, D, F>(
   }, [cacheKey])
 
   const fetch = useCallback(async (aborter = new AbortController()) => {
+    const state = stateRef.current
     const settings = settingsRef.current
 
-    if (Time.isAfterNow(stateRef.current?.real?.current.cooldown))
-      return new None()
+    if (Time.isAfterNow(state?.real?.current.cooldown))
+      return new Err(state!)
 
-    return new Some(await core.fetchOrJoin(cacheKey, aborter, () => Scrollable.fetchOrThrow(cacheKey, aborter, settings)))
+    return new Ok(await core.fetchOrJoin(cacheKey, aborter, () => Scrollable.fetchOrThrow(cacheKey, aborter, settings)))
   }, [cacheKey])
 
   const refetch = useCallback(async (aborter = new AbortController()) => {
