@@ -149,6 +149,8 @@ export function useSimpleFetcherlessQuery<K, D, F>(
     setCounter(c => c + 1)
   }, [])
 
+  console.log("state", cacheKey, stateRef.current)
+
   const setAborter = useCallback((aborter: Nullable<AbortController>) => {
     aborterRef.current = aborter
     setCounter(c => c + 1)
