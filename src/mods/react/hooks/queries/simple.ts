@@ -83,11 +83,11 @@ export function useSimpleSkeletonQuery<K, D, F>(): SimpleSkeletonReactQuery<K, D
 
   useCallback(() => {
     // NOOP
-  }, [cacheKey])
+  }, [])
 
   useCallback(() => {
     // NOOP
-  }, [cacheKey])
+  }, [])
 
   useEffect(() => {
     // NOOP
@@ -146,12 +146,12 @@ export function useSimpleFetcherlessQuery<K, D, F>(
   const setState = useCallback((state: Nullable<State<D, F>>) => {
     stateRef.current = state
     setCounter(c => c + 1)
-  }, [cacheKey])
+  }, [])
 
   const setAborter = useCallback((aborter: Nullable<AbortController>) => {
     aborterRef.current = aborter
     setCounter(c => c + 1)
-  }, [cacheKey])
+  }, [])
 
   useEffect(() => {
     if (stateRef.current != null)
@@ -264,12 +264,12 @@ export function useSimpleFetcherfulQuery<K, D, F>(
   const setState = useCallback((state: Nullable<State<D, F>>) => {
     stateRef.current = state
     setCounter(c => c + 1)
-  }, [cacheKey])
+  }, [])
 
   const setAborter = useCallback((aborter: Nullable<AbortController>) => {
     aborterRef.current = aborter
     setCounter(c => c + 1)
-  }, [cacheKey])
+  }, [])
 
   useEffect(() => {
     if (stateRef.current != null)
