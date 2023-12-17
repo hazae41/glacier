@@ -68,10 +68,6 @@ export interface SimpleFetcherlessReactQuery<K, D, F> extends FetcherlessReactQu
 export function useSimpleSkeletonQuery<K, D, F>(): SimpleSkeletonReactQuery<K, D, F> {
   useRenderRef(undefined)
 
-  const uuid = useMemo(() => {
-    return crypto.randomUUID()
-  }, [])
-
   const cacheKey = useMemo(() => {
     // NOOP
   }, [undefined])
@@ -87,11 +83,11 @@ export function useSimpleSkeletonQuery<K, D, F>(): SimpleSkeletonReactQuery<K, D
 
   useCallback(() => {
     // NOOP
-  }, [])
+  }, [cacheKey])
 
   useCallback(() => {
     // NOOP
-  }, [])
+  }, [cacheKey])
 
   useEffect(() => {
     // NOOP
@@ -133,10 +129,6 @@ export function useSimpleFetcherlessQuery<K, D, F>(
 ): SimpleFetcherlessReactQuery<K, D, F> {
   const settingsRef = useRenderRef(settings)
 
-  const uuid = useMemo(() => {
-    return crypto.randomUUID()
-  }, [])
-
   const cacheKey = useMemo(() => {
     return Simple.getCacheKey(settings.key)
   }, [settings.key])
@@ -152,17 +144,14 @@ export function useSimpleFetcherlessQuery<K, D, F>(
   }, [cacheKey])
 
   const setState = useCallback((state: Nullable<State<D, F>>) => {
-    console.log("setState", cacheKey, uuid, state)
     stateRef.current = state
     setCounter(c => c + 1)
-  }, [])
-
-  console.log("state", cacheKey, uuid, stateRef.current)
+  }, [cacheKey])
 
   const setAborter = useCallback((aborter: Nullable<AbortController>) => {
     aborterRef.current = aborter
     setCounter(c => c + 1)
-  }, [])
+  }, [cacheKey])
 
   useEffect(() => {
     if (stateRef.current != null)
@@ -172,7 +161,6 @@ export function useSimpleFetcherlessQuery<K, D, F>(
 
   useEffect(() => {
     const onState = () => {
-      console.log("onState", cacheKey, uuid)
       core.getOrThrow(cacheKey, settingsRef.current).then(setState).catch(console.warn)
       return new None()
     }
@@ -276,12 +264,12 @@ export function useSimpleFetcherfulQuery<K, D, F>(
   const setState = useCallback((state: Nullable<State<D, F>>) => {
     stateRef.current = state
     setCounter(c => c + 1)
-  }, [])
+  }, [cacheKey])
 
   const setAborter = useCallback((aborter: Nullable<AbortController>) => {
     aborterRef.current = aborter
     setCounter(c => c + 1)
-  }, [])
+  }, [cacheKey])
 
   useEffect(() => {
     if (stateRef.current != null)
