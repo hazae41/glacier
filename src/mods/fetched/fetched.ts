@@ -1,3 +1,4 @@
+import { Optional } from "@hazae41/option"
 import { Catched, Err, Ok, Result } from "@hazae41/result"
 import { Awaitable } from "libs/promises/promises.js"
 import { Data, DataInit } from "./data.js"
@@ -33,21 +34,21 @@ export namespace Fetched {
       return Data.from<DataInit.Inner<T>>(init)
   }
 
-  export type Timed<T> = T & {
-    times?: Times
+  export interface Timed {
+    readonly times?: Times
   }
 
-  export function rewrap<T extends Ok.Infer<T>>(result: Timed<T>, times?: TimesInit): Data<Ok.Inner<T>>
+  export function rewrap<T extends Ok.Infer<T>>(result: T & Timed, times?: TimesInit): Data<Ok.Inner<T>>
 
-  export function rewrap<T extends Err.Infer<T>>(result: Timed<T>, times?: TimesInit): Fail<Err.Inner<T>>
+  export function rewrap<T extends Err.Infer<T>>(result: T & Timed, times?: TimesInit): Fail<Err.Inner<T>>
 
-  export function rewrap<T extends Result.Infer<T>>(result: Timed<T>, times?: TimesInit): Fetched<Ok.Inner<T>, Err.Inner<T>>
+  export function rewrap<T extends Result.Infer<T>>(result: T & Timed, times?: TimesInit): Fetched<Ok.Inner<T>, Err.Inner<T>>
 
-  export function rewrap<T extends Result.Infer<T>>(result: Timed<T>, times?: TimesInit): Fetched<Ok.Inner<T>, Err.Inner<T>> {
+  export function rewrap<T extends Result.Infer<T>>(result: T & Timed, times: Optional<TimesInit> = result.times): Fetched<Ok.Inner<T>, Err.Inner<T>> {
     if (result.isErr())
-      return new Fail(result.get(), result.times ?? times)
+      return new Fail(result.get(), times)
     else
-      return new Data(result.get(), result.times ?? times)
+      return new Data(result.get(), times)
   }
 
   /**
