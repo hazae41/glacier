@@ -144,6 +144,7 @@ export function useSimpleFetcherlessQuery<K, D, F>(
   }, [cacheKey])
 
   const setState = useCallback((state: Nullable<State<D, F>>) => {
+    console.log("setState", cacheKey, state)
     stateRef.current = state
     setCounter(c => c + 1)
   }, [])
@@ -161,6 +162,7 @@ export function useSimpleFetcherlessQuery<K, D, F>(
 
   useEffect(() => {
     const onState = () => {
+      console.log("onState", cacheKey)
       core.getOrThrow(cacheKey, settingsRef.current).then(setState).catch(console.warn)
       return new None()
     }
