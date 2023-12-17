@@ -68,6 +68,10 @@ export interface SimpleFetcherlessReactQuery<K, D, F> extends FetcherlessReactQu
 export function useSimpleSkeletonQuery<K, D, F>(): SimpleSkeletonReactQuery<K, D, F> {
   useRenderRef(undefined)
 
+  const uuid = useMemo(() => {
+    return crypto.randomUUID()
+  }, [])
+
   const cacheKey = useMemo(() => {
     // NOOP
   }, [undefined])
