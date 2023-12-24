@@ -6,12 +6,12 @@ import { useEffect } from "react"
  * @param query 
  * @param callback 
  */
-export function useError<K, D, F>(query: ReactQuery<K, D, F>, callback: (error: F) => void) {
+export function useError<K, D, F>(query: ReactQuery<K, D, F>, callback: (query: ReactQuery<K, D, F>, error: F) => void) {
   const { error } = query
 
   useEffect(() => {
     if (error == null)
       return
-    callback(error.inner)
+    callback(query, error.inner)
   }, [error])
 }
