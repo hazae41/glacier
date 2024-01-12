@@ -43,14 +43,29 @@ export namespace SimpleQuery {
     | SimpleFetcherlessQuery.Infer<T>
     | SimpleFetcherfulQuery.Infer<T>
 
-  export type Reactify<T> =
-    | SimpleSkeletonQuery.Reactify<T>
-    | SimpleFetcherlessQuery.Reactify<T>
-    | SimpleFetcherfulQuery.Reactify<T>
-}
+  export type K<T> =
+    | SimpleFetcherfulQuery.K<T>
+    | SimpleFetcherlessQuery.K<T>
 
-export namespace SimpleSkeletonQuery {
-  export type Reactify<T> = T extends undefined ? SimpleSkeletonReactQuery<any, any, any> : never
+  export type D<T> =
+    | SimpleFetcherfulQuery.D<T>
+    | SimpleFetcherlessQuery.D<T>
+
+  export type F<T> =
+    | SimpleFetcherfulQuery.F<T>
+    | SimpleFetcherlessQuery.F<T>
+
+  export type Reactify<T> =
+    | SimpleFetcherfulQuery.Reactify<T>
+    | SimpleFetcherlessQuery.Reactify<T>
+
+  export type ReactifyAndSkeleton<T> =
+    | SimpleSkeletonReactQuery<K<T>, D<T>, F<T>>
+    | Reactify<T>
+
+  export type ReactifyOrSkeleton<T> =
+    [T, undefined] extends [undefined, T] ? SimpleSkeletonReactQuery<any, any, any> :
+    undefined extends T ? ReactifyAndSkeleton<T> : Reactify<T>
 }
 
 export namespace SimpleFetcherlessQuery {

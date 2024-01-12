@@ -15,18 +15,18 @@ import { DependencyList, useCallback, useEffect, useMemo, useRef, useState } fro
 export function useScrollableQuery<T extends ScrollableQuery.Infer<T>, L extends DependencyList>(
   factory: (...deps: L) => T,
   deps: L
-): ScrollableQuery.Reactify<T> {
+): ScrollableQuery.ReactifyOrSkeleton<T> {
   const query = useMemo(() => {
     return factory(...deps)
   }, deps)
 
   if (query == null)
-    return useSkeletonScrollableQuery() as ScrollableQuery.Reactify<T>
+    return useSkeletonScrollableQuery() as ScrollableQuery.ReactifyOrSkeleton<T>
 
   if (query.settings.fetcher == null)
-    return useFetcherlessScrollableQuery(query.settings) as ScrollableQuery.Reactify<T>
+    return useFetcherlessScrollableQuery(query.settings) as ScrollableQuery.ReactifyOrSkeleton<T>
 
-  return useFetcherfulScrollableQuery(query.settings) as ScrollableQuery.Reactify<T>
+  return useFetcherfulScrollableQuery(query.settings) as ScrollableQuery.ReactifyOrSkeleton<T>
 }
 
 export interface ScrollableSkeletonReactQuery<K, D, F> extends SkeletonReactQuery<K, D[], F> {

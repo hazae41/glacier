@@ -42,14 +42,29 @@ export namespace ScrollableQuery {
     | ScrollableFetcherlessQuery.Infer<T>
     | ScrollableFetcherfulQuery.Infer<T>
 
-  export type Reactify<T> =
-    | ScrollableSkeletonQuery.Reactify<T>
-    | ScrollableFetcherlessQuery.Reactify<T>
-    | ScrollableFetcherfulQuery.Reactify<T>
-}
+  export type K<T> =
+    | ScrollableFetcherfulQuery.K<T>
+    | ScrollableFetcherlessQuery.K<T>
 
-export namespace ScrollableSkeletonQuery {
-  export type Reactify<T> = T extends undefined ? ScrollableSkeletonReactQuery<any, any, any> : never
+  export type D<T> =
+    | ScrollableFetcherfulQuery.D<T>
+    | ScrollableFetcherlessQuery.D<T>
+
+  export type F<T> =
+    | ScrollableFetcherfulQuery.F<T>
+    | ScrollableFetcherlessQuery.F<T>
+
+  export type Reactify<T> =
+    | ScrollableFetcherfulQuery.Reactify<T>
+    | ScrollableFetcherlessQuery.Reactify<T>
+
+  export type ReactifyAndSkeleton<T> =
+    | ScrollableSkeletonReactQuery<K<T>, D<T>, F<T>>
+    | Reactify<T>
+
+  export type ReactifyOrSkeleton<T> =
+    [T, undefined] extends [undefined, T] ? ScrollableSkeletonReactQuery<any, any, any> :
+    undefined extends T ? ReactifyAndSkeleton<T> : Reactify<T>
 }
 
 export namespace ScrollableFetcherlessQuery {

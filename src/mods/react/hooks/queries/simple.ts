@@ -15,18 +15,18 @@ import { DependencyList, useCallback, useEffect, useMemo, useRef, useState } fro
 export function useQuery<T extends SimpleQuery.Infer<T>, L extends DependencyList>(
   factory: (...deps: L) => T,
   deps: L
-): SimpleQuery.Reactify<T> {
+): SimpleQuery.ReactifyOrSkeleton<T> {
   const query = useMemo(() => {
     return factory(...deps)
   }, deps)
 
   if (query == null)
-    return useSimpleSkeletonQuery() as SimpleQuery.Reactify<T>
+    return useSimpleSkeletonQuery() as SimpleQuery.ReactifyOrSkeleton<T>
 
   if (query.settings.fetcher == null)
-    return useSimpleFetcherlessQuery(query.settings) as SimpleQuery.Reactify<T>
+    return useSimpleFetcherlessQuery(query.settings) as SimpleQuery.ReactifyOrSkeleton<T>
 
-  return useSimpleFetcherfulQuery(query.settings) as SimpleQuery.Reactify<T>
+  return useSimpleFetcherfulQuery(query.settings) as SimpleQuery.ReactifyOrSkeleton<T>
 }
 
 /**
