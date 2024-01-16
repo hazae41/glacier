@@ -28,21 +28,21 @@
     "@hazae41/mutex": "^1.2.12",
     "@hazae41/option": "^1.0.27",
     "@hazae41/plume": "^2.2.0",
-    "@hazae41/result": "^1.1.12"
+    "@hazae41/result": "^1.1.16"
   },
   "peerDependencies": {
     "react": ">=17"
   },
   "devDependencies": {
     "@hazae41/phobos": "^1.0.10",
-    "@rollup/plugin-typescript": "^11.1.5",
-    "@types/node": "^20.10.3",
-    "@types/react": "^18.2.42",
+    "@rollup/plugin-typescript": "^11.1.6",
+    "@types/node": "^20.11.4",
+    "@types/react": "^18.2.48",
     "rimraf": "^5.0.5",
-    "rollup": "^4.6.1",
+    "rollup": "^4.9.5",
     "rollup-plugin-dts": "^6.1.0",
     "rollup-plugin-node-externals": "^6.1.2",
-    "typescript": "^5.3.2"
+    "typescript": "^5.3.3"
   },
   "exports": {
     ".": {

@@ -46,7 +46,7 @@ export namespace Fetched {
 
   export function rewrap<T extends Result.Infer<T>>(result: T & Timed, times: Optional<TimesInit> = result.times): Fetched<Ok.Inner<T>, Err.Inner<T>> {
     if (result.isErr())
-      return new Fail(result.get(), times)
+      return new Fail(result.getErr(), times)
     else
       return new Data(result.get(), times)
   }

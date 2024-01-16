@@ -68,11 +68,11 @@ export class Fail<T> extends Err<T> implements FailInit<T>, Times {
   }
 
   async mapErr<U>(mapper: (data: T) => Awaitable<U>): Promise<Fail<U>> {
-    return new Fail<U>(await mapper(this.get()), this)
+    return new Fail<U>(await mapper(this.getErr()), this)
   }
 
   mapErrSync<U>(mapper: (data: T) => U): Fail<U> {
-    return new Fail<U>(mapper(this.get()), this)
+    return new Fail<U>(mapper(this.getErr()), this)
   }
 
   /**
