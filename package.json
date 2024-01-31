@@ -36,12 +36,12 @@
   "devDependencies": {
     "@hazae41/phobos": "^1.0.10",
     "@rollup/plugin-typescript": "^11.1.6",
-    "@types/node": "^20.11.4",
+    "@types/node": "^20.11.13",
     "@types/react": "^18.2.48",
     "rimraf": "^5.0.5",
-    "rollup": "^4.9.5",
+    "rollup": "^4.9.6",
     "rollup-plugin-dts": "^6.1.0",
-    "rollup-plugin-node-externals": "^6.1.2",
+    "rollup-plugin-node-externals": "^7.0.1",
     "typescript": "^5.3.3"
   },
   "exports": {
