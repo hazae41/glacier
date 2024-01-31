@@ -578,6 +578,10 @@ export class Core {
     }
 
     const delay = expiration - Date.now()
+
+    if (delay > (2 ** 31))
+      return
+
     const timeout = setTimeout(onTimeout, delay)
     this.timeouts.set(cacheKey, timeout)
   }
