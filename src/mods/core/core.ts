@@ -545,9 +545,6 @@ export class Core {
     this.counters.delete(cacheKey)
 
     const state = await this.getOrThrow(cacheKey, settings)
-
-    console.log("decrementOrThrow", state)
-
     const expiration = state.real?.current.expiration
 
     if (expiration == null)
