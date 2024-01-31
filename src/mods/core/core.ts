@@ -518,6 +518,8 @@ export class Core {
       clearTimeout(timeout)
       this.timeouts.delete(cacheKey)
     }
+
+    return
   }
 
   async decrementOrThrow<K, D, F>(cacheKey: string, settings: QuerySettings<K, D, F>) {
@@ -542,11 +544,7 @@ export class Core {
      */
     this.counters.delete(cacheKey)
 
-    const state = this.unstoreds.get(cacheKey)
-
-    if (state == null)
-      return
-
+    const state = await this.getOrThrow(cacheKey, settings)
     const expiration = state.real?.current.expiration
 
     if (expiration == null)
