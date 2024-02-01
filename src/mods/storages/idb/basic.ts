@@ -144,7 +144,7 @@ export class IDBStorage implements Storage {
     for (const [key, expiration] of this.#storageKeys) {
       if (expiration > Date.now())
         continue
-      const state = await this.#getStorageOrThrow(key)
+      const state = await this.getStoredOrThrow(key)
 
       this.onCollect?.(state).catch(console.warn)
     }
@@ -174,7 +174,7 @@ export class IDBStorage implements Storage {
     })
   }
 
-  async #getStorageOrThrow(storageKey: string): Promise<RawState> {
+  async getStoredOrThrow(storageKey: string): Promise<RawState> {
     const storageValue = await this.#transactOrThrow(async store => {
       return await this.#getOrThrow<unknown>(store, storageKey)
     }, "readonly")
@@ -182,18 +182,16 @@ export class IDBStorage implements Storage {
     if (storageValue == null)
       return undefined
 
-    return await Promise.resolve(this.valueSerializer.decodeOrThrow(storageValue))
-  }
-
-  async getOrThrow(cacheKey: string): Promise<RawState> {
-    const storageKey = await Promise.resolve(this.keySerializer.encodeOrThrow(cacheKey))
-
-    const state = await this.#getStorageOrThrow(storageKey)
+    const state = await Promise.resolve(this.valueSerializer.decodeOrThrow(storageValue))
 
     if (state?.expiration != null)
       this.#storageKeys.set(storageKey, state.expiration)
 
     return state
+  }
+
+  async getOrThrow(cacheKey: string): Promise<RawState> {
+    return await this.getStoredOrThrow(await Promise.resolve(this.keySerializer.encodeOrThrow(cacheKey)))
   }
 
   #setOrThrow<T>(store: IDBObjectStore, key: string, value: T) {
@@ -243,14 +241,18 @@ export class IDBStorage implements Storage {
     })
   }
 
-  async deleteOrThrow(cacheKey: string): Promise<void> {
-    const storageKey = await Promise.resolve(this.keySerializer.encodeOrThrow(cacheKey))
-
+  async deleteStoredOrThrow(storageKey: string): Promise<void> {
     this.#storageKeys.delete(storageKey)
 
     return await this.#transactOrThrow(async store => {
       return await this.#deleteOrThrow(store, storageKey)
     }, "readwrite")
+  }
+
+  async deleteOrThrow(cacheKey: string): Promise<void> {
+    const storageKey = await Promise.resolve(this.keySerializer.encodeOrThrow(cacheKey))
+
+    return await this.deleteStoredOrThrow(storageKey)
   }
 
 }
