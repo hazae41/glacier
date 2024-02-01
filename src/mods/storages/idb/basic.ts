@@ -27,7 +27,7 @@ export interface IDBStorageParams {
   readonly keySerializer?: Encoder<string, string>,
   readonly valueSerializer?: Bicoder<RawState, string>
 
-  readonly onCollect?: (s: RawState) => Promise<void>
+  readonly onCollect?: (e: { storageKey: string }) => Promise<void>
   readonly onUpgrade?: (e: IDBVersionChangeEvent) => Promise<void>
 }
 
@@ -59,7 +59,7 @@ export class IDBStorage implements Storage {
     readonly version = 1,
     readonly keySerializer = SyncIdentity as Encoder<string, string>,
     readonly valueSerializer = SyncIdentity as Bicoder<RawState, unknown>,
-    readonly onCollect?: (s: RawState) => Promise<void>,
+    readonly onCollect?: (e: { storageKey: string }) => Promise<void>,
     readonly onUpgrade?: (e: IDBVersionChangeEvent) => Promise<void>,
   ) {
     this.database = Result.runAndWrap(() => {
@@ -141,12 +141,10 @@ export class IDBStorage implements Storage {
   }
 
   async collectOrThrow() {
-    for (const [key, expiration] of this.#storageKeys) {
+    for (const [storageKey, expiration] of this.#storageKeys) {
       if (expiration > Date.now())
         continue
-      const state = await this.getStoredOrThrow(key)
-
-      this.onCollect?.(state).catch(console.warn)
+      this.onCollect?.({ storageKey }).catch(console.warn)
     }
   }
 
