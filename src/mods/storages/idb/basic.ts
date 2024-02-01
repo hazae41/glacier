@@ -195,11 +195,12 @@ export class IDBStorage implements Storage {
 
     const storageValue = await Promise.resolve(this.valueSerializer.encodeOrThrow(state))
 
-    if (state.expiration != null)
-      this.#storageKeys.set(storageKey, state.expiration)
-
     return await this.#transactOrThrow(async store => {
-      await this.#saveKeysOrThrow(store)
+      if (state.expiration != null) {
+        this.#storageKeys.set(storageKey, state.expiration)
+        await this.#saveKeysOrThrow(store)
+      }
+
       await this.#setOrThrow(store, storageKey, storageValue)
     }, "readwrite")
   }
@@ -232,10 +233,11 @@ export class IDBStorage implements Storage {
   }
 
   async deleteStoredOrThrow(storageKey: string): Promise<void> {
-    this.#storageKeys.delete(storageKey)
-
     return await this.#transactOrThrow(async store => {
-      await this.#saveKeysOrThrow(store)
+      if (this.#storageKeys.delete(storageKey)) {
+        await this.#saveKeysOrThrow(store)
+      }
+
       await this.#deleteOrThrow(store, storageKey)
     }, "readwrite")
   }
