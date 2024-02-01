@@ -1,7 +1,7 @@
 {
   "type": "module",
   "name": "@hazae41/glacier",
-  "version": "2.0.11-9",
+  "version": "2.0.11-10",
   "author": "hazae41",
   "license": "MIT",
   "description": "Yet another React data (re)fetching library",
