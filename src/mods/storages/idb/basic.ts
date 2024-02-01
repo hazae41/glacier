@@ -1,5 +1,4 @@
 import { Nullable } from "@hazae41/option"
-import { SuperEventTarget } from "@hazae41/plume"
 import { Result } from "@hazae41/result"
 import { Bicoder, Encoder, SyncIdentity } from "mods/coders/coder.js"
 import { Storage } from "mods/storages/storage.js"
@@ -29,6 +28,7 @@ export interface IDBStorageParams {
   readonly valueSerializer?: Bicoder<RawState, string>
 
   readonly onCollect?: (key: string) => Promise<void>
+  readonly onUpgrade?: (e: IDBVersionChangeEvent) => Promise<void>
 }
 
 export class IDBError extends Error {
@@ -50,11 +50,6 @@ export class IDBStorage implements Storage {
 
   readonly database: Promise<Result<IDBDatabase, IDBError>>
 
-  readonly events = new SuperEventTarget<{
-    upgrade: (e: IDBVersionChangeEvent) => void
-    collect: (key: string) => void
-  }>()
-
   #storageKeys = new Map<string, number>()
 
   #onBeforeUnload: () => void
@@ -64,6 +59,8 @@ export class IDBStorage implements Storage {
     readonly version = 1,
     readonly keySerializer = SyncIdentity as Encoder<string, string>,
     readonly valueSerializer = SyncIdentity as Bicoder<RawState, unknown>,
+    readonly onCollect?: (key: string) => Promise<void>,
+    readonly onUpgrade?: (e: IDBVersionChangeEvent) => Promise<void>,
   ) {
     this.database = Result.runAndDoubleWrap(() => {
       return this.#openOrThrow(name)
@@ -89,7 +86,7 @@ export class IDBStorage implements Storage {
         if (e.oldVersion === 0)
           db.createObjectStore("keyval")
 
-        this.events.emit("upgrade", [e]).catch(console.warn)
+        this.onUpgrade?.(e).catch(console.warn)
       }
 
       req.onblocked = () => err(new Error("Database is blocked"))
@@ -108,12 +105,12 @@ export class IDBStorage implements Storage {
   }
 
   static createOrThrow(params: IDBStorageParams = {}): IDBStorage {
-    const { name, version, keySerializer, valueSerializer } = params
+    const { name, version, keySerializer, valueSerializer, onCollect, onUpgrade } = params
 
     if (typeof indexedDB === "undefined")
       throw new Error(`indexedDB is undefined`)
 
-    return new IDBStorage(name, version, keySerializer, valueSerializer)
+    return new IDBStorage(name, version, keySerializer, valueSerializer, onCollect, onUpgrade)
   }
 
   /**
@@ -147,7 +144,7 @@ export class IDBStorage implements Storage {
     for (const [key, expiration] of this.#storageKeys) {
       if (expiration > Date.now())
         continue
-      this.events.emit("collect", [key]).catch(console.warn)
+      this.onCollect?.(key).catch(console.warn)
     }
   }
 
