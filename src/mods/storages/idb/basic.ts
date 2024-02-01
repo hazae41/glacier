@@ -22,8 +22,11 @@ export function useIDBStorage(params?: IDBStorageParams) {
 
 export interface IDBStorageParams {
   readonly name?: string,
+
   readonly keySerializer?: Encoder<string, string>,
   readonly valueSerializer?: Bicoder<RawState, string>
+
+  readonly onCollect?: (key: string) => Promise<void>
 }
 
 export class IDBError extends Error {
@@ -52,7 +55,8 @@ export class IDBStorage implements Storage {
   private constructor(
     readonly name = "xswr",
     readonly keySerializer = SyncIdentity as Encoder<string, string>,
-    readonly valueSerializer = SyncIdentity as Bicoder<RawState, unknown>
+    readonly valueSerializer = SyncIdentity as Bicoder<RawState, unknown>,
+    readonly onCollect?: (key: string) => Promise<void>
   ) {
     this.database = Result.runAndDoubleWrap(() => {
       return IDBStorage.#openOrThrow(name)
@@ -104,17 +108,17 @@ export class IDBStorage implements Storage {
    * @returns 
    */
   async loadKeysAndCollectOrThrow() {
-    return await this.#transactOrThrow(async store => {
-      const keys = await this.#getOrThrow<[string, number][]>(store, "__keys")
-
-      if (keys == null)
-        return
-
-      this.#storageKeys = new Map(keys)
-
-      await this.#deleteOrThrow(store, "__keys")
-      await this.#collectOrThrow(store)
+    const keys = await this.#transactOrThrow(async store => {
+      return await this.#getOrThrow<[string, number][]>(store, "__keys")
     }, "readwrite")
+
+    if (keys == null)
+      return
+
+    this.#storageKeys = new Map(keys)
+
+    await this.deleteOrThrow("__keys")
+    await this.collectOrThrow()
   }
 
   /**
@@ -126,23 +130,15 @@ export class IDBStorage implements Storage {
     }, "readwrite")
   }
 
-  async #collectOrThrow(store: IDBObjectStore) {
+  async collectOrThrow() {
     for (const [key, expiration] of this.#storageKeys) {
+      if (expiration > Date.now())
+        continue
+
       try {
-        if (expiration > Date.now())
-          continue
-
-        await this.#deleteOrThrow(store, key)
-        this.#storageKeys.delete(key)
-
+        await this.onCollect?.(key)
       } catch (e: unknown) { }
     }
-  }
-
-  async collectOrThrow() {
-    return await this.#transactOrThrow(async store => {
-      return await this.#collectOrThrow(store)
-    }, "readwrite")
   }
 
   async #transactOrThrow<T>(callback: (store: IDBObjectStore) => Promise<T>, mode: IDBTransactionMode) {
