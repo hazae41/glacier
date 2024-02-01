@@ -203,11 +203,10 @@ export class IDBStorage implements Storage {
     })
   }
 
-  async setAndWaitOrThrow(cacheKey: string, state: RawState): Promise<void> {
+  async setStoredAndWaitOrThrow(storageKey: string, state: RawState): Promise<void> {
     if (state == null)
-      return await this.deleteOrThrow(cacheKey)
+      return await this.deleteStoredOrThrow(storageKey)
 
-    const storageKey = await Promise.resolve(this.keySerializer.encodeOrThrow(cacheKey))
     const storageValue = await Promise.resolve(this.valueSerializer.encodeOrThrow(state))
 
     if (state.expiration != null)
@@ -218,14 +217,18 @@ export class IDBStorage implements Storage {
     }, "readwrite")
   }
 
+  async setAndWaitOrThrow(cacheKey: string, state: RawState): Promise<void> {
+    return await this.setStoredAndWaitOrThrow(await Promise.resolve(this.keySerializer.encodeOrThrow(cacheKey)), state)
+  }
+
   #sets = Promise.resolve()
 
-  /**
-   * Background queued set
-   * @param cacheKey 
-   * @param state 
-   * @returns 
-   */
+  setStoredOrThrow(storageKey: string, state: RawState) {
+    this.#sets = this.#sets
+      .then(() => this.setStoredAndWaitOrThrow(storageKey, state))
+      .catch(console.warn)
+  }
+
   setOrThrow(cacheKey: string, state: RawState) {
     this.#sets = this.#sets
       .then(() => this.setAndWaitOrThrow(cacheKey, state))
