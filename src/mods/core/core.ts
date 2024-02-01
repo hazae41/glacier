@@ -221,6 +221,7 @@ export class Core {
 
   async storeOrThrow<K, D, F>(state: State<D, F>, settings: QuerySettings<K, D, F>): Promise<RawState> {
     const {
+      key,
       dataSerializer = SyncIdentity as Bicoder<D, unknown>,
       errorSerializer = SyncIdentity as Bicoder<F, unknown>
     } = settings
@@ -233,7 +234,7 @@ export class Core {
     const data = await Option.map(state.real.data, d => d.map(async x => await Promise.resolve(dataSerializer.encodeOrThrow(x))))
     const error = await Option.map(state.real.error, d => d.mapErr(async x => await Promise.resolve(errorSerializer.encodeOrThrow(x))))
 
-    return { version: 2, data, error, time, cooldown, expiration }
+    return { key, version: 3, data, error, time, cooldown, expiration }
   }
 
   async unstoreOrThrow<K, D, F>(stored: RawState, settings: QuerySettings<K, D, F>): Promise<State<D, F>> {
@@ -261,7 +262,7 @@ export class Core {
       return new RealState<D, F>(undefined)
     }
 
-    if (stored.version === 2) {
+    if (stored.version === 2 || stored.version === 3) {
       const data = await Option.wrap(stored.data).map(x => Data.from(x).map(async x => await Promise.resolve(dataSerializer.decodeOrThrow(x))))
       const error = await Option.wrap(stored.error).map(x => Fail.from(x).mapErr(async x => await Promise.resolve(errorSerializer.decodeOrThrow(x))))
 

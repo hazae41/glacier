@@ -1,9 +1,10 @@
 import { Data, DataInit } from "mods/fetched/data.js"
 import { Fail, FailInit } from "mods/fetched/fail.js"
 
-export type RawState<D = unknown, E = unknown> =
+export type RawState<K = unknown, D = unknown, E = unknown> =
   | RawState1<D, E>
   | RawState2<D, E>
+  | RawState3<K, D, E>
   | null
   | undefined
 
@@ -24,6 +25,17 @@ export interface RawState2<D = unknown, F = unknown> {
   readonly cooldown?: number
   readonly expiration?: number
 }
+
+export interface RawState3<K = unknown, D = unknown, F = unknown> {
+  readonly version: 3,
+  readonly key: K,
+  readonly data?: DataInit<D>
+  readonly error?: FailInit<F>
+  readonly time: number,
+  readonly cooldown?: number
+  readonly expiration?: number
+}
+
 
 export interface StateAndAborter<D, F> {
   readonly state: State<D, F>
