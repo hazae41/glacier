@@ -62,8 +62,8 @@ export class IDBStorage implements Storage {
     readonly onCollect?: (key: string) => Promise<void>,
     readonly onUpgrade?: (e: IDBVersionChangeEvent) => Promise<void>,
   ) {
-    this.database = Result.runAndDoubleWrap(() => {
-      return this.#openOrThrow(name)
+    this.database = Result.runAndWrap(() => {
+      return this.#openOrThrow()
     }).then(r => r.mapErrSync(IDBError.from))
 
     this.loadKeysAndCollectOrThrow().catch(console.warn)
@@ -76,9 +76,9 @@ export class IDBStorage implements Storage {
     addEventListener("beforeunload", this.#onBeforeUnload)
   }
 
-  #openOrThrow(name: string) {
+  #openOrThrow() {
     return new Promise<IDBDatabase>((ok, err) => {
-      const req = indexedDB.open(name, 1)
+      const req = indexedDB.open(this.name, this.version)
 
       req.onupgradeneeded = (e) => {
         const db = req.result
