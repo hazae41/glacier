@@ -27,7 +27,7 @@ export interface IDBStorageParams {
   readonly keySerializer?: Encoder<string, string>,
   readonly valueSerializer?: Bicoder<RawState, string>
 
-  readonly onCollect?: (key: string) => Promise<void>
+  readonly onCollect?: (s: RawState) => Promise<void>
   readonly onUpgrade?: (e: IDBVersionChangeEvent) => Promise<void>
 }
 
@@ -59,7 +59,7 @@ export class IDBStorage implements Storage {
     readonly version = 1,
     readonly keySerializer = SyncIdentity as Encoder<string, string>,
     readonly valueSerializer = SyncIdentity as Bicoder<RawState, unknown>,
-    readonly onCollect?: (key: string) => Promise<void>,
+    readonly onCollect?: (s: RawState) => Promise<void>,
     readonly onUpgrade?: (e: IDBVersionChangeEvent) => Promise<void>,
   ) {
     this.database = Result.runAndWrap(() => {
@@ -144,7 +144,9 @@ export class IDBStorage implements Storage {
     for (const [key, expiration] of this.#storageKeys) {
       if (expiration > Date.now())
         continue
-      this.onCollect?.(key).catch(console.warn)
+      const state = await this.#getStorageOrThrow(key)
+
+      this.onCollect?.(state).catch(console.warn)
     }
   }
 
@@ -172,9 +174,7 @@ export class IDBStorage implements Storage {
     })
   }
 
-  async getOrThrow(cacheKey: string): Promise<RawState> {
-    const storageKey = await Promise.resolve(this.keySerializer.encodeOrThrow(cacheKey))
-
+  async #getStorageOrThrow(storageKey: string): Promise<RawState> {
     const storageValue = await this.#transactOrThrow(async store => {
       return await this.#getOrThrow<unknown>(store, storageKey)
     }, "readonly")
@@ -182,7 +182,13 @@ export class IDBStorage implements Storage {
     if (storageValue == null)
       return undefined
 
-    const state = await Promise.resolve(this.valueSerializer.decodeOrThrow(storageValue))
+    return await Promise.resolve(this.valueSerializer.decodeOrThrow(storageValue))
+  }
+
+  async getOrThrow(cacheKey: string): Promise<RawState> {
+    const storageKey = await Promise.resolve(this.keySerializer.encodeOrThrow(cacheKey))
+
+    const state = await this.#getStorageOrThrow(storageKey)
 
     if (state?.expiration != null)
       this.#storageKeys.set(storageKey, state.expiration)
