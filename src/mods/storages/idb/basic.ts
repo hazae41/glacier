@@ -52,8 +52,6 @@ export class IDBStorage implements Storage {
 
   #storageKeys = new Map<string, number>()
 
-  #onBeforeUnload: () => void
-
   private constructor(
     readonly name = "xswr",
     readonly version = 1,
@@ -67,13 +65,6 @@ export class IDBStorage implements Storage {
     }).then(r => r.mapErrSync(IDBError.from))
 
     this.loadKeysAndCollectOrThrow().catch(console.warn)
-
-    this.#onBeforeUnload = () => {
-      this.saveKeysOrThrow().catch(console.warn)
-      this.#onBeforeUnload = () => { }
-    }
-
-    addEventListener("beforeunload", this.#onBeforeUnload)
   }
 
   #openOrThrow() {
@@ -100,7 +91,6 @@ export class IDBStorage implements Storage {
   }
 
   async [Symbol.asyncDispose]() {
-    removeEventListener("beforeunload", this.#onBeforeUnload)
     await this.collectOrThrow()
   }
 
@@ -127,8 +117,11 @@ export class IDBStorage implements Storage {
 
     this.#storageKeys = new Map(keys)
 
-    await this.deleteOrThrow("__keys")
     await this.collectOrThrow()
+  }
+
+  async #saveKeysOrThrow(store: IDBObjectStore) {
+    return await this.#setOrThrow(store, "__keys", [...this.#storageKeys])
   }
 
   /**
@@ -136,7 +129,7 @@ export class IDBStorage implements Storage {
    */
   async saveKeysOrThrow() {
     return await this.#transactOrThrow(async store => {
-      return await this.#setOrThrow(store, "__keys", [...this.#storageKeys])
+      return await this.#saveKeysOrThrow(store)
     }, "readwrite")
   }
 
@@ -180,12 +173,7 @@ export class IDBStorage implements Storage {
     if (storageValue == null)
       return undefined
 
-    const state = await Promise.resolve(this.valueSerializer.decodeOrThrow(storageValue))
-
-    if (state?.expiration != null)
-      this.#storageKeys.set(storageKey, state.expiration)
-
-    return state
+    return await Promise.resolve(this.valueSerializer.decodeOrThrow(storageValue))
   }
 
   async getOrThrow(cacheKey: string): Promise<RawState> {
@@ -211,7 +199,8 @@ export class IDBStorage implements Storage {
       this.#storageKeys.set(storageKey, state.expiration)
 
     return await this.#transactOrThrow(async store => {
-      return await this.#setOrThrow(store, storageKey, storageValue)
+      await this.#saveKeysOrThrow(store)
+      await this.#setOrThrow(store, storageKey, storageValue)
     }, "readwrite")
   }
 
@@ -246,7 +235,8 @@ export class IDBStorage implements Storage {
     this.#storageKeys.delete(storageKey)
 
     return await this.#transactOrThrow(async store => {
-      return await this.#deleteOrThrow(store, storageKey)
+      await this.#saveKeysOrThrow(store)
+      await this.#deleteOrThrow(store, storageKey)
     }, "readwrite")
   }
 
