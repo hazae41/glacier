@@ -27,7 +27,7 @@
     "@hazae41/bytes": "^1.2.9",
     "@hazae41/mutex": "^1.2.12",
     "@hazae41/option": "^1.0.27",
-    "@hazae41/plume": "^2.2.0",
+    "@hazae41/plume": "^2.2.3",
     "@hazae41/result": "^1.1.16"
   },
   "peerDependencies": {
@@ -36,8 +36,8 @@
   "devDependencies": {
     "@hazae41/phobos": "^1.0.10",
     "@rollup/plugin-typescript": "^11.1.6",
-    "@types/node": "^20.11.13",
-    "@types/react": "^18.2.48",
+    "@types/node": "^20.11.16",
+    "@types/react": "^18.2.55",
     "rimraf": "^5.0.5",
     "rollup": "^4.9.6",
     "rollup-plugin-dts": "^6.1.0",
