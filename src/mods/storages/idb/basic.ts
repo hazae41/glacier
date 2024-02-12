@@ -151,7 +151,7 @@ export class IDBStorage implements Storage {
       transaction.commit()
       return result
     } catch (e: unknown) {
-      transaction.abort()
+      try { transaction.abort() } catch { }
       throw e
     }
   }
