@@ -27,7 +27,7 @@ export async function fetchAsJsonOrFail<T>(input: string | URL | Request, init: 
       return new Fail(new Error(await res.text()))
   
     return new Data(await res.json() as T)
-  } catch(cause: unknown) {
+  } catch (cause: unknown) {
     return new Fail(new Error("Catched", { cause }))
   }
 }

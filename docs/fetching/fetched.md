@@ -10,6 +10,8 @@ export type Fetched<D, F> =
   | Fail<F>
 ```
 
+It's the type returned by fetchers, and it's the type inside states
+
 ### Creation
 
 Both variants can be created like
@@ -31,6 +33,34 @@ export interface TimesInit {
   readonly expiration?: number
 }
 ```
+
+You can also create a `Fetched<D,F>` from a `FetchedInit<D,F>`
+
+```tsx
+export type FetchedInit<D, F> =
+  | DataInit<D>
+  | FailInit<F>
+
+export interface DataInit<T> extends TimesInit {
+  readonly data: T
+}
+
+export interface FailInit<T> extends TimesInit {
+  readonly error: T
+}
+```
+
+This allows you to do
+
+```tsx
+const data = Fetched.from({ data: "hello world" })
+```
+
+```tsx
+const fail = Fetched.from({ error: new Error() })
+```
+
+Which is useful is your API returns something like `{ data: ... }` or `{ error: ... }`
 
 ### Usage
 
