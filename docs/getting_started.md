@@ -92,8 +92,8 @@ function MyApp() {
 
   if (error != null)
     return <MyError error={error} />
-  if (data == null)
-    return <MyLoading />
-  return <MyPage data={data} />
+  if (data != null)
+    return <MyPage data={data} />
+  return <MyLoading />
 }
 ```
