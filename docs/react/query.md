@@ -1,4 +1,4 @@
-# Query
+# useQuery
 
 You can reactify any schema into a `ReactQuery<K,D,F>` with `useQuery(schema, [...params])`
 
