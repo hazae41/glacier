@@ -19,15 +19,17 @@ It will just take an url, fetch it with the given signal, and return the data or
 ```tsx
 import { Data, Fail } from "@hazae41/glacier"
 
-export async function fetchAsJson<T>(url: string, init: RequestInit) {
-  const { signal } = init
-
-  const res = await fetch(url, { signal })
-
-  if (!res.ok) 
-    return new Fail(new Error(await res.text()))
-
-  return new Data(await res.json() as T)
+export async function fetchAsJsonOrFail<T>(input: string | URL | Request, init: RequestInit): Promise<Fetched<T, Error>> {
+  try {
+    const res = await input(url, init)
+  
+    if (!res.ok) 
+      return new Fail(new Error(await res.text()))
+  
+    return new Data(await res.json() as T)
+  } catch(cause: unknown) {
+    return new Fail(new Error("Catched", { cause }))
+  }
 }
 ```
 
@@ -42,11 +44,19 @@ export interface Hello {
   readonly hello: string
 }
 
-export function createHelloQuery() {
-  return createQuery<string, Hello, Error>({
-    key: "/api/hello",
-    fetcher: fetchAsJson
-  })
+export namespace Hello {
+
+  export type K = string
+  export type D = Hello
+  export type F = Error
+
+  export function schema() {
+    return createQuery<K, D, F>({
+      key: "/api/hello",
+      fetcher: fetchAsJsonOrFail
+    })
+  }
+
 }
 ```
 
@@ -68,7 +78,7 @@ Once you got a schema and a mixture, you just have to mix it.
 
 ```tsx
 function useHelloWithAutoFetch() {
-  const query = useQuery(createHelloQuery, [])
+  const query = useQuery(Hello.schema, [])
   useAutoFetchMixture(query)
   return query
 }
