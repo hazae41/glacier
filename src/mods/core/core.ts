@@ -132,8 +132,8 @@ export class Core {
       this.promises.set(cacheKey, promise)
       this.aborters.set(cacheKey, aborter)
 
-      await this.onAborter.emit("*", [cacheKey])
-      await this.onAborter.emit(cacheKey, [cacheKey])
+      await this.onAborter.emit("*", cacheKey)
+      await this.onAborter.emit(cacheKey, cacheKey)
 
       return await promise
     } finally {
@@ -144,8 +144,8 @@ export class Core {
         this.aborters.delete(cacheKey)
         this.promises.delete(cacheKey)
 
-        await this.onAborter.emit("*", [cacheKey])
-        await this.onAborter.emit(cacheKey, [cacheKey])
+        await this.onAborter.emit("*", cacheKey)
+        await this.onAborter.emit(cacheKey, cacheKey)
       }
     }
   }
@@ -162,8 +162,8 @@ export class Core {
       this.promises.set(cacheKey, promise)
       this.aborters.set(cacheKey, aborter)
 
-      await this.onAborter.emit("*", [cacheKey])
-      await this.onAborter.emit(cacheKey, [cacheKey])
+      await this.onAborter.emit("*", cacheKey)
+      await this.onAborter.emit(cacheKey, cacheKey)
 
       return await promise
     } finally {
@@ -174,8 +174,8 @@ export class Core {
         this.aborters.delete(cacheKey)
         this.promises.delete(cacheKey)
 
-        await this.onAborter.emit("*", [cacheKey])
-        await this.onAborter.emit(cacheKey, [cacheKey])
+        await this.onAborter.emit("*", cacheKey)
+        await this.onAborter.emit(cacheKey, cacheKey)
       }
     }
   }
@@ -190,8 +190,8 @@ export class Core {
 
       this.unstoreds.set(cacheKey, unstored)
 
-      await this.onState.emit("*", [cacheKey])
-      await this.onState.emit(cacheKey, [cacheKey])
+      await this.onState.emit("*", cacheKey)
+      await this.onState.emit(cacheKey, cacheKey)
 
       return unstored
     }
@@ -205,8 +205,8 @@ export class Core {
     this.storeds.set(cacheKey, stored)
     this.unstoreds.set(cacheKey, unstored)
 
-    await this.onState.emit("*", [cacheKey])
-    await this.onState.emit(cacheKey, [cacheKey])
+    await this.onState.emit("*", cacheKey)
+    await this.onState.emit(cacheKey, cacheKey)
 
     return unstored
   }
@@ -298,8 +298,8 @@ export class Core {
       this.storeds.set(cacheKey, stored)
       this.unstoreds.set(cacheKey, current)
 
-      await this.onState.emit("*", [cacheKey])
-      await this.onState.emit(cacheKey, [cacheKey])
+      await this.onState.emit("*", cacheKey)
+      await this.onState.emit(cacheKey, cacheKey)
 
       await Promise.resolve(settings.storage?.setOrThrow?.(cacheKey, stored))
 

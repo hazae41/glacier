@@ -82,11 +82,11 @@ export namespace Fetched {
    * @param callback
    * @returns
    */
-  export async function runAndDoubleWrap<T>(callback: () => Awaitable<T>, times: TimesInit = {}): Promise<Fetched<T, Catched>> {
+  export async function runAndDoubleWrap<T>(callback: () => Awaitable<T>, times: TimesInit = {}): Promise<Fetched<T, Error>> {
     try {
       return new Data(await callback(), times)
     } catch (e: unknown) {
-      return new Fail(Catched.from(e), times)
+      return new Fail(Catched.wrap(e), times)
     }
   }
 
@@ -95,11 +95,11 @@ export namespace Fetched {
    * @param callback
    * @returns
    */
-  export function runAndDoubleWrapSync<T>(callback: () => T, times: TimesInit = {}): Fetched<T, Catched> {
+  export function runAndDoubleWrapSync<T>(callback: () => T, times: TimesInit = {}): Fetched<T, Error> {
     try {
       return new Data(callback(), times)
     } catch (e: unknown) {
-      return new Fail(Catched.from(e), times)
+      return new Fail(Catched.wrap(e), times)
     }
   }
 
@@ -134,11 +134,11 @@ export namespace Fetched {
    * @param callback
    * @returns
    */
-  export async function runOrDoubleWrap<F extends Fetched.Infer<F>>(callback: () => Awaitable<F>, times: TimesInit = {}): Promise<F | Fail<Catched>> {
+  export async function runOrDoubleWrap<F extends Fetched.Infer<F>>(callback: () => Awaitable<F>, times: TimesInit = {}): Promise<F | Fail<Error>> {
     try {
       return await callback()
     } catch (e: unknown) {
-      return new Fail(Catched.from(e), times)
+      return new Fail(Catched.wrap(e), times)
     }
   }
 
@@ -147,11 +147,11 @@ export namespace Fetched {
    * @param callback
    * @returns
    */
-  export function runOrDoubleWrapSync<F extends Result.Infer<F>>(callback: () => F, times: TimesInit = {}): F | Fail<Catched> {
+  export function runOrDoubleWrapSync<F extends Result.Infer<F>>(callback: () => F, times: TimesInit = {}): F | Fail<Error> {
     try {
       return callback()
     } catch (e: unknown) {
-      return new Fail(Catched.from(e), times)
+      return new Fail(Catched.wrap(e), times)
     }
   }
 
