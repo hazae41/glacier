@@ -36,7 +36,6 @@ export interface RawState3<K = unknown, D = unknown, F = unknown> {
   readonly expiration?: number
 }
 
-
 export interface StateAndAborter<D, F> {
   readonly state: State<D, F>
   readonly aborter?: AbortController
@@ -78,7 +77,7 @@ export class RealState<D, F> {
 
 }
 
-export class FakeState<D, F>  {
+export class FakeState<D, F> {
 
   constructor(
     readonly fake?: FetchedState<D, F>,

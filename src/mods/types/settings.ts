@@ -1,6 +1,6 @@
 import { Bicoder, SyncEncoder } from "mods/coders/coder.js"
 import { Equalser } from "mods/equals/equals.js"
-import { Storage } from "mods/storages/storage.js"
+import { QueryStorage } from "mods/storages/storage.js"
 import { Normalizer } from "mods/types/normalizer.js"
 import { Fetcher } from "./fetcher.js"
 import { Indexer } from "./indexer.js"
@@ -35,7 +35,7 @@ export interface SkeletonQuerySettings<K, D, F> {
   readonly dataEqualser?: Equalser<D>,
   readonly errorEqualser?: Equalser<F>
 
-  readonly storage?: Storage
+  readonly storage?: QueryStorage
 }
 
 export interface FetcherfulQuerySettings<K, D, F> {
@@ -60,7 +60,7 @@ export interface FetcherfulQuerySettings<K, D, F> {
   readonly dataEqualser?: Equalser<D>,
   readonly errorEqualser?: Equalser<F>
 
-  readonly storage?: Storage
+  readonly storage?: QueryStorage
 }
 
 export interface FetcherlessQuerySettings<K, D, F> {
@@ -85,7 +85,7 @@ export interface FetcherlessQuerySettings<K, D, F> {
   readonly dataEqualser?: Equalser<D>,
   readonly errorEqualser?: Equalser<F>
 
-  readonly storage?: Storage
+  readonly storage?: QueryStorage
 }
 
 export type ScrollableQuerySettings<K, D, F> =

@@ -1,15 +1,15 @@
 import { Nullable } from "@hazae41/option"
 import { Result } from "@hazae41/result"
 import { Bicoder, Encoder, SyncIdentity } from "mods/coders/coder.js"
-import { Storage } from "mods/storages/storage.js"
+import { QueryStorage } from "mods/storages/storage.js"
 import { RawState } from "mods/types/state.js"
 import { useEffect, useRef } from "react"
 
 export function useIDBStorage(params?: IDBStorageParams) {
-  const storage = useRef<Result<IDBStorage, Error>>()
+  const storage = useRef<Result<IDBQueryStorage, Error>>()
 
   if (storage.current == null)
-    storage.current = Result.runAndDoubleWrapSync(() => IDBStorage.createOrThrow(params)).ignore()
+    storage.current = Result.runAndDoubleWrapSync(() => IDBQueryStorage.createOrThrow(params)).ignore()
 
   useEffect(() => () => {
     if (!storage.current?.isOk())
@@ -45,7 +45,7 @@ export class IDBError extends Error {
 
 }
 
-export class IDBStorage implements Storage {
+export class IDBQueryStorage implements QueryStorage {
   readonly async = true as const
 
   readonly database: Promise<Result<IDBDatabase, IDBError>>
@@ -94,13 +94,13 @@ export class IDBStorage implements Storage {
     await this.collectOrThrow()
   }
 
-  static createOrThrow(params: IDBStorageParams = {}): IDBStorage {
+  static createOrThrow(params: IDBStorageParams = {}): IDBQueryStorage {
     const { name, version, keySerializer, valueSerializer, onCollect, onUpgrade } = params
 
     if (typeof indexedDB === "undefined")
       throw new Error(`indexedDB is undefined`)
 
-    return new IDBStorage(name, version, keySerializer, valueSerializer, onCollect, onUpgrade)
+    return new IDBQueryStorage(name, version, keySerializer, valueSerializer, onCollect, onUpgrade)
   }
 
   /**

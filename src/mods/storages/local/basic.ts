@@ -2,7 +2,7 @@ import { Result } from "@hazae41/result"
 import { Bicoder, Encoder, SyncIdentity, SyncJson } from "mods/coders/coder.js"
 import { RawState } from "mods/types/state.js"
 import { useEffect, useRef } from "react"
-import { Storage } from "../storage.js"
+import { QueryStorage } from "../storage.js"
 
 /**
  * Asynchronous local storage
@@ -18,10 +18,10 @@ import { Storage } from "../storage.js"
  * @see useFallback
  */
 export function useAsyncLocalStorage(params?: AsyncLocalStorageParams) {
-  const storage = useRef<Result<AsyncLocalStorage, Error>>()
+  const storage = useRef<Result<AsyncLocalQueryStorage, Error>>()
 
   if (storage.current == null)
-    storage.current = Result.runAndDoubleWrapSync(() => AsyncLocalStorage.createOrThrow(params)).ignore()
+    storage.current = Result.runAndDoubleWrapSync(() => AsyncLocalQueryStorage.createOrThrow(params)).ignore()
 
   useEffect(() => () => {
     if (!storage.current?.isOk())
@@ -51,7 +51,7 @@ export interface AsyncLocalStorageParams {
  * @see SyncLocalStorage
  * @see useFallback
  */
-export class AsyncLocalStorage implements Storage {
+export class AsyncLocalQueryStorage implements QueryStorage {
   readonly async = true as const
 
   readonly beforeunload: () => void
@@ -67,13 +67,13 @@ export class AsyncLocalStorage implements Storage {
     addEventListener("beforeunload", this.beforeunload)
   }
 
-  static createOrThrow(params: AsyncLocalStorageParams = {}): AsyncLocalStorage {
+  static createOrThrow(params: AsyncLocalStorageParams = {}): AsyncLocalQueryStorage {
     const { prefix, keySerializer, valueSerializer } = params
 
     if (typeof localStorage === "undefined")
       throw new Error(`localStorage is undefined`)
 
-    return new AsyncLocalStorage(prefix, keySerializer, valueSerializer)
+    return new AsyncLocalQueryStorage(prefix, keySerializer, valueSerializer)
   }
 
   [Symbol.dispose]() {
