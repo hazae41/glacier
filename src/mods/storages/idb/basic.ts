@@ -9,7 +9,7 @@ export function useIDBStorage(params?: IDBStorageParams) {
   const storage = useRef<Result<IDBQueryStorage, Error>>()
 
   if (storage.current == null)
-    storage.current = Result.runAndDoubleWrapSync(() => IDBQueryStorage.createOrThrow(params)).ignore()
+    storage.current = Result.runAndDoubleWrapSync(() => IDBQueryStorage.createOrThrow(params))
 
   useEffect(() => () => {
     if (!storage.current?.isOk())
@@ -142,7 +142,7 @@ export class IDBQueryStorage implements QueryStorage {
   }
 
   async #transactOrThrow<T>(callback: (store: IDBObjectStore) => Promise<T>, mode: IDBTransactionMode) {
-    const database = await this.database.then(r => r.unwrap())
+    const database = await this.database.then(r => r.getOrThrow())
     const transaction = database.transaction("keyval", mode)
 
     try {

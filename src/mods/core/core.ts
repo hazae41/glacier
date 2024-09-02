@@ -212,7 +212,7 @@ export class Core {
   }
 
   async getOrThrow<K, D, F>(cacheKey: string, settings: QuerySettings<K, D, F>): Promise<State<D, F>> {
-    return await this.getOrCreateMutex(cacheKey).lock(() => this.#getOrThrow(cacheKey, settings))
+    return await this.getOrCreateMutex(cacheKey).lockOrWait(() => this.#getOrThrow(cacheKey, settings))
   }
 
   async tryGet<K, D, F>(cacheKey: string, settings: QuerySettings<K, D, F>): Promise<Result<State<D, F>, Error>> {
@@ -231,8 +231,8 @@ export class Core {
 
     const { time, cooldown, expiration } = state.real.current
 
-    const data = await Option.map(state.real.data, d => d.map(async x => await Promise.resolve(dataSerializer.encodeOrThrow(x))))
-    const error = await Option.map(state.real.error, d => d.mapErr(async x => await Promise.resolve(errorSerializer.encodeOrThrow(x))))
+    const data = await Option.wrap(state.real.data).map(d => d.map(async x => await Promise.resolve(dataSerializer.encodeOrThrow(x)))).then(r => r.getOrNull())
+    const error = await Option.wrap(state.real.error).map(d => d.mapErr(async x => await Promise.resolve(errorSerializer.encodeOrThrow(x)))).then(r => r.getOrNull())
 
     return { key, version: 3, data, error, time, cooldown, expiration }
   }
@@ -254,7 +254,7 @@ export class Core {
       const error = await Option.wrap(stored.error).map(async x => new Fail(await Promise.resolve(errorSerializer.decodeOrThrow(x)), times))
 
       if (error.isSome())
-        return new RealState(new FailState<D, F>(error.get(), data.get()))
+        return new RealState(new FailState<D, F>(error.get(), data.getOrNull()))
 
       if (data.isSome())
         return new RealState(new DataState<D, F>(data.get()))
@@ -267,7 +267,7 @@ export class Core {
       const error = await Option.wrap(stored.error).map(x => Fail.from(x).mapErr(async x => await Promise.resolve(errorSerializer.decodeOrThrow(x))))
 
       if (error.isSome())
-        return new RealState(new FailState<D, F>(error.get(), data.get()))
+        return new RealState(new FailState<D, F>(error.get(), data.getOrNull()))
 
       if (data.isSome())
         return new RealState(new DataState<D, F>(data.get()))
@@ -286,7 +286,7 @@ export class Core {
    * @returns 
    */
   async setOrThrow<K, D, F>(cacheKey: string, setter: Setter<D, F>, settings: QuerySettings<K, D, F>): Promise<State<D, F>> {
-    return await this.getOrCreateMutex(cacheKey).lock(async () => {
+    return await this.getOrCreateMutex(cacheKey).lockOrWait(async () => {
       const previous = await this.#getOrThrow(cacheKey, settings)
       const current = await Promise.resolve(setter(previous))
 
@@ -382,7 +382,8 @@ export class Core {
       if (mutate.isNone())
         return previous
 
-      const fetched = Option.mapSync(mutate.get(), Fetched.from)
+      const fetched = Option.wrap(mutate.get()).mapSync(Fetched.from).getOrNull()
+
       return this.#mergeRealStateWithFetched(previous, fetched)
     }, settings)
   }
@@ -428,7 +429,8 @@ export class Core {
       if (optimized.isNone())
         continue
 
-      const fetched = Option.mapSync(optimized.get(), Fetched.from)
+      const fetched = Option.wrap(optimized.get()).mapSync(Fetched.from).getOrNull()
+
       reoptimized = this.#mergeFakeStateWithFetched(reoptimized, fetched)
     }
 
@@ -462,7 +464,8 @@ export class Core {
       if (optimized.isNone())
         return previous
 
-      const fetched = Option.mapSync(optimized.get(), Fetched.from)
+      const fetched = Option.wrap(optimized.get()).mapSync(Fetched.from).getOrNull()
+
       return this.#mergeFakeStateWithFetched(previous, fetched)
     }, settings)
   }

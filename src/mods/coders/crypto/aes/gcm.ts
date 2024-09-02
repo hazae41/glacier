@@ -13,15 +13,15 @@ export class AesGcmCoder implements AsyncBicoder<string, string> {
   }
 
   async encodeOrThrow(input: string): Promise<string> {
-    const iv = Bytes.random(12)
-    const ivtext = Base64.get().encodePaddedOrThrow(iv)
+    const ivBytes = Bytes.random(12)
+    const ivBase64 = Base64.get().getOrThrow().encodePaddedOrThrow(ivBytes)
 
-    const plain = Bytes.fromUtf8(input)
+    const plainBytes = Bytes.fromUtf8(input)
 
-    const cipher = await this.encryptOrThrow(plain, iv)
-    const ciphertext = Base64.get().encodePaddedOrThrow(cipher)
+    const cipherBytes = await this.encryptOrThrow(plainBytes, ivBytes)
+    const cipherBase64 = Base64.get().getOrThrow().encodePaddedOrThrow(cipherBytes)
 
-    return `${ivtext}.${ciphertext}`
+    return `${ivBase64}.${cipherBase64}`
   }
 
   async decryptOrThrow(cipher: Uint8Array, iv: Uint8Array): Promise<Uint8Array> {
@@ -29,14 +29,14 @@ export class AesGcmCoder implements AsyncBicoder<string, string> {
   }
 
   async decodeOrThrow(output: string): Promise<string> {
-    const [ivtext, ciphertext] = output.split(".")
+    const [ivBase64, cipherBase64] = output.split(".")
 
-    const iv = Base64.get().decodePaddedOrThrow(ivtext).copyAndDispose()
-    const cipher = Base64.get().decodePaddedOrThrow(ciphertext).copyAndDispose()
+    using ivMemory = Base64.get().getOrThrow().decodePaddedOrThrow(ivBase64)
+    using cipherMemory = Base64.get().getOrThrow().decodePaddedOrThrow(cipherBase64)
 
-    const plain = await this.decryptOrThrow(cipher, iv)
+    const plainBytes = await this.decryptOrThrow(cipherMemory.bytes, ivMemory.bytes)
 
-    return Bytes.toUtf8(plain)
+    return Bytes.toUtf8(plainBytes)
   }
 
 }

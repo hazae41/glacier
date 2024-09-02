@@ -13,7 +13,7 @@ export class HmacEncoder implements AsyncEncoder<string, string> {
   }
 
   async encodeOrThrow(value: string): Promise<string> {
-    return Base64.get().encodePaddedOrThrow(await this.hashOrThrow(Bytes.fromUtf8(value)))
+    return Base64.get().getOrThrow().encodePaddedOrThrow(await this.hashOrThrow(Bytes.fromUtf8(value)))
   }
 
 }

@@ -21,7 +21,7 @@ export function useAsyncLocalStorage(params?: AsyncLocalStorageParams) {
   const storage = useRef<Result<AsyncLocalQueryStorage, Error>>()
 
   if (storage.current == null)
-    storage.current = Result.runAndDoubleWrapSync(() => AsyncLocalQueryStorage.createOrThrow(params)).ignore()
+    storage.current = Result.runAndDoubleWrapSync(() => AsyncLocalQueryStorage.createOrThrow(params))
 
   useEffect(() => () => {
     if (!storage.current?.isOk())
