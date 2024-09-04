@@ -212,7 +212,7 @@ export class Core {
   }
 
   async getOrThrow<K, D, F>(cacheKey: string, settings: QuerySettings<K, D, F>): Promise<State<D, F>> {
-    return await this.getOrCreateMutex(cacheKey).lockOrWait(() => this.#getOrThrow(cacheKey, settings))
+    return await this.getOrCreateMutex(cacheKey).runOrWait(() => this.#getOrThrow(cacheKey, settings))
   }
 
   async tryGet<K, D, F>(cacheKey: string, settings: QuerySettings<K, D, F>): Promise<Result<State<D, F>, Error>> {
@@ -286,7 +286,7 @@ export class Core {
    * @returns 
    */
   async setOrThrow<K, D, F>(cacheKey: string, setter: Setter<D, F>, settings: QuerySettings<K, D, F>): Promise<State<D, F>> {
-    return await this.getOrCreateMutex(cacheKey).lockOrWait(async () => {
+    return await this.getOrCreateMutex(cacheKey).runOrWait(async () => {
       const previous = await this.#getOrThrow(cacheKey, settings)
       const current = await Promise.resolve(setter(previous))
 
