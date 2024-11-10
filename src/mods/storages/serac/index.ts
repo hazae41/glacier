@@ -1,11 +1,19 @@
 import { Nullable } from "@hazae41/option"
-import { Database, Slot, Upgrader } from "@hazae41/serac"
+import { Database, Upgrader } from "@hazae41/serac"
 import { Bicoder, Encoder } from "mods/coders/coder.js"
 import { RawState } from "mods/types/state.js"
 import { useRef } from "react"
 import { AwaitingQueryStorage } from "../awaiting/index.js"
 
-export type Collector = (slot: Slot, state: RawState) => Promise<void>
+export type Collector = (
+  collected: Collected
+) => Promise<void>
+
+export interface Collected {
+  readonly key: IDBValidKey
+  readonly value: unknown
+  readonly state: RawState
+}
 
 export interface KeyValueCoders {
   readonly key: Encoder<string, IDBValidKey>
@@ -32,8 +40,8 @@ export class SeracQueryStorage {
 
     const database = await Database.openOrThrow(name, version, upgrader)
 
-    for await (const slot of database.collectOrThrow())
-      await collector(slot, await encoders.value.decodeOrThrow(slot.value.value))
+    for await (const { key, value } of database.collectOrThrow())
+      await collector({ key, value, state: await encoders.value.decodeOrThrow(value.value) })
 
     return new SeracQueryStorage(database, encoders)
   }
