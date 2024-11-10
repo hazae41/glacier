@@ -42,8 +42,8 @@ export class SeracQueryStorage {
     const database = await Database.openOrThrow(name, version, upgrader)
     const storage = new SeracQueryStorage(database, encoders)
 
-    for await (const slot of database.collectOrThrow())
-      await collector(storage, slot.key)
+    for await (const key of database.collectOrThrow())
+      await collector(storage, key)
 
     return storage
   }
