@@ -6,7 +6,7 @@ import { useRef } from "react"
 import { AwaitingQueryStorage } from "../awaiting/index.js"
 
 export type Collector = (
-  collected: Collected
+  key: IDBValidKey
 ) => Promise<void>
 
 export interface Collected {
@@ -40,8 +40,8 @@ export class SeracQueryStorage {
 
     const database = await Database.openOrThrow(name, version, upgrader)
 
-    for await (const { key, value } of database.collectOrThrow())
-      await collector({ key, value, state: await encoders.value.decodeOrThrow(value.value) })
+    for await (const slot of database.collectOrThrow())
+      await collector(slot.key)
 
     return new SeracQueryStorage(database, encoders)
   }
