@@ -6,6 +6,7 @@ import { useRef } from "react"
 import { AwaitingQueryStorage } from "../awaiting/index.js"
 
 export type Collector = (
+  storage: SeracQueryStorage,
   key: IDBValidKey
 ) => Promise<void>
 
@@ -35,15 +36,16 @@ export class SeracQueryStorage {
     readonly encoders: KeyValueCoders,
   ) { }
 
-  static async openOrThrow(params: SeracQueryStorageParams) {
+  static async openAndCollectOrThrow(params: SeracQueryStorageParams) {
     const { name, version, upgrader, collector, encoders } = params
 
     const database = await Database.openOrThrow(name, version, upgrader)
+    const storage = new SeracQueryStorage(database, encoders)
 
     for await (const slot of database.collectOrThrow())
-      await collector(slot.key)
+      await collector(storage, slot.key)
 
-    return new SeracQueryStorage(database, encoders)
+    return storage
   }
 
   async getStoredOrThrow(storageKey: IDBValidKey): Promise<RawState> {
@@ -78,7 +80,7 @@ export function useSeracStorage(params: SeracQueryStorageParams) {
   const storage = useRef<AwaitingQueryStorage<SeracQueryStorage>>()
 
   if (storage.current == null)
-    storage.current = new AwaitingQueryStorage(SeracQueryStorage.openOrThrow(params))
+    storage.current = new AwaitingQueryStorage(SeracQueryStorage.openAndCollectOrThrow(params))
 
   return storage.current
 }
