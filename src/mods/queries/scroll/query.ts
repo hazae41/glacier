@@ -1,6 +1,5 @@
 import { Nullable, Some } from "@hazae41/option";
-import { Err, Ok } from "@hazae41/result";
-import { Fallback } from "index.js";
+import { Err, Fallback, Ok } from "@hazae41/result";
 import { Arrays } from "libs/arrays/arrays.js";
 import { shouldUseCacheIfFresh, shouldUseCacheIfStale } from "libs/request/index.js";
 import { AbortSignals } from "libs/signals/index.js";

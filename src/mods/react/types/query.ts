@@ -1,18 +1,72 @@
 import { Nullable } from "@hazae41/option"
-import { Fallback } from "index.js"
+import { Fallback } from "@hazae41/result"
+import { Bicoder, SyncEncoder } from "mods/coders/coder.js"
+import { Equalser } from "mods/equals/equals.js"
 import { Data } from "mods/fetched/data.js"
 import { Fail } from "mods/fetched/fail.js"
 import { Fetched } from "mods/fetched/fetched.js"
+import { QueryStorage } from "mods/storages/storage.js"
+import { Fetcher } from "mods/types/fetcher.js"
+import { Indexer } from "mods/types/indexer.js"
 import { Mutator } from "mods/types/mutator.js"
+import { Normalizer } from "mods/types/normalizer.js"
 import { FetcherfulQuerySettings, FetcherlessQuerySettings, SkeletonQuerySettings } from "mods/types/settings.js"
 import { FetchedState, State } from "mods/types/state.js"
+
+export interface ReactQueryLike<K, D, F> {
+  readonly key?: K
+
+  readonly timeout?: number,
+  readonly cooldown?: number,
+  readonly expiration?: number
+
+  readonly fetcher?: Fetcher<K, D, F>
+  readonly normalizer?: Normalizer<D, F>
+  readonly indexer?: Indexer<D, F>
+
+  readonly keySerializer?: SyncEncoder<K, string>,
+
+  readonly dataSerializer?: Bicoder<D, unknown>
+  readonly errorSerializer?: Bicoder<F, unknown>
+
+  readonly dataEqualser?: Equalser<D>,
+  readonly errorEqualser?: Equalser<F>
+
+  readonly storage?: QueryStorage
+
+  readonly cacheKey?: string
+
+  readonly current?: Fetched<D, F>
+
+  readonly data?: Data<D>
+  readonly error?: Fail<F>
+
+  readonly real?: FetchedState<D, F>
+  readonly fake?: FetchedState<D, F>
+
+  readonly aborter?: Nullable<AbortController>
+
+  readonly ready?: boolean
+  readonly fetching?: boolean
+  readonly optimistic?: boolean
+
+  mutate(mutator: Mutator<D, F>): Promise<State<D, F>>
+
+  clear(): Promise<State<D, F>>
+
+  fetch(aborter?: AbortController): Promise<Fallback<State<D, F>>>
+
+  refetch(aborter?: AbortController): Promise<State<D, F>>
+
+  suspend(): Promise<State<D, F>>
+}
 
 export type ReactQuery<K, D, F> =
   | SkeletonReactQuery<K, D, F>
   | FetcherfulReactQuery<K, D, F>
   | FetcherlessReactQuery<K, D, F>
 
-export interface SkeletonReactQuery<K, D, F> extends Omit<SkeletonQuerySettings<K, D, F>, "time" | "cooldown" | "expiration"> {
+export interface SkeletonReactQuery<K, D, F> extends SkeletonQuerySettings<K, D, F> {
 
   /**
    * Cache key, the serialized version of key
@@ -90,7 +144,7 @@ export interface SkeletonReactQuery<K, D, F> extends Omit<SkeletonQuerySettings<
 
 }
 
-export interface FetcherfulReactQuery<K, D, F> extends Omit<FetcherfulQuerySettings<K, D, F>, "time" | "cooldown" | "expiration"> {
+export interface FetcherfulReactQuery<K, D, F> extends FetcherfulQuerySettings<K, D, F> {
 
   /**
    * Cache key, the serialized version of key
@@ -168,7 +222,7 @@ export interface FetcherfulReactQuery<K, D, F> extends Omit<FetcherfulQuerySetti
 
 }
 
-export interface FetcherlessReactQuery<K, D, F> extends Omit<FetcherlessQuerySettings<K, D, F>, "time" | "cooldown" | "expiration"> {
+export interface FetcherlessReactQuery<K, D, F> extends FetcherlessQuerySettings<K, D, F> {
 
   /**
    * Cache key, the serialized version of key

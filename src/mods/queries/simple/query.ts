@@ -1,6 +1,5 @@
 import { Nullable, Some } from "@hazae41/option";
-import { Err, Ok } from "@hazae41/result";
-import { Fallback } from "index.js";
+import { Err, Fallback, Ok } from "@hazae41/result";
 import { shouldUseCacheIfFresh, shouldUseCacheIfStale } from "libs/request/index.js";
 import { AbortSignals } from "libs/signals/index.js";
 import { Time } from "libs/time/time.js";
@@ -13,6 +12,28 @@ import { FetcherfulQuerySettings, FetcherlessQuerySettings, KeyedQuerySettings }
 import { State } from "mods/types/state.js";
 import { Updater } from "mods/types/updater.js";
 import { Simple } from "./helper.js";
+
+export interface SimpleQueryLike<K, D, F> {
+  readonly cacheKey: string
+
+  readonly settings: KeyedQuerySettings<K, D, F>
+
+  readonly state: Promise<State<D, F>>
+
+  readonly aborter: Nullable<AbortController>
+
+  mutate(mutator: Mutator<D, F>): Promise<State<D, F>>
+
+  delete(): Promise<State<D, F>>
+
+  normalize(fetched: Nullable<Fetched<D, F>>, more: NormalizerMore): Promise<void>
+
+  fetch(aborter?: AbortController): Promise<Fallback<State<D, F>>>
+
+  refetch(aborter?: AbortController): Promise<State<D, F>>
+
+  update(updater: Updater<K, D, F>, aborter?: AbortController): Promise<State<D, F>>
+}
 
 export function createQuery<K, D, F>(
   settings: FetcherlessQuerySettings<K, D, F>
