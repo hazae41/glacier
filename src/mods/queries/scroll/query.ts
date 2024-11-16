@@ -167,7 +167,7 @@ export class ScrollableFetcherfulQuery<K, D, F> {
   async peekOrNull(): Promise<Nullable<K>> {
     const { settings } = this
     const state = await this.state
-    const pages = state.real?.data?.inner
+    const pages = state.real?.data?.get()
 
     if (pages == null)
       return undefined
@@ -223,7 +223,7 @@ export class ScrollableFetcherlessQuery<K, D, F> {
   async peekOrNull(): Promise<Nullable<K>> {
     const { settings } = this
     const state = await this.state
-    const pages = state.real?.data?.inner
+    const pages = state.real?.data?.get()
 
     if (pages == null)
       return undefined

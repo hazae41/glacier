@@ -55,7 +55,7 @@ export namespace Scrollable {
 
       const prenormalized = await core.prenormalizeOrThrow(timed, settings)
 
-      if (prenormalized?.isData() && previous.real?.data && dataEqualser(prenormalized.inner, previous.real.data.inner))
+      if (prenormalized?.isData() && previous.real?.data && dataEqualser(prenormalized.get(), previous.real.data.get()))
         return new Some(previous.real.data)
 
       return new Some(timed)
@@ -78,7 +78,7 @@ export namespace Scrollable {
     settings: ScrollableFetcherfulQuerySettings<K, D, F>
   ): Promise<State<D[], F>> {
     const previous = await core.getOrThrow(cacheKey, settings)
-    const previousPages = previous.real?.data?.inner ?? []
+    const previousPages = previous.real?.data?.get() ?? []
     const previousPage = Arrays.last(previousPages)
     const key = settings.scroller(previousPage)
 
@@ -92,7 +92,7 @@ export namespace Scrollable {
     const timed = Fetched.from(fetched).setTimes(times)
 
     return await core.mutateOrThrow(cacheKey, async (previous) => {
-      const previousPages = previous.real?.data?.inner ?? []
+      const previousPages = previous.real?.data?.get() ?? []
       const paginated = timed.mapSync(data => [...previousPages, ...data])
 
       return new Some(paginated)

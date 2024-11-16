@@ -1,4 +1,4 @@
-import { None, Nullable, Option } from "@hazae41/option";
+import { None, Nullable } from "@hazae41/option";
 import { Err, Fallback, Ok } from "@hazae41/result";
 import { ScrollableQuery } from "index.js";
 import { Arrays } from "libs/arrays/arrays.js";
@@ -233,7 +233,12 @@ export function useFetcherlessScrollableQuery<K, D, F>(
   const fake = state?.fake
 
   const peekOrNull = useCallback(() => {
-    return Option.wrap(state?.real?.data?.inner).mapSync(pages => settings.scroller(Arrays.last(pages))).getOrNull()
+    const pages = state?.real?.data?.get()
+
+    if (pages == null)
+      return undefined
+
+    return settings.scroller(Arrays.last(pages))
   }, [state?.real?.data, settings.scroller])
 
   return {
@@ -384,7 +389,7 @@ export function useFetcherfulScrollableQuery<K, D, F>(
   const fake = state?.fake
 
   const peekOrNull = useCallback(() => {
-    const pages = state?.real?.data?.inner
+    const pages = state?.real?.data?.get()
 
     if (pages == null)
       return undefined

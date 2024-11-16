@@ -84,23 +84,23 @@ Getting the inner data or throw
 
 ```tsx
 function unwrap<D,F>(fetched: Fetched<D,F>): D {
-  return fetched.unwrap()
+  return fetched.getOrThrow()
 }
 ```
 
-Getting the inner data or undefined
+Getting the inner data or nullable
 
 ```tsx
 function data<D,F>(fetched: Fetched<D,F>): D | undefined {
-  return fetched.ok().get()
+  return fetched.getOrNull()
 }
 ```
 
-Getting the inner error or undefined
+Getting the inner error or nullable
 
 ```tsx
 function error<D,F>(fetched: Fetched<D,F>): F | undefined {
-  return fetched.err().get()
+  return fetched.getErrOrNull()
 }
 ```
 
@@ -108,7 +108,7 @@ Getting the inner data or error
 
 ```tsx
 function error<D,F>(fetched: Fetched<D,F>): D | F {
-  return fetched.inner
+  return fetched.getAny()
 }
 ```
 
@@ -116,7 +116,7 @@ Type-guarding if data
 
 ```tsx
 function f<D,F>(fetched: Fetched<D,F>): D | F {
-  if (fetched.isData())
+  if (fetched.isOk())
     return fetched.get()
   else
     return fetched.getErr()
@@ -127,7 +127,7 @@ Type-guarding if error
 
 ```tsx
 function f<D,F>(fetched: Fetched<D,F>): D | F {
-  if (fetched.isFail())
+  if (fetched.isErr())
     return fetched.getErr()
   else
     return fetched.get()

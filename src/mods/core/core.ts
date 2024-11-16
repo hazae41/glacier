@@ -197,7 +197,7 @@ export class Core {
 
     const stored = await Result.runAndWrap(async () => {
       return settings.storage?.getOrThrow?.(cacheKey)
-    }).then(r => r?.ok().inner)
+    }).then(r => r?.getOrNull())
 
     const unstored = await this.unstoreOrThrow(stored, settings)
 
@@ -356,11 +356,11 @@ export class Core {
       const normalized = await this.#normalizeOrThrow(next.real?.current, settings)
       next = this.#mergeRealStateWithFetched(next, normalized)
 
-      if (next.real?.current.isData() && previous.real?.current.isData() && dataEqualser(next.real.current.inner, previous.real.current.inner))
-        next = new RealState(new DataState(new Data(previous.real.current.inner, next.real.current)))
+      if (next.real?.current.isData() && previous.real?.current.isData() && dataEqualser(next.real.current.get(), previous.real.current.get()))
+        next = new RealState(new DataState(new Data(previous.real.current.get(), next.real.current)))
 
-      if (next.real?.current.isFail() && previous.real?.current.isFail() && errorEqualser(next.real.current.inner, previous.real.current.inner))
-        next = new RealState(new FailState(new Fail(previous.real.current.inner, next.real.current), previous.real.data))
+      if (next.real?.current.isFail() && previous.real?.current.isFail() && errorEqualser(next.real.current.getErr(), previous.real.current.getErr()))
+        next = new RealState(new FailState(new Fail(previous.real.current.getErr(), next.real.current), previous.real.data))
 
       return await this.#reoptimizeOrThrow(cacheKey, next)
     }, settings)

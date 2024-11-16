@@ -12,6 +12,6 @@ export function useError<K, D, F>(query: ReactQuery<K, D, F>, callback: (query: 
   useEffect(() => {
     if (error == null)
       return
-    callback(query, error.inner)
+    callback(query, error.getErr())
   }, [error])
 }
