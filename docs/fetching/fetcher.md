@@ -3,21 +3,21 @@
 A `Fetcher<D,F>` is function that takes some arbitrary key `K` with some params and resolves to a `Fetched<D,F>` or `FetchedInit<D,F>`
 
 ```tsx
-export type Fetcher<K, D, F> = (key: K, more: FetcherMore) => Awaitable<FetchedInit<D, F>>
+export type Fetcher<K, D, F> = (key: K, init: RequestInit) => Awaitable<FetchedInit<D, F>>
 ```
 
-### FetcherMore
+### RequestInit
 
-The `FetcherMore` is a subset of `RequestInit`
+We only use `signal` and `cache`
 
 ```tsx
-export interface FetcherMore {
+export interface RequestInit {
   readonly signal?: AbortSignal,
   readonly cache?: "reload"
 }
 ```
 
-This means you can use `FetcherMore` as `init` in `fetch(input: string | URL | Request, init?: RequestInit | undefined)`
+This means you can use `RequestInit` as `init` in `fetch(input: string | URL | Request, init?: RequestInit | undefined)`
 
 You can use `RequestInit` if your fetcher uses `fetch()` under the hood, that's what we will see in the next example
 

@@ -1,3 +1,4 @@
+import { AbortSignals } from "libs/signals/index.js";
 import { core } from "mods/core/core.js";
 import { Fetched } from "mods/fetched/fetched.js";
 import { TimesInit } from "mods/fetched/times.js";
@@ -15,12 +16,11 @@ export namespace Simple {
 
   export async function fetchOrThrow<K, D, F>(
     cacheKey: string,
-    aborter: AbortController,
+    presignal: AbortSignal,
     settings: FetcherfulQuerySettings<K, D, F>
   ): Promise<State<D, F>> {
-    const fetched = await core.runWithTimeout(async signal => {
-      return await settings.fetcher(settings.key, { signal })
-    }, aborter, settings.timeout)
+    const signal = AbortSignal.any([presignal, AbortSignals.timeoutOrNever(settings.timeout)])
+    const fetched = await settings.fetcher(settings.key, { signal })
 
     const times = TimesInit.merge(fetched, settings)
     const timed = Fetched.from(fetched).setTimes(times)
@@ -41,7 +41,7 @@ export namespace Simple {
   export async function updateOrThrow<K, D, F>(
     cacheKey: string,
     updater: Updater<K, D, F>,
-    aborter: AbortController,
+    presignal: AbortSignal,
     settings: FetcherfulQuerySettings<K, D, F>
   ): Promise<State<D, F>> {
     const uuid = crypto.randomUUID()
@@ -56,9 +56,8 @@ export namespace Simple {
 
       const fetcher = next.value ?? settings.fetcher
 
-      const fetched = await core.runWithTimeout(async (signal) => {
-        return await fetcher(settings.key, { signal, cache: "reload" })
-      }, aborter, settings.timeout)
+      const signal = AbortSignal.any([presignal, AbortSignals.timeoutOrNever(settings.timeout)])
+      const fetched = await fetcher(settings.key, { signal, cache: "reload" })
 
       core.deoptimize(cacheKey, uuid)
 

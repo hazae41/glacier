@@ -1,6 +1,8 @@
 import { Nullable, Some } from "@hazae41/option";
 import { Err, Ok } from "@hazae41/result";
 import { Fallback } from "index.js";
+import { shouldUseCacheIfFresh, shouldUseCacheIfStale } from "libs/request/index.js";
+import { AbortSignals } from "libs/signals/index.js";
 import { Time } from "libs/time/time.js";
 import { MissingFetcherError, core } from "mods/core/core.js";
 import { Fetched } from "mods/fetched/fetched.js";
@@ -105,29 +107,29 @@ export class SimpleFetcherlessQuery<K, D, F> {
     return core.getAborterSync(this.cacheKey)
   }
 
-  async mutate(mutator: Mutator<D, F>): Promise<State<D, F>> {
+  async mutateOrThrow(mutator: Mutator<D, F>): Promise<State<D, F>> {
     return await core.mutateOrThrow(this.cacheKey, mutator, this.settings)
   }
 
-  async delete(): Promise<State<D, F>> {
+  async deleteOrThrow(): Promise<State<D, F>> {
     return await core.deleteOrThrow(this.cacheKey, this.settings)
   }
 
-  async normalize(fetched: Nullable<Fetched<D, F>>, more: NormalizerMore): Promise<void> {
+  async normalizeOrThrow(fetched: Nullable<Fetched<D, F>>, more: NormalizerMore): Promise<void> {
     if (more.shallow)
       return
-    await this.mutate(() => new Some(fetched))
+    await this.mutateOrThrow(() => new Some(fetched))
   }
 
-  async fetch(aborter = new AbortController()): Promise<never> {
+  async fetchOrThrow(aborter = new AbortController()): Promise<never> {
     throw new MissingFetcherError()
   }
 
-  async refetch(aborter = new AbortController()): Promise<never> {
+  async refetchOrThrow(aborter = new AbortController()): Promise<never> {
     throw new MissingFetcherError()
   }
 
-  async update(updater: Updater<K, D, F>, aborter = new AbortController()): Promise<never> {
+  async updateOrThrow(updater: Updater<K, D, F>, aborter = new AbortController()): Promise<never> {
     throw new MissingFetcherError()
   }
 
@@ -150,40 +152,62 @@ export class SimpleFetcherfulQuery<K, D, F> {
     return core.getAborterSync(this.cacheKey)
   }
 
-  async mutate(mutator: Mutator<D, F>): Promise<State<D, F>> {
+  async mutateOrThrow(mutator: Mutator<D, F>): Promise<State<D, F>> {
     return await core.mutateOrThrow(this.cacheKey, mutator, this.settings)
   }
 
-  async delete(): Promise<State<D, F>> {
+  async deleteOrThrow(): Promise<State<D, F>> {
     return await core.deleteOrThrow(this.cacheKey, this.settings)
   }
 
-  async normalize(fetched: Nullable<Fetched<D, F>>, more: NormalizerMore): Promise<void> {
+  async normalizeOrThrow(fetched: Nullable<Fetched<D, F>>, more: NormalizerMore): Promise<void> {
     if (more.shallow)
       return
-    await this.mutate(() => new Some(fetched))
+    await this.mutateOrThrow(() => new Some(fetched))
   }
 
-  async fetch(aborter = new AbortController()): Promise<Fallback<State<D, F>>> {
+  async fetchOrThrow(init?: RequestInit): Promise<Fallback<State<D, F>>> {
     const { cacheKey, settings } = this
     const state = await this.state
 
-    if (Time.isAfterNow(state.real?.current.cooldown))
+    if (shouldUseCacheIfFresh(init?.cache) && Time.isAfterNow(state.real?.current.cooldown))
+      return new Err(state)
+    if (shouldUseCacheIfStale(init?.cache) && Time.isAfterNow(state.real?.current.expiration))
       return new Err(state)
 
-    return new Ok(await core.runOrJoin(cacheKey, aborter, () => Simple.fetchOrThrow(cacheKey, aborter, settings)))
+    const aborter = new AbortController()
+    const signal = AbortSignal.any([aborter.signal, AbortSignals.getOrNever(init?.signal)])
+
+    return new Ok(await core.runOrJoin(cacheKey, aborter, () => Simple.fetchOrThrow(cacheKey, signal, settings)))
   }
 
-  async refetch(aborter = new AbortController()): Promise<State<D, F>> {
+  async refetchOrThrow(init?: RequestInit): Promise<Fallback<State<D, F>>> {
     const { cacheKey, settings } = this
+    const state = await this.state
 
-    return await core.runOrReplace(cacheKey, aborter, () => Simple.fetchOrThrow(cacheKey, aborter, settings))
+    if (shouldUseCacheIfFresh(init?.cache) && Time.isAfterNow(state.real?.current.cooldown))
+      return new Err(state)
+    if (shouldUseCacheIfStale(init?.cache) && Time.isAfterNow(state.real?.current.expiration))
+      return new Err(state)
+
+    const aborter = new AbortController()
+    const signal = AbortSignal.any([aborter.signal, AbortSignals.getOrNever(init?.signal)])
+
+    return new Ok(await core.runOrReplace(cacheKey, aborter, () => Simple.fetchOrThrow(cacheKey, signal, settings)))
   }
 
-  async update(updater: Updater<K, D, F>, aborter = new AbortController()): Promise<State<D, F>> {
+  async updateOrThrow(updater: Updater<K, D, F>, init?: RequestInit): Promise<Fallback<State<D, F>>> {
     const { cacheKey, settings } = this
+    const state = await this.state
 
-    return await Simple.updateOrThrow(cacheKey, updater, aborter, settings)
+    if (shouldUseCacheIfFresh(init?.cache) && Time.isAfterNow(state.real?.current.cooldown))
+      return new Err(state)
+    if (shouldUseCacheIfStale(init?.cache) && Time.isAfterNow(state.real?.current.expiration))
+      return new Err(state)
+
+    const signal = AbortSignals.getOrNever(init?.signal)
+
+    return new Ok(await Simple.updateOrThrow(cacheKey, updater, signal, settings))
   }
 
 }

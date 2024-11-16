@@ -2,6 +2,8 @@ import { Nullable, Some } from "@hazae41/option";
 import { Err, Ok } from "@hazae41/result";
 import { Fallback } from "index.js";
 import { Arrays } from "libs/arrays/arrays.js";
+import { shouldUseCacheIfFresh, shouldUseCacheIfStale } from "libs/request/index.js";
+import { AbortSignals } from "libs/signals/index.js";
 import { Time } from "libs/time/time.js";
 import { MissingFetcherError, core } from "mods/core/core.js";
 import { Fetched } from "mods/fetched/fetched.js";
@@ -104,7 +106,66 @@ export class ScrollableFetcherfulQuery<K, D, F> {
     return core.getAborterSync(this.cacheKey)
   }
 
-  async peek(): Promise<Nullable<K>> {
+  async mutateOrThrow(mutator: Mutator<D[], F>): Promise<State<D[], F>> {
+    return await core.mutateOrThrow(this.cacheKey, mutator, this.settings)
+  }
+
+  async deleteOrThrow(): Promise<State<D[], F>> {
+    return await core.deleteOrThrow(this.cacheKey, this.settings)
+  }
+
+  async normalizeOrThrow(fetched: Nullable<Fetched<D[], F>>, more: NormalizerMore): Promise<void> {
+    if (more.shallow)
+      return
+    await this.mutateOrThrow(() => new Some(fetched))
+  }
+
+  async fetchOrThrow(init?: RequestInit): Promise<Fallback<State<D[], F>>> {
+    const { cacheKey, settings } = this
+    const state = await this.state
+
+    if (shouldUseCacheIfFresh(init?.cache) && Time.isAfterNow(state.real?.current.cooldown))
+      return new Err(state)
+    if (shouldUseCacheIfStale(init?.cache) && Time.isAfterNow(state.real?.current.expiration))
+      return new Err(state)
+
+    const aborter = new AbortController()
+    const signal = AbortSignal.any([aborter.signal, AbortSignals.getOrNever(init?.signal)])
+
+    return new Ok(await core.runOrJoin(cacheKey, aborter, () => Scrollable.fetchOrThrow(cacheKey, signal, settings)))
+  }
+
+  async refetchOrThrow(init?: RequestInit): Promise<Fallback<State<D[], F>>> {
+    const { cacheKey, settings } = this
+    const state = await this.state
+
+    if (shouldUseCacheIfFresh(init?.cache) && Time.isAfterNow(state.real?.current.cooldown))
+      return new Err(state)
+    if (shouldUseCacheIfStale(init?.cache) && Time.isAfterNow(state.real?.current.expiration))
+      return new Err(state)
+
+    const aborter = new AbortController()
+    const signal = AbortSignal.any([aborter.signal, AbortSignals.getOrNever(init?.signal)])
+
+    return new Ok(await core.runOrReplace(cacheKey, aborter, () => Scrollable.fetchOrThrow(cacheKey, signal, settings)))
+  }
+
+  async scrollOrThrow(init?: RequestInit): Promise<Fallback<State<D[], F>>> {
+    const { cacheKey, settings } = this
+    const state = await this.state
+
+    if (shouldUseCacheIfFresh(init?.cache) && Time.isAfterNow(state.real?.current.cooldown))
+      return new Err(state)
+    if (shouldUseCacheIfStale(init?.cache) && Time.isAfterNow(state.real?.current.expiration))
+      return new Err(state)
+
+    const aborter = new AbortController()
+    const signal = AbortSignal.any([aborter.signal, AbortSignals.getOrNever(init?.signal)])
+
+    return new Ok(await core.runOrReplace(cacheKey, aborter, () => Scrollable.scrollOrThrow(cacheKey, signal, settings)))
+  }
+
+  async peekOrNull(): Promise<Nullable<K>> {
     const { settings } = this
     const state = await this.state
     const pages = state.real?.data?.inner
@@ -113,42 +174,6 @@ export class ScrollableFetcherfulQuery<K, D, F> {
       return undefined
 
     return settings.scroller(Arrays.last(pages))
-  }
-
-  async mutate(mutator: Mutator<D[], F>): Promise<State<D[], F>> {
-    return await core.mutateOrThrow(this.cacheKey, mutator, this.settings)
-  }
-
-  async delete(): Promise<State<D[], F>> {
-    return await core.deleteOrThrow(this.cacheKey, this.settings)
-  }
-
-  async normalize(fetched: Nullable<Fetched<D[], F>>, more: NormalizerMore): Promise<void> {
-    if (more.shallow)
-      return
-    await this.mutate(() => new Some(fetched))
-  }
-
-  async fetch(aborter = new AbortController()): Promise<Fallback<State<D[], F>>> {
-    const { cacheKey, settings } = this
-    const state = await this.state
-
-    if (Time.isAfterNow(state.real?.current.cooldown))
-      return new Err(state)
-
-    return new Ok(await core.runOrJoin(cacheKey, aborter, () => Scrollable.fetchOrThrow(cacheKey, aborter, settings)))
-  }
-
-  async refetch(aborter = new AbortController()): Promise<State<D[], F>> {
-    const { cacheKey, settings } = this
-
-    return await core.runOrReplace(cacheKey, aborter, () => Scrollable.fetchOrThrow(cacheKey, aborter, settings))
-  }
-
-  async scroll(aborter = new AbortController()): Promise<State<D[], F>> {
-    const { cacheKey, settings } = this
-
-    return await core.runOrReplace(cacheKey, aborter, () => Scrollable.scrollOrThrow(cacheKey, aborter, settings))
   }
 
 }
@@ -170,7 +195,33 @@ export class ScrollableFetcherlessQuery<K, D, F> {
     return core.getAborterSync(this.cacheKey)
   }
 
-  async peek(): Promise<Nullable<K>> {
+  async mutateOrThrow(mutator: Mutator<D[], F>): Promise<State<D[], F>> {
+    return await core.mutateOrThrow(this.cacheKey, mutator, this.settings)
+  }
+
+  async deleteOrThrow(): Promise<State<D[], F>> {
+    return await core.deleteOrThrow(this.cacheKey, this.settings)
+  }
+
+  async normalizeOrThrow(fetched: Nullable<Fetched<D[], F>>, more: NormalizerMore) {
+    if (more.shallow)
+      return
+    await this.mutateOrThrow(() => new Some(fetched))
+  }
+
+  async fetchOrThrow(init?: RequestInit): Promise<never> {
+    throw new MissingFetcherError()
+  }
+
+  async refetchOrThrow(init?: RequestInit): Promise<never> {
+    throw new MissingFetcherError()
+  }
+
+  async scrollOrThrow(init?: RequestInit): Promise<never> {
+    throw new MissingFetcherError()
+  }
+
+  async peekOrNull(): Promise<Nullable<K>> {
     const { settings } = this
     const state = await this.state
     const pages = state.real?.data?.inner
@@ -179,32 +230,6 @@ export class ScrollableFetcherlessQuery<K, D, F> {
       return undefined
 
     return settings.scroller(Arrays.last(pages))
-  }
-
-  async mutate(mutator: Mutator<D[], F>): Promise<State<D[], F>> {
-    return await core.mutateOrThrow(this.cacheKey, mutator, this.settings)
-  }
-
-  async delete(): Promise<State<D[], F>> {
-    return await core.deleteOrThrow(this.cacheKey, this.settings)
-  }
-
-  async normalize(fetched: Nullable<Fetched<D[], F>>, more: NormalizerMore) {
-    if (more.shallow)
-      return
-    await this.mutate(() => new Some(fetched))
-  }
-
-  async fetch(aborter = new AbortController()): Promise<never> {
-    throw new MissingFetcherError()
-  }
-
-  async refetch(aborter = new AbortController()): Promise<never> {
-    throw new MissingFetcherError()
-  }
-
-  async scroll(aborter = new AbortController()): Promise<never> {
-    throw new MissingFetcherError()
   }
 
 }

@@ -1,5 +1,6 @@
 import { Some } from "@hazae41/option";
 import { Arrays } from "libs/arrays/arrays.js";
+import { AbortSignals } from "libs/signals/index.js";
 import { core } from "mods/core/core.js";
 import { DEFAULT_EQUALS } from "mods/defaults.js";
 import { Fetched } from "mods/fetched/fetched.js";
@@ -37,14 +38,13 @@ export namespace Scrollable {
    */
   export async function fetchOrThrow<K, D, F>(
     cacheKey: string,
-    aborter: AbortController,
+    presignal: AbortSignal,
     settings: ScrollableFetcherfulQuerySettings<K, D, F>
   ): Promise<State<D[], F>> {
     const { dataEqualser = DEFAULT_EQUALS } = settings
 
-    const fetched = await core.runWithTimeout(async (signal) => {
-      return await settings.fetcher(settings.key, { signal })
-    }, aborter, settings.timeout)
+    const signal = AbortSignal.any([presignal, AbortSignals.timeoutOrNever(settings.timeout)])
+    const fetched = await settings.fetcher(settings.key, { signal })
 
     const times = TimesInit.merge(fetched, settings)
     const timed = Fetched.from(fetched).setTimes(times)
@@ -74,7 +74,7 @@ export namespace Scrollable {
    */
   export async function scrollOrThrow<K, D, F>(
     cacheKey: string,
-    aborter: AbortController,
+    presignal: AbortSignal,
     settings: ScrollableFetcherfulQuerySettings<K, D, F>
   ): Promise<State<D[], F>> {
     const previous = await core.getOrThrow(cacheKey, settings)
@@ -85,9 +85,8 @@ export namespace Scrollable {
     if (key == null)
       throw new ScrollError()
 
-    const fetched = await core.runWithTimeout(async (signal) => {
-      return await settings.fetcher(key, { signal })
-    }, aborter, settings.timeout)
+    const signal = AbortSignal.any([presignal, AbortSignals.timeoutOrNever(settings.timeout)])
+    const fetched = await settings.fetcher(key, { signal })
 
     const times = TimesInit.merge(fetched, settings)
     const timed = Fetched.from(fetched).setTimes(times)

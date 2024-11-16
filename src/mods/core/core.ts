@@ -2,7 +2,6 @@ import { Mutex } from "@hazae41/mutex"
 import { Nullable, Option, Some } from "@hazae41/option"
 import { SuperEventTarget } from "@hazae41/plume"
 import { Result } from "@hazae41/result"
-import { Awaitable } from "libs/promises/promises.js"
 import { Time } from "libs/time/time.js"
 import { Bicoder, SyncIdentity } from "mods/coders/coder.js"
 import { DEFAULT_EQUALS } from "mods/defaults.js"
@@ -476,22 +475,6 @@ export class Core {
     if (optimizers == null)
       return
     optimizers.delete(uuid)
-  }
-
-  async runWithTimeout<T>(
-    callback: (signal: AbortSignal) => Awaitable<T>,
-    aborter: AbortController,
-    delay?: number
-  ): Promise<T> {
-    const timeout = delay ? setTimeout(() => {
-      aborter.abort(new TimeoutError())
-    }, delay) : undefined
-
-    try {
-      return await callback(aborter.signal)
-    } finally {
-      clearTimeout(timeout)
-    }
   }
 
   /**
