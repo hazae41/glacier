@@ -131,7 +131,7 @@ export function useSkeletonScrollableQuery<K, D, F>(): ScrollableSkeletonReactQu
     return undefined
   }, [undefined, undefined])
 
-  return { mutate, clear, fetch, refetch, scroll, suspend, peek }
+  return { mutateOrThrow: mutate, deleteOrThrow: clear, fetchOrThrow: fetch, refetchOrThrow: refetch, scroll, suspend, peek }
 }
 
 /**
@@ -254,11 +254,11 @@ export function useFetcherlessScrollableQuery<K, D, F>(
     optimistic,
     aborter,
     fetching,
-    mutate: mutate,
-    fetch,
-    refetch,
+    mutateOrThrow: mutate,
+    fetchOrThrow: fetch,
+    refetchOrThrow: refetch,
     scroll,
-    clear: clear,
+    deleteOrThrow: clear,
     suspend,
     peek,
   }
@@ -394,11 +394,11 @@ export function useFetcherfulScrollableQuery<K, D, F>(
     optimistic,
     aborter,
     fetching,
-    mutate,
-    fetch,
-    refetch,
+    mutateOrThrow: mutate,
+    fetchOrThrow: fetch,
+    refetchOrThrow: refetch,
     scroll,
-    clear,
+    deleteOrThrow: clear,
     suspend,
     peek
   }

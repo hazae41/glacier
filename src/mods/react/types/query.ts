@@ -68,30 +68,25 @@ export interface SkeletonReactQuery<K, D, F> extends Omit<SkeletonQuerySettings<
    * Mutate the cache
    * @param res 
    */
-  mutate(mutator: Mutator<D, F>): Promise<never>
+  mutateOrThrow(mutator: Mutator<D, F>): Promise<never>
 
   /**
    * Clear the cache
    */
-  clear(): Promise<never>
+  deleteOrThrow(): Promise<never>
 
   /**
-   * Fetch with cooldown
-   * @example You want to fetch and don't care if it's cooldowned
+   * Fetch or join the fetch if it's ongoing
+   * @example You just want some fresh data
    */
-  fetch(aborter?: AbortController): Promise<never>
+  fetchOrThrow(init?: RequestInit): Promise<never>
 
   /**
-   * Fetch without cooldown
+   * Fetch or replace the fetch if it's ongoing
    * @example User clicked on the refresh button
-   * @example You just made a POST request and want to get some fresh data
+   * @example You just made a POST request and want to get some updated fresh data
    */
-  refetch(aborter?: AbortController): Promise<never>
-
-  /**
-   * Suspend until the next state change, also launches an undeduped fetch
-   */
-  suspend(): Promise<never>
+  refetchOrThrow(init?: RequestInit): Promise<never>
 
 }
 
@@ -151,30 +146,25 @@ export interface FetcherfulReactQuery<K, D, F> extends Omit<FetcherfulQuerySetti
    * Mutate the cache
    * @param res 
    */
-  mutate(mutator: Mutator<D, F>): Promise<State<D, F>>
+  mutateOrThrow(mutator: Mutator<D, F>): Promise<State<D, F>>
 
   /**
    * Clear the cache
    */
-  clear(): Promise<State<D, F>>
+  deleteOrThrow(): Promise<State<D, F>>
 
   /**
-   * Fetch with cooldown
-   * @example You want to fetch and don't care if it's cooldowned
+   * Fetch or join the fetch if it's ongoing
+   * @example You just want some fresh data
    */
-  fetch(aborter?: AbortController): Promise<Fallback<State<D, F>>>
+  fetchOrThrow(init?: RequestInit): Promise<Fallback<State<D, F>>>
 
   /**
-   * Fetch without cooldown
+   * Fetch or replace the fetch if it's ongoing
    * @example User clicked on the refresh button
-   * @example You just made a POST request and want to get some fresh data
+   * @example You just made a POST request and want to get some updated fresh data
    */
-  refetch(aborter?: AbortController): Promise<State<D, F>>
-
-  /**
-   * Suspend until the next state change, also launches an undeduped fetch
-   */
-  suspend(): Promise<State<D, F>>
+  refetchOrThrow(init?: RequestInit): Promise<Fallback<State<D, F>>>
 
 }
 
@@ -234,29 +224,24 @@ export interface FetcherlessReactQuery<K, D, F> extends Omit<FetcherlessQuerySet
    * Mutate the cache
    * @param res 
    */
-  mutate(mutator: Mutator<D, F>): Promise<State<D, F>>
+  mutateOrThrow(mutator: Mutator<D, F>): Promise<State<D, F>>
 
   /**
    * Clear the cache
    */
-  clear(): Promise<State<D, F>>
+  deleteOrThrow(): Promise<State<D, F>>
 
   /**
-   * Fetch with cooldown
-   * @example You want to fetch and don't care if it's cooldowned
+   * Fetch or join the fetch if it's ongoing
+   * @example You just want some fresh data
    */
-  fetch(aborter?: AbortController): Promise<never>
+  fetchOrThrow(init?: RequestInit): Promise<never>
 
   /**
-   * Fetch without cooldown
+   * Fetch or replace the fetch if it's ongoing
    * @example User clicked on the refresh button
-   * @example You just made a POST request and want to get some fresh data
+   * @example You just made a POST request and want to get some updated fresh data
    */
-  refetch(aborter?: AbortController): Promise<never>
-
-  /**
-   * Suspend until the next state change, also launches an undeduped fetch
-   */
-  suspend(): Promise<never>
+  refetchOrThrow(init?: RequestInit): Promise<never>
 
 }

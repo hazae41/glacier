@@ -8,7 +8,7 @@ import { useEffect } from "react"
  * @param query 
  */
 export function useFetch<K, D, F>(query: ReactQuery<K, D, F>) {
-  const { ready, fetcher, fetch } = query
+  const { ready, fetcher, fetchOrThrow: fetch } = query
 
   useEffect(() => {
     if (!ready)
