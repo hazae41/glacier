@@ -1,3 +1,4 @@
+import { Awaitable } from "libs/promises/promises.js"
 
 export type Encoder<I, O> =
   | SyncEncoder<I, O>
@@ -8,7 +9,7 @@ export interface SyncEncoder<I, O> {
 }
 
 export interface AsyncEncoder<I, O> {
-  encodeOrThrow(input: I): Promise<O>
+  encodeOrThrow(input: I): Awaitable<O>
 }
 
 export type Bicoder<I, O> =
@@ -21,8 +22,8 @@ export interface SyncBicoder<I, O> {
 }
 
 export interface AsyncBicoder<I, O> {
-  encodeOrThrow(input: I): Promise<O>
-  decodeOrThrow(output: O): Promise<I>
+  encodeOrThrow(input: I): Awaitable<O>
+  decodeOrThrow(output: O): Awaitable<I>
 }
 
 export namespace Identity {

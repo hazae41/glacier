@@ -1,5 +1,6 @@
 import { Nullable } from "@hazae41/option"
 import { Database, Upgrader } from "@hazae41/serac"
+import { Awaitable } from "libs/promises/promises.js"
 import { Bicoder, Encoder } from "mods/coders/coder.js"
 import { RawState } from "mods/types/state.js"
 import { useRef } from "react"
@@ -8,7 +9,7 @@ import { AwaitingQueryStorage } from "../awaiting/index.js"
 export type Collector = (
   storage: SeracQueryStorage,
   key: IDBValidKey
-) => Promise<void>
+) => Awaitable<void>
 
 export interface Collected {
   readonly key: IDBValidKey
