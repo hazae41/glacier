@@ -2,7 +2,7 @@ import { Some } from "@hazae41/option";
 import { Arrays } from "libs/arrays/arrays.js";
 import { AbortSignals } from "libs/signals/index.js";
 import { core } from "mods/core/core.js";
-import { DEFAULT_EQUALS } from "mods/defaults.js";
+import { Equalsable } from "mods/equals/equals.js";
 import { Fetched } from "mods/fetched/fetched.js";
 import { TimesInit } from "mods/fetched/times.js";
 import { ScrollableFetcherfulQuerySettings } from "mods/types/settings.js";
@@ -41,8 +41,6 @@ export namespace Scrollable {
     presignal: AbortSignal,
     settings: ScrollableFetcherfulQuerySettings<K, D, F>
   ): Promise<State<D[], F>> {
-    const { dataEqualser = DEFAULT_EQUALS } = settings
-
     const signal = AbortSignal.any([presignal, AbortSignals.timeoutOrNever(settings.timeout)])
     const fetched = await settings.fetcher(settings.key, { signal })
 
@@ -55,7 +53,7 @@ export namespace Scrollable {
 
       const prenormalized = await core.prenormalizeOrThrow(timed, settings)
 
-      if (prenormalized?.isData() && previous.real?.data && dataEqualser(prenormalized.get(), previous.real.data.get()))
+      if (prenormalized?.isData() && previous.real?.data && Equalsable.equals(prenormalized.get(), previous.real.data.get()))
         return new Some(previous.real.data)
 
       return new Some(timed)

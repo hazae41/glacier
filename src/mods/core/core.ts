@@ -3,8 +3,8 @@ import { Nullable, Option, Some } from "@hazae41/option"
 import { SuperEventTarget } from "@hazae41/plume"
 import { Result } from "@hazae41/result"
 import { Time } from "libs/time/time.js"
-import { Bicoder, SyncIdentity } from "mods/coders/coder.js"
-import { DEFAULT_EQUALS } from "mods/defaults.js"
+import { Bicoder, Identity } from "mods/coders/coder.js"
+import { Equalsable } from "mods/equals/equals.js"
 import { Data } from "mods/fetched/data.js"
 import { Fail } from "mods/fetched/fail.js"
 import { Fetched, FetchedInit } from "mods/fetched/fetched.js"
@@ -221,8 +221,8 @@ export class Core {
   async storeOrThrow<K, D, F>(state: State<D, F>, settings: QuerySettings<K, D, F>): Promise<RawState> {
     const {
       key,
-      dataSerializer = SyncIdentity as Bicoder<D, unknown>,
-      errorSerializer = SyncIdentity as Bicoder<F, unknown>
+      dataSerializer = Identity as Bicoder<D, unknown>,
+      errorSerializer = Identity as Bicoder<F, unknown>
     } = settings
 
     if (state.real == null)
@@ -238,8 +238,8 @@ export class Core {
 
   async unstoreOrThrow<K, D, F>(stored: RawState, settings: QuerySettings<K, D, F>): Promise<State<D, F>> {
     const {
-      dataSerializer = SyncIdentity as Bicoder<D, unknown>,
-      errorSerializer = SyncIdentity as Bicoder<F, unknown>
+      dataSerializer = Identity as Bicoder<D, unknown>,
+      errorSerializer = Identity as Bicoder<F, unknown>
     } = settings
 
     if (stored == null)
@@ -340,8 +340,6 @@ export class Core {
    * @returns 
    */
   async updateOrThrow<K, D, F>(cacheKey: string, setter: Setter<D, F>, settings: QuerySettings<K, D, F>): Promise<State<D, F>> {
-    const { dataEqualser = DEFAULT_EQUALS, errorEqualser = DEFAULT_EQUALS } = settings
-
     return await this.setOrThrow(cacheKey, async (previous) => {
       const updated = await Promise.resolve(setter(previous))
 
@@ -356,10 +354,10 @@ export class Core {
       const normalized = await this.#normalizeOrThrow(next.real?.current, settings)
       next = this.#mergeRealStateWithFetched(next, normalized)
 
-      if (next.real?.current.isData() && previous.real?.current.isData() && dataEqualser(next.real.current.get(), previous.real.current.get()))
+      if (next.real?.current.isData() && previous.real?.current.isData() && Equalsable.equals(next.real.current.get(), previous.real.current.get()))
         next = new RealState(new DataState(new Data(previous.real.current.get(), next.real.current)))
 
-      if (next.real?.current.isFail() && previous.real?.current.isFail() && errorEqualser(next.real.current.getErr(), previous.real.current.getErr()))
+      if (next.real?.current.isFail() && previous.real?.current.isFail() && Equalsable.equals(next.real.current.getErr(), previous.real.current.getErr()))
         next = new RealState(new FailState(new Fail(previous.real.current.getErr(), next.real.current), previous.real.data))
 
       return await this.#reoptimizeOrThrow(cacheKey, next)

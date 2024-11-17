@@ -2,7 +2,7 @@ import { Base64 } from "@hazae41/base64";
 import { Bytes } from "@hazae41/bytes";
 import { AsyncBicoder } from "mods/coders/coder.js";
 
-export class AesGcmCoder implements AsyncBicoder<string, string> {
+export class AesGcmBicoder implements AsyncBicoder<string, string> {
 
   constructor(
     readonly key: CryptoKey

@@ -25,7 +25,7 @@ export interface AsyncBicoder<I, O> {
   decodeOrThrow(output: O): Promise<I>
 }
 
-export namespace SyncIdentity {
+export namespace Identity {
 
   export function encodeOrThrow<T>(value: T): T {
     return value
@@ -37,26 +37,13 @@ export namespace SyncIdentity {
 
 }
 
-export namespace SyncJson {
+export namespace Jsoned {
 
   export function encodeOrThrow<T>(value: T): string {
     return JSON.stringify(value)
   }
 
   export function decodeOrThrow<T>(value: string): T {
-    return JSON.parse(value) as T
-  }
-
-}
-
-
-export namespace AsyncJson {
-
-  export async function encodeOrThrow<T>(value: T): Promise<string> {
-    return JSON.stringify(value)
-  }
-
-  export async function decodeOrThrow<T>(value: string): Promise<T> {
     return JSON.parse(value) as T
   }
 
@@ -79,7 +66,7 @@ export class AsyncPipeBicoder<I, X, O> implements AsyncBicoder<I, O> {
 
 }
 
-export class AsyncPipeEncoder<I, X, O> implements AsyncEncoder<I, O>{
+export class AsyncPipeEncoder<I, X, O> implements AsyncEncoder<I, O> {
 
   constructor(
     readonly outer: AsyncEncoder<I, X>,
@@ -109,7 +96,7 @@ export class SyncPipeBicoder<I, X, O> implements SyncBicoder<I, O> {
 
 }
 
-export class SyncPipeEncoder<I, X, O> implements SyncEncoder<I, O>{
+export class SyncPipeEncoder<I, X, O> implements SyncEncoder<I, O> {
 
   constructor(
     readonly outer: SyncEncoder<I, X>,

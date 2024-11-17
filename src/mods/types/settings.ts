@@ -1,5 +1,4 @@
-import { Bicoder, SyncEncoder } from "mods/coders/coder.js"
-import { Equalser } from "mods/equals/equals.js"
+import { Bicoder } from "mods/coders/coder.js"
 import { QueryStorage } from "mods/storages/storage.js"
 import { Normalizer } from "mods/types/normalizer.js"
 import { Fetcher } from "./fetcher.js"
@@ -32,9 +31,6 @@ export interface SkeletonQuerySettings<K, D, F> {
   readonly dataSerializer?: Bicoder<D, unknown>
   readonly errorSerializer?: Bicoder<F, unknown>
 
-  readonly dataEqualser?: Equalser<D>,
-  readonly errorEqualser?: Equalser<F>
-
   readonly storage?: QueryStorage
 }
 
@@ -52,13 +48,8 @@ export interface FetcherfulQuerySettings<K, D, F> {
   readonly normalizer?: Normalizer<D, F>
   readonly indexer?: Indexer<D, F>
 
-  readonly keySerializer?: SyncEncoder<K, string>,
-
   readonly dataSerializer?: Bicoder<D, unknown>
   readonly errorSerializer?: Bicoder<F, unknown>
-
-  readonly dataEqualser?: Equalser<D>,
-  readonly errorEqualser?: Equalser<F>
 
   readonly storage?: QueryStorage
 }
@@ -77,13 +68,8 @@ export interface FetcherlessQuerySettings<K, D, F> {
   readonly normalizer?: Normalizer<D, F>
   readonly indexer?: Indexer<D, F>
 
-  readonly keySerializer?: SyncEncoder<K, string>,
-
   readonly dataSerializer?: Bicoder<D, unknown>
   readonly errorSerializer?: Bicoder<F, unknown>
-
-  readonly dataEqualser?: Equalser<D>,
-  readonly errorEqualser?: Equalser<F>
 
   readonly storage?: QueryStorage
 }
