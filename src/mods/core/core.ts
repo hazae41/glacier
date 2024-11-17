@@ -3,10 +3,9 @@ import { Nullable, Option, Some } from "@hazae41/option"
 import { SuperEventTarget } from "@hazae41/plume"
 import { Result } from "@hazae41/result"
 import { Time } from "libs/time/time.js"
-import { Bicoder, Identity } from "mods/coders/coder.js"
 import { Equalsable } from "mods/equals/equals.js"
-import { Data } from "mods/fetched/data.js"
-import { Fail } from "mods/fetched/fail.js"
+import { Data, DataInit } from "mods/fetched/data.js"
+import { Fail, FailInit } from "mods/fetched/fail.js"
 import { Fetched, FetchedInit } from "mods/fetched/fetched.js"
 import { Mutator, Setter } from "mods/types/mutator.js"
 import { QuerySettings } from "mods/types/settings.js"
@@ -219,29 +218,20 @@ export class Core {
   }
 
   async storeOrThrow<K, D, F>(state: State<D, F>, settings: QuerySettings<K, D, F>): Promise<RawState> {
-    const {
-      key,
-      dataSerializer = Identity as Bicoder<D, unknown>,
-      errorSerializer = Identity as Bicoder<F, unknown>
-    } = settings
+    const { key } = settings
 
     if (state.real == null)
       return undefined
 
     const { time, cooldown, expiration } = state.real.current
 
-    const data = await Option.wrap(state.real.data).map(d => d.map(async x => await Promise.resolve(dataSerializer.encodeOrThrow(x)))).then(r => r.getOrNull())
-    const error = await Option.wrap(state.real.error).map(d => d.mapErr(async x => await Promise.resolve(errorSerializer.encodeOrThrow(x)))).then(r => r.getOrNull())
+    const data = state.real.data
+    const error = state.real.error
 
     return { key, version: 3, data, error, time, cooldown, expiration }
   }
 
   async unstoreOrThrow<K, D, F>(stored: RawState, settings: QuerySettings<K, D, F>): Promise<State<D, F>> {
-    const {
-      dataSerializer = Identity as Bicoder<D, unknown>,
-      errorSerializer = Identity as Bicoder<F, unknown>
-    } = settings
-
     if (stored == null)
       return new RealState<D, F>(undefined)
 
@@ -249,8 +239,8 @@ export class Core {
       const { time, cooldown, expiration } = stored
       const times = { time, cooldown, expiration }
 
-      const data = await Option.wrap(stored.data).map(async x => new Data(await Promise.resolve(dataSerializer.decodeOrThrow(x)), times))
-      const error = await Option.wrap(stored.error).map(async x => new Fail(await Promise.resolve(errorSerializer.decodeOrThrow(x)), times))
+      const data = Option.wrap(stored.data).mapSync(x => new Data(x as D, times))
+      const error = Option.wrap(stored.error).mapSync(x => new Fail(x as F, times))
 
       if (error.isSome())
         return new RealState(new FailState<D, F>(error.get(), data.getOrNull()))
@@ -262,8 +252,8 @@ export class Core {
     }
 
     if (stored.version === 2 || stored.version === 3) {
-      const data = await Option.wrap(stored.data).map(x => Data.from(x).map(async x => await Promise.resolve(dataSerializer.decodeOrThrow(x))))
-      const error = await Option.wrap(stored.error).map(x => Fail.from(x).mapErr(async x => await Promise.resolve(errorSerializer.decodeOrThrow(x))))
+      const data = Option.wrap(stored.data).mapSync(x => Data.from(x as DataInit<D>))
+      const error = Option.wrap(stored.error).mapSync(x => Fail.from(x as FailInit<F>))
 
       if (error.isSome())
         return new RealState(new FailState<D, F>(error.get(), data.getOrNull()))

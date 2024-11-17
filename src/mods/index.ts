@@ -1,6 +1,5 @@
 export * from "./coders/index.js"
 export * from "./core/index.js"
-export * from "./defaults.js"
 export * from "./equals/index.js"
 export * from "./fetched/index.js"
 export * from "./queries/index.js"

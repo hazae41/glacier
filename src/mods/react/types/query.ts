@@ -1,6 +1,5 @@
 import { Nullable } from "@hazae41/option"
 import { Fallback } from "@hazae41/result"
-import { Bicoder } from "mods/coders/coder.js"
 import { Data } from "mods/fetched/data.js"
 import { Fail } from "mods/fetched/fail.js"
 import { Fetched } from "mods/fetched/fetched.js"
@@ -22,9 +21,6 @@ export interface ReactQueryLike<K, D, F> {
   readonly fetcher?: Fetcher<K, D, F>
   readonly normalizer?: Normalizer<D, F>
   readonly indexer?: Indexer<D, F>
-
-  readonly dataSerializer?: Bicoder<D, unknown>
-  readonly errorSerializer?: Bicoder<F, unknown>
 
   readonly storage?: QueryStorage
 

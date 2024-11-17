@@ -1,4 +1,3 @@
-import { Bicoder } from "mods/coders/coder.js"
 import { QueryStorage } from "mods/storages/storage.js"
 import { Normalizer } from "mods/types/normalizer.js"
 import { Fetcher } from "./fetcher.js"
@@ -28,9 +27,6 @@ export interface SkeletonQuerySettings<K, D, F> {
   readonly normalizer?: Normalizer<D, F>
   readonly indexer?: Indexer<D, F>
 
-  readonly dataSerializer?: Bicoder<D, unknown>
-  readonly errorSerializer?: Bicoder<F, unknown>
-
   readonly storage?: QueryStorage
 }
 
@@ -48,9 +44,6 @@ export interface FetcherfulQuerySettings<K, D, F> {
   readonly normalizer?: Normalizer<D, F>
   readonly indexer?: Indexer<D, F>
 
-  readonly dataSerializer?: Bicoder<D, unknown>
-  readonly errorSerializer?: Bicoder<F, unknown>
-
   readonly storage?: QueryStorage
 }
 
@@ -67,9 +60,6 @@ export interface FetcherlessQuerySettings<K, D, F> {
   readonly fetcher?: undefined
   readonly normalizer?: Normalizer<D, F>
   readonly indexer?: Indexer<D, F>
-
-  readonly dataSerializer?: Bicoder<D, unknown>
-  readonly errorSerializer?: Bicoder<F, unknown>
 
   readonly storage?: QueryStorage
 }
