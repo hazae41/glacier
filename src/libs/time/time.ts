@@ -1,3 +1,4 @@
+import { Nullable } from "@hazae41/option"
 
 export namespace Time {
 
@@ -9,7 +10,7 @@ export namespace Time {
     return time - Date.now()
   }
 
-  export function isBefore(left?: number, right?: number) {
+  export function isBefore(left?: Nullable<number>, right?: Nullable<number>) {
     if (left == null)
       return
     if (right == null)
@@ -17,7 +18,7 @@ export namespace Time {
     return left < right
   }
 
-  export function isAfter(left?: number, right?: number) {
+  export function isAfter(left?: Nullable<number>, right?: Nullable<number>) {
     if (left == null)
       return
     if (right == null)
@@ -25,11 +26,11 @@ export namespace Time {
     return left > right
   }
 
-  export function isBeforeNow(time?: number) {
+  export function isBeforeNow(time?: Nullable<number>) {
     return isBefore(time, Date.now())
   }
 
-  export function isAfterNow(time?: number) {
+  export function isAfterNow(time?: Nullable<number>) {
     return isAfter(time, Date.now())
   }
 

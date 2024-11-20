@@ -1,3 +1,4 @@
+import { Nullable } from "@hazae41/option"
 import { Err } from "@hazae41/result"
 import { Awaitable } from "libs/promises/promises.js"
 import { Times, TimesInit } from "./times.js"
@@ -26,17 +27,21 @@ export class Fail<T> extends Err<T> implements FailInit<T>, Times {
 
   readonly error: T
 
-  readonly time: number
-  readonly cooldown?: number
-  readonly expiration?: number
+  readonly time = Date.now()
+
+  readonly cooldown?: Nullable<number>
+  readonly expiration?: Nullable<number>
 
   constructor(error: T, times: TimesInit = {}) {
     super(error)
 
-    const { time = Date.now(), cooldown, expiration } = times
+    const { time, cooldown, expiration } = times
 
     this.error = error
-    this.time = time
+
+    if (time != null)
+      this.time = time
+
     this.cooldown = cooldown
     this.expiration = expiration
   }

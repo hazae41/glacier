@@ -64,7 +64,7 @@ export class SeracQueryStorage {
 
     const storageValue = await Promise.resolve(this.encoders.value.encodeOrThrow(state))
 
-    await this.database.setOrThrow(storageKey, storageValue, state.expiration)
+    await this.database.setOrThrow(storageKey, storageValue, state.expiration ?? undefined)
   }
 
   async getOrThrow(cacheKey: string): Promise<RawState> {

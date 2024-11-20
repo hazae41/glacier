@@ -1,3 +1,4 @@
+import { Nullable } from "@hazae41/option"
 import { Ok } from "@hazae41/result"
 import { Awaitable } from "libs/promises/promises.js"
 import { Times, TimesInit } from "./times.js"
@@ -26,17 +27,21 @@ export class Data<T> extends Ok<T> implements DataInit<T>, Times {
 
   readonly data: T
 
-  readonly time: number
-  readonly cooldown?: number
-  readonly expiration?: number
+  readonly time = Date.now()
+
+  readonly cooldown?: Nullable<number>
+  readonly expiration?: Nullable<number>
 
   constructor(data: T, times: TimesInit = {}) {
     super(data)
 
-    const { time = Date.now(), cooldown, expiration } = times
+    const { time, cooldown, expiration } = times
 
     this.data = data
-    this.time = time
+
+    if (time != null)
+      this.time = time
+
     this.cooldown = cooldown
     this.expiration = expiration
   }

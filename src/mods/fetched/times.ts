@@ -1,27 +1,29 @@
+import { Nullable } from "@hazae41/option"
+
 export interface TimesInit {
-  readonly time?: number,
-  readonly cooldown?: number,
-  readonly expiration?: number
+  readonly time?: Nullable<number>,
+  readonly cooldown?: Nullable<number>,
+  readonly expiration?: Nullable<number>
 }
 
 export interface Times {
   readonly time: number,
-  readonly cooldown?: number,
-  readonly expiration?: number
+  readonly cooldown?: Nullable<number>,
+  readonly expiration?: Nullable<number>
 }
 
 export namespace TimesInit {
 
   export function merge(a: TimesInit, b?: TimesInit): TimesInit {
-    const time = "time" in a
+    const time = a.time !== undefined
       ? a.time
       : b?.time
 
-    const cooldown = "cooldown" in a
+    const cooldown = a.cooldown !== undefined
       ? a.cooldown
       : b?.cooldown
 
-    const expiration = "expiration" in a
+    const expiration = a.expiration !== undefined
       ? a.expiration
       : b?.expiration
 

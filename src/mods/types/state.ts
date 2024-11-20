@@ -1,3 +1,4 @@
+import { Nullable } from "@hazae41/option"
 import { Data, DataInit } from "mods/fetched/data.js"
 import { Fail, FailInit } from "mods/fetched/fail.js"
 
@@ -13,8 +14,8 @@ export interface RawState1<D = unknown, F = unknown> {
   readonly data?: D
   readonly error?: F
   readonly time: number,
-  readonly cooldown?: number
-  readonly expiration?: number
+  readonly cooldown?: Nullable<number>
+  readonly expiration?: Nullable<number>
 }
 
 export interface RawState2<D = unknown, F = unknown> {
@@ -22,8 +23,8 @@ export interface RawState2<D = unknown, F = unknown> {
   readonly data?: DataInit<D>
   readonly error?: FailInit<F>
   readonly time: number,
-  readonly cooldown?: number
-  readonly expiration?: number
+  readonly cooldown?: Nullable<number>
+  readonly expiration?: Nullable<number>
 }
 
 export interface RawState3<K = unknown, D = unknown, F = unknown> {
@@ -32,8 +33,8 @@ export interface RawState3<K = unknown, D = unknown, F = unknown> {
   readonly data?: DataInit<D>
   readonly error?: FailInit<F>
   readonly time: number,
-  readonly cooldown?: number
-  readonly expiration?: number
+  readonly cooldown?: Nullable<number>
+  readonly expiration?: Nullable<number>
 }
 
 export interface StateAndAborter<D, F> {
