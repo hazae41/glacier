@@ -7,7 +7,7 @@ import { useEffect } from "react"
  * @param query 
  * @example You want to get some data once and share it in multiple components
  */
-export function useOnce<K, D, F>(query: ReactQuery<K, D, F>) {
+export function useOnce<K, D, F>(query: ReactQuery<K, D, F>, init?: RequestInit) {
   const { fetcher, ready, data, fetchOrThrow: fetch } = query
 
   useEffect(() => {
@@ -17,6 +17,6 @@ export function useOnce<K, D, F>(query: ReactQuery<K, D, F>) {
       return
     if (data != null)
       return
-    fetch().catch(console.warn)
+    fetch(init).catch(console.warn)
   }, [ready, data, fetch])
 }

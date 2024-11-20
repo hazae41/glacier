@@ -5,7 +5,7 @@ import { useEffect } from "react"
  * Do a request when the browser is online
  * @param query 
  */
-export function useOnline<K, D, F>(query: ReactQuery<K, D, F>) {
+export function useOnline<K, D, F>(query: ReactQuery<K, D, F>, init?: RequestInit) {
   const { fetcher, ready, fetchOrThrow: fetch } = query
 
   useEffect(() => {
@@ -14,7 +14,7 @@ export function useOnline<K, D, F>(query: ReactQuery<K, D, F>) {
     if (fetcher == null)
       return
 
-    const f = () => fetch().catch(console.warn)
+    const f = () => fetch(init).catch(console.warn)
 
     addEventListener("online", f)
     return () => removeEventListener("online", f)

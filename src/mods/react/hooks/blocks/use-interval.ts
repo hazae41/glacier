@@ -7,7 +7,7 @@ import { useEffect } from "react"
  * @param query 
  * @param interval 
  */
-export function useInterval<K, D, F>(query: ReactQuery<K, D, F>, interval: number) {
+export function useInterval<K, D, F>(query: ReactQuery<K, D, F>, interval: number, init?: RequestInit) {
   const { fetcher, ready, fetchOrThrow: fetch } = query
 
   useEffect(() => {
@@ -18,7 +18,7 @@ export function useInterval<K, D, F>(query: ReactQuery<K, D, F>, interval: numbe
     if (!interval)
       return
 
-    const f = () => fetch().catch(console.warn)
+    const f = () => fetch(init).catch(console.warn)
     const i = setInterval(f, interval)
     return () => clearInterval(i)
   }, [ready, fetch, interval])

@@ -7,7 +7,7 @@ import { useEffect } from "react"
  * @see useOnce for doing a request only if there is no data yet
  * @param query 
  */
-export function useMount<K, D, F>(query: ReactQuery<K, D, F>) {
+export function useMount<K, D, F>(query: ReactQuery<K, D, F>, init?: RequestInit) {
   const { fetcher, ready, fetchOrThrow: fetch } = query
 
   useEffect(() => {
@@ -15,6 +15,6 @@ export function useMount<K, D, F>(query: ReactQuery<K, D, F>) {
       return
     if (fetcher == null)
       return
-    fetch().catch(console.warn)
+    fetch(init).catch(console.warn)
   }, [ready])
 }

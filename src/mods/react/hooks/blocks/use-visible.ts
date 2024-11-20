@@ -5,7 +5,7 @@ import { useEffect } from "react"
  * Do a request when the tab is visible
  * @param query 
  */
-export function useVisible<K, D, F>(query: ReactQuery<K, D, F>) {
+export function useVisible<K, D, F>(query: ReactQuery<K, D, F>, init?: RequestInit) {
   const { fetcher, ready, fetchOrThrow: fetch } = query
 
   useEffect(() => {
@@ -17,7 +17,7 @@ export function useVisible<K, D, F>(query: ReactQuery<K, D, F>) {
     const f = () => {
       if (document.hidden)
         return
-      fetch().catch(console.warn)
+      fetch(init).catch(console.warn)
     }
 
     document.addEventListener("visibilitychange", f)
