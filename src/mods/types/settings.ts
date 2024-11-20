@@ -20,6 +20,7 @@ export interface SkeletonQuerySettings<K, D, F> {
   readonly key?: K
 
   readonly timeout?: number,
+
   readonly cooldown?: number,
   readonly expiration?: number
 
@@ -37,6 +38,7 @@ export interface FetcherfulQuerySettings<K, D, F> {
   readonly key: K
 
   readonly timeout?: number,
+
   readonly cooldown?: number,
   readonly expiration?: number
 
@@ -54,6 +56,7 @@ export interface FetcherlessQuerySettings<K, D, F> {
   readonly key: K
 
   readonly timeout?: number,
+
   readonly cooldown?: number,
   readonly expiration?: number
 

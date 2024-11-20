@@ -7,6 +7,7 @@ import { Equalsable } from "mods/equals/equals.js"
 import { Data, DataInit } from "mods/fetched/data.js"
 import { Fail, FailInit } from "mods/fetched/fail.js"
 import { Fetched, FetchedInit } from "mods/fetched/fetched.js"
+import { TimesInit } from "mods/fetched/times.js"
 import { Mutator, Setter } from "mods/types/mutator.js"
 import { QuerySettings } from "mods/types/settings.js"
 import { DataState, FailState, FakeState, RawState, RealState, State } from "mods/types/state.js"
@@ -369,9 +370,15 @@ export class Core {
       if (mutate.isNone())
         return previous
 
-      const fetched = Option.wrap(mutate.get()).mapSync(Fetched.from).getOrNull()
+      const mutated = mutate.get()
 
-      return this.#mergeRealStateWithFetched(previous, fetched)
+      if (mutated == null)
+        return this.#mergeRealStateWithFetched(previous, undefined)
+
+      const times = TimesInit.merge(mutated, settings)
+      const timed = Fetched.from(mutated).setTimes(times)
+
+      return this.#mergeRealStateWithFetched(previous, timed)
     }, settings)
   }
 

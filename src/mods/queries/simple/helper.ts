@@ -1,7 +1,5 @@
 import { AbortSignals } from "libs/signals/index.js";
 import { core } from "mods/core/core.js";
-import { Fetched } from "mods/fetched/fetched.js";
-import { TimesInit } from "mods/fetched/times.js";
 import { FetcherfulQuerySettings } from "mods/types/settings.js";
 import { State } from "mods/types/state.js";
 import { Updater } from "mods/types/updater.js";
@@ -22,10 +20,7 @@ export namespace Simple {
     const signal = AbortSignal.any([presignal, AbortSignals.timeoutOrNever(settings.timeout)])
     const fetched = await settings.fetcher(settings.key, { signal })
 
-    const times = TimesInit.merge(fetched, settings)
-    const timed = Fetched.from(fetched).setTimes(times)
-
-    return await core.replaceOrThrow(cacheKey, timed, settings)
+    return await core.replaceOrThrow(cacheKey, fetched, settings)
   }
 
   /**
@@ -61,10 +56,7 @@ export namespace Simple {
 
       core.deoptimize(cacheKey, uuid)
 
-      const times = TimesInit.merge(fetched, settings)
-      const timed = Fetched.from(fetched).setTimes(times)
-
-      return await core.replaceOrThrow(cacheKey, timed, settings)
+      return await core.replaceOrThrow(cacheKey, fetched, settings)
     } catch (e: unknown) {
       core.deoptimize(cacheKey, uuid)
       core.reoptimizeOrThrow(cacheKey, settings)

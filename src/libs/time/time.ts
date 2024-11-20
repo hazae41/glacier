@@ -2,11 +2,15 @@ import { Nullable } from "@hazae41/option"
 
 export namespace Time {
 
-  export function fromDelay(delay: number) {
+  export function fromDelay(delay: Nullable<number>) {
+    if (delay == null)
+      return
     return Date.now() + delay
   }
 
-  export function toDelay(time: number) {
+  export function toDelay(time?: Nullable<number>) {
+    if (time == null)
+      return
     return time - Date.now()
   }
 

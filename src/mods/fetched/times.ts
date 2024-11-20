@@ -1,4 +1,5 @@
 import { Nullable } from "@hazae41/option"
+import { Time } from "libs/time/time.js"
 
 export interface TimesInit {
   readonly time?: Nullable<number>,
@@ -12,20 +13,19 @@ export interface Times {
   readonly expiration?: Nullable<number>
 }
 
+export interface CooldownAndExpiration {
+  readonly cooldown?: Nullable<number>,
+  readonly expiration?: Nullable<number>
+}
+
 export namespace TimesInit {
 
-  export function merge(a: TimesInit, b?: TimesInit): TimesInit {
-    const time = a.time !== undefined
-      ? a.time
-      : b?.time
-
-    const cooldown = a.cooldown !== undefined
-      ? a.cooldown
-      : b?.cooldown
-
-    const expiration = a.expiration !== undefined
-      ? a.expiration
-      : b?.expiration
+  export function merge(times: TimesInit, delays?: CooldownAndExpiration): TimesInit {
+    const {
+      time,
+      cooldown = Time.fromDelay(delays?.cooldown),
+      expiration = Time.fromDelay(delays?.expiration)
+    } = times
 
     return { time, expiration, cooldown }
   }

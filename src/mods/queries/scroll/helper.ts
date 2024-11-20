@@ -84,14 +84,11 @@ export namespace Scrollable {
       throw new ScrollError()
 
     const signal = AbortSignal.any([presignal, AbortSignals.timeoutOrNever(settings.timeout)])
-    const fetched = await settings.fetcher(key, { signal })
-
-    const times = TimesInit.merge(fetched, settings)
-    const timed = Fetched.from(fetched).setTimes(times)
+    const fetched = Fetched.from(await settings.fetcher(key, { signal }))
 
     return await core.mutateOrThrow(cacheKey, async (previous) => {
       const previousPages = previous.real?.data?.get() ?? []
-      const paginated = timed.mapSync(data => [...previousPages, ...data])
+      const paginated = fetched.mapSync(data => [...previousPages, ...data])
 
       return new Some(paginated)
     }, settings)
