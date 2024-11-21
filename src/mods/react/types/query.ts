@@ -14,10 +14,6 @@ import { FetchedState, State } from "mods/types/state.js"
 export interface ReactQueryLike<K, D, F> {
   readonly key?: K
 
-  readonly timeout?: number,
-  readonly cooldown?: number,
-  readonly expiration?: number
-
   readonly fetcher?: Fetcher<K, D, F>
   readonly normalizer?: Normalizer<D, F>
   readonly indexer?: Indexer<D, F>

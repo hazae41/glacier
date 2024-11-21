@@ -1,9 +1,8 @@
-import { Optional } from "@hazae41/option"
 import { Catched, Err, Ok, Result } from "@hazae41/result"
 import { Awaitable } from "libs/promises/promises.js"
 import { Data, DataInit } from "./data.js"
 import { Fail, FailInit } from "./fail.js"
-import { Times, TimesInit } from "./times.js"
+import { Cached, CachedInit, Timed, TimedInit } from "./times.js"
 
 export type FetchedInit<D, F> =
   | DataInit<D>
@@ -34,21 +33,17 @@ export namespace Fetched {
       return Data.from<DataInit.Inner<T>>(init)
   }
 
-  export interface Timed {
-    readonly times?: Times
-  }
+  export function rewrap<T extends Ok.Infer<T>>(result: T & Timed & Cached, init?: TimedInit & CachedInit): Data<Ok.Inner<T>>
 
-  export function rewrap<T extends Ok.Infer<T>>(result: T & Timed, times?: TimesInit): Data<Ok.Inner<T>>
+  export function rewrap<T extends Err.Infer<T>>(result: T & Timed & Cached, init?: TimedInit & CachedInit): Fail<Err.Inner<T>>
 
-  export function rewrap<T extends Err.Infer<T>>(result: T & Timed, times?: TimesInit): Fail<Err.Inner<T>>
+  export function rewrap<T extends Result.Infer<T>>(result: T & Timed & Cached, init?: TimedInit & CachedInit): Fetched<Ok.Inner<T>, Err.Inner<T>>
 
-  export function rewrap<T extends Result.Infer<T>>(result: T & Timed, times?: TimesInit): Fetched<Ok.Inner<T>, Err.Inner<T>>
-
-  export function rewrap<T extends Result.Infer<T>>(result: T & Timed, times: Optional<TimesInit> = result.times): Fetched<Ok.Inner<T>, Err.Inner<T>> {
+  export function rewrap<T extends Result.Infer<T>>(result: T & Timed & Cached, init: TimedInit & CachedInit = result): Fetched<Ok.Inner<T>, Err.Inner<T>> {
     if (result.isErr())
-      return new Fail(result.getErr(), times)
+      return new Fail(result.getErr(), init)
     else
-      return new Data(result.get(), times)
+      return new Data(result.get(), init)
   }
 
   /**
@@ -56,11 +51,11 @@ export namespace Fetched {
    * @param callback
    * @returns
    */
-  export async function runAndWrap<T>(callback: () => Awaitable<T>, times: TimesInit = {}): Promise<Fetched<T, unknown>> {
+  export async function runAndWrap<T>(callback: () => Awaitable<T>, init?: TimedInit & CachedInit): Promise<Fetched<T, unknown>> {
     try {
-      return new Data(await callback(), times)
+      return new Data(await callback(), init)
     } catch (e: unknown) {
-      return new Fail(e, times)
+      return new Fail(e, init)
     }
   }
 
@@ -69,11 +64,11 @@ export namespace Fetched {
    * @param callback
    * @returns
    */
-  export function runAndWrapSync<T>(callback: () => T, times: TimesInit = {}): Fetched<T, unknown> {
+  export function runAndWrapSync<T>(callback: () => T, init?: TimedInit & CachedInit): Fetched<T, unknown> {
     try {
-      return new Data(callback(), times)
+      return new Data(callback(), init)
     } catch (e: unknown) {
-      return new Fail(e, times)
+      return new Fail(e, init)
     }
   }
 
@@ -82,11 +77,11 @@ export namespace Fetched {
    * @param callback
    * @returns
    */
-  export async function runAndDoubleWrap<T>(callback: () => Awaitable<T>, times: TimesInit = {}): Promise<Fetched<T, Error>> {
+  export async function runAndDoubleWrap<T>(callback: () => Awaitable<T>, init?: TimedInit & CachedInit): Promise<Fetched<T, Error>> {
     try {
-      return new Data(await callback(), times)
+      return new Data(await callback(), init)
     } catch (e: unknown) {
-      return new Fail(Catched.wrap(e), times)
+      return new Fail(Catched.wrap(e), init)
     }
   }
 
@@ -95,11 +90,11 @@ export namespace Fetched {
    * @param callback
    * @returns
    */
-  export function runAndDoubleWrapSync<T>(callback: () => T, times: TimesInit = {}): Fetched<T, Error> {
+  export function runAndDoubleWrapSync<T>(callback: () => T, init?: TimedInit & CachedInit): Fetched<T, Error> {
     try {
-      return new Data(callback(), times)
+      return new Data(callback(), init)
     } catch (e: unknown) {
-      return new Fail(Catched.wrap(e), times)
+      return new Fail(Catched.wrap(e), init)
     }
   }
 
@@ -108,11 +103,11 @@ export namespace Fetched {
    * @param callback
    * @returns
    */
-  export async function runOrWrap<F extends Fetched.Infer<F>>(callback: () => Awaitable<F>, times: TimesInit = {}): Promise<F | Fail<unknown>> {
+  export async function runOrWrap<F extends Fetched.Infer<F>>(callback: () => Awaitable<F>, init?: TimedInit & CachedInit): Promise<F | Fail<unknown>> {
     try {
       return await callback()
     } catch (e: unknown) {
-      return new Fail(e, times)
+      return new Fail(e, init)
     }
   }
 
@@ -121,11 +116,11 @@ export namespace Fetched {
    * @param callback
    * @returns
    */
-  export function runOrWrapSync<F extends Fetched.Infer<F>>(callback: () => F, times: TimesInit = {}): F | Fail<unknown> {
+  export function runOrWrapSync<F extends Fetched.Infer<F>>(callback: () => F, init?: TimedInit & CachedInit): F | Fail<unknown> {
     try {
       return callback()
     } catch (e: unknown) {
-      return new Fail(e, times)
+      return new Fail(e, init)
     }
   }
 
@@ -134,11 +129,11 @@ export namespace Fetched {
    * @param callback
    * @returns
    */
-  export async function runOrDoubleWrap<F extends Fetched.Infer<F>>(callback: () => Awaitable<F>, times: TimesInit = {}): Promise<F | Fail<Error>> {
+  export async function runOrDoubleWrap<F extends Fetched.Infer<F>>(callback: () => Awaitable<F>, init?: TimedInit & CachedInit): Promise<F | Fail<Error>> {
     try {
       return await callback()
     } catch (e: unknown) {
-      return new Fail(Catched.wrap(e), times)
+      return new Fail(Catched.wrap(e), init)
     }
   }
 
@@ -147,11 +142,11 @@ export namespace Fetched {
    * @param callback
    * @returns
    */
-  export function runOrDoubleWrapSync<F extends Result.Infer<F>>(callback: () => F, times: TimesInit = {}): F | Fail<Error> {
+  export function runOrDoubleWrapSync<F extends Result.Infer<F>>(callback: () => F, init: TimedInit & CachedInit): F | Fail<Error> {
     try {
       return callback()
     } catch (e: unknown) {
-      return new Fail(Catched.wrap(e), times)
+      return new Fail(Catched.wrap(e), init)
     }
   }
 

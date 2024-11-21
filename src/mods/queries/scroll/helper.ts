@@ -1,10 +1,8 @@
 import { Some } from "@hazae41/option";
 import { Arrays } from "libs/arrays/arrays.js";
-import { AbortSignals } from "libs/signals/index.js";
+import { equals } from "libs/equals/index.js";
 import { core } from "mods/core/core.js";
-import { Equalsable } from "mods/equals/equals.js";
 import { Fetched } from "mods/fetched/fetched.js";
-import { TimesInit } from "mods/fetched/times.js";
 import { ScrollableFetcherfulQuerySettings } from "mods/types/settings.js";
 import { State } from "mods/types/state.js";
 
@@ -38,25 +36,21 @@ export namespace Scrollable {
    */
   export async function fetchOrThrow<K, D, F>(
     cacheKey: string,
-    presignal: AbortSignal,
+    signal: AbortSignal,
     settings: ScrollableFetcherfulQuerySettings<K, D, F>
   ): Promise<State<D[], F>> {
-    const signal = AbortSignal.any([presignal, AbortSignals.timeoutOrNever(settings.timeout)])
-    const fetched = await settings.fetcher(settings.key, { signal })
-
-    const times = TimesInit.merge(fetched, settings)
-    const timed = Fetched.from(fetched).setTimes(times)
+    const fetched = Fetched.from(await settings.fetcher(settings.key, { signal }))
 
     return await core.mutateOrThrow(cacheKey, async (previous) => {
-      if (timed.isErr())
-        return new Some(timed)
+      if (fetched.isErr())
+        return new Some(fetched)
 
-      const prenormalized = await core.prenormalizeOrThrow(timed, settings)
+      const prenormalized = await core.prenormalizeOrThrow(fetched, settings)
 
-      if (prenormalized?.isData() && previous.real?.data && Equalsable.equals(prenormalized.get(), previous.real.data.get()))
+      if (prenormalized?.isData() && previous.real?.data && equals(prenormalized.get(), previous.real.data.get()))
         return new Some(previous.real.data)
 
-      return new Some(timed)
+      return new Some(fetched)
     }, settings)
   }
 
@@ -72,7 +66,7 @@ export namespace Scrollable {
    */
   export async function scrollOrThrow<K, D, F>(
     cacheKey: string,
-    presignal: AbortSignal,
+    signal: AbortSignal,
     settings: ScrollableFetcherfulQuerySettings<K, D, F>
   ): Promise<State<D[], F>> {
     const previous = await core.getOrThrow(cacheKey, settings)
@@ -83,7 +77,6 @@ export namespace Scrollable {
     if (key == null)
       throw new ScrollError()
 
-    const signal = AbortSignal.any([presignal, AbortSignals.timeoutOrNever(settings.timeout)])
     const fetched = Fetched.from(await settings.fetcher(key, { signal }))
 
     return await core.mutateOrThrow(cacheKey, async (previous) => {

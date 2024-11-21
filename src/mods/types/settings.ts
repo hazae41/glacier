@@ -19,11 +19,6 @@ export interface SkeletonQuerySettings<K, D, F> {
    */
   readonly key?: K
 
-  readonly timeout?: number,
-
-  readonly cooldown?: number,
-  readonly expiration?: number
-
   readonly fetcher?: Fetcher<K, D, F>
   readonly normalizer?: Normalizer<D, F>
   readonly indexer?: Indexer<D, F>
@@ -37,11 +32,6 @@ export interface FetcherfulQuerySettings<K, D, F> {
    */
   readonly key: K
 
-  readonly timeout?: number,
-
-  readonly cooldown?: number,
-  readonly expiration?: number
-
   readonly fetcher: Fetcher<K, D, F>
   readonly normalizer?: Normalizer<D, F>
   readonly indexer?: Indexer<D, F>
@@ -54,11 +44,6 @@ export interface FetcherlessQuerySettings<K, D, F> {
    * Arbitrary key, must be JSON-serializable
    */
   readonly key: K
-
-  readonly timeout?: number,
-
-  readonly cooldown?: number,
-  readonly expiration?: number
 
   readonly fetcher?: undefined
   readonly normalizer?: Normalizer<D, F>

@@ -1,4 +1,3 @@
-import { AbortSignals } from "libs/signals/index.js";
 import { core } from "mods/core/core.js";
 import { FetcherfulQuerySettings } from "mods/types/settings.js";
 import { State } from "mods/types/state.js";
@@ -14,10 +13,9 @@ export namespace Simple {
 
   export async function fetchOrThrow<K, D, F>(
     cacheKey: string,
-    presignal: AbortSignal,
+    signal: AbortSignal,
     settings: FetcherfulQuerySettings<K, D, F>
   ): Promise<State<D, F>> {
-    const signal = AbortSignal.any([presignal, AbortSignals.timeoutOrNever(settings.timeout)])
     const fetched = await settings.fetcher(settings.key, { signal })
 
     return await core.replaceOrThrow(cacheKey, fetched, settings)
@@ -36,7 +34,7 @@ export namespace Simple {
   export async function updateOrThrow<K, D, F>(
     cacheKey: string,
     updater: Updater<K, D, F>,
-    presignal: AbortSignal,
+    signal: AbortSignal,
     settings: FetcherfulQuerySettings<K, D, F>
   ): Promise<State<D, F>> {
     const uuid = crypto.randomUUID()
@@ -50,8 +48,6 @@ export namespace Simple {
         await core.optimizeOrThrow(cacheKey, uuid, next.value, settings)
 
       const fetcher = next.value ?? settings.fetcher
-
-      const signal = AbortSignal.any([presignal, AbortSignals.timeoutOrNever(settings.timeout)])
       const fetched = await fetcher(settings.key, { signal, cache: "reload" })
 
       core.deoptimize(cacheKey, uuid)

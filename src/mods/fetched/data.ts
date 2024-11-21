@@ -1,9 +1,8 @@
-import { Nullable } from "@hazae41/option"
 import { Ok } from "@hazae41/result"
 import { Awaitable } from "libs/promises/promises.js"
-import { Times, TimesInit } from "./times.js"
+import { Cached, CachedInit, Timed, TimedInit } from "./times.js"
 
-export interface DataInit<T> extends TimesInit {
+export interface DataInit<T> extends TimedInit, CachedInit {
   readonly data: T
 }
 
@@ -23,25 +22,22 @@ export namespace Data {
 
 }
 
-export class Data<T> extends Ok<T> implements DataInit<T>, Times {
+export class Data<T> extends Ok<T> implements DataInit<T>, Timed, Cached {
 
   readonly data: T
 
-  readonly time = Date.now()
+  readonly time: number
 
-  readonly cooldown?: Nullable<number>
-  readonly expiration?: Nullable<number>
+  readonly cooldown?: number
+  readonly expiration?: number
 
-  constructor(data: T, times: TimesInit = {}) {
+  constructor(data: T, init: TimedInit & CachedInit = {}) {
     super(data)
 
-    const { time, cooldown, expiration } = times
+    const { time = Date.now(), cooldown, expiration } = init
 
     this.data = data
-
-    if (time != null)
-      this.time = time
-
+    this.time = time
     this.cooldown = cooldown
     this.expiration = expiration
   }
@@ -68,8 +64,8 @@ export class Data<T> extends Ok<T> implements DataInit<T>, Times {
     return this
   }
 
-  setTimes(times: TimesInit = {}): Data<T> {
-    return new Data(this.inner, times)
+  setInit(init?: TimedInit & CachedInit): Data<T> {
+    return new Data(this.inner, init)
   }
 
   async map<U>(mapper: (data: T) => Awaitable<U>): Promise<Data<U>> {

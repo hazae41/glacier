@@ -1,1 +1,1 @@
-export * from "./equals/equals.test.js";
+console.log("no test")

@@ -1,9 +1,8 @@
-import { Nullable } from "@hazae41/option"
 import { Err } from "@hazae41/result"
 import { Awaitable } from "libs/promises/promises.js"
-import { Times, TimesInit } from "./times.js"
+import { Cached, CachedInit, Timed, TimedInit } from "./times.js"
 
-export interface FailInit<T> extends TimesInit {
+export interface FailInit<T> extends TimedInit, CachedInit {
   readonly error: T
 }
 
@@ -23,25 +22,22 @@ export namespace Fail {
 
 }
 
-export class Fail<T> extends Err<T> implements FailInit<T>, Times {
+export class Fail<T> extends Err<T> implements FailInit<T>, Timed, Cached {
 
   readonly error: T
 
-  readonly time = Date.now()
+  readonly time: number
 
-  readonly cooldown?: Nullable<number>
-  readonly expiration?: Nullable<number>
+  readonly cooldown?: number
+  readonly expiration?: number
 
-  constructor(error: T, times: TimesInit = {}) {
+  constructor(error: T, init: TimedInit & CachedInit = {}) {
     super(error)
 
-    const { time, cooldown, expiration } = times
+    const { time = Date.now(), cooldown, expiration } = init
 
     this.error = error
-
-    if (time != null)
-      this.time = time
-
+    this.time = time
     this.cooldown = cooldown
     this.expiration = expiration
   }
@@ -68,8 +64,8 @@ export class Fail<T> extends Err<T> implements FailInit<T>, Times {
     return new Fail(inner, this)
   }
 
-  setTimes(times: TimesInit = {}): Fail<T> {
-    return new Fail(this.inner, times)
+  setInit(init?: TimedInit & CachedInit): Fail<T> {
+    return new Fail(this.inner, init)
   }
 
   async mapErr<U>(mapper: (data: T) => Awaitable<U>): Promise<Fail<U>> {

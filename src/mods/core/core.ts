@@ -2,12 +2,11 @@ import { Mutex } from "@hazae41/mutex"
 import { Nullable, Option, Some } from "@hazae41/option"
 import { SuperEventTarget } from "@hazae41/plume"
 import { Result } from "@hazae41/result"
+import { equals } from "libs/equals/index.js"
 import { Time } from "libs/time/time.js"
-import { Equalsable } from "mods/equals/equals.js"
 import { Data, DataInit } from "mods/fetched/data.js"
 import { Fail, FailInit } from "mods/fetched/fail.js"
 import { Fetched, FetchedInit } from "mods/fetched/fetched.js"
-import { TimesInit } from "mods/fetched/times.js"
 import { Mutator, Setter } from "mods/types/mutator.js"
 import { QuerySettings } from "mods/types/settings.js"
 import { DataState, FailState, FakeState, RawState, RealState, State } from "mods/types/state.js"
@@ -345,10 +344,10 @@ export class Core {
       const normalized = await this.#normalizeOrThrow(next.real?.current, settings)
       next = this.#mergeRealStateWithFetched(next, normalized)
 
-      if (next.real?.current.isData() && previous.real?.current.isData() && Equalsable.equals(next.real.current.get(), previous.real.current.get()))
+      if (next.real?.current.isData() && previous.real?.current.isData() && equals(next.real.current.get(), previous.real.current.get()))
         next = new RealState(new DataState(new Data(previous.real.current.get(), next.real.current)))
 
-      if (next.real?.current.isFail() && previous.real?.current.isFail() && Equalsable.equals(next.real.current.getErr(), previous.real.current.getErr()))
+      if (next.real?.current.isFail() && previous.real?.current.isFail() && equals(next.real.current.getErr(), previous.real.current.getErr()))
         next = new RealState(new FailState(new Fail(previous.real.current.getErr(), next.real.current), previous.real.data))
 
       return await this.#reoptimizeOrThrow(cacheKey, next)
@@ -370,15 +369,14 @@ export class Core {
       if (mutate.isNone())
         return previous
 
-      const mutated = mutate.get()
+      const init = mutate.get()
 
-      if (mutated == null)
+      if (init == null)
         return this.#mergeRealStateWithFetched(previous, undefined)
 
-      const times = TimesInit.merge(mutated, settings)
-      const timed = Fetched.from(mutated).setTimes(times)
+      const fetched = Fetched.from(init)
 
-      return this.#mergeRealStateWithFetched(previous, timed)
+      return this.#mergeRealStateWithFetched(previous, fetched)
     }, settings)
   }
 
