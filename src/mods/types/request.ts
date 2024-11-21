@@ -1,34 +1,99 @@
-export class JsonableRequest extends Request {
+export interface TextRequestInit extends Omit<RequestInit, "body"> {
+  body: string
+}
 
-  #headers: Record<string, string>
+export class TextRequest extends Request {
 
-  #body: string
+  #headers: Record<string, string> = {}
 
-  private constructor(input: RequestInfo, init: RequestInit = {}, headers: Record<string, string>, body: string) {
+  #bodyAsText: string
+
+  constructor(input: RequestInfo, init: TextRequestInit) {
     super(input, init)
 
-    this.#headers = headers
+    this.headers.forEach((value, key) => this.#headers[key] = value)
 
-    this.#body = body
+    this.#bodyAsText = init.body
   }
 
-  static async from(input: RequestInfo, init: RequestInit = {}) {
+  static async from(input: RequestInfo, init?: RequestInit) {
     const dummy = new Request(input, init)
-
-    const headers: Record<string, string> = {}
-    dummy.headers.forEach((value, key) => headers[key] = value)
 
     const body = await dummy.text()
 
-    return new JsonableRequest(input, init, headers, body)
+    return new TextRequest(dummy, { body })
   }
 
-  get headersAsJson() {
+  get headersAsJson(): Record<string, string> {
     return this.#headers
   }
 
-  get bodyAsText() {
-    return this.#body
+  get bodyAsText(): string {
+    return this.#bodyAsText
+  }
+
+  toJSON() {
+    return {
+      url: this.url,
+      method: this.method,
+      headers: this.headersAsJson,
+      body: this.bodyAsText,
+      keepalive: this.keepalive,
+      cache: this.cache,
+      credentials: this.credentials,
+      destination: this.destination,
+      integrity: this.integrity,
+      mode: this.mode,
+      redirect: this.redirect,
+      referrerPolicy: this.referrerPolicy,
+    }
+  }
+
+}
+
+export interface JsonRequestInit<T> extends Omit<RequestInit, "body"> {
+  body: T
+}
+
+export class JsonRequest<T> extends Request {
+
+  #headers: Record<string, string> = {}
+
+  #bodyAsJson: T
+  #bodyAsText: string
+
+  constructor(input: RequestInfo, init: JsonRequestInit<T>) {
+    const body = JSON.stringify(init.body)
+
+    super(input, { ...init, body })
+
+    if (!this.headers.has("Content-Type"))
+      this.headers.set("Content-Type", "application/json")
+
+    this.headers.forEach((value, key) => this.#headers[key] = value)
+
+    this.#bodyAsJson = init.body
+    this.#bodyAsText = body
+  }
+
+  static async from<T>(input: RequestInfo, init?: RequestInit) {
+    const dummy = new Request(input, init)
+
+    const body = await dummy.json() as T
+
+    return new JsonRequest<T>(dummy, { body })
+  }
+
+  get headersAsJson(): Record<string, string> {
+    return this.#headers
+  }
+
+  get bodyAsJson(): T {
+    return this.#bodyAsJson
+  }
+
+  get bodyAsText(): string {
+    return this.#bodyAsText
   }
 
   toJSON() {
