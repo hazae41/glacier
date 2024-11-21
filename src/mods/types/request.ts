@@ -1,43 +1,34 @@
-export class JsonRequest extends Request {
+export class JsonableRequest extends Request {
 
-  readonly #body: string
-  readonly #headers: JsonHeaders
+  #headers: Record<string, string>
 
-  private constructor(
-    input: RequestInfo,
-    init: RequestInit,
-    body: string,
-    headers: JsonHeaders
-  ) {
+  #body: string
+
+  private constructor(input: RequestInfo, init: RequestInit = {}, headers: Record<string, string>, body: string) {
     super(input, init)
 
-    this.#body = body
     this.#headers = headers
+
+    this.#body = body
   }
 
-  /**
-   * @override
-   */
-  get headers() {
-    return this.#headers
-  }
+  static async from(input: RequestInfo, init: RequestInit = {}) {
+    const dummy = new Request(input, init)
 
-  static async from(request: Request) {
-    if (request instanceof JsonRequest)
-      return request
+    const headers: Record<string, string> = {}
+    dummy.headers.forEach((value, key) => headers[key] = value)
 
-    const body = await request.text()
-    const headers = JsonHeaders.from(request.headers)
+    const body = await dummy.text()
 
-    return new JsonRequest(request, {}, body, headers)
-  }
-
-  get bodyAsText() {
-    return this.#body
+    return new JsonableRequest(input, init, headers, body)
   }
 
   get headersAsJson() {
     return this.#headers
+  }
+
+  get bodyAsText() {
+    return this.#body
   }
 
   toJSON() {
@@ -55,28 +46,6 @@ export class JsonRequest extends Request {
       redirect: this.redirect,
       referrerPolicy: this.referrerPolicy,
     }
-  }
-
-}
-
-export class JsonHeaders extends Headers {
-
-  constructor(
-    init?: HeadersInit
-  ) {
-    super(init)
-  }
-
-  static from(headers: Headers) {
-    if (headers instanceof JsonHeaders)
-      return headers
-    return new JsonHeaders(headers)
-  }
-
-  toJSON() {
-    const record: Record<string, string> = {}
-    this.forEach((value, key) => record[key] = value)
-    return record
   }
 
 }
