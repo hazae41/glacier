@@ -8,10 +8,4 @@ export namespace AbortSignals {
     return new AbortController().signal
   }
 
-  export function timeoutOrNever(milliseconds?: Nullable<number>) {
-    if (milliseconds != null)
-      return AbortSignal.timeout(milliseconds)
-    return new AbortController().signal
-  }
-
 }
