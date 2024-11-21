@@ -2,7 +2,7 @@ import { Catched, Err, Ok, Result } from "@hazae41/result"
 import { Awaitable } from "libs/promises/promises.js"
 import { Data, DataInit } from "./data.js"
 import { Fail, FailInit } from "./fail.js"
-import { Cached, CachedInit, Timed, TimedInit } from "./times.js"
+import { CachedInit, TimedInit } from "./times.js"
 
 export type FetchedInit<D, F> =
   | DataInit<D>
@@ -33,13 +33,13 @@ export namespace Fetched {
       return Data.from<DataInit.Inner<T>>(init)
   }
 
-  export function rewrap<T extends Ok.Infer<T>>(result: T & Timed & Cached, init?: TimedInit & CachedInit): Data<Ok.Inner<T>>
+  export function rewrap<T extends Ok.Infer<T>>(result: T & TimedInit & CachedInit, init?: TimedInit & CachedInit): Data<Ok.Inner<T>>
 
-  export function rewrap<T extends Err.Infer<T>>(result: T & Timed & Cached, init?: TimedInit & CachedInit): Fail<Err.Inner<T>>
+  export function rewrap<T extends Err.Infer<T>>(result: T & TimedInit & CachedInit, init?: TimedInit & CachedInit): Fail<Err.Inner<T>>
 
-  export function rewrap<T extends Result.Infer<T>>(result: T & Timed & Cached, init?: TimedInit & CachedInit): Fetched<Ok.Inner<T>, Err.Inner<T>>
+  export function rewrap<T extends Result.Infer<T>>(result: T & TimedInit & CachedInit, init?: TimedInit & CachedInit): Fetched<Ok.Inner<T>, Err.Inner<T>>
 
-  export function rewrap<T extends Result.Infer<T>>(result: T & Timed & Cached, init: TimedInit & CachedInit = result): Fetched<Ok.Inner<T>, Err.Inner<T>> {
+  export function rewrap<T extends Result.Infer<T>>(result: T & TimedInit & CachedInit, init: TimedInit & CachedInit = result): Fetched<Ok.Inner<T>, Err.Inner<T>> {
     if (result.isErr())
       return new Fail(result.getErr(), init)
     else
