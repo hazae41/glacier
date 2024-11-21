@@ -2,7 +2,7 @@ import { None, Nullable } from "@hazae41/option";
 import { Err, Fallback, Ok } from "@hazae41/result";
 import { SimpleQuery } from "index.js";
 import { useRenderRef } from "libs/react/ref.js";
-import { shouldUseCacheIfFresh, shouldUseCacheIfStale } from "libs/request/index.js";
+import { shouldUseCacheIfFresh, shouldUseCacheIfStale, shouldUseNetwork } from "libs/request/index.js";
 import { AbortSignals } from "libs/signals/index.js";
 import { Time } from "libs/time/time.js";
 import { MissingFetcherError, MissingKeyError, core } from "mods/core/core.js";
@@ -310,6 +310,8 @@ export function useSimpleFetcherfulQuery<K, D, F>(
       return new Err(state!)
     if (shouldUseCacheIfStale(init?.cache) && Time.isAfterNow(state?.real?.current.expiration))
       return new Err(state!)
+    if (!shouldUseNetwork(init?.cache))
+      throw new Error(`Could not fetch using the provided cache directive`)
 
     const aborter = new AbortController()
     const signal = AbortSignal.any([aborter.signal, AbortSignals.getOrNever(init?.signal)])
@@ -325,6 +327,8 @@ export function useSimpleFetcherfulQuery<K, D, F>(
       return new Err(state!)
     if (shouldUseCacheIfStale(init?.cache) && Time.isAfterNow(state?.real?.current.expiration))
       return new Err(state!)
+    if (!shouldUseNetwork(init?.cache))
+      throw new Error(`Could not fetch using the provided cache directive`)
 
     const aborter = new AbortController()
     const signal = AbortSignal.any([aborter.signal, AbortSignals.getOrNever(init?.signal)])
@@ -340,6 +344,8 @@ export function useSimpleFetcherfulQuery<K, D, F>(
       return new Err(state!)
     if (shouldUseCacheIfStale(init?.cache) && Time.isAfterNow(state?.real?.current.expiration))
       return new Err(state!)
+    if (!shouldUseNetwork(init?.cache))
+      throw new Error(`Could not fetch using the provided cache directive`)
 
     const aborter = new AbortController()
     const signal = AbortSignal.any([aborter.signal, AbortSignals.getOrNever(init?.signal)])
