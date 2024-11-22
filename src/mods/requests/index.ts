@@ -67,7 +67,7 @@ export class JsonRequest<T> extends Request {
 
     super(input, { ...init, body })
 
-    if (!this.headers.has("Content-Type"))
+    if (!this.headers.get("Content-Type")?.includes("application/json"))
       this.headers.set("Content-Type", "application/json")
 
     this.headers.forEach((value, key) => this.#headers[key] = value)
@@ -109,7 +109,7 @@ export class JsonRequest<T> extends Request {
       integrity: this.integrity,
       mode: this.mode,
       redirect: this.redirect,
-      referrerPolicy: this.referrerPolicy,
+      referrerPolicy: this.referrerPolicy
     }
   }
 

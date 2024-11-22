@@ -1,1 +1,1 @@
-console.log("no test")
+export * from "./requests/index.test.js";
