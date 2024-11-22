@@ -14,10 +14,7 @@ import { JsonRequest, TextRequest } from "./index.js";
   fetch(request)
 
   {
-    const json = request.toJSON()
-    const raw = new Request(json.url, json)
-
-    const request2 = await TextRequest.from(raw)
+    const request2 = await TextRequest.from(request.toJSON())
 
     assert(request2.bodyAsText === request.bodyAsText)
     assert(JSON.stringify(request2) === JSON.stringify(request))
@@ -37,10 +34,7 @@ import { JsonRequest, TextRequest } from "./index.js";
   fetch(request)
 
   {
-    const json = request.toJSON()
-    const raw = new Request(json.url, json)
-
-    const request2 = await JsonRequest.from(raw)
+    const request2 = await JsonRequest.from(request.toJSON())
 
     assert(request2.bodyAsText === request.bodyAsText)
     assert(JSON.stringify(request2.bodyAsJson) === JSON.stringify(request.bodyAsJson))
