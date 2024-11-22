@@ -2,6 +2,18 @@ export interface TextRequestInit extends Omit<RequestInit, "body"> {
   body: string
 }
 
+export namespace TextRequest {
+
+  /**
+   * Hack to only allow TextRequest or regular Request but not any other variant
+   */
+  export interface From extends Request {
+    bodyAsText?: string
+    bodyAsJson?: undefined
+  }
+
+}
+
 export class TextRequest extends Request {
 
   #headers: Record<string, string> = {}
@@ -16,12 +28,13 @@ export class TextRequest extends Request {
     this.#bodyAsText = init.body
   }
 
-  static async from(input: RequestInfo, init?: RequestInit) {
-    const dummy = new Request(input, init)
+  static async from(request: TextRequest.From): Promise<TextRequest> {
+    if (request instanceof TextRequest)
+      return request
 
-    const body = await dummy.text()
+    const body = await request.text()
 
-    return new TextRequest(dummy, { body })
+    return new TextRequest(request, { body })
   }
 
   get headersAsJson(): Record<string, string> {
@@ -55,6 +68,18 @@ export interface JsonRequestInit<T> extends Omit<RequestInit, "body"> {
   body: T
 }
 
+export namespace JsonRequest {
+
+  /**
+   * Hack to only allow JsonRequest<T> or regular Request but not any other variant or other T
+   */
+  export interface From<T> extends Request {
+    bodyAsText?: string
+    bodyAsJson?: T
+  }
+
+}
+
 export class JsonRequest<T> extends Request {
 
   #headers: Record<string, string> = {}
@@ -76,12 +101,13 @@ export class JsonRequest<T> extends Request {
     this.#bodyAsText = body
   }
 
-  static async from<T>(input: RequestInfo, init?: RequestInit) {
-    const dummy = new Request(input, init)
+  static async from<T>(request: JsonRequest.From<T>): Promise<JsonRequest<T>> {
+    if (request instanceof JsonRequest)
+      return request
 
-    const body = await dummy.json() as T
+    const body = await request.json() as T
 
-    return new JsonRequest<T>(dummy, { body })
+    return new JsonRequest<T>(request, { body })
   }
 
   get headersAsJson(): Record<string, string> {
