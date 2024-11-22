@@ -1,3 +1,8 @@
+export interface RequestLike extends RequestInit {
+  url: string
+  destination: RequestDestination
+}
+
 export interface TextRequestInit extends Omit<RequestInit, "body"> {
   body: string
 }
@@ -5,9 +10,9 @@ export interface TextRequestInit extends Omit<RequestInit, "body"> {
 export namespace TextRequest {
 
   /**
-   * Hack to only allow TextRequest or regular Request but not any other variant
+   * Hack to only allow TextRequest or Request-like but not any other variant
    */
-  export interface From extends Request {
+  export interface From extends RequestLike {
     bodyAsText?: string
     bodyAsJson?: undefined
   }
@@ -28,9 +33,11 @@ export class TextRequest extends Request {
     this.#bodyAsText = init.body
   }
 
-  static async from(request: TextRequest.From): Promise<TextRequest> {
-    if (request instanceof TextRequest)
-      return request
+  static async from(from: TextRequest.From): Promise<TextRequest> {
+    if (from instanceof TextRequest)
+      return from
+
+    const request = new Request(from.url, from)
 
     const body = await request.text()
 
@@ -45,7 +52,7 @@ export class TextRequest extends Request {
     return this.#bodyAsText
   }
 
-  toJSON() {
+  toJSON(): RequestLike {
     return {
       url: this.url,
       method: this.method,
@@ -59,7 +66,7 @@ export class TextRequest extends Request {
       mode: this.mode,
       redirect: this.redirect,
       referrerPolicy: this.referrerPolicy,
-    }
+    } as const
   }
 
 }
@@ -71,9 +78,9 @@ export interface JsonRequestInit<T> extends Omit<RequestInit, "body"> {
 export namespace JsonRequest {
 
   /**
-   * Hack to only allow JsonRequest<T> or regular Request but not any other variant or other T
+   * Hack to only allow JsonRequest<T> or Request-like but not any other variant or other T
    */
-  export interface From<T> extends Request {
+  export interface From<T> extends RequestLike {
     bodyAsText?: string
     bodyAsJson?: T
   }
@@ -101,9 +108,11 @@ export class JsonRequest<T> extends Request {
     this.#bodyAsText = body
   }
 
-  static async from<T>(request: JsonRequest.From<T>): Promise<JsonRequest<T>> {
-    if (request instanceof JsonRequest)
-      return request
+  static async from<T>(from: JsonRequest.From<T>): Promise<JsonRequest<T>> {
+    if (from instanceof JsonRequest)
+      return from
+
+    const request = new Request(from.url, from)
 
     const body = await request.json() as T
 
@@ -122,7 +131,7 @@ export class JsonRequest<T> extends Request {
     return this.#bodyAsText
   }
 
-  toJSON() {
+  toJSON(): RequestLike {
     return {
       url: this.url,
       method: this.method,
@@ -136,7 +145,7 @@ export class JsonRequest<T> extends Request {
       mode: this.mode,
       redirect: this.redirect,
       referrerPolicy: this.referrerPolicy
-    }
+    } as const
   }
 
 }
