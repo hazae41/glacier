@@ -3,6 +3,67 @@ export interface RequestLike extends RequestInit {
   destination: RequestDestination
 }
 
+export interface EmptyRequestInit extends Omit<RequestInit, "body"> {
+  /**
+   * Empty
+   */
+}
+
+export namespace EmptyRequest {
+
+  /**
+   * Hack to only allow EmptyRequest or Request-like but not any other variant
+   */
+  export interface From extends RequestLike {
+    bodyAsText?: undefined
+    bodyAsJson?: undefined
+  }
+
+}
+
+export class EmptyRequest extends Request {
+
+  #headers: Record<string, string> = {}
+
+  constructor(input: RequestInfo, init?: EmptyRequestInit) {
+    super(input, init)
+
+    this.headers.forEach((value, key) => this.#headers[key] = value)
+
+    return
+  }
+
+  static async from(from: EmptyRequest.From): Promise<EmptyRequest> {
+    if (from instanceof EmptyRequest)
+      return from
+
+    const request = new Request(from.url, from)
+
+    return new EmptyRequest(request)
+  }
+
+  get headersAsJson(): Record<string, string> {
+    return this.#headers
+  }
+
+  toJSON(): RequestLike {
+    return {
+      url: this.url,
+      method: this.method,
+      headers: this.headersAsJson,
+      keepalive: this.keepalive,
+      cache: this.cache,
+      credentials: this.credentials,
+      destination: this.destination,
+      integrity: this.integrity,
+      mode: this.mode,
+      redirect: this.redirect,
+      referrerPolicy: this.referrerPolicy
+    } as const
+  }
+
+}
+
 export interface TextRequestInit extends Omit<RequestInit, "body"> {
   body: string
 }
@@ -78,7 +139,7 @@ export interface JsonRequestInit<T> extends Omit<RequestInit, "body"> {
 export namespace JsonRequest {
 
   /**
-   * Hack to only allow JsonRequest<T> or Request-like but not any other variant or other T
+   * Hack to only allow JsonRequest<T> or Request-like but not any other variant
    */
   export interface From<T> extends RequestLike {
     bodyAsText?: string
